@@ -47,9 +47,17 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
                     tileSet = Engine::objectCreate<TileSet>(settings->destination());
                 }
 
-                TiledMapConverter::parseTileset(ts, settings->source(), *tileSet);
+                uint32_t uuid = settings->info().id;
+                if(uuid == 0) {
+                    uuid = Engine::generateUUID();
+                    settings->info().id = uuid;
+                }
 
-                settings->info().id = tileSet->uuid();
+                if(tileSet->uuid() != uuid) {
+                    Engine::replaceUUID(tileSet, uuid);
+                }
+
+                TiledMapConverter::parseTileset(ts, settings->source(), *tileSet);
 
                 return settings->saveBinary(Engine::toVariant(tileSet), settings->absoluteDestination());
             }

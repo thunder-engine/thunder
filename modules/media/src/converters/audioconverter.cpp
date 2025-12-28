@@ -117,9 +117,17 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
         clip = Engine::objectCreate<AudioClip>(settings->destination());
     }
 
-    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
+    uint32_t uuid = settings->info().id;
+    if(uuid == 0) {
+        uuid = Engine::generateUUID();
+        settings->info().id = uuid;
+    }
 
-    settings->info().id = clip->uuid();
+    if(clip->uuid() != uuid) {
+        Engine::replaceUUID(clip, uuid);
+    }
+
+    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
 
     return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
 }

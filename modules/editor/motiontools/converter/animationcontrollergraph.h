@@ -7,9 +7,9 @@ class AnimationControllerGraph : public AbstractNodeGraph {
 public:
     AnimationControllerGraph();
 
-    Variant object() const;
-
     StringList nodeList() const override;
+
+    Variant data() const;
 
 private:
     GraphNode *fallbackRoot() override;
@@ -20,7 +20,7 @@ private:
     Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
 protected:
-    Variant data() const;
+
 
     GraphNode *m_entryState;
 

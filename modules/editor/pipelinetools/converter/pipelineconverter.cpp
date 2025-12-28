@@ -46,9 +46,18 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
     if(pipeline == nullptr) {
         pipeline = Engine::objectCreate<Pipeline>(settings->destination());
     }
-    pipeline->loadUserData(data);
 
-    settings->info().id = pipeline->uuid();
+    uint32_t uuid = settings->info().id;
+    if(uuid == 0) {
+        uuid = Engine::generateUUID();
+        settings->info().id = uuid;
+    }
+
+    if(pipeline->uuid() != uuid) {
+        Engine::replaceUUID(pipeline, uuid);
+    }
+
+    pipeline->loadUserData(data);
 
     return settings->saveBinary(Engine::toVariant(pipeline), settings->absoluteDestination());
 }

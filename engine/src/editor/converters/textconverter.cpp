@@ -30,14 +30,22 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
             text = Engine::objectCreate<Text>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(text->uuid() != uuid) {
+            Engine::replaceUUID(text, uuid);
+        }
+
         TString content(src.readAll());
         src.close();
         if(!content.isEmpty()) {
             text->setSize(content.size());
             memcpy(text->data(), content.data(), content.size());
         }
-
-        settings->info().id = text->uuid();
 
         return settings->saveBinary(Engine::toVariant(text), settings->absoluteDestination());
     }

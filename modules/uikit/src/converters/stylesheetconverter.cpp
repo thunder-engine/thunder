@@ -28,13 +28,21 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
             style = Engine::objectCreate<StyleSheet>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(style->uuid() != uuid) {
+            Engine::replaceUUID(style, uuid);
+        }
+
         TString array(src.readAll());
         src.close();
         if(!array.isEmpty()) {
             style->setData(array);
         }
-
-        settings->info().id = style->uuid();
 
         return settings->saveBinary(Engine::toVariant(style), settings->absoluteDestination());
     }

@@ -117,7 +117,15 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
             }
             prefab->setActor(spineSettings->m_root);
 
-            settings->info().id = prefab->uuid();
+            uint32_t uuid = settings->info().id;
+            if(uuid == 0) {
+                uuid = Engine::generateUUID();
+                settings->info().id = uuid;
+            }
+
+            if(prefab->uuid() != uuid) {
+                Engine::replaceUUID(prefab, uuid);
+            }
 
             return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
         }

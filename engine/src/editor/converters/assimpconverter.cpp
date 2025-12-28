@@ -249,6 +249,16 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
             prefab = Engine::objectCreate<Prefab>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(prefab->uuid() != uuid) {
+            Engine::replaceUUID(prefab, uuid);
+        }
+
         /// \todo We need to reuse actors if possible
         Actor *root = importObject(scene, scene->mRootNode, nullptr, fbxSettings);
 
@@ -275,8 +285,6 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         root->setName(settings->destination()); // fixes the same name of root in the different files issue
         stabilizeUUID(root);
         root->setName(name);
-
-        settings->info().id = prefab->uuid();
 
         return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
     }
