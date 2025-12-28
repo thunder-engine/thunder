@@ -452,7 +452,7 @@ void Mesh::loadUserData(const VariantMap &data) {
         i++;
         vertexData = (*i).toByteArray();
         m_vertices.resize(vCount);
-        memcpy((void*)m_vertices.data(), &vertexData[0], sizeof(Vector3) * vCount);
+        memcpy(reinterpret_cast<void*>(m_vertices.data()), &vertexData[0], sizeof(Vector3) * vCount);
         for(uint32_t i = 0; i < vCount; i++) {
             min.x = MIN(min.x, m_vertices[i].x);
             min.y = MIN(min.y, m_vertices[i].y);
@@ -474,36 +474,36 @@ void Mesh::loadUserData(const VariantMap &data) {
             i++;
             vertexData = (*i).toByteArray();
             m_colors.resize(vCount);
-            memcpy((void*)m_colors.data(), vertexData.data(), sizeof(Vector4) * vCount);
+            memcpy(reinterpret_cast<void*>(m_colors.data()), vertexData.data(), sizeof(Vector4) * vCount);
         }
         if(flags & MeshAttributes::Uv0) { // Optional field
             i++;
             vertexData = (*i).toByteArray();
             m_uv0.resize(vCount);
-            memcpy((void*)m_uv0.data(), vertexData.data(), sizeof(Vector2) * vCount);
+            memcpy(reinterpret_cast<void*>(m_uv0.data()), vertexData.data(), sizeof(Vector2) * vCount);
         }
         if(flags & MeshAttributes::Normals) { // Optional field
             i++;
             vertexData = (*i).toByteArray();
             m_normals.resize(vCount);
-            memcpy((void*)m_normals.data(), vertexData.data(), sizeof(Vector3) * vCount);
+            memcpy(reinterpret_cast<void*>(m_normals.data()), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Tangents) { // Optional field
             i++;
             vertexData = (*i).toByteArray();
             m_tangents.resize(vCount);
-            memcpy((void*)m_tangents.data(), vertexData.data(), sizeof(Vector3) * vCount);
+            memcpy(reinterpret_cast<void*>(m_tangents.data()), vertexData.data(), sizeof(Vector3) * vCount);
         }
         if(flags & MeshAttributes::Skinned) { // Optional field
             i++;
             vertexData = (*i).toByteArray();
             m_weights.resize(vCount);
-            memcpy((void*)m_weights.data(), vertexData.data(), sizeof(Vector4) * vCount);
+            memcpy(reinterpret_cast<void*>(m_weights.data()), vertexData.data(), sizeof(Vector4) * vCount);
 
             i++;
             vertexData = (*i).toByteArray();
             m_bones.resize(vCount);
-            memcpy((void*)m_bones.data(), vertexData.data(), sizeof(Vector4) * vCount);
+            memcpy(reinterpret_cast<void*>(m_bones.data()), vertexData.data(), sizeof(Vector4) * vCount);
         }
 
         i++;

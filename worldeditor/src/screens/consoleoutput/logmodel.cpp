@@ -37,9 +37,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const {
     }
 
     switch(role) {
-        case Qt::DisplayRole: {
-            return m_Records.at(index.row());
-        } break;
+        case Qt::DisplayRole: return m_Records.at(index.row());
         case Qt::DecorationRole: {
             switch(m_Types.at(index.row())) {
                 case Log::INF: return m_Info;
