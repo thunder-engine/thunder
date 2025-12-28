@@ -1,7 +1,7 @@
 #ifndef ATLAS_H
 #define ATLAS_H
 
-#include "engine.h"
+#include <cstdint>
 
 class AtlasNode {
 public:
@@ -9,6 +9,8 @@ public:
     ~AtlasNode();
 
     AtlasNode *insert(uint32_t width, uint32_t height);
+
+    bool clean();
 
     AtlasNode *left;
     AtlasNode *right;
@@ -19,15 +21,7 @@ public:
     uint32_t w;
     uint32_t h;
 
-    bool fill;
-    bool dirty;
-
-};
-
-class Atlas {
-public:
-    void packSheets(int padding);
-
+    bool occupied;
 };
 
 #endif // ATLAS_H

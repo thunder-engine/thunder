@@ -87,12 +87,12 @@ void Sprite::packSheets(int padding) {
         for(i = 0; i < m_sources.size(); i++) {
             Texture *texture = m_sources[i];
 
-            int32_t width  = (texture->width() + padding * 2);
+            int32_t width = (texture->width() + padding * 2);
             int32_t height = (texture->height() + padding * 2);
 
             AtlasNode *node = root.insert(width, height);
             if(node) {
-                node->fill = true;
+                node->occupied = true;
 
                 nodes[i] = node;
             } else {
@@ -109,7 +109,7 @@ void Sprite::packSheets(int padding) {
                     root.right = nullptr;
                 }
 
-                root.fill = false;
+                root.occupied = false;
 
                 break;
             }

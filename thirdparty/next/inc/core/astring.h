@@ -22,6 +22,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include <global.h>
 
