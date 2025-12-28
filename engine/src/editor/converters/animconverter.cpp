@@ -37,12 +37,20 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
             clip = Engine::objectCreate<AnimationClip>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(clip->uuid() != uuid) {
+            Engine::replaceUUID(clip, uuid);
+        }
+
         VariantMap map;
         map[gTracks] = readJson(src.readAll(), settings).toList();
         clip->loadUserData(map);
         src.close();
-
-        settings->info().id = clip->uuid();
 
         return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
     }

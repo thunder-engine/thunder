@@ -32,13 +32,21 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
             font = Engine::objectCreate<Font>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(font->uuid() != uuid) {
+            Engine::replaceUUID(font, uuid);
+        }
+
         VariantMap map;
         map[gData] = src.readAll();
         src.close();
 
         font->loadUserData(map);
-
-        settings->info().id = font->uuid();
 
         return settings->saveBinary(Engine::toVariant(font), settings->absoluteDestination());
     }

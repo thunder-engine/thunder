@@ -261,7 +261,15 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             resource = texture;
         }
 
-        settings->info().id = resource->uuid();
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(resource->uuid() != uuid) {
+            Engine::replaceUUID(resource, uuid);
+        }
 
         return settings->saveBinary(Engine::toVariant(resource), settings->absoluteDestination());
     }

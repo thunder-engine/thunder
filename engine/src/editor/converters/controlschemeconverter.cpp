@@ -29,13 +29,21 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
             scheme = Engine::objectCreate<ControlScheme>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(scheme->uuid() != uuid) {
+            Engine::replaceUUID(scheme, uuid);
+        }
+
         VariantMap map;
         map[gData] = Json::load(src.readAll());
         scheme->loadUserData(map);
 
         src.close();
-
-        settings->info().id = scheme->uuid();
 
         return settings->saveBinary(Engine::toVariant(scheme), settings->absoluteDestination());
     }

@@ -59,6 +59,16 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     prefab->setActor(root);
                 }
 
+                uint32_t uuid = settings->info().id;
+                if(uuid == 0) {
+                    uuid = Engine::generateUUID();
+                    settings->info().id = uuid;
+                }
+
+                if(prefab->uuid() != uuid) {
+                    Engine::replaceUUID(prefab, uuid);
+                }
+
                 std::list<Component *> components = root->componentsInChild(gTileMapRender);
                 std::list<Component *> usedComponents;
 
@@ -173,8 +183,6 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         delete it->actor();
                     }
                 }
-
-                settings->info().id = prefab->uuid();
 
                 return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
             }

@@ -34,14 +34,22 @@ AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSe
             material = Engine::objectCreate<PhysicMaterial>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(material->uuid() != uuid) {
+            Engine::replaceUUID(material, uuid);
+        }
+
         VariantMap map = Json::load(src.readAll()).toMap();
         src.close();
 
         material->setFriction(map["Friction"].toFloat());
         material->setRestitution(map["Restitution"].toFloat());
         material->setDensity(map["Density"].toFloat());
-
-        settings->info().id = material->uuid();
 
         return settings->saveBinary(Engine::toVariant(material), settings->absoluteDestination());
     }

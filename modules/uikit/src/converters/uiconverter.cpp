@@ -28,13 +28,21 @@ AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *sett
             document = Engine::objectCreate<UiDocument>(settings->destination());
         }
 
+        uint32_t uuid = settings->info().id;
+        if(uuid == 0) {
+            uuid = Engine::generateUUID();
+            settings->info().id = uuid;
+        }
+
+        if(document->uuid() != uuid) {
+            Engine::replaceUUID(document, uuid);
+        }
+
         TString data(src.readAll());
         src.close();
         if(!data.isEmpty()) {
             document->setData(data);
         }
-
-        settings->info().id = document->uuid();
 
         return settings->saveBinary(Engine::toVariant(document), settings->absoluteDestination());
     }

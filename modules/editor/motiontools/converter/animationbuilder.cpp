@@ -23,23 +23,29 @@ void AnimationControllerBuilder::init() {
 AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverterSettings *settings) {
     m_model.load(settings->source());
 
-    Variant variant = m_model.object();
-
-    uint32_t uuid = 0;
-    VariantList objects = variant.value<VariantList>();
-    for(auto &it : objects) {
-        VariantList o  = it.value<VariantList>();
-        if(o.size() >= 5) {
-            auto i = o.begin();
-            i++;
-            uuid = static_cast<uint32_t>((*i).toInt());
-            break;
-        }
+    uint32_t uuid = settings->info().id;
+    if(uuid == 0) {
+        uuid = Engine::generateUUID();
+        settings->info().id = uuid;
     }
 
-    settings->info().id = uuid;
+    VariantList result;
 
-    return settings->saveBinary(variant, settings->absoluteDestination());
+    VariantList object;
+
+    object.push_back(AnimationStateMachine::metaClass()->name()); // type
+    object.push_back(uuid); // id
+    object.push_back(0); // parent
+    object.push_back(""); // name
+
+    object.push_back(VariantMap()); // properties
+    object.push_back(VariantList()); // links
+
+    object.push_back(m_model.data()); // user data
+
+    result.push_back(object);
+
+    return settings->saveBinary(result, settings->absoluteDestination());
 }
 
 AssetConverterSettings *AnimationControllerBuilder::createSettings() {

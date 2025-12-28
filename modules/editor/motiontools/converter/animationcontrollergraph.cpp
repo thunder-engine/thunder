@@ -93,26 +93,6 @@ AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *
     return AbstractNodeGraph::linkCreate(sender, oport, receiver, iport);
 }
 
-Variant AnimationControllerGraph::object() const {
-    VariantList result;
-
-    VariantList object;
-
-    object.push_back(AnimationStateMachine::metaClass()->name()); // type
-    object.push_back(Engine::generateUUID()); // id
-    object.push_back(0); // parent
-    object.push_back(""); // name
-
-    object.push_back(VariantMap()); // properties
-    object.push_back(VariantList()); // links
-
-    object.push_back(data()); // user data
-
-    result.push_back(object);
-
-    return result;
-}
-
 StringList AnimationControllerGraph::nodeList() const {
     return m_nodeTypes;
 }
