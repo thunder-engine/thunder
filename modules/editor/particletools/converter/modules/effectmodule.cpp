@@ -127,7 +127,7 @@ void EffectModule::toXml(pugi::xml_node &element) {
     auto dynamicProperties = dynamicPropertyNames();
 
     MetaEnum metaEnum = meta->enumerator(meta->indexOfEnumerator("Space"));
-    for(auto dynProp : dynamicProperties) {
+    for(auto &dynProp : dynamicProperties) {
         if(dynProp.front() != '_') {
             TString annotation = dynamicPropertyInfo(dynProp.data());
 
@@ -226,7 +226,7 @@ VariantList EffectModule::saveData() const {
 
     std::vector<EffectModule::OperationData> ops;
     getOperations(ops);
-    for(auto it : ops) {
+    for(auto &it : ops) {
         VariantList data;
         data.push_back(it.operation);
 
@@ -280,7 +280,7 @@ void EffectModule::setRoot(EffectRootNode *effect) {
 
     m_blockUpdate = true;
     auto names = dynamicPropertyNames();
-    for(auto it : names) {
+    for(auto &it : names) {
         setProperty(it.data(), Variant());
     }
 

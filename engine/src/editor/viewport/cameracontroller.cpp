@@ -11,9 +11,6 @@
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>
-#include <components/meshrender.h>
-#include <components/spriterender.h>
-#include <components/textrender.h>
 
 #define DT 0.0625f
 

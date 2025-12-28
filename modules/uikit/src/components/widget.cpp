@@ -196,15 +196,16 @@ void Widget::applyStyle() {
     m_transform->setPadding(padding);
 
     // Display
-    Layout *layout = m_transform->layout();
-
     auto it = m_styleRules.find("display");
     if(it != m_styleRules.end()) {
         TString layoutMode = it->second.second;
         if(layoutMode == "none") {
             actor()->setEnabled(false);
         } else {
-            layout = new Layout;
+            Layout *layout = m_transform->layout();
+            if(layout == nullptr) {
+                layout = new Layout;
+            }
 
             if(layoutMode == "block") {
                 layout->setDirection(Layout::Vertical);

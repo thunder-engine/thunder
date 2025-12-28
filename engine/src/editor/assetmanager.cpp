@@ -144,9 +144,7 @@ void AssetManager::rescan() {
 #endif
     m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), m_force);
 
-    if(m_force) {
-        Engine::resourceSystem()->makeClean();
-    }
+    Engine::resourceSystem()->setCleanImport(m_force);
 
     emit directoryChanged(m_projectManager->contentPath().data());
 
@@ -499,6 +497,7 @@ void AssetManager::onPerform() {
                     if(!it->buildProject()) {
                         m_force = false;
                         m_timer->stop();
+                        Engine::resourceSystem()->setCleanImport(m_force);
                         emit importFinished();
                     }
                 }
@@ -529,6 +528,7 @@ void AssetManager::onPerform() {
 
         m_force = false;
         m_timer->stop();
+        Engine::resourceSystem()->setCleanImport(m_force);
         emit importFinished();
     }
 }

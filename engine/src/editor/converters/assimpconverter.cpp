@@ -439,7 +439,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             }
 
             if(item->HasVertexColors(0)) {
-                memcpy(&colors[total_v], item->mColors[0], sizeof(Vector4) * vertexCount);
+                memcpy(reinterpret_cast<void*>(&colors[total_v]), item->mColors[0], sizeof(Vector4) * vertexCount);
             }
 
             if(item->HasTextureCoords(0)) {
@@ -491,8 +491,8 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                 weights.resize(total_v + vertexCount);
                 bones.resize(total_v + vertexCount);
 
-                memset(&weights[total_v], 0, sizeof(Vector4) * vertexCount);
-                memset(&bones[total_v], 0, sizeof(Vector4) * vertexCount);
+                memset(reinterpret_cast<void*>(&weights[total_v]), 0, sizeof(Vector4) * vertexCount);
+                memset(reinterpret_cast<void*>(&bones[total_v]), 0, sizeof(Vector4) * vertexCount);
 
                 for(uint32_t b = 0; b < item->mNumBones; b++) {
                     aiBone *bone = item->mBones[b];
