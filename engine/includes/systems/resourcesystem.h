@@ -35,6 +35,7 @@ public:
 
     bool isResourceExist(const TString &path) const;
 
+    TString reference(const TString &path) const;
     TString reference(Resource *resource) const;
 
     Resource *resource(TString &path) const;
@@ -43,7 +44,7 @@ public:
 
     void deleteFromCahe(Resource *resource);
 
-    void makeClean();
+    void setCleanImport(bool flag);
 
 private:
     void update(World *) override;

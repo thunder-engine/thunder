@@ -45,7 +45,7 @@ AmbientOcclusion::AmbientOcclusion() :
 
     Texture::Surface &s = m_noiseTexture->surface(0);
 
-    Vector4 *ptr = reinterpret_cast<Vector4 *>(&(s[0])[0]);
+    Vector4 *ptr = reinterpret_cast<Vector4 *>(s.front().data());
     for(int32_t i = 0; i < KERNEL_SIZE; i++) {
         ptr[i].x = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;
         ptr[i].y = RANGE(0.0f, 1.0f) * 2.0f - 1.0f;

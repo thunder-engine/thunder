@@ -1,9 +1,8 @@
 #include "components/meshrender.h"
 
-#include <resources/material.h>
+#include "resources/material.h"
 
 #include "pipelinecontext.h"
-
 #include "gizmos.h"
 
 /*!

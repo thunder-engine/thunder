@@ -68,15 +68,39 @@ protected:
     }
 
     bool exists(const char *path) override {
-        return std::filesystem::exists(path);
+        bool result = std::filesystem::exists(path);
+        if(!result) {
+            for(auto &it : m_searchPath) {
+                if(std::filesystem::exists((it + "/" + path).data())) {
+                    return true;
+                }
+            }
+        }
+        return result;
     }
 
     bool isDir(const char *path) override {
-        return std::filesystem::is_directory(path);
+        bool result = std::filesystem::is_directory(path);
+        if(!result) {
+            for(auto &it : m_searchPath) {
+                if(std::filesystem::is_directory((it + "/" + path).data())) {
+                    return true;
+                }
+            }
+        }
+        return result;
     }
 
     bool isFile(const char *path) override {
-        return std::filesystem::is_regular_file(path);
+        bool result = std::filesystem::is_regular_file(path);
+        if(!result) {
+            for(auto &it : m_searchPath) {
+                if(std::filesystem::is_regular_file((it + "/" + path).data())) {
+                    return true;
+                }
+            }
+        }
+        return result;
     }
 
     int close(int *handle) override {
