@@ -3,6 +3,8 @@
 #include <components/actor.h>
 #include <components/component.h>
 
+#include <set>
+
 ChangeObjectProperty::ChangeObjectProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, ObjectController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_value(value),

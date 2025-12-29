@@ -3,6 +3,8 @@
 #include <log.h>
 #include <engine.h>
 
+#include <set>
+
 #if defined(SHARED_DEFINE)
 #include <QDebug>
 

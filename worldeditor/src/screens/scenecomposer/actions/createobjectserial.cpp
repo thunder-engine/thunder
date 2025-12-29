@@ -7,6 +7,8 @@
 
 #include <log.h>
 
+#include <set>
+
 CreateObjectSerial::CreateObjectSerial(const TString &ref, const Vector3 &position, uint32_t parent, ObjectController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_reference(ref),

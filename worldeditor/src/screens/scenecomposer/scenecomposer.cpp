@@ -329,7 +329,8 @@ void SceneComposer::onObjectCreate(TString type) {
 
 void SceneComposer::onObjectsSelected(Object::ObjectList objects, bool force) {
     if(force) {
-        m_controller->onFocusActor(objects.front());
+        float bottom;
+        m_controller->setFocusOn(dynamic_cast<Actor *>(objects.front()), bottom);
     }
 
     m_controller->onSelectActor(objects);

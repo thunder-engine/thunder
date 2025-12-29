@@ -22,6 +22,11 @@ System::System() :
     m_world(nullptr) {
 
 }
+
+System::~System() {
+    Engine::removeSystem(this);
+}
+
 /*!
     Can be used to initialize and execute necessary routines.
     This method will be called automatically just after the engine started.
