@@ -8,7 +8,7 @@ MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *
         UndoCommand(name, parent),
         m_controller(ctrl) {
 
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     m_indices.reserve(selection.size());
     m_points.reserve(selection.size());
@@ -26,7 +26,7 @@ void MoveNodes::undo() {
 }
 
 void MoveNodes::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     std::vector<Vector2> positions(m_indices.size());
     for(int i = 0; i < m_indices.size(); i++) {

@@ -12,18 +12,18 @@ CreateLink::CreateLink(int sender, int oport, int receiver, int iport, GraphCont
 }
 
 void CreateLink::undo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     AbstractNodeGraph::Link *link = g->link(m_index);
     if(link) {
         g->linkDelete(link);
 
-        g->emitSignal(_SIGNAL(graphUpdated()));
+        g->graphUpdated();
     }
 }
 
 void CreateLink::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     GraphNode *snd = g->node(m_sender);
     GraphNode *rcv = g->node(m_receiver);
@@ -31,9 +31,8 @@ void CreateLink::redo() {
         NodePort *op = (m_oPort > -1) ? snd->port(m_oPort) : nullptr;
         NodePort *ip = (m_iPort > -1) ? rcv->port(m_iPort) : nullptr;
 
-        AbstractNodeGraph::Link *link = g->linkCreate(snd, op, rcv, ip);
-        m_index = g->link(link);
+        m_index = g->link(g->linkCreate(snd, op, rcv, ip));
 
-        g->emitSignal(_SIGNAL(graphUpdated()));
+        g->graphUpdated();
     }
 }

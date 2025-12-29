@@ -15,6 +15,7 @@ class PortWidget : public Widget {
 
 public:
     PortWidget();
+    ~PortWidget();
 
     void portUpdate();
 

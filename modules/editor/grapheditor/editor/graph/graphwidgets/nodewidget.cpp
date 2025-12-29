@@ -3,7 +3,6 @@
 #include "portwidget.h"
 
 #include "../graphnode.h"
-#include "../abstractnodegraph.h"
 #include "../graphview.h"
 #include "../graphcontroller.h"
 

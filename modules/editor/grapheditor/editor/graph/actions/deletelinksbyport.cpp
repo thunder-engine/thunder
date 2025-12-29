@@ -9,11 +9,9 @@ DeleteLinksByPort::DeleteLinksByPort(int node, int port, GraphController *ctrl, 
 }
 
 void DeleteLinksByPort::undo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
-    for(int i = 0; i < m_links.size(); ++i) {
-        Link link = *std::next(m_links.begin(), i);
-
+    for(Link &link : m_links) {
         GraphNode *snd = g->node(link.sender);
         GraphNode *rcv = g->node(link.receiver);
         if(snd && rcv) {
@@ -23,11 +21,11 @@ void DeleteLinksByPort::undo() {
             g->linkCreate(snd, op, rcv, ip);
         }
     }
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }
 
 void DeleteLinksByPort::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     GraphNode *node = g->node(m_node);
     if(node) {
@@ -52,6 +50,6 @@ void DeleteLinksByPort::redo() {
             }
             g->linkDelete(item);
         }
-        g->emitSignal(_SIGNAL(graphUpdated()));
+        g->graphUpdated();
     }
 }

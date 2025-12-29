@@ -47,7 +47,7 @@ public:
 
     GraphNode *m_node;
 
-    void *m_userData = nullptr;
+    Widget *m_widget = nullptr;
 
     uint32_t m_type;
 
@@ -66,7 +66,6 @@ class NODEGRAPH_EXPORT GraphNode : public Object {
 
 public:
     GraphNode();
-    ~GraphNode();
 
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
