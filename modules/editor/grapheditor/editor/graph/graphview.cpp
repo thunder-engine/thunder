@@ -5,7 +5,6 @@
 
 #include "graphnode.h"
 #include "graphcontroller.h"
-#include "nodegroup.h"
 #include "graphwidgets/nodewidget.h"
 #include "graphwidgets/groupwidget.h"
 #include "graphwidgets/portwidget.h"
@@ -231,7 +230,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
                 m_editor->undoRedo()->push(new CreateLink(g->node(n1), n1->portPosition(p1), g->node(n2), port, ctrl));
                 NodePort *p2 = n2->port(port);
                 if(p2) {
-                    PortWidget *w2 = reinterpret_cast<PortWidget *>(p2->m_userData);
+                    PortWidget *w2 = static_cast<PortWidget *>(p2->m_widget);
                     if(w2) {
                         w2->portUpdate();
                     }
@@ -265,10 +264,10 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
 
     std::list<PortWidget *> widgets;
     if(p1) {
-        widgets = {reinterpret_cast<PortWidget *>(p1->m_userData)};
+        widgets = {static_cast<PortWidget *>(p1->m_widget)};
         for(auto it : g->findLinks(p1)) {
             if(it->oport == p1 && it->iport) {
-                widgets.push_back(reinterpret_cast<PortWidget *>(it->iport->m_userData));
+                widgets.push_back(static_cast<PortWidget *>(it->iport->m_widget));
             }
         }
     }

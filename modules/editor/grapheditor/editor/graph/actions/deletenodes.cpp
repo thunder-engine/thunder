@@ -9,14 +9,17 @@ DeleteNodes::DeleteNodes(const std::list<int32_t> &selection, GraphController *c
 }
 
 void DeleteNodes::undo() {
-    m_controller->graph()->loadGraph(m_document.first_child());
+    AbstractNodeGraph *g = m_controller->graph();
+
+    g->loadGraph(m_document.first_child());
     m_controller->selectNodes(m_indices);
+    g->graphUpdated();
 }
 
 void DeleteNodes::redo() {
     m_document.reset();
 
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     pugi::xml_node graphElement = m_document.append_child("graph");
 
@@ -38,5 +41,5 @@ void DeleteNodes::redo() {
         g->nodeDelete(it);
     }
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }

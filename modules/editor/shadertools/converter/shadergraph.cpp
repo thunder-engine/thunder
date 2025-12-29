@@ -347,13 +347,15 @@ void ShaderGraph::onNodesLoaded() {
         }
     }
 
-    int i = 0;
-    for(auto &it : m_inputs) {
-        NodePort port(m_rootNode, false, (uint32_t)it.m_value.type(), i, it.m_name,
-                      ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
-        port.m_userFlags = it.m_vertex ? Vertex : Fragment;
-        m_rootNode->ports().push_back(port);
-        i++;
+    if(m_rootNode->ports().empty()) {
+        int i = 0;
+        for(auto &it : m_inputs) {
+            NodePort port(m_rootNode, false, (uint32_t)it.m_value.type(), i, it.m_name,
+                          ShaderNode::m_portColors[(uint32_t)it.m_value.type()], it.m_value);
+            port.m_userFlags = it.m_vertex ? Vertex : Fragment;
+            m_rootNode->ports().push_back(port);
+            i++;
+        }
     }
 }
 

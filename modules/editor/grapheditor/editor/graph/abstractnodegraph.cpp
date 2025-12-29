@@ -1,6 +1,7 @@
 #include "abstractnodegraph.h"
 
 #include "graphnode.h"
+#include "graphwidgets/nodewidget.h"
 
 #include <algorithm>
 
@@ -42,6 +43,7 @@ void AbstractNodeGraph::nodeDelete(GraphNode *node) {
             linkDelete(node);
 
             it = m_nodes.erase(it);
+            delete node->widget();
             delete node;
             break;
         } else {
@@ -85,9 +87,6 @@ void AbstractNodeGraph::linkDelete(NodePort *port) {
     while(it != m_links.end()) {
         Link *link = *it;
         if(link->oport == port || link->iport == port) {
-            GraphNode *first = link->sender;
-            GraphNode *second = link->receiver;
-
             it = m_links.erase(it);
             delete link;
         } else {
@@ -101,10 +100,6 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
     while(it != m_links.end()) {
         Link *link = *it;
         if(link->sender == node || link->receiver == node) {
-            GraphNode *second = link->sender;
-            if(link->sender == node) {
-                second = link->receiver;
-            }
             it = m_links.erase(it);
             delete link;
         } else {
@@ -117,9 +112,6 @@ void AbstractNodeGraph::linkDelete(Link *link) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
         if(*it == link) {
-            GraphNode *first = link->sender;
-            GraphNode *second = link->receiver;
-
             m_links.erase(it);
             delete link;
 
@@ -339,7 +331,7 @@ const AbstractNodeGraph::LinkList &AbstractNodeGraph::links() const {
 }
 
 void AbstractNodeGraph::graphUpdated() {
-     emitSignal(_SIGNAL(graphUpdated()));
+    emitSignal(_SIGNAL(graphUpdated()));
 }
 
 void AbstractNodeGraph::graphLoaded() {

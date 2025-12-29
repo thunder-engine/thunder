@@ -29,10 +29,6 @@ GraphNode::GraphNode() :
 
 }
 
-GraphNode::~GraphNode() {
-    delete m_nodeWidget;
-}
-
 AbstractNodeGraph *GraphNode::graph() const {
     return m_graph;
 }
@@ -112,7 +108,7 @@ Widget *GraphNode::widget() {
 Widget *GraphNode::portWidget(int port) {
     NodePort *p = GraphNode::port(port);
     if(p) {
-        return reinterpret_cast<Widget *>(p->m_userData);
+        return p->m_widget;
     }
     return nullptr;
 }

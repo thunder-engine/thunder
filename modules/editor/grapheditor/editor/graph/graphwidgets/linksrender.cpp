@@ -143,7 +143,7 @@ void LinksRender::composeLinks() {
         bool state = false;
         Vector3 s;
         if(it->oport) {
-            PortWidget *widget = reinterpret_cast<PortWidget *>(it->oport->m_userData);
+            PortWidget *widget = static_cast<PortWidget *>(it->oport->m_widget);
             if(widget) {
                 RectTransform *rect = widget->knob()->rectTransform();
                 Matrix4 m(rect->worldTransform());
@@ -151,7 +151,7 @@ void LinksRender::composeLinks() {
             }
         } else {
             state = true;
-            RectTransform *rect = reinterpret_cast<NodeWidget *>(it->sender->widget())->rectTransform();
+            RectTransform *rect = static_cast<NodeWidget *>(it->sender->widget())->rectTransform();
             Matrix4 m(rect->worldTransform());
             s = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
         }
@@ -161,7 +161,7 @@ void LinksRender::composeLinks() {
 
         Vector3 e;
         if(it->iport) {
-            PortWidget *widget = reinterpret_cast<PortWidget *>(it->iport->m_userData);
+            PortWidget *widget = static_cast<PortWidget *>(it->iport->m_widget);
             if(widget) {
                 RectTransform *rect = widget->knob()->rectTransform();
                 Matrix4 m(rect->worldTransform());
@@ -172,7 +172,7 @@ void LinksRender::composeLinks() {
             }
         } else {
             state = true;
-            RectTransform *rect = reinterpret_cast<NodeWidget *>(it->receiver->widget())->rectTransform();
+            RectTransform *rect = static_cast<NodeWidget *>(it->receiver->widget())->rectTransform();
             Matrix4 m(rect->worldTransform());
             Vector3 h(rect->size() * 0.5f, 0.0f);
             e = worlToView * (m * h);

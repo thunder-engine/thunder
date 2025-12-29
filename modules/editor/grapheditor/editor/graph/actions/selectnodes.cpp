@@ -12,7 +12,7 @@ void SelectNodes::undo() {
 }
 
 void SelectNodes::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     std::list<int32_t> list;
     for(auto it : m_controller->selected()) {

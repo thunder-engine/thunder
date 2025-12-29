@@ -1,7 +1,6 @@
 #include "portwidget.h"
 
 #include "../graphnode.h"
-#include "../graphcontroller.h"
 #include "../abstractnodegraph.h"
 
 #include <components/actor.h>
@@ -18,6 +17,12 @@ PortWidget::PortWidget() :
         m_knob(nullptr),
         m_hovered(false) {
 
+}
+
+PortWidget::~PortWidget() {
+    if(m_port) {
+        m_port->m_widget = nullptr;
+    }
 }
 
 void PortWidget::portUpdate() {
@@ -42,7 +47,7 @@ NodePort *PortWidget::port() const {
 
 void PortWidget::setNodePort(NodePort *port) {
     m_port = port;
-    m_port->m_userData = this;
+    m_port->m_widget = this;
 
     RectTransform *rect = rectTransform();
     if(m_knob) {

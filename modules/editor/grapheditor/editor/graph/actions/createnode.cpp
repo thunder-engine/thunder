@@ -14,15 +14,15 @@ CreateNode::CreateNode(const std::string &type, int x, int y, GraphController *c
 }
 
 void CreateNode::undo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
     g->nodeDelete(g->node(m_node));
     m_controller->selectNodes(m_list);
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }
 
 void CreateNode::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
     GraphNode *node = g->nodeCreate(m_type, m_linkIndex);
     if(node) {
         node->setPosition(m_point);
@@ -54,8 +54,7 @@ void CreateNode::redo() {
             NodePort *sp = (m_fromPort > -1) ? ((m_out) ? item : snd->firstPort(!m_out)) : nullptr;
             NodePort *rp = (m_fromPort > -1) ? ((m_out) ? rcv->firstPort(!m_out) : item) : nullptr;
 
-            AbstractNodeGraph::Link *link = g->linkCreate(snd, sp, rcv, rp);
-            m_linkIndex = g->link(link);
+            m_linkIndex = g->link(g->linkCreate(snd, sp, rcv, rp));
         }
     }
 
@@ -66,5 +65,5 @@ void CreateNode::redo() {
 
     m_controller->selectNodes({m_node});
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }

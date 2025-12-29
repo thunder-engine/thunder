@@ -13,7 +13,7 @@ ChangeNodeProperty::ChangeNodeProperty(const Object::ObjectList &objects, const 
 }
 
 void ChangeNodeProperty::undo() {
-    ChangeNodeProperty::redo();
+    redo();
 }
 
 void ChangeNodeProperty::redo() {
@@ -31,7 +31,7 @@ void ChangeNodeProperty::redo() {
         }
     }
 
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }

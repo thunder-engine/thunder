@@ -13,17 +13,17 @@ PasteNodes::PasteNodes(const std::string &data, int x, int y, GraphController *c
 void PasteNodes::undo() {
     m_list.reverse();
 
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
     for(auto &it : m_list) {
         g->nodeDelete(g->node(it));
     }
     m_controller->selectNodes(m_lastSelect);
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }
 
 void PasteNodes::redo() {
-    auto g = m_controller->graph();
+    AbstractNodeGraph *g = m_controller->graph();
 
     Vector2 maxPos(-FLT_MAX, -FLT_MAX);
 
@@ -62,5 +62,5 @@ void PasteNodes::redo() {
 
     m_controller->selectNodes(m_list);
 
-    g->emitSignal(_SIGNAL(graphUpdated()));
+    g->graphUpdated();
 }
