@@ -3,6 +3,8 @@
 #include <components/scene.h>
 #include <components/actor.h>
 
+#include <set>
+
 CreateObject::CreateObject(const TString &type, Scene *scene, ObjectController *ctrl, UndoCommand *group) :
         UndoCommand(QObject::tr("Create %1").arg(type.data()).toStdString(), group),
         m_type(type),

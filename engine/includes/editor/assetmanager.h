@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QImage>
 
+#include <set>
+
 #include <engine.h>
 #include <module.h>
 #include <url.h>

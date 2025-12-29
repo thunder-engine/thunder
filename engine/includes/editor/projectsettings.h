@@ -1,6 +1,8 @@
 #ifndef PROJECTSETTINGS_H
 #define PROJECTSETTINGS_H
 
+#include <set>
+
 #include <engine.h>
 
 #include <resources/map.h>

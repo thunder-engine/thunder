@@ -71,8 +71,6 @@ public slots:
     void onSelectActor(Object::ObjectList list, bool additive = false);
     void onRemoveActor(Object::ObjectList objects);
 
-    void onFocusActor(Object *object);
-
     void onChangeTool();
 
     void onUpdated(Scene *scene = nullptr);

@@ -423,7 +423,9 @@ bool ObjectController::setIsolatedPrefab(Prefab *prefab) {
         if(actor) {
             onSelectActor({actor});
 
-            onFocusActor(actor);
+            float bottom;
+            setFocusOn(actor, bottom);
+
             blockMovement(true);
             setFree(false);
         } else {
@@ -504,11 +506,6 @@ void ObjectController::onRemoveActor(Object::ObjectList objects) {
     undoRedo()->push(new DeleteObjects(objects, this));
 }
 
-void ObjectController::onFocusActor(Object *object) {
-    float bottom;
-    setFocusOn(dynamic_cast<Actor *>(object), bottom);
-}
-
 void ObjectController::onChangeTool() {
     std::string name(sender()->objectName().toStdString());
     for(auto &it : m_tools) {
@@ -564,7 +561,7 @@ void ObjectController::onUpdateSelected() {
 void ObjectController::onDrop(QDropEvent *event) {
     StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
     AssetManager *mgr = AssetManager::instance();
-    for(TString str : list) {
+    for(TString &str : list) {
         if(!str.isEmpty()) {
             if(mgr->assetTypeName(str) == Map::metaClass()->name()) {
                 emit dropMap((ProjectSettings::instance()->contentPath() + "/" + str).data(), (event->keyboardModifiers() & Qt::ControlModifier));

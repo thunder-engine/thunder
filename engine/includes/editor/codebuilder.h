@@ -1,6 +1,8 @@
 #ifndef CODEBUILDER_H
 #define CODEBUILDER_H
 
+#include <set>
+
 #include "assetconverter.h"
 
 class QAbstractItemModel;

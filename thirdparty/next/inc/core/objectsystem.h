@@ -20,8 +20,6 @@
 #define OBJECTSYSTEM_H
 
 #include <unordered_map>
-#include <set>
-#include <memory>
 #include <thread>
 
 #include <astring.h>

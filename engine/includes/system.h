@@ -14,6 +14,7 @@ public:
 
 public:
     System();
+    ~System();
 
     virtual bool init();
 

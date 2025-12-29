@@ -181,11 +181,13 @@ Engine::Engine(const char *path) {
 Engine::~Engine() {
     PROFILE_FUNCTION();
 
-    for(auto it : m_serial) {
+    auto localSerial = m_serial;
+    for(auto it : localSerial) {
         delete it;
     }
 
-    for(auto it : m_pool) {
+    auto localPool = m_pool;
+    for(auto it : localPool) {
         delete it->m_system;
         delete it;
     }
@@ -608,6 +610,21 @@ void Engine::addSystem(System *system) {
         m_renderSystem = static_cast<RenderSystem *>(system);
     } else if(dynamic_cast<ResourceSystem *>(system) != nullptr) {
         m_resourceSystem = static_cast<ResourceSystem *>(system);
+    }
+}
+/*!
+    Removes a game \a system from pool.
+*/
+void Engine::removeSystem(System *system) {
+    PROFILE_FUNCTION();
+
+    m_serial.remove(system);
+
+    for(auto it : m_pool) {
+        if(it->m_system == system) {
+            m_pool.remove(it);
+            break;
+        }
     }
 }
 /*!

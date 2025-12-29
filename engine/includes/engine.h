@@ -127,10 +127,12 @@ public:
     void removeNativeBehaviour(NativeBehaviour *native);
 
 private:
+    friend class System;
+
     bool event(Event *event) override;
 
     static void addSystem(System *system);
-
+    static void removeSystem(System *system);
 };
 
 #endif // ENGINE_H
