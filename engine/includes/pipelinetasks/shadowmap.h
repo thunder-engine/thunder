@@ -35,7 +35,17 @@ private:
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
 private:
-    std::unordered_map<uint32_t, std::pair<RenderTarget *, std::vector<AtlasNode *>>> m_tiles;
+    struct AtlasData {
+        std::vector<AtlasNode *> nodes;
+
+        RenderTarget *target = nullptr;
+
+        AtlasNode *sub = nullptr;
+
+        bool unused = true;
+    };
+
+    std::unordered_map<uint32_t, AtlasData> m_tiles;
     std::unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
 
     std::vector<Quaternion> m_directions;

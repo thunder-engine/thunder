@@ -19,8 +19,6 @@
 
 #include <log.h>
 
-#define MAX_RESOLUTION 8192
-
 static int32_t registered = 0;
 
 void _CheckGLError(const char* file, int line) {
@@ -101,8 +99,6 @@ bool RenderGLSystem::init() {
         int32_t texture;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
         CheckGLError();
-
-        texture = MIN(texture, MAX_RESOLUTION);
 
         Texture::setMaxTextureSize(texture);
 

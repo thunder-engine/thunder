@@ -1,5 +1,7 @@
 #include "utils/atlas.h"
 
+#include "global.h"
+
 AtlasNode::AtlasNode() :
         left(nullptr),
         right(nullptr),
@@ -8,8 +10,7 @@ AtlasNode::AtlasNode() :
         y(0),
         w(1),
         h(1),
-        fill(false),
-        dirty(false) {
+        occupied(false) {
 
 }
 
@@ -36,7 +37,7 @@ AtlasNode *AtlasNode::insert(uint32_t width, uint32_t height) {
         return right->insert(width, height);
     }
 
-    if(fill || w < width || h < height) {
+    if(occupied || w < width || h < height) {
         return nullptr;
     }
 
@@ -75,4 +76,16 @@ AtlasNode *AtlasNode::insert(uint32_t width, uint32_t height) {
     }
 
     return left->insert(width, height);
+}
+
+bool AtlasNode::clean() {
+    if(parent) {
+        if(left && right && left->clean() && right->clean()) {
+            delete left;
+            delete right;
+        }
+
+        return !occupied;
+    }
+    return false;
 }

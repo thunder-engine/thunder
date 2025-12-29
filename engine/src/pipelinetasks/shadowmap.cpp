@@ -395,31 +395,19 @@ void ShadowMap::spotLightUpdate(SpotLight *light, const RenderList &components) 
 
 void ShadowMap::cleanShadowCache() {
     for(auto tiles = m_tiles.begin(); tiles != m_tiles.end(); ) {
-        bool outdate = false;
-        for(auto &it : tiles->second.second) {
-            if(it->dirty == true) {
-                outdate = true;
-                break;
+        if(tiles->second.unused) {
+            for(auto &it : tiles->second.nodes) {
+                it->occupied = false;
             }
-        }
-        if(outdate) {
-            for(auto &it : tiles->second.second) {
-                delete it;
-            }
+            tiles->second.sub->clean();
             tiles = m_tiles.erase(tiles);
         } else {
             ++tiles;
         }
     }
-    /// \todo This activity leads to crash
-    //for(auto &it : m_shadowPages) {
-    //    it.second->clean();
-    //}
 
     for(auto &tile : m_tiles) {
-        for(auto &it : tile.second.second) {
-            it->dirty = true;
-        }
+        tile.second.unused = true;
     }
 }
 
@@ -427,14 +415,14 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     auto tile = m_tiles.find(id);
     if(tile != m_tiles.end()) {
         for(uint32_t i = 0; i < count; i++) {
-            AtlasNode *node = tile->second.second[i];
+            AtlasNode *node = tile->second.nodes[i];
             x[i] = node->x;
             y[i] = node->y;
             w[i] = node->w;
             h[i] = node->h;
-            node->dirty = false;
         }
-        return tile->second.first;
+        tile->second.unused = false;
+        return tile->second.target;
     }
 
     int32_t width = (m_shadowResolution >> lod);
@@ -489,12 +477,12 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
             y[i] = node->y;
             w[i] = node->w;
             h[i] = node->h;
-            node->fill = true;
+            node->occupied = true;
             tiles.push_back(node);
         }
     }
     if(tiles.size() == count) {
-        m_tiles[id] = make_pair(target, tiles);
+        m_tiles[id] = {tiles, target, sub, false};
     }
 
     target->setRenderArea(x[0], y[0], width * columns, height * rows);
