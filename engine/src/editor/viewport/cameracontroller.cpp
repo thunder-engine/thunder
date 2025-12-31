@@ -298,12 +298,14 @@ void CameraController::cameraZoom(float delta) {
             m_activeCamera->setOrthoSize(scale);
         } else {
             float scale = delta * 0.01f;
-            float focal = CLAMP(m_activeCamera->focalDistance() - scale, m_zoomLimit.x, m_zoomLimit.y);
+            float focal = m_activeCamera->focalDistance() - scale;
 
-            m_activeCamera->setFocalDistance(focal);
+            if(focal > m_zoomLimit.x && focal < m_zoomLimit.y) {
+                m_activeCamera->setFocalDistance(focal);
 
-            Transform *t = m_activeCamera->transform();
-            t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
+                Transform *t = m_activeCamera->transform();
+                t->setPosition(t->position() - t->quaternion() * Vector3(0.0f, 0.0f, scale));
+            }
         }
     }
 }
@@ -400,12 +402,14 @@ VariantMap CameraController::saveState() {
         result[gGridAxis] = static_cast<int>(m_gridAxis);
         result[gCameraIndex] = m_currentCamera;
 
-        Transform *t = m_activeCamera->transform();
-        m_cameras[m_currentCamera].rotation = t->rotation();
-        m_cameras[m_currentCamera].position = t->position();
-        m_cameras[m_currentCamera].ortho = m_activeCamera->orthographic();
-        m_cameras[m_currentCamera].orthoSize = m_activeCamera->orthoSize();
-        m_cameras[m_currentCamera].focalDistance = m_activeCamera->focalDistance();
+        if(m_currentCamera >= 0) {
+            Transform *t = m_activeCamera->transform();
+            m_cameras[m_currentCamera].rotation = t->rotation();
+            m_cameras[m_currentCamera].position = t->position();
+            m_cameras[m_currentCamera].ortho = m_activeCamera->orthographic();
+            m_cameras[m_currentCamera].orthoSize = m_activeCamera->orthoSize();
+            m_cameras[m_currentCamera].focalDistance = m_activeCamera->focalDistance();
+        }
 
         VariantList cameras;
         for(auto &it : m_cameras) {
