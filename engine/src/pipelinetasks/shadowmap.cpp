@@ -160,8 +160,6 @@ void ShadowMap::areaLightUpdate(AreaLight *light, const RenderList &components) 
 void ShadowMap::directLightUpdate(DirectLight *light, const RenderList &components) {
     const Camera *camera = m_context->currentCamera();
 
-
-
     float nearPlane = camera->nearPlane();
 
     Matrix4 p(camera->projectionMatrix());

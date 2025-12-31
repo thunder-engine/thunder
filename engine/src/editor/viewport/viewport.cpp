@@ -16,6 +16,7 @@
 #include <QVBoxLayout>
 #include <QGuiApplication>
 #include <QRegularExpression>
+#include <QMouseEvent>
 
 #include <systems/rendersystem.h>
 #include <systems/resourcesystem.h>

@@ -24,9 +24,9 @@ Camera::Camera() :
         m_focal(1.0f),
         m_orthoSize(1.0f),
         m_ortho(false),
-        m_screen(false) {
+        m_screen(false),
+        m_dirty(true) {
 
-    recalcProjection();
 }
 
 /*!
@@ -42,6 +42,20 @@ Matrix4 Camera::viewMatrix() const {
     Returns projection matrix for the camera.
 */
 Matrix4 Camera::projectionMatrix() const {
+    if(m_dirty) {
+        if(m_ortho) {
+            float width = m_orthoSize * m_ratio;
+            if(m_screen) {
+                m_projection = Matrix4::ortho(0, width, 0, m_orthoSize, m_near, m_far);
+            } else {
+                m_projection = Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
+            }
+        } else {
+            m_projection = Matrix4::perspective(m_fov, m_ratio, m_near, m_far);
+        }
+
+        m_dirty = false;
+    }
     return m_projection;
 }
 /*!
@@ -51,7 +65,7 @@ Matrix4 Camera::projectionMatrix() const {
 Vector3 Camera::project(const Vector3 &worldSpace) {
     Vector4 in(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
     Vector4 out(viewMatrix() * in);
-    in = m_projection * out;
+    in = projectionMatrix() * out;
 
     if(in.w == 0.0f) {
         return Vector3(); // false;
@@ -68,7 +82,7 @@ Vector3 Camera::project(const Vector3 &worldSpace) {
     Returns result of transformation.
 */
 Vector3 Camera::unproject(const Vector3 &screenSpace) {
-    Matrix4 final((m_projection * viewMatrix()).inverse());
+    Matrix4 final((projectionMatrix() * viewMatrix()).inverse());
 
     Vector4 in(2.0f * screenSpace.x - 1.0f,
                2.0f * screenSpace.y - 1.0f,
@@ -117,8 +131,10 @@ float Camera::fov() const {
     \note Applicable only for the perspective mode.
 */
 void Camera::setFov(const float angle) {
-    m_fov = angle;
-    recalcProjection();
+    if(angle != m_fov) {
+        m_fov = angle;
+        m_dirty = true;
+    }
 }
 /*!
     Returns a distance to near cut plane.
@@ -130,8 +146,10 @@ float Camera::nearPlane() const {
     Sets a \a distance to near cut plane.
 */
 void Camera::setNear(const float distance) {
-    m_near = distance;
-    recalcProjection();
+    if(distance != m_near) {
+        m_near = distance;
+        m_dirty = true;
+    }
 }
 /*!
     Returns a distance to far cut plane.
@@ -143,8 +161,10 @@ float Camera::farPlane() const {
     Sets a \a distance to far cut plane.
 */
 void Camera::setFar(const float distance) {
-    m_far = distance;
-    recalcProjection();
+    if(distance != m_far) {
+        m_far = distance;
+        m_dirty = true;
+    }
 }
 /*!
     Returns the aspect ratio (width divided by height).
@@ -156,8 +176,10 @@ float Camera::ratio() const {
     Sets the aspect \a ratio (width divided by height).
 */
 void Camera::setRatio(float ratio) {
-    m_ratio = ratio;
-    recalcProjection();
+    if(ratio != m_ratio) {
+        m_ratio = ratio;
+        m_dirty = true;
+    }
 }
 /*!
     Returns a focal distance for the camera.
@@ -193,8 +215,11 @@ float Camera::orthoSize() const {
     Sets camera \a size for orthographic mode.
 */
 void Camera::setOrthoSize(const float size) {
-    m_orthoSize = CLAMP(size, FLT_EPSILON, 100000.0f);
-    recalcProjection();
+    float s = CLAMP(size, FLT_EPSILON, FLT_MAX);
+    if(s != m_orthoSize) {
+        m_orthoSize = s;
+        m_dirty = true;
+    }
 }
 /*!
     Returns true for the orthographic mode; for the perspective mode, returns false.
@@ -206,8 +231,10 @@ bool Camera::orthographic() const {
     Sets orthographic \a mode.
 */
 void Camera::setOrthographic(const bool mode) {
-    m_ortho = mode;
-    recalcProjection();
+    if(m_ortho != mode) {
+        m_ortho = mode;
+        m_dirty = true;
+    }
 }
 /*!
     Returns true is this camera in the screen space mode.
@@ -221,8 +248,10 @@ bool Camera::isScreenSpace() const {
     Typically used for Editor.
 */
 void Camera::setScreenSpace(bool mode) {
-    m_screen = mode;
-    recalcProjection();
+    if(mode != m_screen) {
+        m_screen = mode;
+        m_dirty = true;
+    }
 }
 /*!
     Returns current active camera.
@@ -337,17 +366,4 @@ void Camera::drawGizmosSelected() {
                            0, 4, 1, 5, 2, 6, 3, 7};
 
     Gizmos::drawLines(points, indices, Vector4(0.5f, 0.5f, 0.5f, 1.0f));
-}
-
-void Camera::recalcProjection() {
-    if(m_ortho) {
-        float width = m_orthoSize * m_ratio;
-        if(m_screen) {
-            m_projection = Matrix4::ortho(0, width, 0, m_orthoSize, m_near, m_far);
-        } else {
-            m_projection = Matrix4::ortho(-width / 2, width / 2, -m_orthoSize / 2, m_orthoSize / 2, m_near, m_far);
-        }
-    } else {
-        m_projection = Matrix4::perspective(m_fov, m_ratio, m_near, m_far);
-    }
 }

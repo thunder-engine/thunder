@@ -127,7 +127,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="orthoButton">
+       <widget class="QPushButton" name="camera2DButton">
         <property name="font">
          <font>
           <pointsize>10</pointsize>

@@ -72,6 +72,7 @@ private slots:
     void onDropMap(QString name, bool additive);
 
     void onLocal(bool flag);
+    void onCamera2D(bool flag);
 
     void onSetActiveScene();
 

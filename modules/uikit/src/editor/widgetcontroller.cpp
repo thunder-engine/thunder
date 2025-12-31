@@ -184,7 +184,7 @@ void WidgetController::update() {
 
 void WidgetController::cameraMove(const Vector3 &delta) {
     Transform *rootTransform = m_rootObject->transform();
-    rootTransform->setPosition(rootTransform->position() + Vector3(m_delta, 0.0f));
+    rootTransform->setPosition(rootTransform->position() + Vector3(m_mouseDelta, 0.0f));
 
     Transform *cameraTransform = m_activeCamera->transform();
     cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());

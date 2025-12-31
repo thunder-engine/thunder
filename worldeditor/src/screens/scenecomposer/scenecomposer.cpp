@@ -8,6 +8,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QToolButton>
+#include <QMouseEvent>
 
 #include <json.h>
 #include <bson.h>
@@ -204,18 +205,14 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(m_controller, &ObjectController::propertyChanged, this, &SceneComposer::objectsChanged);
     connect(m_controller, &ObjectController::showToolPanel, this, &SceneComposer::onShowToolPanel);
 
-    connect(m_controller, &ObjectController::setCursor, ui->viewport, &Viewport::onCursorSet, Qt::DirectConnection);
-    connect(m_controller, &ObjectController::unsetCursor, ui->viewport, &Viewport::onCursorUnset, Qt::DirectConnection);
-
-    connect(ui->orthoButton, &QPushButton::toggled, m_controller, &ObjectController::onOrthographic);
-    connect(ui->localButton, &QPushButton::toggled, m_controller, &ObjectController::onLocal);
+    connect(ui->camera2DButton, &QPushButton::toggled, this, &SceneComposer::onCamera2D);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &SceneComposer::onReloadPrefab);
 
-    ui->orthoButton->setProperty("checkgreen", true);
+    ui->camera2DButton->setProperty("checkgreen", true);
 
     m_objectActions.push_back(createAction(m_actorMenu, tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
     m_objectActions.push_back(createAction(m_actorMenu, tr("Duplicate"), SLOT(onActorDuplicate()), false));
@@ -279,7 +276,7 @@ void SceneComposer::restoreState(const VariantMap &data) {
         }
     }
 
-    ui->orthoButton->setChecked(m_controller->activeCamera()->orthographic());
+    ui->camera2DButton->setChecked(m_controller->activeCamera()->orthographic());
 }
 
 void SceneComposer::takeScreenshot() {
@@ -592,6 +589,8 @@ void SceneComposer::onNewAsset() {
     m_settings.clear();
     m_sceneSettings.clear();
 
+    m_controller->resetCamera();
+
     Map *map = Engine::objectCreate<Map>("");
     map->setScene(Engine::world()->createScene("Untitled"));
 
@@ -622,6 +621,20 @@ void SceneComposer::saveAsset(const TString &path) {
 void SceneComposer::onLocal(bool flag) {
     ui->localButton->setIcon(flag ? QIcon(":/Style/styles/dark/icons/local.png") :
                                     QIcon(":/Style/styles/dark/icons/global.png"));
+
+    m_controller->onLocal(flag);
+}
+
+void SceneComposer::onCamera2D(bool flag) {
+    if(flag) {
+        m_controller->setGridAxis(CameraController::Axis::Z);
+        m_controller->activateCamera(1);
+    } else {
+        m_controller->setGridAxis(CameraController::Axis::Y);
+        m_controller->activateCamera(0);
+    }
+
+    m_controller->onOrthographic(flag);
 }
 
 void SceneComposer::onCreateActor() {

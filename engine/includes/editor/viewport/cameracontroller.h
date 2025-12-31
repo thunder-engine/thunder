@@ -2,7 +2,6 @@
 #define CAMERACONTROLLER_H
 
 #include <QObject>
-#include <QMouseEvent>
 
 #include <amath.h>
 #include <object.h>
@@ -13,8 +12,6 @@ class Actor;
 class Camera;
 class Viewport;
 
-class QMenu;
-
 class ENGINE_EXPORT CameraController : public QObject {
     Q_OBJECT
 
@@ -23,6 +20,18 @@ public:
         Y,
         X,
         Z
+    };
+
+    struct CameraData {
+        Vector3 rotation;
+
+        Vector3 position;
+
+        float focalDistance = 1.0f;
+
+        float orthoSize = 1.0f;
+
+        bool ortho = false;
     };
 
 public:
@@ -43,7 +52,7 @@ public:
 
     void setFocusOn(Actor *actor, float &bottom);
 
-    void setFree(bool flag) { m_cameraFree = flag; m_cameraFreeSaved = m_cameraFree; }
+    void setFree(bool flag) { m_cameraFree = flag; }
 
     bool isMovementBlocked() const { return m_blockMove; }
     void blockMovement(bool flag) { m_blockMove = flag; }
@@ -63,13 +72,16 @@ public:
     void setGridAxis(Axis axis) { m_gridAxis = axis; }
 
     void restoreState(const VariantMap &state);
-    VariantMap saveState() const;
+    VariantMap saveState();
 
     void setActiveRootObject(Object *object);
 
     void setZoomLimits(const Vector2 &limit);
 
     void doRotation(const Vector3 &vector);
+    void activateCamera(int index);
+
+    void resetCamera();
 
 signals:
     void setCursor(const QCursor &cursor);
@@ -89,42 +101,34 @@ protected:
     void drawHelpers(Object *object, bool selected);
 
 protected:
-    uint8_t m_cameraMove;
-    Axis m_gridAxis;
+    std::vector<CameraData> m_cameras;
 
-    bool m_blockMove;
-    bool m_blockRotation;
-    bool m_blockPicking;
-    bool m_overlapPicking;
-
-    bool m_cameraFree;
-    bool m_cameraFreeSaved;
-    bool m_rotationTransfer;
-
-    bool m_cameraInMove;
+    CameraData m_targetCamera;
 
     Vector2 m_screenSize;
+    Vector2 m_mouseSaved;
+    Vector2 m_mouseDelta;
+    Vector2 m_zoomLimit;
 
     Vector3 m_cameraSpeed;
-
-    Vector3 m_rotation;
-    Vector3 m_position;
-
-    Vector3 m_rotationTarget;
-    Vector3 m_positionTarget;
-
-    float m_orthoWidthTarget;
-    float m_focalLengthTarget;
-    float m_transferProgress;
-
-    Vector2 m_delta;
-    Vector2 m_saved;
 
     Camera *m_activeCamera;
 
     Object *m_activeRootObject;
 
-    Vector2 m_zoomLimit;
+    Axis m_gridAxis;
+
+    float m_transferProgress;
+    int m_currentCamera;
+
+    bool m_blockMove;
+    bool m_blockMoveOnTransfer;
+    bool m_blockRotation;
+    bool m_blockPicking;
+    bool m_overlapPicking;
+
+    bool m_cameraFree;
+    bool m_cameraInMove;
 
 };
 
