@@ -3,6 +3,8 @@
 #include <components/actor.h>
 #include <components/component.h>
 
+#include <set>
+
 DeleteObjects::DeleteObjects(const Object::ObjectList &objects, ObjectController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_controller(ctrl) {
@@ -13,7 +15,7 @@ DeleteObjects::DeleteObjects(const Object::ObjectList &objects, ObjectController
 }
 
 void DeleteObjects::undo() {
-    QSet<Scene *> scenes;
+    std::set<Scene *> scenes;
 
     auto it = m_parents.begin();
     auto index = m_indices.begin();
@@ -51,7 +53,7 @@ void DeleteObjects::undo() {
 }
 
 void DeleteObjects::redo() {
-    QSet<Scene *> scenes;
+    std::set<Scene *> scenes;
 
     m_parents.clear();
     m_dump.clear();
@@ -61,9 +63,16 @@ void DeleteObjects::redo() {
             m_dump.push_back(Engine::toVariant(object));
             m_parents.push_back(object->parent()->uuid());
 
-            auto c = object->parent()->getChildren();
-            QList<Object *> children(c.begin(), c.end());
-            m_indices.push_back(children.indexOf(object));
+            int index = -1;
+            for(auto it : object->parent()->getChildren()) {
+                index++;
+                if(it == object) {
+                    break;
+                }
+            }
+            if(index != -1) {
+                m_indices.push_back(index);
+            }
         }
     }
     for(auto it : m_objects) {

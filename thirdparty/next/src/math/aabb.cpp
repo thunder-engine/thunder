@@ -20,6 +20,7 @@
 
 #include <float.h>
 #include <vector>
+#include <cmath>
 
 /*!
     \class AABBox
@@ -64,7 +65,7 @@ AABBox &AABBox::operator=(const AABBox &value) {
     Returns true in case of AABBox is valid; otherwise returns false.
 */
 bool AABBox::isValid() const {
-    return radius > 0.0f;
+    return std::isfinite(radius);
 }
 /*!
     Grow the AABBox to encapsulate a spehere with \a position and \a radius.

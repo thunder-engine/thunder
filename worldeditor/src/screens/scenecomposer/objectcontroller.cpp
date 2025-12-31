@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMouseEvent>
 
 #include <components/world.h>
 #include <components/actor.h>
@@ -307,9 +308,9 @@ void ObjectController::drawHandles() {
     }
 
     if(m_isolatedPrefab) {
-        m_activeRootObject = m_isolatedPrefab->actor();
+        setActiveRootObject(m_isolatedPrefab->actor());
     } else {
-        m_activeRootObject = Engine::world();
+        setActiveRootObject(Engine::world());
     }
 
     CameraController::drawHandles();

@@ -81,10 +81,8 @@ private:
     void drawGizmos() override;
     void drawGizmosSelected() override;
 
-    void recalcProjection();
-
 private:
-    Matrix4 m_projection;
+    mutable Matrix4 m_projection;
 
     Vector4 m_color;
 
@@ -103,6 +101,8 @@ private:
     bool m_ortho;
 
     bool m_screen;
+
+    mutable bool m_dirty;
 
 };
 

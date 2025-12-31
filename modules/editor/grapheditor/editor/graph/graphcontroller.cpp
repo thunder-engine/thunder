@@ -296,8 +296,6 @@ void GraphController::update() {
         }
 
         if(m_dragWidget) {
-            RectTransform *dragRect = m_dragWidget->rectTransform();
-
             if(Input::isMouseButton(Input::MOUSE_LEFT)) {
                 Vector2 deltaPos = pos - m_originMousePos;
 
@@ -306,7 +304,7 @@ void GraphController::update() {
                 auto selectedOrigin = m_selectedOrigins.begin();
                 for(auto it : m_selected) {
                     GraphNode *node = m_graph->node(it);
-                    RectTransform *rect = m_graph->node(it)->widget()->rectTransform();
+                    RectTransform *rect = node->widget()->rectTransform();
                     Vector2 newPos(*selectedOrigin + deltaPos);
 
                     for(int n = 0; n < 2; n++) {
@@ -387,7 +385,7 @@ void GraphController::cameraMove(const Vector3 &delta) {
     CameraController::cameraMove(delta);
 
     Transform *t = m_view->view().transform();
-    t->setPosition(t->position() + Vector3(m_delta, 0.0f));
+    t->setPosition(t->position() + Vector3(m_mouseDelta, 0.0f));
 }
 
 void GraphController::cameraZoom(float delta) {
