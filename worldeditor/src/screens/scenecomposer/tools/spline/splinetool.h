@@ -16,8 +16,8 @@ public:
 
     ObjectController *controller() { return m_controller; }
 
-    int point() const { return m_point; }
-    void setPoint(int point);
+    int pointIndex() const { return m_index; }
+    void setPointIndex(int index);
 
     int tangent() const { return m_tangent; }
     void setTangent(int tangent) { m_tangent = tangent; }
@@ -43,15 +43,14 @@ private:
     QWidget *panel() override;
 
 private:
+    Spline::Point m_point;
+
     Vector4 m_dotColor;
     Vector4 m_dotColorSelected;
     Vector4 m_lineColor;
 
     Vector3 m_world;
     Vector3 m_savedWorld;
-    Vector3 m_position;
-    Vector3 m_positionIn;
-    Vector3 m_positionOut;
 
     ObjectController *m_controller;
 
@@ -61,7 +60,7 @@ private:
 
     float m_dotSize;
 
-    int m_point;
+    int m_index;
     int m_tangent;
 
     bool m_canceled;
@@ -70,14 +69,14 @@ private:
 
 class SelectSplinePoint : public UndoCommand {
 public:
-    SelectSplinePoint(int point, int tangent, SplineTool *tool, const TString &name = QObject::tr("Select Spline Point").toStdString(), UndoCommand *group = nullptr);
+    SelectSplinePoint(int index, int tangent, SplineTool *tool, const TString &name = QObject::tr("Select Spline Point").toStdString(), UndoCommand *group = nullptr);
     void undo() override { redo(); }
     void redo() override;
 
 protected:
     SplineTool *m_tool;
 
-    int m_point;
+    int m_index;
     int m_tangent;
 
 };
