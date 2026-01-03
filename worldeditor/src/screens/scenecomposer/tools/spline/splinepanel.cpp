@@ -38,12 +38,12 @@ void SplinePanel::setTool(SplineTool *tool) {
 }
 
 void SplinePanel::update() {
-    int index = m_tool->point();
+    int index = m_tool->pointIndex();
     Spline *spline = m_tool->spline();
     if(spline && index > -1) {
         Spline::Point p = spline->point(index);
 
-        QRegularExpression reg("\\.?0+$");
+        static const QRegularExpression reg("\\.?0+$");
         ui->xEdit->setText(QString::number(p.position.x, 'f', 4).remove(reg));
         ui->yEdit->setText(QString::number(p.position.y, 'f', 4).remove(reg));
         ui->zEdit->setText(QString::number(p.position.z, 'f', 4).remove(reg));
@@ -53,7 +53,7 @@ void SplinePanel::update() {
 }
 
 void SplinePanel::onEditFinished() {
-    int index = m_tool->point();
+    int index = m_tool->pointIndex();
     Spline *spline = m_tool->spline();
     if(spline && index > -1) {
         Spline::Point p = spline->point(index);

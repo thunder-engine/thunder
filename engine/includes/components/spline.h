@@ -38,10 +38,14 @@ public:
     void insertPoint(int index, const Point &point);
     void removePoint(int index);
 
-    Vector3 value(float position) const;
+    Vector3 value(float position);
 
 private:
     void normalizePath();
+
+    float arcLengthFactor(int start, int end, float factor) const;
+    float computeArcLength(int start, int end, float t) const;
+    Vector3 bezierDerivative(int start, int end, float t) const;
 
     void composeComponent() override;
 
@@ -58,7 +62,11 @@ private:
 
     IndexVector m_indices;
 
-    bool m_closed;
+    float m_fullLength = 0.0f;
+
+    bool m_closed = false;
+
+    bool m_cacheDirty = true;
 
 };
 

@@ -5,10 +5,6 @@
 
 #include "resources/prefab.h"
 
-#include "systems/resourcesystem.h"
-
-#include "commandbuffer.h"
-
 #include <cstring>
 
 namespace {

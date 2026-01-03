@@ -23,14 +23,14 @@ SplineTool::SplineTool(ObjectController *controller) :
         m_spline(nullptr),
         m_splinePanel(nullptr),
         m_dotSize(0.003f),
-        m_point(-1),
+        m_index(-1),
         m_tangent(0),
         m_canceled(false) {
 
 }
 
-void SplineTool::setPoint(int point) {
-    m_point = point;
+void SplineTool::setPointIndex(int index) {
+    m_index = index;
     if(m_splinePanel) {
         m_splinePanel->update();
     }
@@ -55,14 +55,14 @@ void SplineTool::update(bool center, bool local, bool snap) {
 
             const float sense = Handles::s_Sense * 0.2f;
 
-            if(Input::isKeyDown(Input::KEY_DELETE) && m_point > -1) {
+            if(Input::isKeyDown(Input::KEY_DELETE) && m_index > -1) {
                 m_controller->undoRedo()->push(new DeleteSplinePoint(this));
             }
 
             for(int i = 0; i < spline->pointsCount(); i++) {
                 Spline::Point point(spline->point(i));
 
-                bool selected = (i == m_point);
+                bool selected = (i == m_index);
 
                 Gizmos::drawBox(point.position, (camera - point.position).length() * m_dotSize, selected && (m_tangent == 0) ? m_dotColorSelected : m_dotColor, m);
                 float distance = HandleTools::distanceToPoint(m, point.position, Handles::s_Mouse);
@@ -114,7 +114,7 @@ void SplineTool::update(bool center, bool local, bool snap) {
                             }
                         }
                         m_savedWorld = m_world;
-                        spline->setPoint(m_point, point);
+                        spline->setPoint(m_index, point);
                         if(m_splinePanel) {
                             m_splinePanel->update();
                         }
@@ -124,7 +124,7 @@ void SplineTool::update(bool center, bool local, bool snap) {
 
             if(Input::isMouseButtonUp(Input::MOUSE_LEFT) && !isDrag) {
                 if(!m_canceled) {
-                    if(m_point > -1 || m_tangent || hoverPoint > -1 || hoverTangent) {
+                    if(m_index > -1 || m_tangent || hoverPoint > -1 || hoverTangent) {
                         m_controller->undoRedo()->push(new SelectSplinePoint(hoverPoint, hoverTangent, this));
                     }
                 } else {
@@ -138,16 +138,12 @@ void SplineTool::update(bool center, bool local, bool snap) {
 void SplineTool::beginControl() {
     EditorTool::beginControl();
 
-    if(m_point > -1) {
+    if(m_index > -1) {
         Actor *actor = m_controller->selectList().begin()->object;
         if(actor) {
             Spline *spline = actor->getComponent<Spline>();
             if(spline) {
-                Spline::Point point(spline->point(m_point));
-
-                m_position = point.position;
-                m_positionIn = point.tangentIn;
-                m_positionOut = point.tangentOut;
+                m_point = spline->point(m_index);
             }
         }
 
@@ -158,14 +154,14 @@ void SplineTool::beginControl() {
 void SplineTool::endControl() {
     EditorTool::beginControl();
 
-    if(m_point > -1) {
+    if(m_index > -1) {
         Actor *actor = m_controller->selectList().begin()->object;
         if(actor) {
             Spline *spline = actor->getComponent<Spline>();
             if(spline) {
-                Spline::Point point(spline->point(m_point));
+                Spline::Point point(spline->point(m_index));
 
-                spline->setPoint(m_point, {m_position, m_positionIn, m_positionOut});
+                spline->setPoint(m_index, m_point);
 
                 m_controller->undoRedo()->push(new ChangeSplinePoint(point, this));
             }
@@ -176,12 +172,12 @@ void SplineTool::endControl() {
 void SplineTool::cancelControl() {
     EditorTool::beginControl();
 
-    if(m_point > -1) {
+    if(m_index > -1) {
         Actor *actor = m_controller->selectList().begin()->object;
         if(actor) {
             Spline *spline = actor->getComponent<Spline>();
             if(spline) {
-                spline->setPoint(m_point, {m_position, m_positionIn, m_positionOut});
+                spline->setPoint(m_index, m_point);
             }
         }
 
@@ -227,25 +223,25 @@ Spline *SplineTool::spline() {
     return nullptr;
 }
 
-SelectSplinePoint::SelectSplinePoint(int point, int tangent, SplineTool *tool, const TString &name, UndoCommand *group) :
+SelectSplinePoint::SelectSplinePoint(int index, int tangent, SplineTool *tool, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_tool(tool),
-        m_point(point),
+        m_index(index),
         m_tangent(tangent) {
 
 }
 void SelectSplinePoint::redo() {
-    int point = m_tool->point();
+    int index = m_tool->pointIndex();
     int tangent = m_tool->tangent();
 
     m_tool->setTangent(m_tangent);
     if(m_tangent > 0) {
-        m_tool->setPoint(point);
+        m_tool->setPointIndex(index);
     } else {
-        m_tool->setPoint(m_point);
+        m_tool->setPointIndex(m_index);
     }
 
-    m_point = point;
+    m_index = index;
     m_tangent = tangent;
 }
 
@@ -258,7 +254,7 @@ ChangeSplinePoint::ChangeSplinePoint(const Spline::Point &point, SplineTool *too
 void ChangeSplinePoint::redo() {
     Spline *spline = m_tool->spline();
     if(spline) {
-        int index = m_tool->point();
+        int index = m_tool->pointIndex();
         Spline::Point point(spline->point(index));
         spline->setPoint(index, m_point);
         m_tool->update();
@@ -279,18 +275,18 @@ void DeleteSplinePoint::undo() {
     if(spline) {
         spline->insertPoint(m_index, m_point);
         m_tool->setTangent(m_tangent);
-        m_tool->setPoint(m_index);
+        m_tool->setPointIndex(m_index);
     }
 }
 void DeleteSplinePoint::redo() {
     Spline *spline = m_tool->spline();
     if(spline) {
-        m_index = m_tool->point();
+        m_index = m_tool->pointIndex();
         m_tangent = m_tool->tangent();
         m_point = spline->point(m_index);
         spline->removePoint(m_index);
         m_tool->setTangent(0);
-        m_tool->setPoint(-1);
+        m_tool->setPointIndex(-1);
     }
 }
 
@@ -305,13 +301,13 @@ void InsertSplinePoint::undo() {
     Spline *spline = m_tool->spline();
     if(spline) {
         spline->removePoint(m_index);
-        m_tool->setPoint(m_index-1);
+        m_tool->setPointIndex(m_index - 1);
     }
 }
 void InsertSplinePoint::redo() {
     Spline *spline = m_tool->spline();
     if(spline) {
-        m_index = m_tool->point();
+        m_index = m_tool->pointIndex();
 
         Spline::Point a = spline->point(m_index);
         if(m_index < (spline->pointsCount() - 1)) { // interpolation
@@ -335,7 +331,7 @@ void InsertSplinePoint::redo() {
         }
 
         spline->insertPoint(m_index + 1, a);
-        m_tool->setPoint(m_index + 1);
+        m_tool->setPointIndex(m_index + 1);
         m_index += 1;
 
     }
