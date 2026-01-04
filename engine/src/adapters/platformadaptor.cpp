@@ -91,22 +91,6 @@ Vector4 PlatformAdaptor::touchPosition(int index) const {
     return 0;
 }
 
-void *PlatformAdaptor::pluginLoad(const char *name) {
-    A_UNUSED(name);
-    return nullptr;
-}
-
-bool PlatformAdaptor::pluginUnload(void *plugin) {
-    A_UNUSED(plugin);
-    return false;
-}
-
-void *PlatformAdaptor::pluginAddress(void *plugin, const TString &name) {
-    A_UNUSED(plugin);
-    A_UNUSED(name);
-    return nullptr;
-}
-
 TString PlatformAdaptor::locationLocalDir() const {
     return TString();
 }

@@ -258,10 +258,6 @@ int Viewport::gridCell() {
     return m_gridRender->scale();
 }
 
-bool Viewport::isGamePaused() const {
-    return m_gamePaused;
-}
-
 void Viewport::setGamePaused(bool pause) {
     m_gamePaused = pause;
     if(m_gamePaused) {

@@ -19,6 +19,8 @@ public:
 
     void destroy() override;
 
+    bool isActive() const override;
+
     TString locationLocalDir() const override;
 
     uint32_t screenWidth() const override;
@@ -58,6 +60,8 @@ public:
     static float s_mouseScrollDelta;
 
     static bool s_mouseLocked;
+
+    static bool s_appActive;
 };
 
 #endif // MOBILEADAPTOR_H

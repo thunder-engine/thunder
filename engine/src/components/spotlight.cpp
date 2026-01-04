@@ -7,11 +7,6 @@
 
 #include "gizmos.h"
 
-namespace {
-    const char *uni_position  = "position";
-    const char *uni_direction = "direction";
-};
-
 /*!
     \class SpotLight
     \brief A Spot Light emits light from a single point in a cone shape.

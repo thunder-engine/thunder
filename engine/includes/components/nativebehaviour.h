@@ -18,9 +18,6 @@ public:
 
     virtual void update();
 
-protected:
-    void setSystem(ObjectSystem *system) override;
-
 };
 
 #endif // NATIVEBEHAVIOUR_H

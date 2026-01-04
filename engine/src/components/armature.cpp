@@ -5,15 +5,11 @@
 
 #include "resources/mesh.h"
 #include "resources/pose.h"
-#include "resources/texture.h"
-
-#include "systems/resourcesystem.h"
 
 #include "commandbuffer.h"
 #include "gizmos.h"
 
 #include <cstring>
-#include <cfloat>
 
 #define M4X3_SIZE 48
 #define HEADER_SIZE 16

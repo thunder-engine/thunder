@@ -65,7 +65,8 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_preview(nullptr),
         m_mainEditor(nullptr),
         m_currentEditor(nullptr),
-        m_builder(new QProcess(this)) {
+        m_builder(new QProcess(this)),
+        m_pauseSimulation(false) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -257,8 +258,8 @@ void MainWindow::on_actionPlay_triggered() {
 
 void MainWindow::on_actionPause_triggered() {
     if(m_preview) {
-        m_preview->setGamePause(!m_preview->isGamePause());
-        ui->pauseButton->setChecked(m_preview->isGamePause());
+        m_pauseSimulation = !m_pauseSimulation;
+        ui->pauseButton->setChecked(m_pauseSimulation);
     }
 }
 
@@ -275,7 +276,7 @@ void MainWindow::setGameMode(bool mode) {
             ui->toolWidget->activateToolWindow(m_mainEditor);
             static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();
 
-            m_preview->setGamePause(false);
+            m_pauseSimulation = false;
             ui->pauseButton->setChecked(false);
             ui->actionPause->setChecked(false);
         }
@@ -671,5 +672,9 @@ void MainWindow::readError() {
 }
 
 void MainWindow::timerEvent(QTimerEvent *) {
-    Timer::update();
+    if(!Engine::isGameMode() || m_pauseSimulation) {
+        Timer::update();
+    } else {
+        Engine::update();
+    }
 }

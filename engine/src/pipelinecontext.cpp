@@ -132,6 +132,11 @@ void PipelineContext::resize(int32_t width, int32_t height) {
             it->resize(m_width, m_height);
         }
 
+        Camera *camera = Camera::current();
+        if(camera) {
+            camera->setRatio(float(m_width) / float(m_height));
+        }
+
         m_buffer->setViewport(0, 0, m_width, m_height);
     }
 }

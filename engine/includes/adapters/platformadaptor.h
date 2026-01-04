@@ -23,8 +23,9 @@ public:
 
     virtual void destroy() = 0;
 
-    virtual uint32_t screenWidth() const = 0;
+    virtual bool isActive() const = 0;
 
+    virtual uint32_t screenWidth() const = 0;
     virtual uint32_t screenHeight() const = 0;
 
     virtual bool key(Input::KeyCode code) const;
@@ -52,12 +53,6 @@ public:
     virtual uint32_t touchCount() const;
     virtual uint32_t touchState(int index) const;
     virtual Vector4 touchPosition(int index) const;
-
-    virtual void *pluginLoad(const char *name);
-
-    virtual bool pluginUnload(void *plugin);
-
-    virtual void *pluginAddress(void *plugin, const TString &name);
 
     virtual TString locationLocalDir() const;
 
