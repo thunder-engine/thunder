@@ -105,10 +105,10 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <ImportLibrary>./Debug/mine-editor.lib</ImportLibrary>
+      <ImportLibrary>./Debug/${projectName}-editor.lib</ImportLibrary>
       <LinkErrorReporting>
       </LinkErrorReporting>
-      <ProgramDataBaseFile>./Debug/mine-editor.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>./Debug/${projectName}-editor.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <SubSystem>
@@ -169,10 +169,10 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <ImportLibrary>./Release/mine-editor.lib</ImportLibrary>
+      <ImportLibrary>./Release/${projectName}-editor.lib</ImportLibrary>
       <LinkErrorReporting>
       </LinkErrorReporting>
-      <ProgramDataBaseFile>./Release/mine-editor.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>./Release/${projectName}-editor.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <SubSystem>

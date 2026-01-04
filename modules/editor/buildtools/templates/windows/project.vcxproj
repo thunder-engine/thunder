@@ -104,10 +104,10 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <ImportLibrary>./Debug/mine.lib</ImportLibrary>
+      <ImportLibrary>./Debug/${projectName}.lib</ImportLibrary>
       <LinkErrorReporting>
       </LinkErrorReporting>
-      <ProgramDataBaseFile>./Debug/mine.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>./Debug/${projectName}.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
@@ -167,10 +167,10 @@
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <ImportLibrary>./Release/mine.lib</ImportLibrary>
+      <ImportLibrary>./Release/${projectName}.lib</ImportLibrary>
       <LinkErrorReporting>
       </LinkErrorReporting>
-      <ProgramDataBaseFile>./Release/mine.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>./Release/${projectName}.pdb</ProgramDataBaseFile>
       <RandomizedBaseAddress>
       </RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
