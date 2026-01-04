@@ -1,12 +1,9 @@
 #include "effectrender.h"
 
-#include <algorithm>
 #include <cstring>
-#include <cfloat>
 
 #include "actor.h"
 #include "transform.h"
-#include "camera.h"
 
 #include "visualeffect.h"
 #include "material.h"

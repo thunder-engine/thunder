@@ -98,8 +98,6 @@ public:
 
     static void setGameMode(bool flag);
 
-    static TString locationAppDir();
-
     static TString locationAppConfig();
 
     static bool loadTranslator(const TString &table);
@@ -107,10 +105,6 @@ public:
     static TString translate(const TString &source);
 
     static void addModule(Module *module);
-
-    static TString applicationName();
-
-    static TString organizationName();
 
     static bool setPlatformAdaptor(PlatformAdaptor *platform);
 
@@ -123,16 +117,17 @@ public:
 
     Object::ObjectList getAllObjectsByType(const TString &type) const override;
 
-    void addNativeBehaviour(NativeBehaviour *native);
-    void removeNativeBehaviour(NativeBehaviour *native);
-
 private:
     friend class System;
+    friend class NativeBehaviour;
 
     bool event(Event *event) override;
 
     static void addSystem(System *system);
     static void removeSystem(System *system);
+
+    static void addNativeBehaviour(NativeBehaviour *native);
+    static void removeNativeBehaviour(NativeBehaviour *native);
 };
 
 #endif // ENGINE_H

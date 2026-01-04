@@ -2,12 +2,15 @@
 
 #include <QStandardPaths>
 #include <QMouseEvent>
+#include <QGuiApplication>
 
 #include <engine.h>
 #include <json.h>
 
 #include <editor/projectsettings.h>
 #include <adapters/handlers/defaultfilehandler.h>
+
+bool EditorPlatform::s_appActive = true;
 
 Input::KeyCode mapToInput(int32_t key) {
     static const QMap<int32_t, uint32_t> map = {
@@ -141,6 +144,10 @@ EditorPlatform::EditorPlatform() :
         m_mouseLock(false) {
 
     File::setHandler(new DefaultFileHandler);
+
+    QObject::connect(qApp, &QGuiApplication::applicationStateChanged, [](Qt::ApplicationState state) {
+        s_appActive = (state == Qt::ApplicationActive);
+    });
 }
 
 EditorPlatform &EditorPlatform::instance() {
@@ -211,6 +218,10 @@ void EditorPlatform::reset() {
     for(auto &it : m_mouseButtons) {
         it = NONE;
     }
+}
+
+bool EditorPlatform::isActive() const {
+    return s_appActive;
 }
 
 bool EditorPlatform::key(Input::KeyCode code) const {

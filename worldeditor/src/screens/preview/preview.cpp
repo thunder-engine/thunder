@@ -34,11 +34,3 @@ void Preview::onActivate() {
         }
     }
 }
-
-bool Preview::isGamePause() const {
-    return ui->viewport->isGamePaused();
-}
-
-void Preview::setGamePause(bool pause) {
-    ui->viewport->setGamePaused(pause);
-}

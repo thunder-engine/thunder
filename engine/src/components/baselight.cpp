@@ -1,12 +1,8 @@
 #include "baselight.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
-
 #include "systems/rendersystem.h"
 
 #include "material.h"
-#include "mesh.h"
 
 namespace {
     const char *uniParams = "params";

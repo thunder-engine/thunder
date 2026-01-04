@@ -5,6 +5,8 @@
 #include "system.h"
 #include "scene.h"
 
+class Camera;
+
 typedef bool (*RayCastCallback)(System *system, World *graph, const Ray &ray, float maxDistance, Ray::Hit *hit);
 
 class ENGINE_EXPORT World : public Object {

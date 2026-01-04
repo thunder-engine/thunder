@@ -8,8 +8,7 @@
 #include "resources/animationstatemachine.h"
 
 #include "timer.h"
-
-#include "log.h"
+#include <log.h>
 
 /*!
     \class Animator

@@ -16,9 +16,6 @@ public:
 
     void onActivate();
 
-    bool isGamePause() const;
-    void setGamePause(bool pause);
-
 protected:
     Ui::Preview *ui;
 

@@ -1,8 +1,8 @@
 #include "components/spline.h"
 
-#include "gizmos.h"
-
 #include "components/transform.h"
+
+#include "gizmos.h"
 
 namespace {
     const char *gPoints("points");

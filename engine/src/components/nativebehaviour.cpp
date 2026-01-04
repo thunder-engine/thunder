@@ -28,11 +28,11 @@
 */
 
 NativeBehaviour::NativeBehaviour() {
-
+    Engine::addNativeBehaviour(this);
 }
 
 NativeBehaviour::~NativeBehaviour() {
-    static_cast<Engine *>(system())->removeNativeBehaviour(this);
+    Engine::removeNativeBehaviour(this);
 }
 
 /*!
@@ -46,13 +46,4 @@ void NativeBehaviour::start() {
 */
 void NativeBehaviour::update() {
 
-}
-/*!
-    \internal
-*/
-void NativeBehaviour::setSystem(ObjectSystem *system) {
-    Object::setSystem(system);
-
-    Engine *engine = static_cast<Engine *>(system);
-    engine->addNativeBehaviour(this);
 }

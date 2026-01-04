@@ -1,8 +1,5 @@
 #include "components/tilemaprender.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
-
 #include "resources/tilemap.h"
 #include "resources/tileset.h"
 #include "resources/sprite.h"

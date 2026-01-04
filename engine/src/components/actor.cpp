@@ -5,15 +5,12 @@
 
 #include "resources/prefab.h"
 
-#include <cstring>
-
 namespace {
     const char *gFlags("Flags");
     const char *gPrefab("Prefab");
     const char *gData("PrefabData");
     const char *gStatic("Static");
     const char *gDeleted("Deleted");
-    const char *gTransform("Transform");
 }
 
 static void enumConstObjects(const Object *object, Prefab::ConstObjectList &list) {

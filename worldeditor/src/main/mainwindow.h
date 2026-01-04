@@ -74,7 +74,7 @@ private:
 
     QString m_currentWorkspace;
 
-    QList<EditorGadget *> m_gadgets;
+    std::list<EditorGadget *> m_gadgets;
 
     Engine *m_engine;
 
@@ -96,6 +96,8 @@ private:
     AssetEditor *m_currentEditor;
 
     QProcess *m_builder;
+
+    bool m_pauseSimulation;
 
 private slots:
     void onBuildProject();

@@ -276,7 +276,7 @@ void WrapperVk::destroyContext() {
 void WrapperVk::createInstance() {
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = Engine::applicationName().data();
+    appInfo.pApplicationName = Engine::value(".project").toString().data();
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "Thunder Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);

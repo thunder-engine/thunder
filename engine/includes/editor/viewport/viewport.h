@@ -42,7 +42,6 @@ public:
 
     int gridCell();
 
-    bool isGamePaused() const;
     void setGamePaused(bool pause);
 
     bool isLiveUpdate() const;

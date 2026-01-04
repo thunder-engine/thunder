@@ -2,12 +2,8 @@
 
 #include "components/private/postprocessorsettings.h"
 
-#include "components/world.h"
-
 #include "components/actor.h"
 #include "components/transform.h"
-
-#include "resources/texture.h"
 
 #include "systems/rendersystem.h"
 
@@ -27,7 +23,7 @@ PostProcessVolume::PostProcessVolume() :
         m_blendWeight(1.0f),
         m_unbound(false) {
 
-    for(auto it : m_settings->settings()) {
+    for(auto &it : m_settings->settings()) {
         Object::setProperty(it.first.c_str(), it.second);
     }
 }
@@ -101,8 +97,7 @@ void PostProcessVolume::setProperty(const char *name, const Variant &value) {
 void PostProcessVolume::setSystem(ObjectSystem *system) {
     Component::setSystem(system);
 
-    RenderSystem *render = static_cast<RenderSystem *>(system);
-    render->addPostProcessVolume(this);
+    static_cast<RenderSystem *>(system)->addPostProcessVolume(this);
 }
 /*!
     \internal

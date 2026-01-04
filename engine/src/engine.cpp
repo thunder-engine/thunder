@@ -53,8 +53,6 @@ namespace {
     static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
-    static const char *gCompany(".company");
-    static const char *gProject(".project");
 
     static const char *gTransform("Transform");
 }
@@ -83,11 +81,6 @@ static std::list<SystemRunner *> m_pool;
 static std::list<System *> m_serial;
 
 static std::list<NativeBehaviour *> m_behaviours;
-
-static TString m_applicationPath;
-static TString m_applicationDir;
-static TString m_organization;
-static TString m_application;
 
 static ThreadPool *m_threadPool = nullptr;
 static PlatformAdaptor *m_platform = nullptr;
@@ -133,7 +126,7 @@ static Engine *m_instance = nullptr;
     Constructs Engine.
     Using application \a path parameters creates necessary platform adapters, register basic component types and resource types.
 */
-Engine::Engine(const char *path) {
+Engine::Engine(const char *) {
     PROFILE_FUNCTION();
 
     std::locale::global(std::locale("C"));
@@ -141,10 +134,6 @@ Engine::Engine(const char *path) {
     m_instance = this;
 
     addSystem(new ResourceSystem);
-    m_applicationPath = path;
-    Url url(m_applicationPath);
-    m_applicationDir = url.absoluteDir();
-    m_application = url.baseName();
 
     Url::declareMetaType();
 
@@ -255,36 +244,6 @@ bool Engine::start() {
 void Engine::update() {
     PROFILE_FUNCTION();
 
-    // Active camera check
-    Camera *camera = Camera::current();
-    if(camera == nullptr || !camera->isEnabled() || !camera->actor()->isEnabled()) {
-        camera = nullptr;
-        for(auto it : m_world->findChildren<Camera *>()) {
-            if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                camera = it;
-                break;
-            }
-        }
-
-        if(camera == nullptr) {
-            static Camera *reserveCamera = nullptr;
-            if(reserveCamera == nullptr) {
-                Actor *cameraActor = Engine::composeActor<Camera>("ReserveCamera", m_world);
-                reserveCamera = cameraActor->getComponent<Camera>();
-            }
-            camera = reserveCamera;
-            camera->actor()->setEnabled(true);
-            camera->setEnabled(true);
-        }
-
-        Camera::setCurrent(camera);
-    }
-
-    // Update screen size
-    if(camera) {
-        camera->setRatio(float(m_platform->screenWidth()) / float(m_platform->screenHeight()));
-    }
-
     if(m_renderSystem) {
         PipelineContext *pipeline = m_renderSystem->pipelineContext();
         if(pipeline) {
@@ -296,39 +255,43 @@ void Engine::update() {
     try {
         m_instance->processEvents();
 
-        if(isGameMode()) {
-            for(auto it : m_behaviours) {
-                if(it->isEnabled()) {
-                    World *world = it->world();
+        if(m_platform->isActive()) {
+            Timer::update();
 
-                    if(world == m_world) {
-                        if(!it->isStarted()) {
-                            it->start();
-                            it->setStarted(true);
+            if(isGameMode()) {
+                for(auto it : m_behaviours) {
+                    if(it->isEnabled()) {
+                        World *world = it->world();
+
+                        if(world == m_world) {
+                            if(!it->isStarted()) {
+                                it->start();
+                                it->setStarted(true);
+                            }
+                            it->update();
                         }
-                        it->update();
                     }
                 }
             }
-        }
 
-        m_world->setToBeUpdated(true);
+            m_world->setToBeUpdated(true);
 
-        for(auto it : m_pool) {
-            it->m_system->setActiveWorld(m_world);
-            if(m_threadPool) {
-                m_threadPool->start(it);
-            } else {
-                it->m_system->processEvents();
+            for(auto it : m_pool) {
+                it->m_system->setActiveWorld(m_world);
+                if(m_threadPool) {
+                    m_threadPool->start(it);
+                } else {
+                    it->m_system->processEvents();
+                }
             }
-        }
-        for(auto it : m_serial) {
-            it->setActiveWorld(m_world);
-            it->processEvents();
-        }
-        m_threadPool->waitForDone();
+            for(auto it : m_serial) {
+                it->setActiveWorld(m_world);
+                it->processEvents();
+            }
+            m_threadPool->waitForDone();
 
-        m_world->setToBeUpdated(false);
+            m_world->setToBeUpdated(false);
+        }
 
         m_platform->update();
 
@@ -528,9 +491,6 @@ bool Engine::reloadBundle() {
                     setValue(it.first, it.second);
                 }
 
-                m_application = value(gProject, "").toString();
-                m_organization = value(gCompany, "").toString();
-
                 return true;
             }
         }
@@ -662,29 +622,12 @@ void Engine::unloadAllScenes() {
     m_world->unloadAll();
 }
 /*!
-    Returns path to application binary directory.
-*/
-TString Engine::locationAppDir() {
-    PROFILE_FUNCTION();
-
-    return m_applicationDir;
-}
-/*!
     Returns path to application config directory.
 */
 TString Engine::locationAppConfig() {
     PROFILE_FUNCTION();
 
-    TString result = m_platform->locationLocalDir();
-#ifndef THUNDER_MOBILE
-    if(!m_organization.isEmpty()) {
-        result += TString("/") + m_organization;
-    }
-    if(!m_application.isEmpty()) {
-        result += TString("/") + m_application;
-    }
-#endif
-    return result;
+    return m_platform->locationLocalDir();
 }
 /*!
     Loads translation table with provided file \a name.
@@ -716,22 +659,6 @@ TString Engine::translate(const TString &source) {
         return m_translator->translate(source);
     }
     return source;
-}
-/*!
-    Returns application name.
-*/
-TString Engine::applicationName() {
-    PROFILE_FUNCTION();
-
-    return m_application;
-}
-/*!
-    Returns organization name.
-*/
-TString Engine::organizationName() {
-    PROFILE_FUNCTION();
-
-    return m_organization;
 }
 /*!
     Creates an Actor with \a name and attached \a component.

@@ -2,6 +2,7 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
+#include "components/world.h"
 
 #include "pipelinecontext.h"
 #include "gizmos.h"
@@ -257,6 +258,27 @@ void Camera::setScreenSpace(bool mode) {
     Returns current active camera.
 */
 Camera *Camera::current() {
+    if(s_currentCamera == nullptr || !s_currentCamera->isEnabled() || !s_currentCamera->actor()->isEnabled()) {
+        s_currentCamera = nullptr;
+        for(auto it : Engine::world()->findChildren<Camera *>()) {
+            if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
+                s_currentCamera = it;
+                break;
+            }
+        }
+
+        if(s_currentCamera == nullptr) {
+            static Camera *reserveCamera = nullptr;
+            if(reserveCamera == nullptr) {
+                Actor *cameraActor = Engine::composeActor<Camera>("ReserveCamera", Engine::world());
+                reserveCamera = cameraActor->getComponent<Camera>();
+            }
+            s_currentCamera = reserveCamera;
+            s_currentCamera->actor()->setEnabled(true);
+            s_currentCamera->setEnabled(true);
+        }
+    }
+
     return s_currentCamera;
 }
 /*!

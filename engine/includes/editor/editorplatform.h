@@ -44,6 +44,8 @@ protected:
 
     void destroy() override {}
 
+    bool isActive() const override;
+
     bool key(Input::KeyCode) const override;
     bool keyPressed(Input::KeyCode) const override;
     bool keyReleased(Input::KeyCode) const override;
@@ -82,6 +84,8 @@ protected:
     float m_mouseScrollDelta;
 
     bool m_mouseLock;
+
+    static bool s_appActive;
 
 };
 

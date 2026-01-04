@@ -2,8 +2,6 @@
 
 #include "components/world.h"
 
-#include "resources/resource.h"
-
 /*!
     \class Scene
     \brief The internal methods are marked as internal and are intended for use within the framework rather than by external code.

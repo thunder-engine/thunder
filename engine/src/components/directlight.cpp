@@ -2,14 +2,11 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/camera.h"
 
 #include "resources/material.h"
 #include "resources/mesh.h"
-#include "resources/rendertarget.h"
 
 #include "pipelinecontext.h"
-#include "commandbuffer.h"
 #include "gizmos.h"
 
 /*!

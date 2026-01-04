@@ -75,6 +75,7 @@ int32_t MobileAdaptor::s_width = 0;
 int32_t MobileAdaptor::s_height = 0;
 float MobileAdaptor::s_mouseScrollDelta = 0.0f;
 bool MobileAdaptor::s_mouseLocked = false;
+bool MobileAdaptor::s_appActive = true;
 
 int keyToInput(int key) {
     int result = key;
@@ -168,10 +169,13 @@ int keyToInput(int key) {
 }
 
 void onFrame(GLFMDisplay *display) {
-    Timer::update();
     Engine::update();
 
     glfmSwapBuffers(display);
+}
+
+void onFocus(GLFMDisplay *display, bool focused) {
+    MobileAdaptor::s_appActive = focused;
 }
 
 void onCreate(GLFMDisplay *display, int width, int height) {
@@ -295,6 +299,7 @@ void glfmMain(GLFMDisplay *display) {
                         GLFMStencilFormatNone,
                         GLFMMultisampleNone);
 
+    glfmSetAppFocusFunc(display, onFocus);
     glfmSetRenderFunc(s_display, onFrame);
     glfmSetSurfaceCreatedFunc(s_display, onCreate);
     glfmSetSurfaceResizedFunc(s_display, onResize);
@@ -353,6 +358,10 @@ bool MobileAdaptor::start() {
 
 void MobileAdaptor::destroy() {
 
+}
+
+bool MobileAdaptor::isActive() const {
+    return s_appActive;
 }
 
 TString MobileAdaptor::locationLocalDir() const {
