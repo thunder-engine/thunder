@@ -1,14 +1,13 @@
 #ifndef ANIMATOR_H
 #define ANIMATOR_H
 
-#include "nativebehaviour.h"
+#include <nativebehaviour.h>
 
-#include "animationstatemachine.h"
+#include <animationstatemachine.h>
 
 class AnimationClip;
-class AnimationStateMachine;
 class AnimationState;
-class BaseAnimationBlender;
+class AnimationStateMachine;
 
 class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_OBJECT(Animator, NativeBehaviour, Components/Animation)
@@ -27,9 +26,36 @@ class ENGINE_EXPORT Animator : public NativeBehaviour {
         A_METHOD(void, Animator::setFloat),
         A_METHOD(void, Animator::setFloatHash),
         A_METHOD(void, Animator::setInteger),
-        A_METHOD(void, Animator::setIntegerHash),
-        A_METHOD(int, Animator::duration)
+        A_METHOD(void, Animator::setIntegerHash)
     )
+
+    struct PlaybackState {
+        Motion *motion = nullptr;
+
+        AnimationState *state = nullptr;
+
+        float currentPosition = 0.0f;
+
+        float weight = 1.0f;
+
+    };
+
+    class TargetProperties {
+    public:
+        TargetProperties() :
+            property(nullptr) {
+
+        }
+
+        std::list<PlaybackState> playbacks;
+
+        Variant defaultValue;
+
+        MetaProperty property;
+
+        Object *object = nullptr;
+
+    };
 
 public:
     Animator();
@@ -37,9 +63,6 @@ public:
 
     AnimationStateMachine *stateMachine() const;
     void setStateMachine(AnimationStateMachine *machine);
-
-    uint32_t position() const;
-    void setPosition(uint32_t position);
 
     void setState(const TString &state);
     void setStateHash(int hash);
@@ -56,26 +79,37 @@ public:
     void setInteger(const TString &name, int32_t value);
     void setIntegerHash(int hash, int32_t value);
 
-    int duration() const;
-
-    void setClip(AnimationClip *clip);
+    void setClip(AnimationClip *clip, float position = 0.0f);
 
     void rebind();
 
-    void resume();
-
 private:
-    void start() override;
     void update() override;
 
-    void setClips(AnimationClip *start, AnimationClip *end, float duration = 0.0f, float time = 0.0f);
+    void checkNextState();
+
+    void checkEndOfTransition();
+
+    bool recalcTransitionWeights(PlaybackState &playback, float position, float &factor) const;
+
+    bool updatePosition(PlaybackState &playback, float position) const;
+
+    void process(float dt);
+
+    void sampleVector4(float dt, TargetProperties &target);
+
+    void sampleQuaternion(float dt, TargetProperties &target);
+
+    void sampleString(float dt, TargetProperties &target);
 
     static void stateMachineUpdated(int state, void *ptr);
 
 private:
-    std::unordered_map<uint32_t, BaseAnimationBlender *> m_properties;
+    friend class AnimatorTest;
 
     std::unordered_map<int, Variant> m_currentVariables;
+
+    std::unordered_map<uint32_t, TargetProperties> m_bindProperties;
 
     AnimationStateMachine *m_stateMachine;
 
@@ -83,7 +117,7 @@ private:
 
     AnimationClip *m_currentClip;
 
-    uint32_t m_time;
+    float m_transitionDuration;
 
 };
 

@@ -14,6 +14,8 @@
 #include "ui/ruler.h"
 #include "ui/playhead.h"
 
+#include <set>
+
 KeyFrameEditor::KeyFrameEditor(QWidget *parent) :
         QWidget(parent),
         m_splitter(new QSplitter(this)),
@@ -164,7 +166,7 @@ void KeyFrameEditor::setPosition(uint32_t position) {
 }
 
 void KeyFrameEditor::onClipUpdated() {
-    QList<TreeRow *> items;
+    std::list<TreeRow *> items;
     for(int i = 0; i < m_scene->treeLayout()->count(); i++) {
         items.push_back(static_cast<TreeRow *>(m_scene->treeLayout()->itemAt(i)));
     }
@@ -180,9 +182,9 @@ void KeyFrameEditor::onClipUpdated() {
     }
 }
 
-void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items) {
+void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, std::list<TreeRow *> &items) {
     if(m_model && m_model->clip()) {
-        AnimationTrackList &tracks = m_model->clip()->m_tracks;
+        AnimationTrackList &tracks = m_model->clip()->tracks();
         for(int i = 0 ; i < m_model->rowCount(parentIndex); i++) {
             QModelIndex index = m_model->index(i, 0, parentIndex);
 
@@ -190,7 +192,7 @@ void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent,
             for(auto it : items) {
                 if(it->index() == index) {
                     track = it;
-                    items.removeOne(track);
+                    items.remove(track);
                     break;
                 }
             }
@@ -244,7 +246,7 @@ void KeyFrameEditor::onKeyPositionChanged(float delta) {
 
 void KeyFrameEditor::onInsertKeyframe(int row, float position) {
     if(!m_model->isReadOnly() && row >= 0) {
-        if(!m_model->clip()->m_tracks.empty()) {
+        if(!m_model->clip()->tracks().empty()) {
             m_model->undoRedo()->push(new UndoInsertKey(row, position, m_model, tr("Insert Keyframe").toStdString()));
         }
     }
@@ -311,8 +313,8 @@ void UndoKeyPositionChanged::redo() {
 }
 
 void UndoDeleteSelectedKey::undo() {
-    QSet<float> positions;
-    QSet<TimelineRow *> rows;
+    std::set<float> positions;
+    std::set<TimelineRow *> rows;
     for(auto &it : m_keys) {
         TreeRow *tree =  m_scene->row(it.row);
         if(tree) {
@@ -321,7 +323,7 @@ void UndoDeleteSelectedKey::undo() {
             rows.insert(row);
 
             AnimationTrack *track = row->track();
-            auto &curve = track->curve();
+            AnimationCurve &curve = track->curve();
             curve.m_keys.insert(curve.m_keys.begin() + it.index, it.key);
 
             positions.insert(it.key.m_position);

@@ -111,11 +111,12 @@ Vector4::Vector4(const Vector3 &vector, areal w) :
 /*!
     Copy constructor.
 */
-Vector4::Vector4(const Vector4 &vector) {
-    x = vector.x;
-    y = vector.y;
-    z = vector.z;
-    w = vector.w;
+Vector4::Vector4(const Vector4 &vector) :
+    x(vector.x),
+    y(vector.y),
+    z(vector.z),
+    w(vector.w) {
+
 }
 /*!
     Assignment operator.

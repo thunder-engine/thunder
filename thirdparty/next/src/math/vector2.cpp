@@ -63,19 +63,19 @@ Vector2::Vector2(areal x, areal y) :
 /*!
     Copy constructor.
 */
-Vector2::Vector2(const Vector2 &vector) {
-    x = vector.x;
-    y = vector.y;
+Vector2::Vector2(const Vector2 &vector) :
+    x(vector.x),
+    y(vector.y) {
 }
 
-Vector2::Vector2(const Vector3 &vector) {
-    x = vector.x;
-    y = vector.y;
+Vector2::Vector2(const Vector3 &vector) :
+    x(vector.x),
+    y(vector.y) {
 }
 
-Vector2::Vector2(const Vector4 &vector) {
-    x = vector.x;
-    y = vector.y;
+Vector2::Vector2(const Vector4 &vector) :
+    x(vector.x),
+    y(vector.y) {
 }
 
 /*!

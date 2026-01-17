@@ -90,24 +90,28 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    Ui::TimelineEdit *ui;
-
-    Animator *m_controller;
-
-    NativeBehaviour *m_armature;
-
-    AnimationClipModel *m_model;
-
-    AssetEditor *m_editor;
-
+private:
     std::map<TString, AnimationClip *> m_clips;
 
     TString m_currentClip;
 
-    int32_t m_timerId;
+    Ui::TimelineEdit *ui = nullptr;
 
-    int32_t m_row;
-    int32_t m_ind;
+    Animator *m_controller = nullptr;
+
+    NativeBehaviour *m_armature = nullptr;
+
+    AnimationClipModel *m_model = nullptr;
+
+    AssetEditor *m_editor = nullptr;
+
+    int32_t m_timerId = 0;
+
+    int32_t m_row = -1;
+    int32_t m_ind = -1;
+
+    uint32_t m_position = 0;
+
 };
 
 #endif // TIMELINEEDIT_H

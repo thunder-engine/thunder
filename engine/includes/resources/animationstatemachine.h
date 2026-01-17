@@ -9,29 +9,45 @@ class AnimationState;
 
 class ENGINE_EXPORT AnimationTransition {
 public:
-    bool operator== (const AnimationTransition &right) const;
+    enum CompareRules {
+        Equals = 0,
+        NotEquals,
+        Greater,
+        Less
+    };
+
+public:
+    bool operator== (const AnimationTransition &right) const {
+        return m_conditionHash == right.m_conditionHash;
+    }
 
     bool checkCondition(const Variant &value);
 
-    AnimationState *m_targetState;
+    Variant m_compareValue;
 
-    int m_conditionHash;
+    AnimationState *m_targetState = nullptr;
+
+    int m_conditionHash = 0;
+
+    int m_compareRule = 0;
+
 };
 typedef std::vector<AnimationTransition> TransitionVector;
 
 class ENGINE_EXPORT AnimationState {
 public:
-    AnimationState();
-
-    bool operator== (const AnimationState &right) const;
+    bool operator== (const AnimationState &right) const {
+        return m_hash == right.m_hash;
+    }
 
     TransitionVector m_transitions;
 
-    int m_hash;
+    AnimationClip *m_clip = nullptr;
 
-    AnimationClip *m_clip;
+    int m_hash = 0;
 
-    bool m_loop;
+    bool m_loop = false;
+
 };
 typedef std::vector<AnimationState *> AnimationStateVector;
 
@@ -54,8 +70,6 @@ public:
 
     AnimationState *initialState() const;
 
-    void setVariable(const std::string &name, const Variant &value);
-
     const AnimationStateVector &states() const;
 
     const VariableMap &variables() const;
@@ -66,11 +80,13 @@ private:
     void loadUserData(const VariantMap &data) override;
 
 private:
+    friend class AnimatorTest;
+
     AnimationStateVector m_states;
 
-    AnimationState *m_initialState;
-
     AnimationStateMachine::VariableMap m_variables;
+
+    AnimationState *m_initialState;
 
 };
 

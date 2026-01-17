@@ -1,7 +1,6 @@
 #include "tst_common.h"
 
 #include "anim/propertyanimation.h"
-#include "anim/variantanimation.h"
 
 namespace Next {
 
@@ -22,13 +21,13 @@ namespace Next {
         AnimationCurve curve;
 
         AnimationCurve::KeyFrame k1;
-        k1.m_value = Vector2(0.0f, 0.0f);
+        k1.m_value = {0.0f, 0.0f};
         k1.m_position = 0.0f;
         k1.m_type = AnimationCurve::KeyFrame::Linear;
         curve.m_keys.push_back(k1);
 
         AnimationCurve::KeyFrame k2;
-        k2.m_value = Vector2(1.0f, 2.0f);
+        k2.m_value = {1.0f, 2.0f};
         k2.m_position = 1.0f;
         k2.m_type = AnimationCurve::KeyFrame::Linear;
         curve.m_keys.push_back(k2);

@@ -19,7 +19,6 @@
 #ifndef METATYPE_H
 #define METATYPE_H
 
-#include <map>
 #include <unordered_map>
 #include <typeinfo>
 #include <typeindex>
