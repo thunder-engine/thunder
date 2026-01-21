@@ -32,6 +32,7 @@ CameraController::CameraController() :
         m_activeRootObject(nullptr),
         m_gridAxis(Axis::X),
         m_transferProgress(1.0f),
+        m_transferSpeed(2.0f),
         m_currentCamera(-1),
         m_zoomLimit(0.001f, 10000.0f),
         m_blockMove(false),
@@ -156,7 +157,7 @@ void CameraController::move() {
     if(m_activeCamera) {
         Transform *t = m_activeCamera->transform();
         if(m_transferProgress < 1.0f) {
-            m_transferProgress = CLAMP(m_transferProgress + 2.0f * Timer::deltaTime(), 0.0f, 1.0f);
+            m_transferProgress = CLAMP(m_transferProgress + m_transferSpeed * Timer::deltaTime(), 0.0f, 1.0f);
 
             if(!m_blockMoveOnTransfer) {
                 t->setPosition(MIX(t->position(), m_targetCamera.position, m_transferProgress));

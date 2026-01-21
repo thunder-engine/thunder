@@ -1,7 +1,6 @@
 #include "graphview.h"
 
 #include <QMenu>
-#include <QWindow>
 
 #include "graphnode.h"
 #include "graphcontroller.h"
@@ -14,7 +13,7 @@
 #include "actions/createlink.h"
 #include "actions/pastenodes.h"
 #include "actions/deletenodes.h"
-#include "actions/deletelinksbyport.h"
+#include "actions/deletelinks.h"
 #include "actions/changenodeproperty.h"
 
 #include <components/actor.h>
@@ -108,6 +107,7 @@ GraphView::GraphView(QWidget *editor) :
     m_controller->doRotation(Vector3());
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
+    m_controller->setTransferSpeed(100.0f);
 
     static bool firtCall = true;
     if(firtCall) {
@@ -240,7 +240,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
                 widget->portUpdate();
             }
         }
-        m_linksRender->setCreationLink(nullptr);
+        cancelLinkCreation();
     } else {
         NodeWidget *widget = dynamic_cast<NodeWidget *>(m_linksRender->creationLink());
         if(widget) {
@@ -251,7 +251,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
                 m_editor->undoRedo()->push(new CreateLink(g->node(n1), -1, g->node(n2), -1, ctrl));
             }
 
-            m_linksRender->setCreationLink(nullptr);
+            cancelLinkCreation();
         }
     }
 }
@@ -272,7 +272,24 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
         }
     }
 
-    m_editor->undoRedo()->push(new DeleteLinksByPort(g->node(n1), port, static_cast<GraphController *>(m_controller)));
+    std::list<int32_t> links;
+    if(port == -1) {
+        for(auto l : g->findLinks(n1)) {
+            int32_t index = g->link(l);
+            if(index > -1) {
+                links.push_back(index);
+            }
+        }
+    } else {
+        for(auto l : g->findLinks(p1)) {
+            int32_t index = g->link(l);
+            if(index > -1) {
+                links.push_back(index);
+            }
+        }
+    }
+
+    m_editor->undoRedo()->push(new DeleteLinks(links, static_cast<GraphController *>(m_controller)));
 
     for(auto it : widgets) {
         it->portUpdate();
@@ -283,7 +300,21 @@ bool GraphView::isCreationLink() const {
     return m_linksRender->creationLink() != nullptr;
 }
 
+void GraphView::cancelLinkCreation() {
+    m_linksRender->setCreationLink(nullptr);
+}
+
 void GraphView::composeLinks() {
+    Object::ObjectList list;
+    for(auto it : static_cast<GraphController *>(m_controller)->selectedLinks()) {
+        GraphLink *link = graph()->link(it);
+        if(link) {
+            list.push_back(link);
+        }
+    }
+
+    m_linksRender->setSelectedLinks(list);
+
     m_linksRender->composeLinks();
 }
 
@@ -337,8 +368,6 @@ void GraphView::onGraphUpdated() {
         }
     }
 
-    GraphController *ctrl = static_cast<GraphController *>(m_controller);
-
     // Remove deleted nodes
     for(auto it : children) {
         delete it;
@@ -368,19 +397,23 @@ void GraphView::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphView::reselect() {
-    GraphController *controller = static_cast<GraphController *>(m_controller);
-    emit objectsSelected(controller->selected());
+    Object::ObjectList selected = m_controller->selected();
+    if(selected.empty()) {
+        emit objectsSelected({graph()});
+    } else {
+        emit objectsSelected(selected);
+    }
 }
 
 void GraphView::showMenu() {
     onInProgressFlag(true);
     if(m_createMenu->exec(QCursor::pos()) == nullptr) {
-        m_linksRender->setCreationLink(nullptr);
+        cancelLinkCreation();
     }
 }
 
 bool GraphView::isCopyActionAvailable() const {
-    return !static_cast<GraphController *>(m_controller)->selected().empty();
+    return !m_controller->selected().empty();
 }
 
 bool GraphView::isPasteActionAvailable() const {
@@ -404,7 +437,7 @@ void GraphView::onCutAction() {
             selection.push_back(g->node(node));
         }
     }
-    m_editor->undoRedo()->push(new DeleteNodes(selection, controller, tr("Cut Nodes").toStdString()));
+    m_editor->undoRedo()->push(new DeleteNodes(selection, controller, Engine::translate("Cut Nodes")));
 }
 
 void GraphView::onCopyAction() {
@@ -428,7 +461,7 @@ void GraphView::onPasteAction() {
 }
 
 void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    TString name(QObject::tr("Change %1").arg(objects.front()->name().data()).toStdString());
+    TString name(Engine::translate("Change %1").arg(objects.front()->name()));
 
     m_editor->undoRedo()->push(new ChangeNodeProperty(objects, property, value,
                                                       static_cast<GraphController *>(m_controller), name));
@@ -437,10 +470,9 @@ void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TStrin
 void GraphView::onComponentSelected() {
     AbstractNodeGraph *g = graph();
 
-    QAction *action = static_cast<QAction *>(sender());
     RectTransform *t = static_cast<RectTransform *>(m_view->transform());
 
-    std::string type = action->objectName().toStdString();
+    std::string type = sender()->objectName().toStdString();
 
     Vector4 pos(Input::mousePosition());
     Vector3 localPos(t->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
@@ -464,7 +496,7 @@ void GraphView::onComponentSelected() {
                 m_editor->undoRedo()->push(new CreateNode(type, localPos.x, localPos.y, controller, g->node(nodeWidget->node()), -1, true));
             }
         }
-        m_linksRender->setCreationLink(nullptr);
+        cancelLinkCreation();
     } else {
         m_editor->undoRedo()->push(new CreateNode(type, localPos.x, localPos.y, controller));
     }

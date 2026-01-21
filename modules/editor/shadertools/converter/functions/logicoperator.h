@@ -41,7 +41,7 @@ public:
 
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             std::vector<TString> arg = getArguments(code, stack, depth, type);
 
@@ -57,7 +57,7 @@ public:
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    int getOutType(int inType, const AbstractNodeGraph::Link *l) override {
+    int getOutType(int inType, const GraphLink *l) override {
         if(m_type == 0 && (l->iport->m_name == agb || l->iport->m_name == alb || l->iport->m_name == aeb)) {
             m_type = l->oport->m_type;
         }
@@ -146,14 +146,14 @@ public:
 
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
 
         }
         return ShaderNode::build(code, stack, link, depth, type);
     }
 
-    int getOutType(int inType, const AbstractNodeGraph::Link *l) override {
+    int getOutType(int inType, const GraphLink *l) override {
         if(m_type == 0 && (l->iport->m_name == _TRUE || l->iport->m_name == _FALSE)) {
             m_type = l->oport->m_type;
         }

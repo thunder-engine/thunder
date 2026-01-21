@@ -8,6 +8,7 @@ class AbstractNodeGraph;
 class MaterialInstance;
 class NodeWidget;
 class PortWidget;
+class GraphLink;
 
 class LinksRender : public Widget {
     A_OBJECT(LinksRender, Widget, Editor/Graph)
@@ -20,13 +21,15 @@ public:
     Widget *creationLink() const;
     void setCreationLink(Widget *widget);
 
+    void setSelectedLinks(const Object::ObjectList &links);
+
     void composeLinks();
 
 private:
     void draw(CommandBuffer &buffer) override;
 
-    void composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link = 0);
-    void composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link = 0);
+    void composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link = nullptr);
+    void composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link = nullptr);
 
     bool intersects2D(const Vector3 &a1, const Vector3 &a2, const Vector3 &b1, const Vector3 &b2, Vector3 &intersection);
 
@@ -40,6 +43,8 @@ private:
     MaterialInstance *m_material;
 
     Widget *m_portWidget;
+
+    Object::ObjectList m_selectedLinks;
 
 };
 

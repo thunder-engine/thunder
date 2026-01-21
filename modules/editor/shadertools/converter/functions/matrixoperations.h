@@ -27,7 +27,7 @@ public:
         m_value3[3] = 1.0f;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
@@ -163,7 +163,7 @@ public:
         m_outputs.push_back(std::make_pair("XYZW", MetaType::VECTOR4));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 
@@ -257,7 +257,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::MATRIX4));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = m_outputs.front().second;
 

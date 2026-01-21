@@ -1,9 +1,10 @@
 #include "selectnodes.h"
 
-SelectNodes::SelectNodes(const std::list<int32_t> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+SelectNodes::SelectNodes(const std::list<int32_t> &nodes, const std::list<int32_t> &links, GraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl),
-        m_indices(selection) {
+        m_nodes(nodes),
+        m_links(links) {
 
 }
 
@@ -14,12 +15,20 @@ void SelectNodes::undo() {
 void SelectNodes::redo() {
     AbstractNodeGraph *g = m_controller->graph();
 
-    std::list<int32_t> list;
+    std::list<int32_t> links = m_controller->selectedLinks();
+
+    std::list<int32_t> nodes;
     for(auto it : m_controller->selected()) {
         GraphNode *node = static_cast<GraphNode *>(it);
-        list.push_back(g->node(node));
+        nodes.push_back(g->node(node));
     }
 
-    m_controller->selectNodes(m_indices);
-    m_indices = list;
+    if(!m_links.empty()) {
+        m_controller->selectLinks(m_links);
+    } else {
+        m_controller->selectNodes(m_nodes);
+    }
+
+    m_links = links;
+    m_nodes = nodes;
 }

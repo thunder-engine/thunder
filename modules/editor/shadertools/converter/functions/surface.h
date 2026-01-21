@@ -23,7 +23,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             std::vector<TString> args = getArguments(code, stack, depth, type);
 
@@ -72,7 +72,7 @@ public:
         m_outputs.push_back(std::make_pair("Depth", MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             std::vector<TString> args = getArguments(code, stack, depth, type);
 
@@ -100,7 +100,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_b");
         }
@@ -120,7 +120,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_n");
         }
@@ -140,7 +140,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_vertex.xyz");
         }
@@ -160,7 +160,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             stack.push("_t");
         }

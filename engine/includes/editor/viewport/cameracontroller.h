@@ -54,6 +54,8 @@ public:
 
     void setFree(bool flag) { m_cameraFree = flag; }
 
+    void setTransferSpeed(float speed) { m_transferSpeed = speed; }
+
     bool isMovementBlocked() const { return m_blockMove; }
     void blockMovement(bool flag) { m_blockMove = flag; }
 
@@ -119,6 +121,7 @@ protected:
     Axis m_gridAxis;
 
     float m_transferProgress;
+    float m_transferSpeed;
     int m_currentCamera;
 
     bool m_blockMove;

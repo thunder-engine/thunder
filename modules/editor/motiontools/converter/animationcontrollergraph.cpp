@@ -1,6 +1,7 @@
 #include "animationcontrollergraph.h"
 
 #include "basestate.h"
+#include "entrystate.h"
 #include "animationbuilder.h"
 
 #include <resources/animationstatemachine.h>
@@ -18,6 +19,7 @@ AnimationControllerGraph::AnimationControllerGraph() :
 
     if(m_nodeTypes.empty()) {
         GraphNode::registerClassFactory(Engine::resourceSystem());
+        GraphLink::registerClassFactory(Engine::resourceSystem());
         StateNode::registerClassFactory(Engine::resourceSystem());
         BaseState::registerClassFactory(Engine::resourceSystem());
         EntryState::registerClassFactory(Engine::resourceSystem());
@@ -74,14 +76,14 @@ GraphNode *AnimationControllerGraph::nodeCreate(const TString &type, int &index)
     return node;
 }
 
-AnimationControllerGraph::Link *AnimationControllerGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
+GraphLink *AnimationControllerGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
     if(receiver == m_entryState) {
         return nullptr;
     }
     if(sender == m_entryState) {
         auto it = m_links.begin();
         while(it != m_links.end()) {
-            Link *link = *it;
+            GraphLink *link = *it;
             if(link->sender == sender) {
                 it = m_links.erase(it);
                 delete link;
@@ -108,8 +110,8 @@ Variant AnimationControllerGraph::data() const {
         if(ptr) {
             VariantList state;
 
-            state.push_back("BaseState"); // Default state
-            state.push_back(it->name()); // Name of state
+            state.push_back(ptr->typeName());
+            state.push_back(ptr->name());
             state.push_back(Engine::reference(ptr->clip()));
             state.push_back(ptr->loop());
 

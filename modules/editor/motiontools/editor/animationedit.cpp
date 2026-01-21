@@ -60,7 +60,7 @@ bool AnimationEdit::isModified() const {
 
 StringList AnimationEdit::suffixes() const {
     StringList result;
-    for(auto it : m_assetConverter->suffixes()) {
+    for(auto &it : m_assetConverter->suffixes()) {
         result.push_back(it);
     }
     return result;

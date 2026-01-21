@@ -11,7 +11,32 @@ DeleteNodes::DeleteNodes(const std::list<int32_t> &selection, GraphController *c
 void DeleteNodes::undo() {
     AbstractNodeGraph *g = m_controller->graph();
 
-    g->loadGraph(m_document.first_child());
+    std::list<int32_t> list;
+    pugi::xml_node element = m_document.first_child();
+    while(element) {
+        if(std::string(element.name()) == "nodes") {
+            pugi::xml_node nodeElement = element.first_child();
+            while(nodeElement) {
+                int32_t index = g->loadNode(nodeElement);
+                if(index > -1) {
+                    list.push_back(index);
+                }
+                nodeElement = nodeElement.next_sibling();
+            }
+        }
+
+        if(std::string(element.name()) == "links") {
+            pugi::xml_node linkElement = element.first_child();
+            while(linkElement) {
+                g->loadLink(linkElement);
+                linkElement = linkElement.next_sibling();
+            }
+        }
+
+        element = element.next_sibling();
+    }
+
+    m_indices = list;
     m_controller->selectNodes(m_indices);
     g->graphUpdated();
 }
@@ -21,25 +46,31 @@ void DeleteNodes::redo() {
 
     AbstractNodeGraph *g = m_controller->graph();
 
-    pugi::xml_node graphElement = m_document.append_child("graph");
-
-    pugi::xml_node nodesElement = graphElement.append_child("nodes");
-    pugi::xml_node linksElement = graphElement.append_child("links");
+    pugi::xml_node nodesElement = m_document.append_child("nodes");
+    pugi::xml_node linksElement = m_document.append_child("links");
 
     AbstractNodeGraph::NodeList list;
     for(auto &it : m_indices) {
         GraphNode *node = g->node(it);
-        list.push_back(node);
+        if(node) {
+            list.push_back(node);
 
-        pugi::xml_node nodeElement = nodesElement.append_child("node");
-        node->toXml(nodeElement);
+            pugi::xml_node nodeElement = nodesElement.append_child("node");
+            node->toXml(nodeElement);
 
-        g->saveLinks(node, linksElement);
+            g->saveLinks(node, linksElement);
+        }
     }
+
+    GraphNode *defaultNode = g->defaultNode();
+    std::list<int32_t> nodeList;
+    if(defaultNode) {
+        nodeList.push_back(g->node(defaultNode));
+    }
+    m_controller->selectNodes(nodeList);
 
     for(auto it : list) {
         g->nodeDelete(it);
     }
-
     g->graphUpdated();
 }

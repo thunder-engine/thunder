@@ -17,7 +17,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             code += TString("\tvec3 local%1 = (0.5 *( _vertex.xyz / _vertex.w ) + 0.5);\n").arg(TString::number(depth));
         }
@@ -41,7 +41,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString("_uv%1").arg(TString::number((int)m_index)));
 
         return ShaderNode::build(code, stack, link, depth, type);
@@ -72,7 +72,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR2));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             std::vector<TString> args = getArguments(code, stack, depth, type);
             if(!args.empty()) {

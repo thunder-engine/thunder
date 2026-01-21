@@ -30,7 +30,7 @@ public:
 
     int renderTasksLinksCount() const;
 
-    Link renderTaskLink(int index) const;
+    Pipeline::Link renderTaskLink(int index) const;
 
     void loadUserData(const VariantMap &data) override;
 

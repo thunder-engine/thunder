@@ -14,7 +14,7 @@ CreateLink::CreateLink(int sender, int oport, int receiver, int iport, GraphCont
 void CreateLink::undo() {
     AbstractNodeGraph *g = m_controller->graph();
 
-    AbstractNodeGraph::Link *link = g->link(m_index);
+    GraphLink *link = g->link(m_index);
     if(link) {
         g->linkDelete(link);
 
