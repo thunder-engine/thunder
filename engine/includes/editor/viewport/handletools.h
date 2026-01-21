@@ -9,13 +9,13 @@ class Camera;
 
 class ENGINE_EXPORT HandleTools {
 public:
-    static float distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen);
+    static float distanceToPoint(const Matrix4 &matrix, const Vector3 &point, const Vector2 &screen, bool world = true);
 
-    static float distanceToPath(const Matrix4 &matrix, const Vector3Vector &points, const Vector2 &screen);
+    static float distanceToPath(const Matrix4 &matrix, const Vector3Vector &points, const Vector2 &screen, bool world = true);
 
-    static float distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices, const Vector2 &screen);
+    static float distanceToMesh(const Matrix4 &matrix, const IndexVector &indices, const Vector3Vector &vertices, const Vector2 &screen, bool world = true);
 
-    static bool pointInRect(const Matrix4 &matrix, const Vector3 &tl, const Vector3 &br, const Vector2 &screen);
+    static bool pointInRect(const Matrix4 &matrix, const Vector3 &tl, const Vector3 &br, const Vector2 &screen, bool world = true);
 };
 
 #endif // HANDLETOOLS_H

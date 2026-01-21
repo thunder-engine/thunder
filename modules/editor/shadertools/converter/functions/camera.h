@@ -15,7 +15,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push("cameraPosition()");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -33,7 +33,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR3));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push("cameraTarget()");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -55,7 +55,7 @@ public:
         m_outputs.push_back(std::make_pair("1/Height", MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(link.oport->m_name == "Width") {
             stack.push("screenSize().x");
         } else if(link.oport->m_name == "Height") {
@@ -89,7 +89,7 @@ public:
         m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             code += TString("\tvec4 local%1 = gl_FragCoord").arg(TString::number(depth)) + (m_normalized ? " / vec4(cameraScreen(), 1.0f, 1.0f);\n" : ";\n");
         }
@@ -138,7 +138,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::MATRIX4));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_inverted) {
             stack.push("projectionMatrixInv()");
         } else {

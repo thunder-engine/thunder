@@ -52,7 +52,7 @@ void AbstractNodeGraph::nodeDelete(GraphNode *node) {
     }
 }
 
-AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
+GraphLink *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
     bool result = true;
     for(auto &it : m_links) {
         if(it->sender == sender && it->receiver == receiver &&
@@ -68,7 +68,7 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
 
         if((oport && iport && oport->m_call == iport->m_call) ||
            (oport == nullptr && iport == nullptr)) {
-            Link *link = new Link;
+            GraphLink *link = linkCreate();
             link->sender = sender;
             link->receiver = receiver;
             link->oport = oport;
@@ -85,7 +85,7 @@ AbstractNodeGraph::Link *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePo
 void AbstractNodeGraph::linkDelete(NodePort *port) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
-        Link *link = *it;
+        GraphLink *link = *it;
         if(link->oport == port || link->iport == port) {
             it = m_links.erase(it);
             delete link;
@@ -98,7 +98,7 @@ void AbstractNodeGraph::linkDelete(NodePort *port) {
 void AbstractNodeGraph::linkDelete(GraphNode *node) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
-        Link *link = *it;
+        GraphLink *link = *it;
         if(link->sender == node || link->receiver == node) {
             it = m_links.erase(it);
             delete link;
@@ -108,7 +108,7 @@ void AbstractNodeGraph::linkDelete(GraphNode *node) {
     }
 }
 
-void AbstractNodeGraph::linkDelete(Link *link) {
+void AbstractNodeGraph::linkDelete(GraphLink *link) {
     auto it = m_links.begin();
     while(it != m_links.end()) {
         if(*it == link) {
@@ -141,7 +141,7 @@ const AbstractNodeGraph::LinkList AbstractNodeGraph::findLinks(const NodePort *p
     return result;
 }
 
-const AbstractNodeGraph::Link *AbstractNodeGraph::findLink(const GraphNode *node, const NodePort *port) const {
+const GraphLink *AbstractNodeGraph::findLink(const GraphNode *node, const NodePort *port) const {
     for(const auto it : m_links) {
         if(it->receiver == node && it->iport == port) {
             return it;
@@ -168,7 +168,7 @@ GraphNode *AbstractNodeGraph::node(int index) const {
     return (index > -1 && index < m_nodes.size()) ? *std::next(m_nodes.begin(), index) : nullptr;
 }
 
-AbstractNodeGraph::Link *AbstractNodeGraph::link(int index) const {
+GraphLink *AbstractNodeGraph::link(int index) const {
     return (index > -1 && index < m_links.size()) ? *std::next(m_links.begin(), index) : nullptr;
 }
 
@@ -176,12 +176,12 @@ int AbstractNodeGraph::node(const GraphNode *node) const {
     return std::distance(m_nodes.begin(), std::find(m_nodes.begin(), m_nodes.end(), node));
 }
 
-int AbstractNodeGraph::link(const Link *link) const {
+int AbstractNodeGraph::link(const GraphLink *link) const {
     return std::distance(m_links.begin(), std::find(m_links.begin(), m_links.end(), link));
 }
 
 void AbstractNodeGraph::load(const TString &path) {
-    for(Link *it : m_links) {
+    for(GraphLink *it : m_links) {
         delete it;
     }
     m_links.clear();
@@ -237,26 +237,19 @@ StringList AbstractNodeGraph::nodeList() const {
     return StringList();
 }
 
+GraphLink *AbstractNodeGraph::linkCreate() {
+    return Engine::objectCreate<GraphLink>();
+}
+
 void AbstractNodeGraph::loadGraph(const pugi::xml_node &parent) {
     if(std::string(parent.name()) == gGraph) {
-        pugi::xml_node nodes = parent.first_child();
-        while(nodes) {
-            std::string name(nodes.name());
+        pugi::xml_node sub = parent.first_child();
+        while(sub) {
+            std::string name(sub.name());
             if(name == gNodes) {
-                pugi::xml_node nodeElement = nodes.first_child();
+                pugi::xml_node nodeElement = sub.first_child();
                 while(nodeElement) {
-                    int32_t index = nodeElement.attribute(gIndex).as_int(-1);
-                    TString type = nodeElement.attribute(gType).value();
-                    GraphNode *node = nullptr;
-                    if(type.isEmpty()) {
-                        node = fallbackRoot();
-                    } else {
-                        node = nodeCreate(type, index);
-                    }
-                    if(node) {
-                        node->fromXml(nodeElement);
-                    }
-
+                    loadNode(nodeElement);
                     nodeElement = nodeElement.next_sibling();
                 }
             }
@@ -264,25 +257,14 @@ void AbstractNodeGraph::loadGraph(const pugi::xml_node &parent) {
             if(name == gLinks) {
                 onNodesLoaded();
 
-                pugi::xml_node linkElement = nodes.first_child();
+                pugi::xml_node linkElement = sub.first_child();
                 while(linkElement) {
-                    GraphNode *snd = node(linkElement.attribute(gSender).as_int());
-                    GraphNode *rcv = node(linkElement.attribute(gReceiver).as_int());
-
-                    if(snd && rcv) {
-                        int index1 = linkElement.attribute(gOut).as_int();
-                        NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
-                        int index2 = linkElement.attribute(gIn).as_int();
-                        NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
-
-                        linkCreate(snd, op, rcv, ip);
-                    }
-
+                    loadLink(linkElement);
                     linkElement = linkElement.next_sibling();
                 }
             }
 
-            nodes = nodes.next_sibling();
+            sub = sub.next_sibling();
         }
     }
 }
@@ -312,14 +294,57 @@ void AbstractNodeGraph::saveGraph(pugi::xml_node &parent) const {
 void AbstractNodeGraph::saveLinks(GraphNode *node, pugi::xml_node &parent) const {
     for(auto l : m_links) {
         if(l->sender == node) {
-            pugi::xml_node link = parent.append_child(gLink);
-
-            link.append_attribute(gSender) = AbstractNodeGraph::node(l->sender);
-            link.append_attribute(gOut) = (l->oport != nullptr) ? l->sender->portPosition(l->oport) : -1;
-            link.append_attribute(gReceiver) = AbstractNodeGraph::node(l->receiver);
-            link.append_attribute(gIn) = (l->iport != nullptr) ? l->receiver->portPosition(l->iport) : -1;
+            saveLink(l, parent);
         }
     }
+}
+
+void AbstractNodeGraph::saveLink(GraphLink *link, pugi::xml_node &parent) const {
+    pugi::xml_node linkElement = parent.append_child(gLink);
+
+    linkElement.append_attribute(gSender) = AbstractNodeGraph::node(link->sender);
+    linkElement.append_attribute(gOut) = (link->oport != nullptr) ? link->sender->portPosition(link->oport) : -1;
+    linkElement.append_attribute(gReceiver) = AbstractNodeGraph::node(link->receiver);
+    linkElement.append_attribute(gIn) = (link->iport != nullptr) ? link->receiver->portPosition(link->iport) : -1;
+
+    link->toXml(linkElement);
+}
+
+int32_t AbstractNodeGraph::loadNode(pugi::xml_node &element) {
+    int32_t index = element.attribute(gIndex).as_int(-1);
+    TString type = element.attribute(gType).value();
+    GraphNode *node = nullptr;
+    if(type.isEmpty()) {
+        node = fallbackRoot();
+    } else {
+        node = nodeCreate(type, index);
+    }
+    if(node) {
+        node->fromXml(element);
+        return AbstractNodeGraph::node(node);
+    }
+
+    return -1;
+}
+
+int32_t AbstractNodeGraph::loadLink(pugi::xml_node &element) {
+    GraphNode *snd = node(element.attribute(gSender).as_int());
+    GraphNode *rcv = node(element.attribute(gReceiver).as_int());
+
+    if(snd && rcv) {
+        int index1 = element.attribute(gOut).as_int();
+        NodePort *op = (index1 > -1) ? snd->port(index1) : nullptr;
+        int index2 = element.attribute(gIn).as_int();
+        NodePort *ip = (index2 > -1) ? rcv->port(index2) : nullptr;
+
+        GraphLink *link = linkCreate(snd, op, rcv, ip);
+        if(link) {
+            link->fromXml(element);
+            return AbstractNodeGraph::link(link);
+        }
+    }
+
+    return -1;
 }
 
 const AbstractNodeGraph::NodeList &AbstractNodeGraph::nodes() const {

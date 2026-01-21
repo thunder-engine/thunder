@@ -5,6 +5,26 @@
 
 #include <editor/graph/graphnode.h>
 
+class NODEGRAPH_EXPORT GraphLink : public Object {
+    A_OBJECT(GraphLink, Object, Graph)
+
+public:
+    virtual void toXml(pugi::xml_node &element) {}
+    virtual void fromXml(const pugi::xml_node &element) {}
+
+public:
+    GraphNode *sender = nullptr;
+
+    NodePort *oport = nullptr;
+
+    GraphNode *receiver = nullptr;
+
+    NodePort *iport = nullptr;
+
+    void *ptr = nullptr;
+
+};
+
 class NODEGRAPH_EXPORT AbstractNodeGraph : public Object {
     A_OBJECT(AbstractNodeGraph, Object, Editor)
 
@@ -14,18 +34,7 @@ class NODEGRAPH_EXPORT AbstractNodeGraph : public Object {
     )
 
 public:
-    struct Link {
-        GraphNode *sender;
-
-        NodePort *oport;
-
-        GraphNode *receiver;
-
-        NodePort *iport;
-
-        void *ptr;
-    };
-    typedef std::list<Link *> LinkList;
+    typedef std::list<GraphLink *> LinkList;
     typedef std::list<GraphNode *> NodeList;
 
 public:
@@ -34,24 +43,24 @@ public:
     virtual GraphNode *nodeCreate(const TString &path, int &index);
     virtual void nodeDelete(GraphNode *node);
 
-    virtual Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport);
+    virtual GraphLink *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport);
     virtual void linkDelete(NodePort *port);
     virtual void linkDelete(GraphNode *node);
-    virtual void linkDelete(Link *link);
+    virtual void linkDelete(GraphLink *link);
 
     const LinkList findLinks(const GraphNode *node) const;
     const LinkList findLinks(const NodePort *port) const;
-    const Link *findLink(const GraphNode *node, const NodePort *port) const;
+    const GraphLink *findLink(const GraphNode *node, const NodePort *port) const;
 
     virtual GraphNode *defaultNode() const;
 
     bool isSingleConnection(const NodePort *port) const;
 
     GraphNode *node(int index) const;
-    Link *link(int index) const;
+    GraphLink *link(int index) const;
 
     int node(const GraphNode *node) const;
-    int link(const Link *link) const;
+    int link(const GraphLink *link) const;
 
     void load(const TString &path);
     void save(const TString &path);
@@ -65,6 +74,8 @@ public:
     void graphLoaded();
 
 protected:
+    virtual GraphLink *linkCreate();
+
     virtual void loadGraph(const pugi::xml_node &parent);
 
     virtual void onNodesLoaded();
@@ -74,10 +85,15 @@ protected:
     virtual GraphNode *fallbackRoot();
 
     void saveLinks(GraphNode *node, pugi::xml_node &parent) const;
+    void saveLink(GraphLink *link, pugi::xml_node &parent) const;
 
-    friend class DeleteNodes;
+    int32_t loadNode(pugi::xml_node &element);
+    int32_t loadLink(pugi::xml_node &element);
 
 protected:
+    friend class DeleteNodes;
+    friend class DeleteLinks;
+
     LinkList m_links;
     NodeList m_nodes;
 

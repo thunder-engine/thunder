@@ -27,7 +27,7 @@ public:
         m_expression = "cross";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -50,7 +50,7 @@ public:
         m_expression = "distance";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -73,7 +73,7 @@ public:
         m_expression = "dot";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -95,7 +95,7 @@ public:
         m_expression = "length";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -117,7 +117,7 @@ public:
         m_expression = "normalize";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -140,7 +140,7 @@ public:
         m_expression = "reflect";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -164,7 +164,7 @@ public:
         m_expression = "refract";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::VECTOR3;
         return compile(code, stack, link, depth, type);
     }
@@ -187,7 +187,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
@@ -195,7 +195,7 @@ public:
 
             for(auto &it : m_ports) {
                 if(it.m_out == false) {
-                    const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
+                    const GraphLink *l = m_graph->findLink(this, &it);
                     if(l) {
                         ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 
@@ -258,13 +258,13 @@ public:
         m_outputs.push_back(std::make_pair(w, MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
             TString value = TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_default.x), TString::number(m_default.y), TString::number(m_default.z), TString::number(m_default.w));
 
-            const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
+            const GraphLink *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
                 ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 
@@ -352,14 +352,14 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::VECTOR4));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             int i = 0;
 
             TString value = TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_default.x), TString::number(m_default.y),
                                                                 TString::number(m_default.z), TString::number(m_default.w));
 
-            const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
+            const GraphLink *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
                 ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 
@@ -441,9 +441,9 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
-            const AbstractNodeGraph::Link *l = m_graph->findLink(this, &m_ports.back());
+            const GraphLink *l = m_graph->findLink(this, &m_ports.back());
             if(l) {
                 ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 

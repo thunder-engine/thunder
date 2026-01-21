@@ -23,7 +23,7 @@ void ShaderNode::createParams() {
     }
 }
 
-int32_t ShaderNode::build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+int32_t ShaderNode::build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) {
     Q_UNUSED(code)
     Q_UNUSED(link)
 
@@ -38,7 +38,7 @@ int32_t ShaderNode::build(TString &code, std::stack<TString> &stack, const Abstr
     return m_position;
 }
 
-int32_t ShaderNode::compile(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) {
+int32_t ShaderNode::compile(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) {
     if(m_position == -1) {
         std::vector<TString> args = getArguments(code, stack, depth, type);
 
@@ -71,7 +71,7 @@ std::vector<TString> ShaderNode::getArguments(TString &code, std::stack<TString>
         uint32_t defaultType = 0;
         TString value = defaultValue(it.m_name, defaultType);
 
-        const AbstractNodeGraph::Link *l = m_graph->findLink(this, &it);
+        const GraphLink *l = m_graph->findLink(this, &it);
         if(l) {
             ShaderNode *node = static_cast<ShaderNode *>(l->sender);
 

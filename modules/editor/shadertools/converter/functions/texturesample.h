@@ -15,7 +15,7 @@ class TextureFunction : public ShaderNode {
 public:
     TextureFunction() { }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             type = MetaType::VECTOR4;
 
@@ -80,7 +80,7 @@ public:
         m_outputs.push_back(std::make_pair("Texture", MetaType::STRING));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             reportMessage("Missing texture");
@@ -126,7 +126,7 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, false);
         if(result < 0) {
             reportMessage("Missing texture");
@@ -171,7 +171,7 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const GraphLink &link, int32_t &depth, int32_t &type) override {
         static_cast<ShaderGraph *>(m_graph)->addTexture(m_name, m_sub, ShaderRootNode::Target);
 
         return TextureFunction::build(code, stack, link, depth, type);
@@ -205,7 +205,7 @@ public:
         m_outputs.push_back(std::make_pair(a, MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack,const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack,const GraphLink &link, int32_t &depth, int32_t &type) override {
         int result = static_cast<ShaderGraph *>(m_graph)->addTexture(Engine::reference(m_texture), m_sub, ShaderRootNode::Cube);
         if(result < 0) {
             reportMessage("Missing texture");

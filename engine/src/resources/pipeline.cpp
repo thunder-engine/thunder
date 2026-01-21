@@ -70,7 +70,7 @@ void Pipeline::loadUserData(const VariantMap &data) {
                 VariantList fields = it.toList();
                 auto i = fields.begin();
 
-                Link link;
+                Pipeline::Link link;
                 link.source = i->toString();
                 i++;
                 link.target = i->toString();

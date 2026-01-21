@@ -607,7 +607,7 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
         }
 
         std::stack<TString> stack;
-        Link link;
+        GraphLink link;
         link.sender = f;
         for(auto &port : f->ports()) {
             if(port.m_out) {
@@ -640,7 +640,7 @@ TString ShaderGraph::buildFrom(GraphNode *node, Stage stage) {
                 TString value;
 
                 bool isDefault = true;
-                const Link *link = findLink(node, &port);
+                const GraphLink *link = findLink(node, &port);
                 if(link) {
                     ShaderNode *node = dynamic_cast<ShaderNode *>(link->sender);
                     if(node) {

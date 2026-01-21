@@ -58,9 +58,9 @@ public:
 
     virtual void createParams();
 
-    virtual int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
+    virtual int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type);
 
-    int32_t compile(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type);
+    int32_t compile(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type);
 
     virtual TString makeExpression(const std::vector<TString> &args) const {
         return TString("%1(%2)").arg(m_expression, TString::join(StringList(args.begin(), args.end()), ", "));
@@ -74,7 +74,7 @@ public:
         return TString();
     }
 
-    virtual int getOutType(int inType, const AbstractNodeGraph::Link *l) {
+    virtual int getOutType(int inType, const GraphLink *l) {
         A_UNUSED(l);
 
         if(m_type == 0) {

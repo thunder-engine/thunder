@@ -118,6 +118,10 @@ void LinksRender::setCreationLink(Widget *widget) {
     m_portWidget = widget;
 }
 
+void LinksRender::setSelectedLinks(const Object::ObjectList &links) {
+    m_selectedLinks = links;
+}
+
 void LinksRender::composeLinks() {
     if(m_graph == nullptr) {
         return;
@@ -137,9 +141,7 @@ void LinksRender::composeLinks() {
 
     Matrix4 worlToView(parentTransform->worldTransform().inverse());
 
-    uint32_t link = 0;
-    const AbstractNodeGraph::LinkList &links = m_graph->links();
-    for(auto it : links) {
+    for(auto it : m_graph->links()) {
         bool state = false;
         Vector3 s;
         if(it->oport) {
@@ -197,17 +199,15 @@ void LinksRender::composeLinks() {
         IndexVector localIndices;
 
         if(!state) {
-            composeBezierLink(s, e, localVertices, localUvs, localColors, localIndices, link);
+            composeBezierLink(s, e, localVertices, localUvs, localColors, localIndices, it);
         } else {
-            composeStateLink(s, e, localVertices, localUvs, localColors, localIndices, link);
+            composeStateLink(s, e, localVertices, localUvs, localColors, localIndices, it);
         }
 
         vertices.insert(vertices.end(), localVertices.begin(), localVertices.end());
         uvs.insert(uvs.end(), localUvs.begin(), localUvs.end());
         colors.insert(colors.end(), localColors.begin(), localColors.end());
         indices.insert(indices.end(), localIndices.begin(), localIndices.end());
-
-        ++link;
     }
 
     if(!vertices.empty()) {
@@ -221,14 +221,22 @@ void LinksRender::composeLinks() {
     }
 }
 
-void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link) {
+void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link) {
     const int32_t steps = 20;
 
     Vector3Vector points = Mathf::pointsCurve(s, e, Vector3(s.x + 40.0f, s.y, s.z), Vector3(e.x - 40.0f, e.y, e.z), steps);
 
+    bool selected = false;
+    for(auto it : m_selectedLinks) {
+        if(it == link) {
+            selected = true;
+            break;
+        }
+    }
+
     vertices.resize(steps * 2);
     uvs.resize(steps * 2);
-    colors = Vector4Vector(steps * 2, Vector4(1.0f));
+    colors = Vector4Vector(steps * 2, selected ? Vector4(1.0f, 0.0f, 0.0f, 1.0f) : Vector4(1.0f));
     indices.resize(steps * 6);
 
     Vector3 ortho;
@@ -238,7 +246,8 @@ void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &verti
             delta.normalize();
             ortho = delta.cross(Vector3(0.0f, 0.0f, -1.0f));
 
-            uint32_t index = link * vertices.size() + i * 2;
+            uint32_t l = link ? m_graph->link(link) : 0;
+            uint32_t index = l * vertices.size() + i * 2;
 
             indices[i*6] = index;
             indices[i*6 + 1] = index + 1;
@@ -257,7 +266,7 @@ void LinksRender::composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &verti
     }
 }
 
-void LinksRender::composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, int32_t link) {
+void LinksRender::composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link) {
     Vector3 delta = e - s;
     delta.normalize();
     Vector3 o1 = delta.cross(Vector3(0.0f, 0.0f, 2.0f));
@@ -273,9 +282,18 @@ void LinksRender::composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Ve
     uvs = { Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f), Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f),
             Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f) };
 
-    colors = Vector4Vector(7, Vector4(1.0f));
+    bool selected = false;
+    for(auto it : m_selectedLinks) {
+        if(it == link) {
+            selected = true;
+            break;
+        }
+    }
 
-    uint32_t index = link * 7;
+    colors = Vector4Vector(7, selected ? Vector4(1.0f, 0.0f, 0.0f, 1.0f) : Vector4(1.0f));
+
+    uint32_t l = link ? m_graph->link(link) : 0;
+    uint32_t index = l * 7;
 
     indices = { index + 0, index + 1, index + 2,
                 index + 1, index + 3, index + 2,

@@ -19,7 +19,7 @@ public:
         m_expression = "acos";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -41,7 +41,7 @@ public:
         m_expression = "asin";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -63,7 +63,7 @@ public:
         m_expression = "atan";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -86,7 +86,7 @@ public:
         m_expression = "atan";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -108,7 +108,7 @@ public:
         m_expression = "cos";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -130,7 +130,7 @@ public:
         m_expression = "cosh";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -152,7 +152,7 @@ public:
         m_expression = "sin";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -174,7 +174,7 @@ public:
         m_expression = "sinh";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -196,7 +196,7 @@ public:
         m_expression = "tan";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -218,7 +218,7 @@ public:
         m_expression = "tanh";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -240,7 +240,7 @@ public:
         m_expression = "degrees";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }
@@ -262,7 +262,7 @@ public:
         m_expression = "radians";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         type = MetaType::FLOAT;
         return compile(code, stack, link, depth, type);
     }

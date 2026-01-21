@@ -17,7 +17,7 @@ public:
         setName("PI");
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push("3.141592653589793");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -37,7 +37,7 @@ public:
         setName("Euler");
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push("2.718281828459045");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -57,7 +57,7 @@ public:
         setName("GoldenRatio");
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push("1.618033988749895");
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -89,7 +89,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString::number(m_value));
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -125,7 +125,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString::number(m_value));
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -159,7 +159,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString("vec2(%1, %2)").arg(TString::number(m_value.x), TString::number(m_value.y)));
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -193,7 +193,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString("vec3(%1, %2, %3)").arg(TString::number(m_value.x), TString::number(m_value.y), TString::number(m_value.z)));
         return ShaderNode::build(code, stack, link, depth, type);
     }
@@ -229,7 +229,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_value.x), TString::number(m_value.y),
                                                        TString::number(m_value.z), TString::number(m_value.w)));
         return ShaderNode::build(code, stack, link, depth, type);
@@ -266,7 +266,7 @@ public:
         m_value = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(TString("vec4(%1, %2, %3, %4)").arg(TString::number(m_value.x), TString::number(m_value.y),
                                                        TString::number(m_value.z), TString::number(m_value.w)));
         return ShaderNode::build(code, stack, link, depth, type);
@@ -323,7 +323,7 @@ public:
         m_value2 = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(QString("mat3(%1, %2, %3, %4, %5, %6, %7, %8, %9)")
                    .arg(m_value0.x).arg(m_value0.y).arg(m_value0.z)
                    .arg(m_value1.x).arg(m_value1.y).arg(m_value1.z)
@@ -395,7 +395,7 @@ public:
         m_value3 = value;
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         stack.push(QString("mat4(%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16)")
                    .arg(m_value0.x).arg(m_value0.y).arg(m_value0.z).arg(m_value0.w)
                    .arg(m_value1.x).arg(m_value1.y).arg(m_value1.z).arg(m_value1.w)

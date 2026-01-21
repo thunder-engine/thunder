@@ -4,6 +4,8 @@
 #include <editor/graph/abstractnodegraph.h>
 
 class AnimationControllerGraph : public AbstractNodeGraph {
+    A_OBJECT(AnimationControllerGraph, AbstractNodeGraph, Editor)
+
 public:
     AnimationControllerGraph();
 
@@ -17,16 +19,13 @@ private:
     void onNodesLoaded() override;
 
     GraphNode *nodeCreate(const TString &type, int &index) override;
-    Link *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
-protected:
+    GraphLink *linkCreate(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override;
 
+private:
+    static StringList m_nodeTypes;
 
     GraphNode *m_entryState;
-
-    TString m_path;
-
-    static StringList m_nodeTypes;
 
 };
 

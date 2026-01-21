@@ -21,7 +21,7 @@ public:
         m_outputs.push_back(std::make_pair("Output", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -99,7 +99,7 @@ public:
         m_expression = "step";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -122,7 +122,7 @@ public:
         m_expression = "smoothstep";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -145,7 +145,7 @@ public:
         m_expression = "mix";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -168,7 +168,7 @@ public:
         m_expression = "clamp";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -190,7 +190,7 @@ public:
         m_expression = "min";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -212,7 +212,7 @@ public:
         m_expression = "max";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -234,7 +234,7 @@ public:
         m_expression = "pow";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -255,7 +255,7 @@ public:
         m_expression = "sqrt";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -276,7 +276,7 @@ public:
         m_expression = "log";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -295,7 +295,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::FLOAT));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -320,7 +320,7 @@ public:
         m_expression = "log2";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -341,7 +341,7 @@ public:
         m_expression = "fwidth";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -363,7 +363,7 @@ public:
         m_expression = "abs";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -384,7 +384,7 @@ public:
         m_expression = "sign";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -405,7 +405,7 @@ public:
         m_expression = "floor";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -426,7 +426,7 @@ public:
         m_expression = "ceil";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -447,7 +447,7 @@ public:
         m_expression = "round";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -468,7 +468,7 @@ public:
         m_expression = "trunc";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -489,7 +489,7 @@ public:
         m_expression = "fract";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -510,7 +510,7 @@ public:
         m_expression = "dFdx";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -531,7 +531,7 @@ public:
         m_expression = "dFdy";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -552,7 +552,7 @@ public:
         m_expression = "exp";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -573,7 +573,7 @@ public:
         m_expression = "exp2";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -594,7 +594,7 @@ public:
         m_expression = "mod";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -615,7 +615,7 @@ public:
         m_expression = "inversesqrt";
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 };
@@ -635,7 +635,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -660,7 +660,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -683,7 +683,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -706,7 +706,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -730,7 +730,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -755,7 +755,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -778,7 +778,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -801,7 +801,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -824,7 +824,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 
@@ -847,7 +847,7 @@ public:
         m_outputs.push_back(std::make_pair("", MetaType::INVALID));
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         return compile(code, stack, link, depth, type);
     }
 

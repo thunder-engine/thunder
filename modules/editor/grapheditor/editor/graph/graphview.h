@@ -34,6 +34,7 @@ public:
     void deleteLink(NodeWidget *node, int port);
 
     bool isCreationLink() const;
+    void cancelLinkCreation();
 
     void composeLinks();
 

@@ -112,7 +112,7 @@ public:
         return Variant();
     }
 
-    int32_t build(TString &code, std::stack<TString> &stack, const AbstractNodeGraph::Link &link, int32_t &depth, int32_t &type) override {
+    int32_t build(TString &code, std::stack<TString> &stack, const GraphLink &link, int32_t &depth, int32_t &type) override {
         if(m_position == -1) {
             if(!m_func.isEmpty()) {
                 static_cast<ShaderGraph *>(m_graph)->addFragmentFunction(m_funcName, m_func);
