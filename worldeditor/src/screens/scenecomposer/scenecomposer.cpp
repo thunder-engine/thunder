@@ -154,7 +154,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
         btn->setAutoExclusive(true);
         btn->setIcon(QIcon(it->icon().c_str()));
         btn->setObjectName(it->name().c_str());
-        btn->setProperty("component", it->component().c_str());
+        btn->setProperty(gComponent, it->component().c_str());
         QString cut = it->shortcut().c_str();
         btn->setShortcut(QKeySequence(cut));
         btn->setToolTip(QString(it->toolTip().c_str()) + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
@@ -299,17 +299,22 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
     m_controller->onDragLeave(event);
 }
 
-void SceneComposer::onSelectionChanged(std::list<Object *> objects) {
+void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
     if(!objects.empty()) {
         Actor *actor = dynamic_cast<Actor *>(objects.front());
         if(actor) {
             for(auto it : m_toolButtons) {
-                bool visible = actor->component(it->property("component").toString().toStdString()) != nullptr;
+                bool visible = actor->component(it->property(gComponent).toString().toStdString()) != nullptr;
                 it->setVisible(visible);
                 if(m_controller->activeTool()->name() == it->objectName().toStdString() && !visible) {
-                    m_toolButtons.first()->click();
+                    m_toolButtons.front()->click();
                 }
             }
+        }
+    } else {
+        std::string t(Transform::metaClass()->name());
+        for(auto it : m_toolButtons) {
+            it->setVisible(it->property(gComponent).toString().toStdString() == t);
         }
     }
 
@@ -425,7 +430,7 @@ void SceneComposer::backupScenes() {
 }
 
 void SceneComposer::restoreBackupScenes() {
-    if(!m_backupScenes.isEmpty()) {
+    if(!m_backupScenes.empty()) {
         emit objectsHierarchyChanged(nullptr);
         emit objectsSelected({});
 
@@ -567,9 +572,9 @@ void SceneComposer::onDiscardChanges() {
             uint32_t uuid = scene->uuid();
             delete scene;
 
-            AssetConverterSettings *settings = m_sceneSettings.value(uuid);
-            if(settings) {
-                loadScene(settings->source(), true);
+            auto it = m_sceneSettings.find(uuid);
+            if(it != m_sceneSettings.end()) {
+                loadScene(it->second->source(), true);
             } else { // This is unsaved "New Scene"
                 onNewAsset();
             }
@@ -894,9 +899,9 @@ void SceneComposer::onSave() {
     }
 
     if(scene) {
-        AssetConverterSettings *settings = m_sceneSettings.value(scene->uuid());
-        if(settings) {
-            saveScene(settings->source(), scene);
+        auto it = m_sceneSettings.find(scene->uuid());
+        if(it != m_sceneSettings.end()) {
+            saveScene(it->second->source(), scene);
             return;
         }
     }
@@ -919,12 +924,12 @@ void SceneComposer::onSaveAs() {
 }
 
 void SceneComposer::onSaveAll() {
-    for(auto it : Engine::world()->getChildren()) {
-        Scene *scene = dynamic_cast<Scene *>(it);
+    for(auto child : Engine::world()->getChildren()) {
+        Scene *scene = dynamic_cast<Scene *>(child);
         if(scene) {
-            AssetConverterSettings *settings = m_sceneSettings.value(it->uuid());
-            if(settings) {
-                saveScene(settings->source(), scene);
+            auto it = m_sceneSettings.find(child->uuid());
+            if(it != m_sceneSettings.end()) {
+                saveScene(it->second->source(), scene);
             } else {
                 saveSceneAs(scene);
             }
@@ -1015,7 +1020,7 @@ void SceneComposer::quitFromIsolation() {
 
     m_settings.clear();
     for(auto it : m_sceneSettings) {
-        m_settings.push_back(it);
+        m_settings.push_back(it.second);
     }
     m_isolationSettings = nullptr;
 }
