@@ -56,7 +56,7 @@ private slots:
 
     void onShowToolPanel(QWidget *widget);
 
-    void onSelectionChanged(std::list<Object *> objects);
+    void onSelectionChanged(const Object::ObjectList &objects);
 
     void onObjectCreate(TString type) override;
     void onObjectsSelected(Object::ObjectList objects, bool force) override;
@@ -126,18 +126,19 @@ private:
     QMenu m_actorMenu;
     QMenu m_sceneMenu;
 
+    std::map<uint32_t, AssetConverterSettings *> m_sceneSettings;
+
+    std::list<ByteArray> m_backupScenes;
+
+    std::list<QPushButton *> m_toolButtons;
+
+    std::list<QAction *> m_objectActions;
+    std::list<QAction *> m_prefabActions;
+
     ObjectController *m_controller;
 
     WorldObserver *m_worldObserver;
 
-    QList<ByteArray> m_backupScenes;
-
-    QMap<uint32_t, AssetConverterSettings *> m_sceneSettings;
-
-    QList<QPushButton *> m_toolButtons;
-
-    QList<QAction *> m_objectActions;
-    QList<QAction *> m_prefabActions;
     QAction *m_activeSceneAction;
 
     VariantMap m_isolationBackState;
