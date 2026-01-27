@@ -53,6 +53,16 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
     else if(editor == "Color") return new ColorEdit(parent);
     else if(editor == "Asset" || editor == "Component") return new ObjectSelect(parent);
 
+    for(auto &it : PluginManager::instance()->extensions("property")) {
+        if(it == editor) {
+            PropertyEdit *edit = reinterpret_cast<PropertyEdit *>(PluginManager::instance()->getPluginObject(it));
+            if(edit) {
+                edit->setParent(parent);
+                return edit;
+            }
+        }
+    }
+
     return nullptr;
 }
 

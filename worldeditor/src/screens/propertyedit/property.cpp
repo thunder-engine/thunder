@@ -276,7 +276,7 @@ TString Property::propertyTag(const TString &hints, const TString &tag) {
 
 bool Property::hasTag(const TString &hints, const TString &tag) {
     StringList list(hints.split(','));
-    for(TString &it : list) {
+    for(const TString &it : list) {
         int index = it.indexOf(tag);
         if(index > -1) {
             return true;
