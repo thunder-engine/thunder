@@ -6,12 +6,8 @@ namespace {
 
 bool AnimationTransitionCondition::check(const Variant &value) {
     switch(m_rule) {
-        case Equals: {
-            return value == m_value;
-        } break;
-        case NotEquals: {
-            return value != m_value;
-        } break;
+        case Equals: return value == m_value;
+        case NotEquals: return value != m_value;
         case Greater: {
             switch(m_value.type()) {
                 case MetaType::BOOLEAN: return value.toBool() > m_value.toBool();
