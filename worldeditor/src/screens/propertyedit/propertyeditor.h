@@ -30,11 +30,10 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    std::list<QWidget *> getActions(Object *object, QWidget *parent);
-
-protected:
+    AssetEditor *currentEditor() const;
     void setCurrentEditor(AssetEditor *editor) override;
 
+protected:
     void updatePersistent(const QModelIndex &index);
 
     void updateAndExpand();
@@ -46,9 +45,12 @@ protected slots:
 
     void on_lineEdit_textChanged(const QString &arg1);
 
+    void on_treeView_customContextMenuRequested(const QPoint &pos);
+
 private:
     void changeEvent(QEvent *event) override;
 
+private:
     Ui::PropertyEditor *ui;
 
     PropertyFilter *m_filter;
@@ -59,7 +61,7 @@ private:
 
     NextModel *m_nextModel;
 
-    PropertyModel *m_propertyModel;
+    Object *m_item;
 
 };
 

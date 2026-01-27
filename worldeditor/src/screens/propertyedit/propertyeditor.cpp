@@ -24,6 +24,7 @@
 
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/asseteditor.h"
+#include "editor/pluginmanager.h"
 
 PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
     switch(userType) {
@@ -61,7 +62,8 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         m_filter(new PropertyFilter(this)),
         m_editor(nullptr),
         m_topWidget(nullptr),
-        m_nextModel(new NextModel(this)) {
+        m_nextModel(new NextModel(this)),
+        m_item(nullptr) {
 
     ui->setupUi(this);
 
@@ -99,7 +101,7 @@ void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
     m_filter->setSourceModel(m_nextModel);
 
     if(!objects.empty()) {
-        Object *item = objects.front();
+        m_item = objects.front();
 
         ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
         if(browser) {
@@ -107,11 +109,11 @@ void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
             connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
             setTopWidget(widget);
         } else if(m_editor) {
-            setTopWidget(m_editor->propertiesWidget(this));
+            setTopWidget(m_editor->propertiesWidget());
         }
 
-        m_nextModel->addItem(item);
-        for(auto it : item->getChildren()) {
+        m_nextModel->addItem(m_item);
+        for(auto it : m_item->getChildren()) {
             if(dynamic_cast<Actor *>(it) == nullptr) {
                 m_nextModel->addItem(it);
             }
@@ -141,18 +143,11 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
 
         m_topWidget = widget;
         if(m_topWidget) {
+            m_topWidget->setParent(this);
             m_topWidget->setVisible(true);
             ui->verticalLayout->insertWidget(1, m_topWidget);
         }
     }
-}
-
-std::list<QWidget *> PropertyEditor::getActions(Object *object, QWidget *parent) {
-    if(m_editor) {
-        return m_editor->createActionWidgets(object, parent);
-    }
-
-    return std::list<QWidget *>();
 }
 
 void PropertyEditor::onUpdated() {
@@ -169,6 +164,10 @@ void PropertyEditor::onUpdated() {
 
 void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
 
+}
+
+AssetEditor *PropertyEditor::currentEditor() const {
+    return m_editor;
 }
 
 void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
@@ -223,6 +222,18 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
         it = m->index(i, 1);
     }
     ui->treeView->expandToDepth(-1);
+}
+
+void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
+    if(m_editor) {
+        QModelIndex index = ui->treeView->indexAt(pos);
+
+        Property *p = static_cast<Property *>(m_filter->mapToSource(index).internalPointer());
+        QMenu *menu = m_editor->propertyContextMenu(m_item, p->name());
+        if(menu) {
+            menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
+        }
+    }
 }
 
 void PropertyEditor::changeEvent(QEvent *event) {

@@ -34,18 +34,20 @@ public:
 
     virtual StringList componentGroups() const;
 
-    virtual QMenu *objectContextMenu(Object *object);
+    virtual QMenu *hierarchyContextMenu(Object *object);
 
-    virtual QWidget *propertiesWidget(QWidget *parent);
+    virtual QWidget *propertiesWidget();
 
-    UndoStack *undoRedo() const;
+    virtual std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const;
 
-    virtual std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const;
+    virtual QMenu *propertyContextMenu(Object *object, const TString &property);
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
 
     bool checkSave();
+
+    UndoStack *undoRedo() const;
 
     virtual bool allowSaveAs() const;
 

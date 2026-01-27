@@ -48,7 +48,7 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    QMenu *objectContextMenu(Object *object) override;
+    QMenu *hierarchyContextMenu(Object *object) override;
 
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;

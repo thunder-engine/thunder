@@ -190,7 +190,7 @@ void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, const TSt
     ui->graph->onObjectsChanged(objects, property, value);
 }
 
-std::list<QWidget *> ParticleEdit::createActionWidgets(Object *object, QWidget *parent) const {
+std::list<QWidget *> ParticleEdit::propertiesActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
 
     if(dynamic_cast<EffectModule *>(object)) {
@@ -207,9 +207,9 @@ std::list<QWidget *> ParticleEdit::createActionWidgets(Object *object, QWidget *
     return result;
 }
 
-QWidget *ParticleEdit::propertiesWidget(QWidget *parent) {
+QWidget *ParticleEdit::propertiesWidget() {
     if(m_moduleButton == nullptr) {
-        m_moduleButton = new QToolButton(parent);
+        m_moduleButton = new QToolButton;
 
         m_moduleButton->setProperty("blue", true);
         m_moduleButton->setPopupMode(QToolButton::InstantPopup);
