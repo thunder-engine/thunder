@@ -4,27 +4,27 @@ namespace {
     const char *gMachine("Machine");
 }
 
-bool AnimationTransition::checkCondition(const Variant &value) {
-    switch (m_compareRule) {
+bool AnimationTransitionCondition::check(const Variant &value) {
+    switch(m_rule) {
         case Equals: {
-            return value == m_compareValue;
+            return value == m_value;
         } break;
         case NotEquals: {
-            return value != m_compareValue;
+            return value != m_value;
         } break;
         case Greater: {
-            switch(m_compareValue.type()) {
-                case MetaType::BOOLEAN: return value.toBool() > m_compareValue.toBool();
-                case MetaType::INTEGER: return value.toInt() > m_compareValue.toInt();
-                case MetaType::FLOAT: return value.toFloat() > m_compareValue.toFloat();
+            switch(m_value.type()) {
+                case MetaType::BOOLEAN: return value.toBool() > m_value.toBool();
+                case MetaType::INTEGER: return value.toInt() > m_value.toInt();
+                case MetaType::FLOAT: return value.toFloat() > m_value.toFloat();
                 default: break;
             }
         } break;
         case Less: {
-            switch(m_compareValue.type()) {
-                case MetaType::BOOLEAN: return value.toBool() < m_compareValue.toBool();
-                case MetaType::INTEGER: return value.toInt() < m_compareValue.toInt();
-                case MetaType::FLOAT: return value.toFloat() < m_compareValue.toFloat();
+            switch(m_value.type()) {
+                case MetaType::BOOLEAN: return value.toBool() < m_value.toBool();
+                case MetaType::INTEGER: return value.toInt() < m_value.toInt();
+                case MetaType::FLOAT: return value.toFloat() < m_value.toFloat();
                 default: break;
             }
         } break;
@@ -59,7 +59,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             auto block = machine.begin();
             // Unpack states
             for(auto &it : (*block).value<VariantList>()) {
-                VariantList stateList = it.toList();
+                VariantList stateList(it.value<VariantList>());
                 auto i = stateList.begin();
 
                 AnimationState *state = nullptr;
@@ -84,7 +84,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             block++;
             // Unpack transitions
             for(auto &it : (*block).value<VariantList>()) {
-                VariantList valueList = it.toList();
+                VariantList valueList(it.value<VariantList>());
                 auto i = valueList.begin();
 
                 AnimationState *source = findState(Mathf::hashString((*i).toString()));
@@ -95,13 +95,13 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                         AnimationTransition transition;
                         transition.m_targetState = target;
                         i++;
-                        if(i != valueList.end()) {
-                            transition.m_compareRule = (*i).toInt();
-                            i++;
-                            transition.m_compareValue = (*i);
-                        } else {
-                            transition.m_compareRule = AnimationTransition::Equals;
-                            transition.m_compareValue = true;
+                        transition.m_duration = i->toFloat();
+                        i++;
+
+                        if(i != valueList.end()) { // has condition
+                            for(auto &condition : i->toList()) {
+                                transition.m_conditions.push_back( loadCondition(condition.value<VariantList>()) );
+                            }
                         }
 
                         source->m_transitions.push_back(transition);
@@ -112,6 +112,21 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             m_initialState = findState(Mathf::hashString((*block).toString()));
         }
     }
+}
+/*!
+    \internal
+*/
+AnimationTransitionCondition AnimationStateMachine::loadCondition(const VariantList &data) const {
+    AnimationTransitionCondition condition;
+
+    auto it = data.begin();
+    condition.m_hash = Mathf::hashString(it->toString());
+    ++it;
+    condition.m_rule = it->toInt();
+    ++it;
+    condition.m_value = *it;
+
+    return condition;
 }
 /*!
     Returns a state for the provided \a hash.

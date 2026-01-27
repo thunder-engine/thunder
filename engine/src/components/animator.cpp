@@ -209,7 +209,7 @@ void Animator::setStateHash(int hash) {
     crossFadeHash(hash, 0.0f);
 }
 /*!
-    Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with \a duration (in milliseconds).
+    Smoothly changes current state using crossfade interpolation from the previous state to the new \a state with normalized \a duration time.
 */
 void Animator::crossFade(const TString &state, float duration) {
     PROFILE_FUNCTION();
@@ -217,7 +217,7 @@ void Animator::crossFade(const TString &state, float duration) {
     crossFadeHash(Mathf::hashString(state), duration);
 }
 /*!
-    Smoothly changes current state using crossfade interpolation from the previous state to the new state (using the \a hash of state) with \a duration (in milliseconds).
+    Smoothly changes current state using crossfade interpolation from the previous state to the new state (using the \a hash of state) with normalized \a duration time.
 */
 void Animator::crossFadeHash(int hash, float duration) {
     PROFILE_FUNCTION();
@@ -399,11 +399,20 @@ void Animator::checkNextState() {
             }
         }
 
-        for(auto it : m_currentState->m_transitions) {
-            auto variable = m_currentVariables.find(it.m_conditionHash);
-            if(nextState || (variable != m_currentVariables.end() && it.checkCondition(variable->second))) {
-                crossFadeHash(it.m_targetState->m_hash, 0.75f);
+        for(auto &it : m_currentState->m_transitions) {
+            if(!nextState && !it.m_conditions.empty()) {
+                nextState = true;
+                for(auto &condition : it.m_conditions) { // We checking all conditions rules because of logical AND rule
+                    auto variable = m_currentVariables.find(condition.m_hash);
+                    if(variable == m_currentVariables.end() || !condition.check(variable->second)) {
+                        nextState = false;
+                        break;
+                    }
+                }
+            }
 
+            if(nextState) {
+                crossFadeHash(it.m_targetState->m_hash, it.m_duration);
                 break;
             }
         }

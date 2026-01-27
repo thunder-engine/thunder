@@ -107,7 +107,7 @@ private:
 private:
     friend class AnimatorTest;
 
-    std::unordered_map<int, Variant> m_currentVariables;
+    std::unordered_map<int32_t, Variant> m_currentVariables;
 
     std::unordered_map<uint32_t, TargetProperties> m_bindProperties;
 

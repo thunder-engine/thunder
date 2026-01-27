@@ -7,7 +7,7 @@
 
 class AnimationState;
 
-class ENGINE_EXPORT AnimationTransition {
+class ENGINE_EXPORT AnimationTransitionCondition {
 public:
     enum CompareRules {
         Equals = 0,
@@ -17,19 +17,31 @@ public:
     };
 
 public:
-    bool operator== (const AnimationTransition &right) const {
-        return m_conditionHash == right.m_conditionHash;
+    bool check(const Variant &value);
+
+    bool operator== (const AnimationTransitionCondition &right) const {
+        return m_hash == right.m_hash;
     }
 
-    bool checkCondition(const Variant &value);
+    Variant m_value;
 
-    Variant m_compareValue;
+    int m_hash = 0;
+
+    int m_rule = 0;
+
+};
+
+class ENGINE_EXPORT AnimationTransition {
+public:
+    bool operator== (const AnimationTransition &right) const {
+        return m_targetState == right.m_targetState;
+    }
+
+    std::vector<AnimationTransitionCondition> m_conditions;
 
     AnimationState *m_targetState = nullptr;
 
-    int m_conditionHash = 0;
-
-    int m_compareRule = 0;
+    float m_duration = 0.0f;
 
 };
 typedef std::vector<AnimationTransition> TransitionVector;
@@ -78,6 +90,8 @@ public:
 
 private:
     void loadUserData(const VariantMap &data) override;
+
+    AnimationTransitionCondition loadCondition(const VariantList &data) const;
 
 private:
     friend class AnimatorTest;

@@ -29,8 +29,6 @@ Variant ArrayElement::data() const {
 
 void ArrayElement::setData(int index, const Variant &data, const TString &editor, Object *object, const TString &typeName) {
     m_index = index;
-    ui->label->setText(QString("#%1").arg(m_index));
-
     if(m_editor && m_editor->data().userType() == data.userType()) {
         m_editor->setData(data);
     } else {
@@ -52,7 +50,7 @@ void ArrayElement::setData(int index, const Variant &data, const TString &editor
 
             QBoxLayout *l = dynamic_cast<QBoxLayout *>(layout());
             if(l) {
-                l->insertWidget(l->indexOf(ui->label) + 1, m_editor);
+                l->insertWidget(l->indexOf(ui->drag) + 1, m_editor);
             }
 
             resize(width(), m_editor->height());

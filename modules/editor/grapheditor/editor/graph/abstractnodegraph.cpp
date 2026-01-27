@@ -27,6 +27,8 @@ namespace {
 
 AbstractNodeGraph::AbstractNodeGraph() :
         m_version(0) {
+
+    Engine::replaceUUID(this, Engine::generateUUID());
 }
 
 GraphNode *AbstractNodeGraph::nodeCreate(const TString &path, int &index) {
@@ -69,11 +71,7 @@ GraphLink *AbstractNodeGraph::linkCreate(GraphNode *sender, NodePort *oport, Gra
         if((oport && iport && oport->m_call == iport->m_call) ||
            (oport == nullptr && iport == nullptr)) {
             GraphLink *link = linkCreate();
-            link->sender = sender;
-            link->receiver = receiver;
-            link->oport = oport;
-            link->iport = iport;
-            link->ptr = nullptr;
+            link->setEndpoints(sender, oport, receiver, iport);
             m_links.push_back(link);
 
             return link;
@@ -204,7 +202,7 @@ void AbstractNodeGraph::load(const TString &path) {
             blockSignals(true);
 
             pugi::xml_node root = document.first_child();
-            if(root) {
+            if(root && std::string(root.name()) == gGraph) {
                 loadGraph(root);
             }
 
@@ -228,7 +226,9 @@ void AbstractNodeGraph::save(const TString &path) {
 
     document.append_attribute("version") = m_version;
 
-    saveGraph(document);
+    pugi::xml_node graph = document.append_child(gGraph);
+
+    saveGraph(graph);
 
     xml.save_file(path.data(), "    ");
 }
@@ -241,31 +241,29 @@ GraphLink *AbstractNodeGraph::linkCreate() {
     return Engine::objectCreate<GraphLink>();
 }
 
-void AbstractNodeGraph::loadGraph(const pugi::xml_node &parent) {
-    if(std::string(parent.name()) == gGraph) {
-        pugi::xml_node sub = parent.first_child();
-        while(sub) {
-            std::string name(sub.name());
-            if(name == gNodes) {
-                pugi::xml_node nodeElement = sub.first_child();
-                while(nodeElement) {
-                    loadNode(nodeElement);
-                    nodeElement = nodeElement.next_sibling();
-                }
+void AbstractNodeGraph::loadGraph(const pugi::xml_node &graph) {
+    pugi::xml_node sub = graph.first_child();
+    while(sub) {
+        std::string name(sub.name());
+        if(name == gNodes) {
+            pugi::xml_node nodeElement = sub.first_child();
+            while(nodeElement) {
+                loadNode(nodeElement);
+                nodeElement = nodeElement.next_sibling();
             }
-
-            if(name == gLinks) {
-                onNodesLoaded();
-
-                pugi::xml_node linkElement = sub.first_child();
-                while(linkElement) {
-                    loadLink(linkElement);
-                    linkElement = linkElement.next_sibling();
-                }
-            }
-
-            sub = sub.next_sibling();
         }
+
+        if(name == gLinks) {
+            onNodesLoaded();
+
+            pugi::xml_node linkElement = sub.first_child();
+            while(linkElement) {
+                loadLink(linkElement);
+                linkElement = linkElement.next_sibling();
+            }
+        }
+
+        sub = sub.next_sibling();
     }
 }
 
@@ -277,9 +275,7 @@ GraphNode *AbstractNodeGraph::fallbackRoot() {
     return nullptr;
 }
 
-void AbstractNodeGraph::saveGraph(pugi::xml_node &parent) const {
-    pugi::xml_node graph = parent.append_child(gGraph);
-
+void AbstractNodeGraph::saveGraph(pugi::xml_node &graph) const {
     pugi::xml_node nodesElement = graph.append_child(gNodes);
     pugi::xml_node linksElement = graph.append_child(gLinks);
 

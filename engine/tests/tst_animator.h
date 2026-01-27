@@ -74,9 +74,14 @@ public:
 
         AnimationTransition makeAttack;
         makeAttack.m_targetState = &attackState;
-        makeAttack.m_conditionHash = Mathf::hashString(gParamBool);
-        makeAttack.m_compareRule = AnimationTransition::Equals;
-        makeAttack.m_compareValue = true;
+
+        AnimationTransitionCondition condition;
+        condition.m_hash = Mathf::hashString(gParamBool);
+        condition.m_rule = AnimationTransitionCondition::Equals;
+        condition.m_value = true;
+        makeAttack.m_conditions.push_back(condition);
+        makeAttack.m_duration = 0.5f;
+
         idleState.m_transitions.push_back(makeAttack);
 
         stateMachine.m_states.push_back(&idleState);

@@ -2,7 +2,7 @@
 
 #include <resources/animationstatemachine.h>
 
-#define FORMAT_VERSION 12
+#define FORMAT_VERSION 13
 
 AnimationBuilderSettings::AnimationBuilderSettings() {
     setVersion(FORMAT_VERSION);

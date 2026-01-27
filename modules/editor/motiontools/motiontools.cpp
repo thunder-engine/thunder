@@ -7,6 +7,8 @@
 #include "converter/animationbuilder.h"
 #include "editor/animationedit.h"
 
+#include "editor/property/conditionedit.h"
+
 static const char *meta = \
 "{"
 "   \"module\": \"MotionTools\","
@@ -15,7 +17,8 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"AnimationBuilderSettings\": \"converter\","
-"       \"AnimationEdit\": \"editor\""
+"       \"AnimationEdit\": \"editor\","
+"       \"Condition\": \"property\""
 "   }"
 "}";
 
@@ -25,6 +28,7 @@ Module *moduleCreate(Engine *engine) {
 
 MotionTools::MotionTools(Engine *engine) :
         Module(engine) {
+
 }
 
 const char *MotionTools::metaInfo() const {
@@ -36,6 +40,8 @@ void *MotionTools::getObject(const char *name) {
         return new AnimationControllerBuilder;
     } else if(strcmp(name, "AnimationEdit") == 0) {
         return new AnimationEdit;
+    } else if(strcmp(name, "Condition") == 0) {
+        return new ConditionEdit;
     }
     return nullptr;
 }
