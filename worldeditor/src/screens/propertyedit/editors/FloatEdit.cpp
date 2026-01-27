@@ -55,7 +55,8 @@ Variant FloatEdit::data() const {
 }
 
 void FloatEdit::setData(const Variant &value) {
-    ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(QRegularExpression("\\.?0+$")));
+    static const QRegularExpression reg("\\.?0+$");
+    ui->lineEdit->setText(QString::number(value.toFloat(), 'f', 4).remove(reg));
     ui->horizontalSlider->blockSignals(true);
     ui->horizontalSlider->setValue(value.toFloat() * SCALE);
     ui->horizontalSlider->blockSignals(false);
