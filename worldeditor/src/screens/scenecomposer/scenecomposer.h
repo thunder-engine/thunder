@@ -31,11 +31,11 @@ public:
 
     void takeScreenshot();
 
-    QMenu *objectContextMenu(Object *object) override;
+    QMenu *hierarchyContextMenu(Object *object) override;
 
-    QWidget *propertiesWidget(QWidget *parent) override;
+    QWidget *propertiesWidget() override;
 
-    std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
+    std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const override;
 
 private slots:
     void onScreenshot(QImage image);

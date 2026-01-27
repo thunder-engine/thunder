@@ -1,7 +1,6 @@
 #ifndef PARTICLEEDIT_H
 #define PARTICLEEDIT_H
 
-#include <stdint.h>
 
 #include <editor/asseteditor.h>
 
@@ -52,9 +51,9 @@ private:
     void readSettings();
     void writeSettings();
 
-    std::list<QWidget *> createActionWidgets(Object *object, QWidget *parent) const override;
+    std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const override;
 
-    QWidget *propertiesWidget(QWidget *parent) override;
+    QWidget *propertiesWidget() override;
 
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &path) override;

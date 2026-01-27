@@ -80,7 +80,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
 
     StringList dynamicPropertiesFiltered;
     // Remove invalid properites and those we don't want to add
-    for(auto it : dynamicProperties) {
+    for(auto &it : dynamicProperties) {
         // Skip user defined hidden properties starting with _
         if(it.front() != '_') {
             dynamicPropertiesFiltered.push_back(it);
@@ -135,7 +135,7 @@ QVariant NextModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Property *item = static_cast<Property* >(index.internalPointer());
+    Property *item = static_cast<Property *>(index.internalPointer());
     switch(role) {
         case Qt::ToolTipRole:
         case Qt::DisplayRole:

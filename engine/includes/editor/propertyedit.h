@@ -20,7 +20,7 @@ public:
 
     virtual void setEditorHint(const TString &hint);
 
-    virtual void setObject(Object *object, const TString &);
+    virtual void setObject(Object *object, const TString &property);
 
     static void registerEditorFactory(UserTypeCallback callback);
 
@@ -34,8 +34,6 @@ signals:
 
 protected:
     static std::list<UserTypeCallback> m_userCallbacks;
-
-
 
     Object *m_object;
 

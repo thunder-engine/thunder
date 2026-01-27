@@ -316,7 +316,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             }
 
             TString classes;
-            for(TString classIt : it->classes()) {
+            for(const TString &classIt : it->classes()) {
                 classes += classIt + ' ';
             }
 
@@ -360,7 +360,7 @@ void UiEdit::changeEvent(QEvent *event) {
     }
 }
 
-QMenu *UiEdit::objectContextMenu(Object *object) {
+QMenu *UiEdit::hierarchyContextMenu(Object *object) {
     return &m_widgetMenu;
 }
 

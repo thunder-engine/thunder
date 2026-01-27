@@ -6,9 +6,9 @@
 #include "property.h"
 
 PropertyDelegate::PropertyDelegate(QObject *parent) :
-        QStyledItemDelegate(parent) {
+        QStyledItemDelegate(parent),
+        m_finishedMapper(new QSignalMapper(this)) {
 
-    m_finishedMapper = new QSignalMapper(this);
 }
 
 PropertyDelegate::~PropertyDelegate() {
@@ -44,18 +44,6 @@ void PropertyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     m_finishedMapper->blockSignals(false);
 }
 
-void PropertyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
-    // const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(model);
-    // QModelIndex origin = filter->mapToSource(index);
-    // QVariant data = static_cast<Property *>(origin.internalPointer())->editorData(editor);
-    // if(data.isValid()) {
-    //     filter->sourceModel()->setData(origin, data, Qt::EditRole);
-    // } else {
-    //     QStyledItemDelegate::setModelData(editor, model, index);
-    // }
-    QStyledItemDelegate::setModelData(editor, model, index);
-}
-
 QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
     QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
     QSize result = QStyledItemDelegate::sizeHint(option, index);
@@ -70,7 +58,7 @@ void PropertyDelegate::parseEditorHints(QWidget *editor, const QString &editorHi
     if(editor && !editorHints.isEmpty()) {
         editor->blockSignals(true);
         // Parse for property values
-        QRegularExpression rx("(.*)(=\\s*)(.*)(;{1})", QRegularExpression::InvertedGreedinessOption);
+        static QRegularExpression rx("(.*)(=\\s*)(.*)(;{1})", QRegularExpression::InvertedGreedinessOption);
         auto it = rx.globalMatch(editorHints);
         while(it.hasNext()) {
             QRegularExpressionMatch match = it.next();

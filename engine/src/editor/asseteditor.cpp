@@ -129,7 +129,7 @@ void AssetEditor::onSaveAs() {
     }
 
     StringList filter;
-    for(auto it : dictionary) {
+    for(auto &it : dictionary) {
         TString item = it.first + " (";
         for(auto &suffix : it.second) {
             item += TString("*.") + suffix;
@@ -186,22 +186,32 @@ void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TStr
     A_UNUSED(value);
 }
 
-QMenu *AssetEditor::objectContextMenu(Object *object) {
+QMenu *AssetEditor::hierarchyContextMenu(Object *object) {
     A_UNUSED(object);
 
     return nullptr;
 }
 
-QWidget *AssetEditor::propertiesWidget(QWidget *parent) {
+QWidget *AssetEditor::propertiesWidget() {
+    return nullptr;
+}
+
+std::list<QWidget *> AssetEditor::propertiesActionWidgets(Object *object, QWidget *parent) const {
+    A_UNUSED(object);
+    A_UNUSED(parent);
+
+    return std::list<QWidget *>();
+}
+
+QMenu *AssetEditor::propertyContextMenu(Object *object, const TString &property) {
+    A_UNUSED(object);
+    A_UNUSED(property);
+
     return nullptr;
 }
 
 UndoStack *AssetEditor::undoRedo() const {
     return m_undoRedo;
-}
-
-std::list<QWidget *> AssetEditor::createActionWidgets(Object *object, QWidget *parent) const {
-    return std::list<QWidget *>();
 }
 
 VariantMap AssetEditor::saveState() {

@@ -3,6 +3,8 @@
 
 #include "../../propertyeditor.h"
 
+#include <editor/asseteditor.h>
+
 Actions::Actions(QWidget *parent) :
         PropertyEdit(parent),
         ui(new Ui::Actions),
@@ -30,8 +32,11 @@ void Actions::setObject(Object *object, const TString &name) {
 
     PropertyEditor *editor = findEditor(parentWidget());
     if(editor) {
-        for(auto it : editor->getActions(m_object, this)) {
-            ui->horizontalLayout->addWidget(it);
+        AssetEditor *assetEditor = editor->currentEditor();
+        if(assetEditor) {
+            for(auto it : assetEditor->propertiesActionWidgets(m_object, this)) {
+                ui->horizontalLayout->addWidget(it);
+            }
         }
     }
 }

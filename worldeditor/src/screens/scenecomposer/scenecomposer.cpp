@@ -666,7 +666,7 @@ void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TS
     m_undoRedo->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
 }
 
-QMenu *SceneComposer::objectContextMenu(Object *object) {
+QMenu *SceneComposer::hierarchyContextMenu(Object *object) {
     Scene *scene = dynamic_cast<Scene *>(object);
     if(scene) {
         m_activeSceneAction->setEnabled(scene != Engine::world()->activeScene());
@@ -704,9 +704,9 @@ QMenu *SceneComposer::objectContextMenu(Object *object) {
     }
 }
 
-QWidget *SceneComposer::propertiesWidget(QWidget *parent) {
+QWidget *SceneComposer::propertiesWidget() {
     if(m_componentButton == nullptr) {
-        m_componentButton = new QToolButton(parent);
+        m_componentButton = new QToolButton;
 
         m_componentButton->setProperty("blue", true);
         m_componentButton->setPopupMode(QToolButton::InstantPopup);
@@ -733,7 +733,7 @@ QWidget *SceneComposer::propertiesWidget(QWidget *parent) {
     return m_componentButton;
 }
 
-std::list<QWidget *> SceneComposer::createActionWidgets(Object *object, QWidget *parent) const {
+std::list<QWidget *> SceneComposer::propertiesActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
     if(dynamic_cast<Component *>(object) == nullptr || dynamic_cast<Transform *>(object) != nullptr) {
         return result;

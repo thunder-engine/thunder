@@ -24,7 +24,8 @@ void PropertyEdit::setEditorHint(const TString &hint) {
     A_UNUSED(hint);
 }
 
-void PropertyEdit::setObject(Object *object, const TString &) {
+void PropertyEdit::setObject(Object *object, const TString &property) {
+    A_UNUSED(property);
     m_object = object;
 }
 
