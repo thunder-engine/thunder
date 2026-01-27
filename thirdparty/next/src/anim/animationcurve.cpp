@@ -19,6 +19,7 @@
 #include "anim/animationcurve.h"
 
 #include <metatype.h>
+#include <float.h>
 
 bool AnimationCurve::KeyFrame::operator ==(const KeyFrame &left) const {
     return abs(m_position - left.m_position) <= FLT_EPSILON  && (m_value == left.m_value);
