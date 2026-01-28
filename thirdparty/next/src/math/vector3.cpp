@@ -83,16 +83,16 @@ Vector3::Vector3(const areal *v) :
 /*!
     Copy constructor.
 */
-Vector3::Vector3(const Vector3 &vector) {
-    x = vector.x;
-    y = vector.y;
-    z = vector.z;
+Vector3::Vector3(const Vector3 &vector) :
+    x(vector.x),
+    y(vector.y),
+    z(vector.z) {
 }
 
-Vector3::Vector3(const Vector4 &vector) {
-    x = vector.x;
-    y = vector.y;
-    z = vector.z;
+Vector3::Vector3(const Vector4 &vector) :
+    x(vector.x),
+    y(vector.y),
+    z(vector.z) {
 }
 
 /*!

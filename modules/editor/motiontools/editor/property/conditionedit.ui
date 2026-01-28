@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ArrayElement</class>
- <widget class="QWidget" name="ArrayElement">
+ <class>ConditionEdit</class>
+ <widget class="QWidget" name="ConditionEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -9,15 +9,6 @@
     <width>400</width>
     <height>24</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="windowTitle">
-   <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -27,25 +18,27 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <item>
-    <widget class="QLabel" name="drag">
-     <property name="text">
-      <string notr="true">☰</string>
-     </property>
-    </widget>
+    <widget class="QComboBox" name="comboName"/>
    </item>
    <item>
-    <widget class="QToolButton" name="toolButton">
+    <widget class="QComboBox" name="comboRule"/>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineEdit"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBox">
      <property name="text">
-      <string notr="true">✕</string>
+      <string notr="true"/>
      </property>
     </widget>
    </item>

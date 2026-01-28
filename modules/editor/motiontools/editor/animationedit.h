@@ -1,15 +1,19 @@
 #ifndef ANIMATIONEDIT_H
 #define ANIMATIONEDIT_H
 
+#include <QMenu>
+
 #include <editor/asseteditor.h>
 
-class AbstractNodeGraph;
+class AnimationControllerGraph;
 class AnimationStateMachine;
 class AssetConverter;
 
 class UndoCommand;
 
 class AnimationProxy;
+
+class QToolButton;
 
 namespace Ui {
     class AnimationEdit;
@@ -29,14 +33,25 @@ private slots:
 
     void onActivated() override;
 
+    void onAddVariable(QAction *action);
+
     void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
 
+    void onObjectsSelected(const Object::ObjectList &objects);
+
+    void onRenameVariable();
+    void onDeleteVariable();
+
 private:
+    QWidget *propertiesWidget() override;
+
+    QMenu *propertyContextMenu(Object *object, const TString &property) override;
+
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;
 
     void loadAsset(AssetConverterSettings *settings) override;
-    void saveAsset(const TString &path = TString()) override;
+    void saveAsset(const TString &path) override;
 
     bool isModified() const override;
 
@@ -45,14 +60,20 @@ private:
     void changeEvent(QEvent *event) override;
 
 private:
+    friend class AnimationProxy;
+
     Ui::AnimationEdit *ui;
 
-    AbstractNodeGraph *m_graph;
+    AnimationControllerGraph *m_graph;
     AssetConverter *m_assetConverter;
 
     AnimationStateMachine *m_stateMachine;
 
     AnimationProxy *m_proxy;
+
+    QToolButton *m_variableButton;
+
+    QMenu m_variablesMenu;
 
 };
 

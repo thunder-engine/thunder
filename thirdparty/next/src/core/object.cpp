@@ -947,7 +947,7 @@ void Object::setProperty(const char *name, const Variant &value) {
             index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
         }
 
-        if(!value.isValid() && index > -1) {
+        if(!value.isValid()) {
             if(index > -1) { // Remove dynamic property if exists
                 auto infoIterator = std::next(m_dynamicPropertyInfo.begin(), index);
                 auto valueIterator = std::next(m_dynamicPropertyValues.begin(), index);

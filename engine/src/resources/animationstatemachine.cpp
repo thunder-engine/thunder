@@ -1,26 +1,32 @@
 #include "resources/animationstatemachine.h"
 
 namespace {
-    const char *gMachine = "Machine";
+    const char *gMachine("Machine");
 }
 
-AnimationState::AnimationState() :
-        m_hash(0),
-        m_clip(nullptr),
-        m_loop(false) {
-
-}
-
-bool AnimationState::operator==(const AnimationState &right) const {
-    return m_hash == right.m_hash;
-}
-
-bool AnimationTransition::operator==(const AnimationTransition &right) const {
-    return m_conditionHash == right.m_conditionHash;
-}
-
-bool AnimationTransition::checkCondition(const Variant &value) {
-    return value.toBool();
+bool AnimationTransitionCondition::check(const Variant &value) {
+    switch(m_rule) {
+        case Equals: return value == m_value;
+        case NotEquals: return value != m_value;
+        case Greater: {
+            switch(m_value.type()) {
+                case MetaType::BOOLEAN: return value.toBool() > m_value.toBool();
+                case MetaType::INTEGER: return value.toInt() > m_value.toInt();
+                case MetaType::FLOAT: return value.toFloat() > m_value.toFloat();
+                default: break;
+            }
+        } break;
+        case Less: {
+            switch(m_value.type()) {
+                case MetaType::BOOLEAN: return value.toBool() < m_value.toBool();
+                case MetaType::INTEGER: return value.toInt() < m_value.toInt();
+                case MetaType::FLOAT: return value.toFloat() < m_value.toFloat();
+                default: break;
+            }
+        } break;
+        default: break;
+    }
+    return false;
 }
 
 /*!
@@ -49,7 +55,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             auto block = machine.begin();
             // Unpack states
             for(auto &it : (*block).value<VariantList>()) {
-                VariantList stateList = it.toList();
+                VariantList stateList(it.value<VariantList>());
                 auto i = stateList.begin();
 
                 AnimationState *state = nullptr;
@@ -57,7 +63,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 i++;
                 if(type == "BaseState") {
                     state = new AnimationState;
-                    state->m_hash = Mathf::hashString((*i).toString().toStdString());
+                    state->m_hash = Mathf::hashString((*i).toString());
                     i++;
                     state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
                     i++;
@@ -69,29 +75,54 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             block++;
             // Unpack variables
             for(auto &it : (*block).value<VariantMap>()) {
-                m_variables[Mathf::hashString(it.first.toStdString())] = it.second;
+                m_variables[Mathf::hashString(it.first)] = it.second;
             }
             block++;
             // Unpack transitions
             for(auto &it : (*block).value<VariantList>()) {
-                VariantList valueList = it.toList();
+                VariantList valueList(it.value<VariantList>());
                 auto i = valueList.begin();
 
-                AnimationState *source = findState(Mathf::hashString((*i).toString().toStdString()));
+                AnimationState *source = findState(Mathf::hashString((*i).toString()));
                 if(source) {
                     i++;
-                    AnimationState *target = findState(Mathf::hashString((*i).toString().toStdString()));
+                    AnimationState *target = findState(Mathf::hashString((*i).toString()));
                     if(target) {
                         AnimationTransition transition;
                         transition.m_targetState = target;
+                        i++;
+                        transition.m_duration = i->toFloat();
+                        i++;
+
+                        if(i != valueList.end()) { // has condition
+                            for(auto &condition : i->toList()) {
+                                transition.m_conditions.push_back( loadCondition(condition.value<VariantList>()) );
+                            }
+                        }
+
                         source->m_transitions.push_back(transition);
                     }
                 }
             }
             block++;
-            m_initialState = findState(Mathf::hashString((*block).toString().toStdString()));
+            m_initialState = findState(Mathf::hashString((*block).toString()));
         }
     }
+}
+/*!
+    \internal
+*/
+AnimationTransitionCondition AnimationStateMachine::loadCondition(const VariantList &data) const {
+    AnimationTransitionCondition condition;
+
+    auto it = data.begin();
+    condition.m_hash = Mathf::hashString(it->toString());
+    ++it;
+    condition.m_rule = it->toInt();
+    ++it;
+    condition.m_value = *it;
+
+    return condition;
 }
 /*!
     Returns a state for the provided \a hash.
@@ -122,16 +153,6 @@ const AnimationStateVector &AnimationStateMachine::states() const {
     PROFILE_FUNCTION();
 
     return m_states;
-}
-/*!
-    \internal
-    Sets a new \a value with the given \a name for the state machine.
-    This variable can be used for transition cases between states.
-*/
-void AnimationStateMachine::setVariable(const std::string &name, const Variant &value) {
-    PROFILE_FUNCTION();
-
-    m_variables[Mathf::hashString(name)] = value;
 }
 /*!
     \internal

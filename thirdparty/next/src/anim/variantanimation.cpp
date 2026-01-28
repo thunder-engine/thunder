@@ -36,7 +36,7 @@
         \li MetaType::VECTOR2
         \li MetaType::VECTOR3
         \li MetaType::VECTOR4
-        \li MetaType::STRING
+        \li MetaType::QUATERNION
     \endlist
 */
 
@@ -96,7 +96,18 @@ void VariantAnimation::setCurrentTime(uint32_t position) {
         return;
     }
 
-    float time = (float)loopTime() / (float)m_duration;
-
-    setCurrentValue(m_keyFrames.value(time));
+    float pos = (float)loopTime() / (float)m_duration;
+    switch(m_currentValue.type()) {
+        case MetaType::BOOLEAN: setCurrentValue(static_cast<bool>(m_keyFrames.valueFloat(pos))); break;
+        case MetaType::INTEGER: setCurrentValue(static_cast<int>(m_keyFrames.valueFloat(pos))); break;
+        case MetaType::FLOAT: setCurrentValue(m_keyFrames.valueFloat(pos)); break;
+        case MetaType::VECTOR2: setCurrentValue(m_keyFrames.valueVector2(pos)); break;
+        case MetaType::VECTOR3: setCurrentValue(m_keyFrames.valueVector3(pos)); break;
+        case MetaType::VECTOR4: setCurrentValue(m_keyFrames.valueVector4(pos)); break;
+        case MetaType::QUATERNION: {
+            Vector4 v(m_keyFrames.valueVector4(pos));
+            setCurrentValue(Quaternion(v.x, v.y, v.z, v.w)); break;
+        }
+        default: break;
+    }
 }

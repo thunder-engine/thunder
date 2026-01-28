@@ -17,12 +17,7 @@
 TimelineEdit::TimelineEdit(QWidget *parent) :
         EditorGadget(parent),
         ui(new Ui::TimelineEdit),
-        m_controller(nullptr),
-        m_armature(nullptr),
-        m_model(new AnimationClipModel(this)),
-        m_timerId(0),
-        m_row(-1),
-        m_ind(-1) {
+        m_model(new AnimationClipModel(this)) {
 
     ui->setupUi(this);
     ui->pause->setVisible(false);
@@ -65,11 +60,11 @@ TimelineEdit::~TimelineEdit() {
 void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
-        VariantMap data = clip->saveUserData();
-
         TString ref = Engine::reference(clip);
         File file(AssetManager::instance()->uuidToPath(ref));
         if(file.open(File::WriteOnly)) {
+            VariantMap data = clip->saveUserData();
+
             file.write(Json::save(data["Tracks"], 0));
             file.close();
         }
@@ -119,9 +114,7 @@ void TimelineEdit::updateClips() {
                 m_clips[info.baseName()] = it->m_clip;
             }
             if(!m_clips.empty()) {
-                m_currentClip = m_clips.begin()->first;
-                m_model->setClip(m_clips.begin()->second, m_controller->actor());
-                m_controller->setClip(m_clips.begin()->second);
+                onClipChanged(m_clips.begin()->first.data());
             }
         } else {
             m_currentClip.clear();
@@ -136,7 +129,7 @@ void TimelineEdit::updateClips() {
     ui->clipBox->clear();
 
     QStringList list;
-    for(auto it : m_clips) {
+    for(auto &it : m_clips) {
         list.push_back(it.first.data());
     }
     ui->clipBox->addItems(list);
@@ -147,16 +140,15 @@ void TimelineEdit::updateClips() {
 }
 
 uint32_t TimelineEdit::position() const {
-    if(m_controller) {
-        return m_controller->position();
-    }
-    return 0;
+    return m_position;
 }
 
 void TimelineEdit::setPosition(uint32_t position) {
+    m_position = position;
+
     if(m_controller) {
-        m_controller->resume();
-        m_controller->setPosition(position);
+        AnimationClip *clip = m_model->clip();
+        m_controller->setClip(clip, m_position / clip->duration());
     }
 
     if(m_armature) {
@@ -271,6 +263,7 @@ void TimelineEdit::onRowsSelected(QStringList list) {
 
 void TimelineEdit::onClipChanged(const QString &clip) {
     m_currentClip = clip.toStdString();
+    m_position = 0;
     if(m_controller) {
         auto it = m_clips.find(m_currentClip);
         if(it != m_clips.end()) {
@@ -283,12 +276,10 @@ void TimelineEdit::onClipChanged(const QString &clip) {
 void TimelineEdit::onKeyChanged() {
     AnimationCurve::KeyFrame *key = m_model->key(m_row, m_ind);
     if(key) {
-        if(key->m_value.type() == MetaType::FLOAT) {
-            float delta = ui->valueEdit->text().toFloat() - key->m_value.toFloat();
-            m_model->commitKey(m_row, m_ind, key->m_value.toFloat() + delta,
-                                             key->m_leftTangent + delta,
-                                             key->m_rightTangent + delta, ui->timeEdit->text().toUInt());
-        }
+        float delta = ui->valueEdit->text().toFloat() - key->m_value.front();
+        m_model->commitKey(m_row, m_ind, key->m_value.front() + delta,
+                                         key->m_leftTangent.front() + delta,
+                                         key->m_rightTangent.front() + delta, ui->timeEdit->text().toUInt());
     }
 }
 
@@ -319,7 +310,6 @@ void TimelineEdit::on_begin_clicked() {
             m_controller->setClip(it->second);
         }
     }
-    setPosition(0);
 }
 
 void TimelineEdit::on_end_clicked() {
@@ -352,8 +342,10 @@ TString TimelineEdit::pathTo(Object *src, Object *dst) {
 
 void TimelineEdit::on_flatKey_clicked() {
     AnimationCurve::KeyFrame *key = m_model->key(m_row, m_ind);
-    if(key && key->m_value.type() == MetaType::FLOAT) {
-        m_model->commitKey(m_row, m_ind, key->m_value.toFloat(), key->m_value.toFloat(), key->m_value.toFloat(), key->m_position);
+    if(key) {
+        for(int i = 0; i < key->m_value.size(); i++) {
+            m_model->commitKey(m_row, m_ind, key->m_value[i], key->m_value[i], key->m_value[i], key->m_position);
+        }
     }
 }
 

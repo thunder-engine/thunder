@@ -3,7 +3,6 @@
 #include "components/actor.h"
 
 #include <algorithm>
-#include <cstring>
 
 /*!
     \class Transform
@@ -14,8 +13,6 @@
     It's used to store and manipulate the position, rotation and scale of the object.
     Every Transform can have a parent, which allows you to apply position, rotation and scale hierarchically.
 */
-
-static std::hash<float> hash_float;
 
 Transform::Transform() :
         m_position(Vector3()),
@@ -66,7 +63,7 @@ Vector3 Transform::position() const {
 /*!
     Changes \a position of the Transform in local space.
 */
-void Transform::setPosition(const Vector3 position) {
+void Transform::setPosition(const Vector3 &position) {
     if(m_position != position) {
         std::unique_lock<std::mutex> locker(m_mutex);
         m_position = position;
@@ -82,7 +79,7 @@ Vector3 Transform::rotation() const {
 /*!
     Changes the rotation of the Transform in local space by provided Euler \a angles in degrees.
 */
-void Transform::setRotation(const Vector3 angles) {
+void Transform::setRotation(const Vector3 &angles) {
     if(m_rotation != angles) {
         std::unique_lock<std::mutex> locker(m_mutex);
         m_rotation = angles;
@@ -99,7 +96,7 @@ Quaternion Transform::quaternion() const {
 /*!
     Changes the rotation \a quaternion of the Transform in local space by provided Quaternion.
 */
-void Transform::setQuaternion(const Quaternion quaternion) {
+void Transform::setQuaternion(const Quaternion &quaternion) {
     if(m_quaternion != quaternion) {
         std::unique_lock<std::mutex> locker(m_mutex);
         m_quaternion = quaternion;
@@ -118,7 +115,7 @@ Vector3 Transform::scale() const {
 /*!
     Changes the \a scale of the Transform in local space.
 */
-void Transform::setScale(const Vector3 scale) {
+void Transform::setScale(const Vector3 &scale) {
     if(m_scale != scale) {
         std::unique_lock<std::mutex> locker(m_mutex);
         m_scale = scale;

@@ -19,7 +19,9 @@
 #ifndef ANIMATIONCURVE_H
 #define ANIMATIONCURVE_H
 
-#include "variant.h"
+#include <amath.h>
+
+#include <vector>
 
 class NEXT_LIBRARY_EXPORT AnimationCurve {
 public:
@@ -37,19 +39,28 @@ public:
         Type m_type = Cubic;
 
         float m_position = 0.0f;
-        Variant m_value;
+        std::vector<float> m_value;
 
-        float m_leftTangent = 0.0f;
-        float m_rightTangent = 0.0f;
+        std::vector<float> m_leftTangent;
+        std::vector<float> m_rightTangent;
     };
 
     typedef std::vector<KeyFrame> Keys;
 
-    Variant value(float pos) const;
-
-    void frames(int32_t &b, int32_t &e, float pos);
+public:
+    float valueFloat(float pos) const;
+    Vector2 valueVector2(float pos) const;
+    Vector3 valueVector3(float pos) const;
+    Vector4 valueVector4(float pos) const;
+    Quaternion valueQuaternion(float pos) const;
 
     Keys m_keys;
+
+protected:
+    float value(int32_t a, int32_t b, int c, float f) const;
+
+    void frames(int32_t &b, int32_t &e, float pos) const;
+
 };
 
 #endif // ANIMATIONCURVE_H

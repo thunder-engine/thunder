@@ -83,7 +83,7 @@ protected:
 
 class UndoUpdateKey : public UndoAnimationClip {
 public:
-    UndoUpdateKey(int row, int index, float value, float left, float right, uint32_t position, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
+    UndoUpdateKey(int row, int index, const std::vector<float> &value, const std::vector<float> &left, const std::vector<float> &right, uint32_t position, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
             UndoAnimationClip(model, text, parent),
             m_row(row),
             m_index(index),
@@ -101,9 +101,9 @@ protected:
 
     int m_row;
     int m_index;
-    float m_value;
-    float m_left;
-    float m_right;
+    std::vector<float> m_value;
+    std::vector<float> m_left;
+    std::vector<float> m_right;
     uint32_t m_position;
 
 };

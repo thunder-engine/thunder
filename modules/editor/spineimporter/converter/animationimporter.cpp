@@ -37,7 +37,7 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
     AnimationCurve::KeyFrame frame;
     frame.m_type = AnimationCurve::KeyFrame::Linear;
     frame.m_position = 0.0f;
-    frame.m_value = value;
+    frame.m_value = { value.x, value.y, value.z };
 
     curve.m_keys.push_back(frame);
 
@@ -83,12 +83,12 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
             }
         }
 
-        frame.m_value = v;
+        frame.m_value = { v.x, v.y, v.z };
 
         curve.m_keys.push_back(frame);
     }
 
-    clip.m_tracks.push_back(track);
+    clip.addAnimationTrack(track);
 }
 
 void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConverterSettings *settings) {
@@ -129,22 +129,17 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                 track.setPath(path);
                 track.setProperty("item");
 
-                AnimationCurve &curve = track.curve();
+                AnimationTrack::Frames &frames = track.frames();
 
-                AnimationCurve::KeyFrame frame;
-                frame.m_type = AnimationCurve::KeyFrame::Constant;
-                frame.m_position = 0.0f;
-                frame.m_value = slot.render->item();
-
-                curve.m_keys.push_back(frame);
+                frames.push_back({ slot.render->item(), 0.0f });
 
                 for(auto &key : type.second.value<VariantList>()) {
                     VariantMap fields = key.value<VariantMap>();
 
-                    frame.m_position = 0.0f;
+                    float position = 0.0f;
                     auto it = fields.find(gTime);
                     if(it != fields.end()) {
-                        frame.m_position = it->second.toFloat();
+                        position = it->second.toFloat();
                     }
 
                     TString value = slot.render->item();
@@ -154,12 +149,10 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                         value = it->second.toString();
                     }
 
-                    frame.m_value = value;
-
-                    curve.m_keys.push_back(frame);
+                    frames.push_back({ value, position });
                 }
 
-                clip.m_tracks.push_back(track);
+                clip.addAnimationTrack(track);
             } else if(type.first == gColor || type.first == "twoColor" || type.first == "rgba" || type.first == "rgba2") {
                 AnimationTrack track;
 
@@ -168,10 +161,12 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
 
                 AnimationCurve &curve = track.curve();
 
+                Vector4 value(slot.render->color());
+
                 AnimationCurve::KeyFrame frame;
                 frame.m_type = AnimationCurve::KeyFrame::Linear;
                 frame.m_position = 0.0f;
-                frame.m_value = slot.render->color();
+                frame.m_value = { value.x, value.y, value.z, value.w };
 
                 curve.m_keys.push_back(frame);
 
@@ -184,19 +179,19 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                         frame.m_position = it->second.toFloat();
                     }
 
-                    Vector4 value = slot.render->color();
+                    value = slot.render->color();
 
                     it = fields.find(gColor);
                     if(it != fields.end()) {
                         value = SpineConverter::toColor(it->second.toString());
                     }
 
-                    frame.m_value = value;
+                    frame.m_value = { value.x, value.y, value.z, value.w };
 
                     curve.m_keys.push_back(frame);
                 }
 
-                clip.m_tracks.push_back(track);
+                clip.addAnimationTrack(track);
             }
         }
     }
@@ -223,7 +218,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
 
                 AnimationCurve::KeyFrame frame;
                 frame.m_type = AnimationCurve::KeyFrame::Constant;
-                frame.m_value = slot.render->layer();
+                frame.m_value = { static_cast<float>(slot.render->layer()) };
                 frame.m_position = 0.0f;
 
                 AnimationCurve &curve = track.curve();
@@ -240,7 +235,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
 
             AnimationCurve::KeyFrame frame;
             frame.m_type = AnimationCurve::KeyFrame::Constant;
-            frame.m_value = value;
+            frame.m_value = { static_cast<float>(value) };
             frame.m_position = time;
 
             AnimationCurve &curve = tracks[slotName].curve();
@@ -249,7 +244,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
     }
 
     for(auto &it : tracks) {
-        clip.m_tracks.push_back(it.second);
+        clip.addAnimationTrack(it.second);
     }
 }
 
@@ -271,7 +266,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             }
         }
 
-        for(auto &it : clip->m_tracks) {
+        for(auto &it : clip->tracks()) {
             float duration = 0.0f;
             AnimationCurve &curve = it.curve();
             if(!curve.m_keys.empty()) {

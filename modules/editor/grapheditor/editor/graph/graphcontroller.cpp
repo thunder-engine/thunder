@@ -51,6 +51,11 @@ Object::ObjectList GraphController::selected() {
     for(auto it : m_selectedNodes) {
         result.push_back(m_graph->node(it));
     }
+    if(result.empty()) {
+        for(auto it : m_selectedLinks) {
+            result.push_back(m_graph->link(it));
+        }
+    }
     return result;
 }
 

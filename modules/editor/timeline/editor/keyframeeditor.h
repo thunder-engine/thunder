@@ -46,7 +46,7 @@ private slots:
     void onInsertKeyframe(int row, float position);
 
 private:
-    void createTree(const QModelIndex &parentIndex, TreeRow *parent, QList<TreeRow *> &items);
+    void createTree(const QModelIndex &parentIndex, TreeRow *parent, std::list<TreeRow *> &items);
 
     void resizeEvent(QResizeEvent *event);
 

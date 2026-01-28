@@ -81,6 +81,8 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
         for(auto &it : m_object->dynamicPropertyNames()) {
             if(it == m_propertyName) {
                 m_dynamic = true;
+                m_editorName = Property::editorName(m_object->dynamicPropertyInfo(it.data()), m_typeName);
+                break;
             }
         }
     } else {

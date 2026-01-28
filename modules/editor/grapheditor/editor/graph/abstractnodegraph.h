@@ -12,6 +12,14 @@ public:
     virtual void toXml(pugi::xml_node &element) {}
     virtual void fromXml(const pugi::xml_node &element) {}
 
+    virtual void setEndpoints(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) {
+        GraphLink::sender = sender;
+        GraphLink::oport = oport;
+
+        GraphLink::receiver = receiver;
+        GraphLink::iport = iport;
+    }
+
 public:
     GraphNode *sender = nullptr;
 
@@ -20,8 +28,6 @@ public:
     GraphNode *receiver = nullptr;
 
     NodePort *iport = nullptr;
-
-    void *ptr = nullptr;
 
 };
 
@@ -76,11 +82,11 @@ public:
 protected:
     virtual GraphLink *linkCreate();
 
-    virtual void loadGraph(const pugi::xml_node &parent);
+    virtual void loadGraph(const pugi::xml_node &graph);
+
+    virtual void saveGraph(pugi::xml_node &graph) const;
 
     virtual void onNodesLoaded();
-
-    virtual void saveGraph(pugi::xml_node &parent) const;
 
     virtual GraphNode *fallbackRoot();
 

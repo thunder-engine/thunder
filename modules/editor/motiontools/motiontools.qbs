@@ -4,16 +4,20 @@ Project {
     id: motiontools
     property stringList srcFiles: [
         "*.cpp",
-        "converter/*.cpp",
-        "editor/*.cpp",
-        "editor/*.ui",
         "*.h",
+        "converter/*.cpp",
         "converter/*.h",
-        "editor/*.h"
+        "editor/*.cpp",
+        "editor/*.h",
+        "editor/*.ui",
+        "editor/actions/*.cpp",
+        "editor/actions/*.h",
+        "editor/property/*.cpp",
+        "editor/property/*.h"
     ]
 
     property stringList incPaths: [
-        "editor",
+        "converter",
         "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
@@ -29,7 +33,9 @@ Project {
     DynamicLibrary {
         name: "motiontools"
         condition: motiontools.desktop
-        files: motiontools.srcFiles
+        files: [
+            "editor/property/conditionedit.ui",
+        ].concat(motiontools.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }

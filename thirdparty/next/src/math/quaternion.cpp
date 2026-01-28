@@ -40,6 +40,7 @@ Quaternion::Quaternion() :
     y(0),
     z(0),
     w(1) {
+
 }
 /*!
     Constructs a quaternion with values (\a x, \a y, \a z, \a w).
@@ -142,6 +143,16 @@ Quaternion::Quaternion(const Matrix3 &matrix) {
         } break;
         default: break;
     }
+}
+/*!
+    Copy constructor.
+*/
+Quaternion::Quaternion(const Quaternion &quaternion) :
+    x(quaternion.x),
+    y(quaternion.y),
+    z(quaternion.z),
+    w(quaternion.w) {
+
 }
 /*!
     Assignment operator.

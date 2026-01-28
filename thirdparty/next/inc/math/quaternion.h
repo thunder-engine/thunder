@@ -31,6 +31,7 @@ public:
     Quaternion(const Vector3 &axis, areal angle);
     Quaternion(const Vector3 &euler);
     Quaternion(const Matrix3 &matrix);
+    Quaternion(const Quaternion &quaternion);
 
     Quaternion &operator=(const Quaternion &value);
 

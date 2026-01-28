@@ -1,7 +1,5 @@
 #include "converters/assimpconverter.h"
 
-#include <float.h>
-
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -555,9 +553,13 @@ static bool compare(const AnimationTrack &left, const AnimationTrack &right) {
 void optimizeVectorTrack(AnimationTrack &track, float threshold) {
     AnimationCurve &curve = track.curve();
     for(uint32_t i = 1; i < curve.m_keys.size() - 1; i++) {
-        Vector3 k0(curve.m_keys[i - 1].m_value.toVector3());
-        Vector3 k1(curve.m_keys[i].m_value.toVector3());
-        Vector3 k2(curve.m_keys[i + 1].m_value.toVector3());
+        auto &v0 = curve.m_keys[i - 1].m_value;
+        auto &v1 = curve.m_keys[i].m_value;
+        auto &v2 = curve.m_keys[i + 1].m_value;
+
+        Vector3 k0(v0[0], v0[1], v0[2]);
+        Vector3 k1(v1[0], v1[1], v1[2]);
+        Vector3 k2(v2[0], v2[1], v2[2]);
 
         Vector3 pd = (k2 - k0);
         float d0 = pd.dot(k0);
@@ -581,9 +583,13 @@ void optimizeVectorTrack(AnimationTrack &track, float threshold) {
 void optimizeQuaternionTrack(AnimationTrack &track, float threshold) {
     AnimationCurve &curve = track.curve();
     for(uint32_t i = 1; i < curve.m_keys.size() - 1; i++) {
-        Quaternion k0(curve.m_keys[i - 1].m_value.toQuaternion());
-        Quaternion k1(curve.m_keys[i].m_value.toQuaternion());
-        Quaternion k2(curve.m_keys[i + 1].m_value.toQuaternion());
+        auto &val0= curve.m_keys[i - 1].m_value;
+        auto &val1 = curve.m_keys[i].m_value;
+        auto &val2 = curve.m_keys[i + 1].m_value;
+
+        Quaternion k0(val0[0], val0[1], val0[2], val0[3]);
+        Quaternion k1(val1[0], val1[1], val1[2], val1[3]);
+        Quaternion k2(val2[0], val2[1], val2[2], val2[3]);
 
         if(k0.equal(k2) && !k0.equal(k1)) {
             continue;
@@ -678,7 +684,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                             pos = Vector3(-pos.x, pos.z, pos.y);
                         }
 
-                        frame.m_value = Vector3(pos.x, pos.y, pos.z);
+                        frame.m_value = { pos.x, pos.y, pos.z };
 
                         curve.m_keys.push_back(frame);
                     }
@@ -687,7 +693,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeVectorTrack(track, fbxSettings->positionError());
                     }
 
-                    clip->m_tracks.push_back(track);
+                    clip->addAnimationTrack(track);
                 }
 
                 if(channel->mNumRotationKeys > 1) {
@@ -710,7 +716,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         frame.m_position = (float)time / (float)duration; // Normalized time
                         duration = MAX(duration, frame.m_position);
                         frame.m_type = AnimationCurve::KeyFrame::Linear;
-                        frame.m_value = Quaternion(key->mValue.x, key->mValue.y, key->mValue.z, key->mValue.w);
+                        frame.m_value = { key->mValue.x, key->mValue.y, key->mValue.z, key->mValue.w };
 
                         curve.m_keys.push_back(frame);
                     }
@@ -719,7 +725,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeQuaternionTrack(track, fbxSettings->rotationError());
                     }
 
-                    clip->m_tracks.push_back(track);
+                    clip->addAnimationTrack(track);
                 }
 
                 if(channel->mNumScalingKeys > 1) {
@@ -742,7 +748,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         frame.m_position = (float)time / (float)duration; // Normalized time
                         duration = MAX(duration, frame.m_position);
                         frame.m_type = AnimationCurve::KeyFrame::Linear;
-                        frame.m_value = Vector3(key->mValue.x, key->mValue.y, key->mValue.z);
+                        frame.m_value = { key->mValue.x, key->mValue.y, key->mValue.z };
 
                         curve.m_keys.push_back(frame);
                     }
@@ -751,12 +757,12 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
                         optimizeVectorTrack(track, fbxSettings->scaleError());
                     }
 
-                    clip->m_tracks.push_back(track);
+                    clip->addAnimationTrack(track);
                 }
             }
         }
 
-        clip->m_tracks.sort(compare);
+        clip->tracks().sort(compare);
 
         Url dst(fbxSettings->absoluteDestination());
 
