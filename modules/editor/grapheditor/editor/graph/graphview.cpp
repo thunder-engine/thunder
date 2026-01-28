@@ -104,10 +104,9 @@ GraphView::GraphView(QWidget *editor) :
         m_updateLinks(false) {
 
     m_controller = new GraphController(this);
-    m_controller->doRotation(Vector3());
+    m_controller->activateCamera(1, true);
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
-    m_controller->setTransferSpeed(100.0f);
 
     static bool firtCall = true;
     if(firtCall) {

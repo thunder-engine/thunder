@@ -34,7 +34,7 @@ SpriteEdit::SpriteEdit() :
 
     m_proxy->setEditor(this);
 
-    m_controller->doRotation(Vector3());
+    m_controller->activateCamera(1, true);
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->blockRotations(true);
 

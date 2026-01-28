@@ -54,8 +54,6 @@ public:
 
     void setFree(bool flag) { m_cameraFree = flag; }
 
-    void setTransferSpeed(float speed) { m_transferSpeed = speed; }
-
     bool isMovementBlocked() const { return m_blockMove; }
     void blockMovement(bool flag) { m_blockMove = flag; }
 
@@ -81,7 +79,7 @@ public:
     void setZoomLimits(const Vector2 &limit);
 
     void doRotation(const Vector3 &vector);
-    void activateCamera(int index);
+    void activateCamera(int index, bool force = false);
 
     void resetCamera();
 
@@ -104,8 +102,6 @@ protected:
 
 protected:
     std::vector<CameraData> m_cameras;
-
-    CameraData m_targetCamera;
 
     Vector2 m_screenSize;
     Vector2 m_mouseSaved;
