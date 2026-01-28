@@ -88,16 +88,16 @@ Mesh *SpriteRender::meshToDraw(int instance) {
     \internal
 */
 MaterialInstance *SpriteRender::materialInstance(int index) {
-    if(m_dirtyMaterial && !m_materials.empty()) {
-        MaterialInstance *inst = m_materials.front();
-        if(inst) {
-            inst->setTexture(gTexture, texture());
-            inst->setVector4(gColor, &m_color);
-            inst->setTransform(transform());
-            inst->setPriority(m_priority);
-
-            m_dirtyMaterial = false;
+    if(m_dirtyMaterial) {
+        for(auto it : m_materials) {
+            if(it) {
+                it->setTexture(gTexture, texture());
+                it->setVector4(gColor, &m_color);
+                it->setTransform(transform());
+                it->setPriority(m_priority);
+            }
         }
+        m_dirtyMaterial = false;
     }
 
     return Renderable::materialInstance(index);

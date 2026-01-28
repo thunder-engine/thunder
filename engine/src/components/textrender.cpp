@@ -211,17 +211,19 @@ void TextRender::setLayer(int layer) {
     \internal
 */
 MaterialInstance *TextRender::materialInstance(int index) {
-    if(m_dirtyMaterial && !m_materials.empty()) {
-        MaterialInstance *inst = m_materials.front();
-        if(inst) {
-            if(m_font) {
-                inst->setTexture(gTexture, m_font->page());
+    if(m_dirtyMaterial) {
+        for(auto it : m_materials) {
+            if(it) {
+                if(m_font) {
+                    it->setTexture(gTexture, m_font->page());
+                }
+                it->setVector4(gColor, &m_color);
+                it->setFloat(gWeight, &m_fontWeight);
+                it->setTransform(transform());
+                it->setPriority(m_priority);
             }
-            inst->setVector4(gColor, &m_color);
-            inst->setFloat(gWeight, &m_fontWeight);
-            inst->setTransform(transform());
-            inst->setPriority(m_priority);
         }
+        m_dirtyMaterial = false;
     }
     return Renderable::materialInstance(index);
 }
