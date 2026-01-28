@@ -205,9 +205,11 @@ void CameraController::onOrthographic(bool flag) {
 }
 
 void CameraController::doRotation(const Vector3 &rotation) {
-    m_cameras[m_currentCamera].rotation = rotation;
-    m_cameras[m_currentCamera].focalDistance = m_activeCamera->focalDistance();
-    m_cameras[m_currentCamera].orthoSize = m_activeCamera->orthoSize();
+    CameraData &data = m_cameras[m_currentCamera];
+    data.rotation = rotation;
+    data.focalDistance = m_activeCamera->focalDistance();
+    data.orthoSize = m_activeCamera->orthoSize();
+
     m_blockMoveOnTransfer = true;
     m_transferProgress = 0.0f;
 }
@@ -215,13 +217,14 @@ void CameraController::doRotation(const Vector3 &rotation) {
 void CameraController::activateCamera(int index, bool force) {
     if(index < m_cameras.size()) {
         if(m_currentCamera >= 0 && !force) {
-            m_cameras[m_currentCamera].ortho = m_activeCamera->orthographic();
-            m_cameras[m_currentCamera].orthoSize = m_activeCamera->orthoSize();
-            m_cameras[m_currentCamera].focalDistance = m_activeCamera->focalDistance();
+            CameraData &data = m_cameras[m_currentCamera];
+            data.ortho = m_activeCamera->orthographic();
+            data.orthoSize = m_activeCamera->orthoSize();
+            data.focalDistance = m_activeCamera->focalDistance();
 
             Transform *t = m_activeCamera->transform();
-            m_cameras[m_currentCamera].position = t->position();
-            m_cameras[m_currentCamera].rotation = t->rotation();
+            data.position = t->position();
+            data.rotation = t->rotation();
         }
 
         m_currentCamera = index;
@@ -252,6 +255,8 @@ void CameraController::resetCamera() {
     m_cameras.clear();
     m_cameras.push_back({rotation, position, dist, 0.0f, false});
     m_cameras.push_back({Vector3(), Vector3(0.0f, 0.0f, -10.0f), 0.0f, dist, true});
+
+    m_currentCamera = 0;
 
     Transform *t = m_activeCamera->transform();
     t->setPosition(m_cameras[m_currentCamera].position);
@@ -289,10 +294,11 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
         radius = CLAMP(radius, FLT_EPSILON, FLT_MAX);
 
         Transform *camera = m_activeCamera->transform();
-        m_cameras[m_currentCamera].position = center + camera->quaternion() * Vector3(0.0f, 0.0f, radius);
-        m_cameras[m_currentCamera].rotation = camera->rotation();
-        m_cameras[m_currentCamera].focalDistance = radius;
-        m_cameras[m_currentCamera].orthoSize = radius;
+        CameraData &data = m_cameras[m_currentCamera];
+        data.position = center + camera->quaternion() * Vector3(0.0f, 0.0f, radius);
+        data.rotation = camera->rotation();
+        data.focalDistance = radius;
+        data.orthoSize = radius;
 
         m_transferProgress = 0.0f;
     }
@@ -418,11 +424,12 @@ VariantMap CameraController::saveState() {
 
         if(m_currentCamera >= 0) {
             Transform *t = m_activeCamera->transform();
-            m_cameras[m_currentCamera].rotation = t->rotation();
-            m_cameras[m_currentCamera].position = t->position();
-            m_cameras[m_currentCamera].ortho = m_activeCamera->orthographic();
-            m_cameras[m_currentCamera].orthoSize = m_activeCamera->orthoSize();
-            m_cameras[m_currentCamera].focalDistance = m_activeCamera->focalDistance();
+            CameraData &data = m_cameras[m_currentCamera];
+            data.rotation = t->rotation();
+            data.position = t->position();
+            data.ortho = m_activeCamera->orthographic();
+            data.orthoSize = m_activeCamera->orthoSize();
+            data.focalDistance = m_activeCamera->focalDistance();
         }
 
         VariantList cameras;
