@@ -104,9 +104,9 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
         case MetaType::VECTOR2: target.property.write(target.object, Vector2(vec4)); break;
         case MetaType::VECTOR3: {
             switch(target.flag) {
-                case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4);
-                case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4);
-                case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4);
+                case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4); break;
+                case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4); break;
+                case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4); break;
                 default: target.property.write(target.object, Vector3(vec4)); break;
             }
         } break;
