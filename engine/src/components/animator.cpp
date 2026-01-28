@@ -1,12 +1,20 @@
 #include "components/animator.h"
 
 #include "components/actor.h"
+#include "components/transform.h"
 
 #include "resources/animationclip.h"
 #include "resources/animationstatemachine.h"
 
 #include "timer.h"
 #include <log.h>
+
+enum TransformFlags {
+    Position = 1,
+    Rotation,
+    Scale,
+    Quat
+};
 
 /*!
     \class Animator
@@ -94,7 +102,14 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
         case MetaType::INTEGER: target.property.write(target.object, (int)vec4.x); break;
         case MetaType::FLOAT: target.property.write(target.object, vec4.x); break;
         case MetaType::VECTOR2: target.property.write(target.object, Vector2(vec4)); break;
-        case MetaType::VECTOR3: target.property.write(target.object, Vector3(vec4)); break;
+        case MetaType::VECTOR3: {
+            switch(target.flag) {
+                case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4);
+                case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4);
+                case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4);
+                default: target.property.write(target.object, Vector3(vec4)); break;
+            }
+        } break;
         default: target.property.write(target.object, vec4); break;
     }
 }
@@ -125,7 +140,11 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
         }
     }
 
-    target.property.write(target.object, quat);
+    if(target.flag == TransformFlags::Quat) {
+        static_cast<Transform *>(target.object)->setQuaternion(quat);
+    } else {
+        target.property.write(target.object, quat);
+    }
 }
 
 void Animator::sampleString(float dt, TargetProperties &target) {
@@ -268,6 +287,13 @@ void Animator::rebind() {
     PROFILE_FUNCTION();
 
     if(m_currentClip) {
+        static const std::map<TString, TransformFlags> tranformFlags = {
+            { "position", TransformFlags::Position },
+            { "rotation", TransformFlags::Rotation },
+            { "scale", TransformFlags::Scale },
+            { "quaternion", TransformFlags::Quat }
+        };
+
         Actor *actor = Animator::actor();
         for(auto &it : m_currentClip->tracks()) {
             TargetProperties *target = nullptr;
@@ -283,8 +309,15 @@ void Animator::rebind() {
                     if(index > -1) {
                         TargetProperties data;
                         data.property = meta->property(index);
+                        data.defaultValue = data.property.read(object);
                         data.object = object;
-                        data.defaultValue = data.property.read(data.object);
+                        Transform *t = dynamic_cast<Transform *>(object);
+                        if(t) {
+                            auto transformIt = tranformFlags.find(it.property());
+                            if(transformIt != tranformFlags.end()) {
+                                data.flag = transformIt->second;
+                            }
+                        }
 
                         m_bindProperties[it.hash()] = data;
                         target = &m_bindProperties[it.hash()];

@@ -55,6 +55,8 @@ class ENGINE_EXPORT Animator : public NativeBehaviour {
 
         Object *object = nullptr;
 
+        int flag = 0;
+
     };
 
 public:
