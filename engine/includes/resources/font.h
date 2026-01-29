@@ -1,7 +1,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "sprite.h"
+#include "resource.h"
 
 enum Alignment {
     Left    = (1<<0),
@@ -13,8 +13,11 @@ enum Alignment {
     Bottom  = (1<<6)
 };
 
-class ENGINE_EXPORT Font : public Sprite {
-    A_OBJECT(Font, Sprite, Resources)
+class Mesh;
+class Texture;
+
+class ENGINE_EXPORT Font : public Resource {
+    A_OBJECT(Font, Resource, Resources)
 
     A_NOPROPERTIES()
     A_METHODS(
@@ -29,6 +32,8 @@ class ENGINE_EXPORT Font : public Sprite {
 public:
     Font();
     ~Font();
+
+    Texture *page(int index = 0);
 
     int atlasIndex(int glyph) const;
 
@@ -49,18 +54,26 @@ public:
     void loadUserData(const VariantMap &data) override;
 
 private:
-    void clear() override;
+    void clear();
 
-    bool requestCharacter(uint32_t character);
+    Mesh *shape(int key) const;
+
+    int addElement(Texture *texture);
+
+    void packSheets(int padding);
+
+    void addPage(Texture *texture);
 
 protected:
     VariantMap saveUserData() const override;
 
 private:
-    typedef std::unordered_map<uint32_t, uint32_t> GlyphMap;
-    typedef std::unordered_map<uint32_t, Vector2> SpecialMap;
+    std::unordered_map<uint32_t, uint32_t> m_glyphMap;
+    std::unordered_map<uint32_t, Mesh *> m_shapes;
 
-    GlyphMap m_glyphMap;
+    std::vector<Texture *> m_pages;
+    std::vector<Texture *> m_sources;
+
     ByteArray m_data;
 
     int32_t *m_face;

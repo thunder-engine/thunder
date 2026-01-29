@@ -207,7 +207,7 @@ void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const TString
             QDir dir(ProjectSettings::instance()->contentPath().data());
             TString source(dir.relativeFilePath((path + "/" + element.attribute("source").as_string()).data()).toStdString());
 
-            tileSet.setSpriteSheet(Engine::loadResource<Sprite>(source));
+            tileSet.setTexture(Engine::loadResource<Texture>(source));
         } else if(std::string(element.name()) == "tileoffset") {
             tileSet.setTileOffset(Vector2(element.attribute("x").as_float(),
                                           element.attribute("y").as_float()));

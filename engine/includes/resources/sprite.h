@@ -4,16 +4,16 @@
 #include "texture.h"
 #include "mesh.h"
 
-class Texture;
-
 class ENGINE_EXPORT Sprite : public Resource {
     A_OBJECT(Sprite, Resource, Resources)
 
     A_PROPERTIES(
-        A_PROPERTY(float, pixelsPerUnit, Sprite::pixelsPerUnit, Sprite::setPixelsPerUnit)
-    )
-    A_METHODS(
-        A_METHOD(Texture *, Sprite::page)
+        A_PROPERTY(float, pixelsPerUnit, Sprite::pixelsPerUnit, Sprite::setPixelsPerUnit),
+        A_PROPERTY(Vector4, bounds, Sprite::bounds, Sprite::setBounds),
+        A_PROPERTY(Vector4, border, Sprite::border, Sprite::setBorder),
+        A_PROPERTY(Vector2, pivot, Sprite::pivot, Sprite::setPivot),
+        A_PROPERTY(Texture *, texture, Sprite::texture, Sprite::setTexture),
+        A_PROPERTY(int, mode, Sprite::mode, Sprite::setMode)
     )
 
 public:
@@ -28,53 +28,50 @@ public:
     Sprite();
     ~Sprite();
 
-    Mesh *shape(int key) const;
-    void setShape(int key, Mesh *mesh);
+    Mesh *mesh() const;
 
     float pixelsPerUnit() const;
     void setPixelsPerUnit(float pixels);
 
-    void setRegion(int key, const Vector4 &bounds);
-    void setRegion(int key, const Vector4 &bounds, const Vector4 &border, const Vector2 &pivot);
+    Vector4 bounds() const;
+    void setBounds(const Vector4 &bounds);
 
-    Texture *page(int key = -1);
-    void addPage(Texture *texture);
+    Vector4 border() const;
+    void setBorder(const Vector4 &border);
 
-    Mesh *composeMesh(Mesh *mesh, int key, Mode mode, Vector2 &size) const;
+    Vector2 pivot() const;
+    void setPivot(const Vector2 &pivot);
 
-protected:
-    int addElement(Texture *texture);
+    Texture *texture() const;
+    void setTexture(Texture *texture);
 
-    void packSheets(int padding);
+    int mode() const;
+    void setMode(int mode);
 
-    virtual void clear();
+    Mesh *composeMesh(Mesh *mesh, Mode mode, Vector2 &size);
 
 private:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
+    void recalcMesh() const;
+
 private:
-    struct Shape {
-        int page;
+    Vector4 m_bounds;
 
-        int mode;
+    Vector4 m_border;
 
-        Mesh *mesh;
+    Vector2 m_pivot;
 
-        Vector4 bounds;
+    Texture *m_texture;
 
-        Vector4 border;
-
-        Vector2 pivot;
-    };
-
-    std::unordered_map<int, Shape> m_shapes;
-
-    std::vector<Texture *> m_pages;
-
-    std::vector<Texture *> m_sources;
+    Mesh *m_mesh;
 
     float m_pixelsPerUnit;
+
+    int m_mode;
+
+    bool m_dirtyMesh;
 
 };
 

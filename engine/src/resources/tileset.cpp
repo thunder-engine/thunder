@@ -5,7 +5,7 @@
 #include <variant.h>
 
 namespace  {
-    const char *gSpriteSheet = "SpriteSheet";
+    const char *gSpriteSheet("SpriteSheet");
 }
 
 const unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
@@ -21,6 +21,7 @@ const unsigned FLIPPED_VERTICALLY_FLAG   = 0x40000000;
 */
 
 TileSet::TileSet() :
+        m_texture(nullptr),
         m_type(0),
         m_tileWidth(0),
         m_tileHeight(0),
@@ -28,8 +29,7 @@ TileSet::TileSet() :
         m_tileMargin(0),
         m_columns(0),
         m_width(0),
-        m_height(0),
-        m_spriteSheet(nullptr) {
+        m_height(0) {
 
 }
 /*!
@@ -96,23 +96,20 @@ void TileSet::setTileMargin(int margin) {
 /*!
     Returns a pointer to the sprite sheet containing the individual tiles.
 */
-Sprite *TileSet::spriteSheet() const {
-    return m_spriteSheet;
+Texture *TileSet::texture() const {
+    return m_texture;
 }
 /*!
-    Sets the sprite \a sheet containing the individual tiles.
+    Sets the \a texture containing the individual tiles.
 */
-void TileSet::setSpriteSheet(Sprite *sheet) {
-    m_spriteSheet = sheet;
-    if(m_spriteSheet) {
-        Texture *t = m_spriteSheet->page();
-        if(t) {
-            m_width = t->width();
-            m_height = t->height();
+void TileSet::setTexture(Texture *texture) {
+    m_texture = texture;
+    if(m_texture) {
+        m_width = m_texture->width();
+        m_height = m_texture->height();
 
-            if(m_columns == 0) {
-                m_columns = m_width / m_tileWidth;
-            }
+        if(m_columns == 0) {
+            m_columns = m_width / m_tileWidth;
         }
     } else {
         m_width = 0;
@@ -176,7 +173,7 @@ Vector4 TileSet::getCorners(int index) {
 void TileSet::loadUserData(const VariantMap &data) {
     auto it = data.find(gSpriteSheet);
     if(it != data.end()) {
-        setSpriteSheet(Engine::loadResource<Sprite>((*it).second.toString()));
+        setTexture(Engine::loadResource<Texture>((*it).second.toString()));
     }
 }
 /*!
@@ -185,7 +182,7 @@ void TileSet::loadUserData(const VariantMap &data) {
 VariantMap TileSet::saveUserData() const {
     VariantMap result;
 
-    TString ref = Engine::reference(spriteSheet());
+    TString ref = Engine::reference(texture());
     if(!ref.isEmpty()) {
         result[gSpriteSheet] = ref;
     }

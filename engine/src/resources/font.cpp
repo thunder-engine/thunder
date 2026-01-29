@@ -8,6 +8,8 @@
 #include <freetype/ftbitmap.h>
 
 #include "texture.h"
+#include "mesh.h"
+#include "utils/atlas.h"
 
 #include "log.h"
 
@@ -445,8 +447,173 @@ VariantMap Font::saveUserData() const {
     Cleans up all font data.
 */
 void Font::clear() {
-    Sprite::clear();
-
     m_glyphMap.clear();
     FT_Done_Face(reinterpret_cast<FT_FaceRec_ *>(m_face));
+
+    for(auto it : m_sources) {
+        it->decRef();
+    }
+    m_sources.clear();
+
+    for(auto it : m_pages) {
+        it->decRef();
+    }
+    m_pages.clear();
+}
+
+Mesh *Font::shape(int key) const {
+    PROFILE_FUNCTION();
+
+    auto it = m_shapes.find(key);
+    if(it != m_shapes.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+/*!
+    Adds new sub \a texture as element to current glyph sheet.
+    All elements will be packed to a single glyph sheet texture using Font::packSheets() method.
+    Returns the id of the new element.
+
+    \sa packSheets()
+*/
+int Font::addElement(Texture *texture) {
+    PROFILE_FUNCTION();
+
+    m_sources.push_back(texture);
+
+    Mesh *mesh = Engine::objectCreate<Mesh>();
+    mesh->makeDynamic();
+    mesh->setVertices({Vector3(0.0f, 0.0f, 0.0f),
+                       Vector3(0.0f, texture->height(), 0.0f),
+                       Vector3(texture->width(), texture->height(), 0.0f),
+                       Vector3(texture->width(), 0.0f, 0.0f) });
+
+    mesh->setIndices({0, 1, 2, 0, 2, 3});
+
+    int index = (m_sources.size() - 1);
+    m_shapes[index] = mesh;
+
+    return index;
+}
+/*!
+    Packs all added elements into a glyph sheets.
+    Parameter \a padding can be used to delimit elements.
+
+    \sa addElement()
+*/
+void Font::packSheets(int padding) {
+    PROFILE_FUNCTION();
+
+    uint32_t atlasWidth = 1;
+    uint32_t atlasHeight = 1;
+
+    std::vector<AtlasNode *> nodes;
+    nodes.resize(m_sources.size());
+
+    AtlasNode root;
+
+    if(m_pages.empty()) {
+        Texture *texture = Engine::objectCreate<Texture>();
+        texture->setFiltering(Texture::Bilinear);
+        addPage(texture);
+    }
+
+    while(true) {
+        root.w = atlasWidth;
+        root.h = atlasHeight;
+
+        uint32_t i;
+        for(i = 0; i < m_sources.size(); i++) {
+            Texture *texture = m_sources[i];
+
+            int32_t width = (texture->width() + padding * 2);
+            int32_t height = (texture->height() + padding * 2);
+
+            AtlasNode *node = root.insert(width, height);
+            if(node) {
+                node->occupied = true;
+
+                nodes[i] = node;
+            } else {
+                atlasWidth *= 2;
+                atlasHeight *= 2;
+
+                if(root.left) {
+                    delete root.left;
+                    root.left = nullptr;
+                }
+
+                if(root.right) {
+                    delete root.right;
+                    root.right = nullptr;
+                }
+
+                root.occupied = false;
+
+                break;
+            }
+        }
+
+        if(i == m_sources.size()) {
+            break;
+        }
+    }
+
+    for(auto it : m_pages) {
+        it->resize(atlasWidth, atlasHeight);
+        for(uint32_t i = 0; i < nodes.size(); i++) {
+            AtlasNode *node = nodes[i];
+
+            int32_t w = node->w - padding * 2;
+            int32_t h = node->h - padding * 2;
+
+            uint8_t *src = m_sources[i]->surface(0).front().data();
+            uint8_t *dst = it->surface(0).front().data();
+            for(int32_t y = 0; y < h; y++) {
+                memcpy(&dst[(y + node->y + padding) * atlasWidth + node->x], &src[y * w], w);
+            }
+
+            Mesh *mesh = shape(i);
+            if(mesh) {
+                Vector4 uvFrame;
+                uvFrame.x = node->x / static_cast<float>(atlasWidth);
+                uvFrame.y = (node->y + padding) / static_cast<float>(atlasHeight);
+                uvFrame.z = uvFrame.x + w / static_cast<float>(atlasWidth);
+                uvFrame.w = uvFrame.y + h / static_cast<float>(atlasHeight);
+
+                mesh->setUv0({Vector2(uvFrame.x, uvFrame.y),
+                              Vector2(uvFrame.z, uvFrame.y),
+                              Vector2(uvFrame.z, uvFrame.w),
+                              Vector2(uvFrame.x, uvFrame.w)});
+
+                mesh->recalcBounds();
+            }
+        }
+
+        it->setDirty();
+    }
+}
+/*!
+    Returns glyph sheet texture at \a index.
+*/
+Texture *Font::page(int index) {
+    PROFILE_FUNCTION();
+
+    if(index < m_pages.size()) {
+        return m_pages[index];
+    }
+
+    return nullptr;
+}
+/*!
+    Adds a new glyph sheet \a texture.
+*/
+void Font::addPage(Texture *texture) {
+    PROFILE_FUNCTION();
+
+    if(texture) {
+        texture->incRef();
+        m_pages.push_back(texture);
+    }
 }

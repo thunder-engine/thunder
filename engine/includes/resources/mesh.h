@@ -84,6 +84,8 @@ private:
     VariantMap saveUserData() const override;
 
 private:
+    friend class Sprite;
+
     AABBox m_box;
 
     Vector4Vector m_colors;

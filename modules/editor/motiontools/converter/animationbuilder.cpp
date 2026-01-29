@@ -36,7 +36,7 @@ AssetConverter::ReturnCode AnimationControllerBuilder::convertFile(AssetConverte
     object.push_back(AnimationStateMachine::metaClass()->name()); // type
     object.push_back(uuid); // id
     object.push_back(0); // parent
-    object.push_back(""); // name
+    object.push_back(settings->destination()); // name
 
     object.push_back(VariantMap()); // properties
     object.push_back(VariantList()); // links

@@ -70,7 +70,7 @@ void TileMapRender::setTileMap(TileMap *map) {
 
             TileSet *tileSet = m_tileMap->tileSet();
             if(tileSet) {
-                Texture *texture = tileSet->spriteSheet() ? tileSet->spriteSheet()->page() : nullptr;
+                Texture *texture = tileSet->texture();
                 Vector4 color(1.0f);
                 for(auto it : m_materials) {
                     it->setTexture(gTexture, texture);
@@ -89,11 +89,7 @@ void TileMapRender::setMaterial(Material *material) {
     if(m_tileMap) {
         TileSet *tileSet = m_tileMap->tileSet();
         if(tileSet) {
-            Texture *texture = nullptr;
-            Sprite *sheet = tileSet->spriteSheet();
-            if(sheet) {
-                texture = sheet->page();
-            }
+            Texture *texture = tileSet->texture();
             Vector4 color(1.0f);
             for(auto it : m_materials) {
                 it->setTexture(gTexture, texture);

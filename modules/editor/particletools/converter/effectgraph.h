@@ -19,8 +19,6 @@ public:
 
     VariantMap data() const;
 
-    Variant object() const;
-
     StringList nodeList() const override;
 
     GraphNode *defaultNode() const override;

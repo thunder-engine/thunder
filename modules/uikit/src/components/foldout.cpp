@@ -167,8 +167,7 @@ void Foldout::composeComponent() {
 
     Image *icon = indicator->icon();
     if(icon) {
-        icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
-        icon->setItem("Arrow");
+        icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
     }
 
     Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));

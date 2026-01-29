@@ -77,23 +77,29 @@ AssetConverter::ReturnCode EffectBuilder::convertFile(AssetConverterSettings *se
         m_graph.load(settings->source());
     }
 
-    Variant variant = m_graph.object();
-
-    if(settings->info().id == 0) {
-        settings->info().id = Engine::generateUUID();
-    }
-    VariantList objects = variant.value<VariantList>();
-    for(auto &it : objects) {
-        VariantList o  = it.value<VariantList>();
-        if(o.size() >= 5) {
-            auto i = o.begin();
-            i++;
-            *i = settings->info().id;
-            break;
-        }
+    uint32_t uuid = settings->info().id;
+    if(uuid == 0) {
+        uuid = Engine::generateUUID();
+        settings->info().id = uuid;
     }
 
-    return settings->saveBinary(variant, settings->absoluteDestination());
+    VariantList result;
+
+    VariantList object;
+
+    object.push_back(VisualEffect::metaClass()->name()); // type
+    object.push_back(uuid); // id
+    object.push_back(0); // parent
+    object.push_back(settings->destination()); // name
+
+    object.push_back(VariantMap()); // properties
+    object.push_back(VariantList()); // links
+
+    object.push_back(m_graph.data()); // user data
+
+    result.push_back(object);
+
+    return settings->saveBinary(result, settings->absoluteDestination());
 }
 
 AssetConverterSettings *EffectBuilder::createSettings() {

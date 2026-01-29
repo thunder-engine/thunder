@@ -131,7 +131,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
 
                 AnimationTrack::Frames &frames = track.frames();
 
-                frames.push_back({ slot.render->item(), 0.0f });
+                frames.push_back({  Engine::reference(slot.render->sprite()), 0.0f });
 
                 for(auto &key : type.second.value<VariantList>()) {
                     VariantMap fields = key.value<VariantMap>();
@@ -142,14 +142,14 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
                         position = it->second.toFloat();
                     }
 
-                    TString value = slot.render->item();
+                    TString ref = Engine::reference(slot.render->sprite());
 
                     it = fields.find(gName);
                     if(it != fields.end()) {
-                        value = it->second.toString();
+                        ref = it->second.toString();
                     }
 
-                    frames.push_back({ value, position });
+                    frames.push_back({ ref, position });
                 }
 
                 clip.addAnimationTrack(track);

@@ -121,15 +121,15 @@ protected:
 
 class TextureConverter : public AssetConverter {
 public:
-    void convertTexture(Texture *texture, TextureImportSettings *settings);
-    void convertSprite(Sprite *sheet, TextureImportSettings *settings);
+    Texture *convertTexture(TextureImportSettings *settings) const;
+    void convertSprite(Texture *texture, TextureImportSettings *settings) const;
 
 private:
     void init() override;
 
-    bool compress(Texture *texture);
+    bool compress(Texture *texture) const;
 
-    void copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror = false);
+    void copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror = false) const;
 
     StringList suffixes() const override { return {"bmp", "dds", "jpg", "jpeg", "png", "tga", "ico", "tif"}; }
     ReturnCode convertFile(AssetConverterSettings *settings) override;

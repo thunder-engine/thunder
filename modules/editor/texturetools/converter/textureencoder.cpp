@@ -25,7 +25,7 @@ uint32_t estimateTranscodedSize(uint32_t width, uint32_t height, basist::transco
     return width * height * 4;
 }
 
-bool TextureConverter::compress(Texture *texture) {
+bool TextureConverter::compress(Texture *texture) const {
     bool result = basisu::basisu_encoder_init();
 
     if(result) {

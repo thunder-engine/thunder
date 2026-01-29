@@ -75,6 +75,8 @@ public:
 
     std::map<TString, Item> m_atlasItems;
 
+    TString m_texture;
+
     Vector2 m_atlasSize;
 
     Actor *m_root;
@@ -104,7 +106,7 @@ private:
 
     void importAnimations(const VariantMap &animations, SpineConverterSettings *settings);
 
-    void importAtlas(Sprite *sprite, SpineConverterSettings *settings);
+    void importAtlas(SpineConverterSettings *settings);
 
     void importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
     void importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings);

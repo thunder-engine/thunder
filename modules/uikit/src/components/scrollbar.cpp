@@ -12,8 +12,7 @@ namespace {
     const char *gBackArrow("backArrow");
     const char *gFrontArrow("frontArrow");
 
-    const char *gUiSprite(".embedded/ui.png");
-    const char *gSpriteArrow("Arrow");
+    const char *gSpriteArrow(".embedded/ui.png/Arrow");
 }
 
 ScrollBar::ScrollBar() :
@@ -241,10 +240,11 @@ void ScrollBar::composeComponent() {
 
     Image *backIcon = back->icon();
     if(backIcon) {
-        backIcon->setSprite(Engine::loadResource<Sprite>(gUiSprite));
-        backIcon->setItem(gSpriteArrow);
+        backIcon->setSprite(Engine::loadResource<Sprite>(gSpriteArrow));
         RectTransform *rectIcon = backIcon->rectTransform();
-        rectIcon->setSize(Vector2(16.0f, 8.0f));
+        if(rectIcon) {
+            rectIcon->setSize(Vector2(16.0f, 8.0f));
+        }
     }
     setBackArrow(back);
 
@@ -255,10 +255,11 @@ void ScrollBar::composeComponent() {
 
     Image *frontIcon = front->icon();
     if(frontIcon) {
-        frontIcon->setSprite(Engine::loadResource<Sprite>(gUiSprite));
-        frontIcon->setItem(gSpriteArrow);
+        frontIcon->setSprite(Engine::loadResource<Sprite>(gSpriteArrow));
         RectTransform *rectIcon = frontIcon->rectTransform();
-        rectIcon->setSize(Vector2(16.0f, 8.0f));
+        if(rectIcon) {
+            rectIcon->setSize(Vector2(16.0f, 8.0f));
+        }
     }
     setFrontArrow(front);
 
