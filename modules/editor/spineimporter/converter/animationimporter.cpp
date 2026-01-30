@@ -39,17 +39,13 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
     frame.m_position = 0.0f;
     frame.m_value = { value.x, value.y, value.z };
 
-    curve.m_keys.push_back(frame);
-
     for(auto &key : variant.value<VariantList>()) {
         VariantMap fields = key.value<VariantMap>();
 
-        float time = 0.0f;
         auto it = fields.find(gTime);
         if(it != fields.end()) {
-            time = it->second.toFloat();
+            frame.m_position = it->second.toFloat();
         }
-        frame.m_position = time;
 
         Vector3 v = value;
 
@@ -58,7 +54,7 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
             if(it != fields.end()) {
                 v.z += it->second.toFloat();
             } else {
-                it = fields.find("value");
+                it = fields.find(gValue);
                 if(it != fields.end()) {
                     v.z += it->second.toFloat();
                 }
@@ -131,7 +127,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
 
                 AnimationTrack::Frames &frames = track.frames();
 
-                frames.push_back({  Engine::reference(slot.render->sprite()), 0.0f });
+                frames.push_back({ Engine::reference(slot.render->sprite()), 0.0f });
 
                 for(auto &key : type.second.value<VariantList>()) {
                     VariantMap fields = key.value<VariantMap>();
@@ -256,6 +252,8 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             clip = Engine::objectCreate<AnimationClip>(info.uuid);
         }
 
+        clip->tracks().clear();
+
         for(auto &timeline : animation.second.value<VariantMap>()) {
             if(timeline.first == gBones) {
                 importBoneTimeline(timeline.second.value<VariantMap>(), *clip, settings);
@@ -272,12 +270,12 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
             if(!curve.m_keys.empty()) {
                 duration = MAX(curve.m_keys.back().m_position, duration);
             }
-
             it.setDuration(duration * 1000.0f);
 
-            // Normalize
-            for(auto &key : curve.m_keys) {
-                key.m_position /= duration;
+            if(duration > 0.0f) { // Normalize
+                for(auto &key : curve.m_keys) {
+                    key.m_position /= duration;
+                }
             }
         }
 

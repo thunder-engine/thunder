@@ -1,7 +1,5 @@
 #include "spineconverter.h"
 
-#include <cstring>
-
 #include <json.h>
 #include <bson.h>
 

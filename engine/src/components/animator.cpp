@@ -79,7 +79,11 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -122,7 +126,11 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -155,7 +163,11 @@ void Animator::sampleString(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -276,7 +288,7 @@ void Animator::setClip(AnimationClip *clip, float position) {
 
     rebind();
 
-    if(position > 0.0f) {
+    if(position >= 0.0f) {
         process(MIN(position, 1.0f) * m_currentClip->duration());
     }
 }

@@ -158,13 +158,15 @@ QMenu *AnimationEdit::propertyContextMenu(Object *object, const TString &propert
 }
 
 void AnimationEdit::onObjectsSelected(const Object::ObjectList &objects) {
-    if(m_variableButton) {
-        m_variableButton->setVisible(objects.front() == m_graph);
-    }
+    if(!objects.empty()) {
+        if(m_variableButton) {
+            m_variableButton->setVisible(objects.front() == m_graph);
+        }
 
-    StateLink *state = dynamic_cast<StateLink *>(objects.front());
-    if(state) {
-        Object::connect(state, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
+        StateLink *state = dynamic_cast<StateLink *>(objects.front());
+        if(state) {
+            Object::connect(state, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
+        }
     }
 
     emit objectsSelected(objects);

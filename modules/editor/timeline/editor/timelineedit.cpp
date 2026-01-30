@@ -148,7 +148,9 @@ void TimelineEdit::setPosition(uint32_t position) {
 
     if(m_controller) {
         AnimationClip *clip = m_model->clip();
-        m_controller->setClip(clip, m_position / clip->duration());
+        if(clip) {
+            m_controller->setClip(clip, static_cast<float>(m_position) / static_cast<float>(clip->duration()));
+        }
     }
 
     if(m_armature) {
@@ -210,12 +212,10 @@ void TimelineEdit::onPropertyUpdated(Object *object, const TString &property) {
         if(!m_model->isReadOnly() && !property.isEmpty() && ui->record->isChecked()) {
             if(m_controller) {
                 AnimationClip *clip = m_model->clip();
-                if(clip == nullptr) {
-                    return;
+                if(clip) {
+                    TString path = pathTo(static_cast<Object *>(m_controller->actor()), object);
+                    m_model->propertyUpdated(object, path.data(), property.data(), position());
                 }
-
-                TString path = pathTo(static_cast<Object *>(m_controller->actor()), object);
-                m_model->propertyUpdated(object, path.data(), property.data(), position());
             }
         }
     }
@@ -268,7 +268,7 @@ void TimelineEdit::onClipChanged(const QString &clip) {
         auto it = m_clips.find(m_currentClip);
         if(it != m_clips.end()) {
             m_model->setClip(it->second, m_controller->actor());
-            m_controller->setClip(it->second);
+            on_begin_clicked();
         }
     }
 }
@@ -307,7 +307,8 @@ void TimelineEdit::on_begin_clicked() {
     if(m_controller) {
         auto it = m_clips.find(m_currentClip);
         if(it != m_clips.end()) {
-            m_controller->setClip(it->second);
+            m_position = 0;
+            m_controller->setClip(it->second, 0.0f);
         }
     }
 }

@@ -40,6 +40,7 @@ namespace {
     const char *gScale("scale");
     const char *gTime("time");
     const char *gAngle("angle");
+    const char *gValue("value");
 
     const char *gTransform("Transform");
 };
