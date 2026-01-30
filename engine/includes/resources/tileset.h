@@ -14,7 +14,7 @@ class ENGINE_EXPORT TileSet : public Resource {
         A_PROPERTY(int, tileMargin, TileSet::tileMargin, TileSet::setTileMargin),
         A_PROPERTY(int, columns, TileSet::columns, TileSet::setColumns),
         A_PROPERTY(Vector2, tileOffset, TileSet::tileOffset, TileSet::setTileOffset),
-        A_PROPERTYEX(Sprite *, spriteSheet, TileSet::spriteSheet, TileSet::setSpriteSheet, "editor=Asset")
+        A_PROPERTYEX(Texture *, texture, TileSet::texture, TileSet::setTexture, "editor=Asset")
     )
     A_ENUMS(
         A_ENUM(TileType,
@@ -47,8 +47,8 @@ public:
     int tileMargin() const;
     void setTileMargin(int margin);
 
-    Sprite *spriteSheet() const;
-    void setSpriteSheet(Sprite *sheet);
+    Texture *texture() const;
+    void setTexture(Texture *texture);
 
     int columns() const;
     void setColumns(int columns);
@@ -63,6 +63,10 @@ private:
     VariantMap saveUserData() const override;
 
 private:
+    Vector2 m_tileOffset;
+
+    Texture *m_texture;
+
     int m_type;
 
     int m_tileWidth;
@@ -78,10 +82,6 @@ private:
     int m_width;
 
     int m_height;
-
-    Vector2 m_tileOffset;
-
-    Sprite *m_spriteSheet;
 
 };
 

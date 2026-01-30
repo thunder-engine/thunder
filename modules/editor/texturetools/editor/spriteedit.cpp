@@ -148,7 +148,7 @@ StringList SpriteEdit::suffixes() const {
 
 void SpriteEdit::onUpdateTemplate() {
     if(!m_settings.empty()) {
-        m_converter->convertTexture(m_render->texture(), static_cast<TextureImportSettings*>(m_settings.front()));
+        m_converter->convertTexture(static_cast<TextureImportSettings *>(m_settings.front()));
     }
 }
 

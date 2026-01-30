@@ -218,7 +218,7 @@ void FloatInput::composeComponent() {
     textRect->setMargin(Vector4(0.0f, width, 0.0f, width));
     textRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
-    Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png");
+    Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
 
     Actor *left = Engine::composeActor<LineEdit>(gDecrease, actor());
     Button *decreaseBtn = left->getComponent<Button>();
@@ -232,7 +232,6 @@ void FloatInput::composeComponent() {
         Image *icon = decreaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
-            icon->setItem("Arrow");
             RectTransform *rect = icon->rectTransform();
             if(rect) {
                 rect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
@@ -256,7 +255,6 @@ void FloatInput::composeComponent() {
         Image *icon = increaseBtn->icon();
         if(icon) {
             icon->setSprite(arrow);
-            icon->setItem("Arrow");
             RectTransform *rect = icon->rectTransform();
             if(rect) {
                 rect->setRotation(Vector3(0.0f, 0.0f, 90.0f));

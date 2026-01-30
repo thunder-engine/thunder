@@ -79,7 +79,11 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -122,7 +126,11 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -155,7 +163,11 @@ void Animator::sampleString(float dt, TargetProperties &target) {
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
         PlaybackState &playback = *playbackIt;
-        float position = playback.currentPosition + dt / playback.motion->duration();
+        int duration = playback.motion->duration();
+        if(duration == 0) {
+            duration = 1;
+        }
+        float position = playback.currentPosition + dt / duration;
         bool endOfPlayback = recalcTransitionWeights(playback, position, factor);
 
         if(playback.weight > 0.0f) {
@@ -276,7 +288,7 @@ void Animator::setClip(AnimationClip *clip, float position) {
 
     rebind();
 
-    if(position > 0.0f) {
+    if(position >= 0.0f) {
         process(MIN(position, 1.0f) * m_currentClip->duration());
     }
 }
@@ -400,19 +412,29 @@ void Animator::setIntegerHash(int hash, int32_t value) {
 void Animator::stateMachineUpdated(int state, void *ptr) {
     PROFILE_FUNCTION();
 
-    if(state == Resource::Ready) {
-        Animator *p = static_cast<Animator *>(ptr);
+    Animator *p = static_cast<Animator *>(ptr);
 
-        p->m_bindProperties.clear();
-        p->m_currentState = nullptr;
+    switch(state) {
+        case Resource::Ready: {
+            p->m_bindProperties.clear();
+            p->m_currentState = nullptr;
 
-        if(p->m_stateMachine) {
-            p->m_currentVariables = p->m_stateMachine->variables();
-            AnimationState *initialState = p->m_stateMachine->initialState();
-            if(initialState) {
-                p->setStateHash(initialState->m_hash);
+            if(p->m_stateMachine) {
+                p->m_currentVariables = p->m_stateMachine->variables();
+                AnimationState *initialState = p->m_stateMachine->initialState();
+                if(initialState) {
+                    p->setStateHash(initialState->m_hash);
+                }
             }
-        }
+        } break;
+        case Resource::ToBeDeleted: {
+            p->m_bindProperties.clear();
+            p->m_currentVariables.clear();
+            p->m_stateMachine = nullptr;
+            p->m_currentState = nullptr;
+            p->m_currentClip = nullptr;
+        } break;
+        default: break;
     }
 }
 /*!

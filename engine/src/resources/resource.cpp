@@ -89,11 +89,10 @@ Resource::State Resource::state() const {
 */
 void Resource::switchState(State state) {
     switch(state) {
-        case ToBeUpdated: m_state = Ready; break;
-        case Unloading: m_state = ToBeDeleted; break;
-        default: m_state = state; break;
+        case ToBeUpdated: setState(Ready); break;
+        case Unloading: setState(ToBeDeleted); break;
+        default: setState(state); break;
     }
-    notifyCurrentState();
 }
 /*!
     Returns true in case of resource can be unloaded from GPU; otherwise returns false.
@@ -105,8 +104,10 @@ bool Resource::isUnloadable() {
     Sets new \a state for the resource.
 */
 void Resource::setState(State state) {
-    m_state = state;
-    notifyCurrentState();
+    if(m_state != state) {
+        m_state = state;
+        notifyCurrentState();
+    }
 }
 /*!
     Notifies subscribers about the current state of the resource.

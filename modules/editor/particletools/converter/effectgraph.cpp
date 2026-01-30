@@ -164,23 +164,3 @@ VariantMap EffectGraph::data() const {
 
     return user;
 }
-
-Variant EffectGraph::object() const {
-    VariantList result;
-
-    VariantList object;
-
-    object.push_back(VisualEffect::metaClass()->name()); // type
-    object.push_back(0); // id
-    object.push_back(0); // parent
-    object.push_back(""); // name
-
-    object.push_back(VariantMap()); // properties
-    object.push_back(VariantList()); // links
-
-    object.push_back(data()); // user data
-
-    result.push_back(object);
-
-    return result;
-}

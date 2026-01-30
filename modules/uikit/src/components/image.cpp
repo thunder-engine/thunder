@@ -27,10 +27,9 @@ namespace {
 Image::Image() :
         m_color(1.0f),
         m_mesh(Engine::objectCreate<Mesh>()),
-        m_sheet(nullptr),
+        m_sprite(nullptr),
         m_texture(nullptr),
         m_material(nullptr),
-        m_hash(0),
         m_drawMode(Simple),
         m_dirtyMesh(true),
         m_dirtyMaterial(true) {
@@ -43,8 +42,8 @@ Image::Image() :
 }
 
 Image::~Image() {
-    if(m_sheet) {
-        m_sheet->unsubscribe(this);
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
     }
 
     delete m_material;
@@ -54,8 +53,8 @@ Image::~Image() {
 */
 void Image::draw(CommandBuffer &buffer) {
     if(m_dirtyMesh) {
-        if(m_sheet) {
-            Mesh *mesh = m_sheet->composeMesh(m_mesh, m_hash, static_cast<Sprite::Mode>(m_drawMode), m_size);
+        if(m_sprite) {
+            Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
             if(mesh != m_mesh) {
                 if(mesh) {
                     m_mesh->setVertices(mesh->vertices());
@@ -96,8 +95,8 @@ void Image::draw(CommandBuffer &buffer) {
 
     if(m_dirtyMaterial && m_material) {
         m_material->setVector4(gColor, &m_color);
-        if(m_sheet) {
-            m_material->setTexture(gOverride, m_sheet->page());
+        if(m_sprite) {
+            m_material->setTexture(gOverride, m_sprite->texture());
         } else {
             m_material->setTexture(gOverride, m_texture);
         }
@@ -135,20 +134,23 @@ void Image::setMaterial(Material *material) {
     Returns the sprite assigned to the Image.
 */
 Sprite *Image::sprite() const {
-    return m_sheet;
+    return m_sprite;
 }
 /*!
-    Replaces the current sprite \a sheet with a new one.
+    Replaces the current \a sprite with a new one.
 */
-void Image::setSprite(Sprite *sheet) {
-    if(m_sheet != sheet) {
-        if(m_sheet) {
-            m_sheet->unsubscribe(this);
+void Image::setSprite(Sprite *sprite) {
+    if(m_sprite != sprite) {
+        if(m_sprite) {
+            m_sprite->unsubscribe(this);
         }
 
-        m_sheet = sheet;
-        if(m_sheet) {
-            m_sheet->subscribe(&Image::spriteUpdated, this);
+        /// \todo remove in 2027 added for backward compatibity of Sprite refactoring
+        Resource *resource = sprite;
+        m_sprite = dynamic_cast<Sprite *>(resource);
+
+        if(m_sprite) {
+            m_sprite->subscribe(&Image::spriteUpdated, this);
         }
 
         m_dirtyMaterial = true;
@@ -183,22 +185,6 @@ Vector4 Image::color() const {
 void Image::setColor(const Vector4 &color) {
     m_color = color;
     m_dirtyMaterial = true;
-}
-/*!
-    Returns the current item name of sprite from the sprite sheet.
-*/
-TString Image::item() const {
-    return m_item;
-}
-/*!
-    Sets the current sub \a item name of sprite from the sprite sheet.
-*/
-void Image::setItem(const TString &item) {
-    if(m_item != item) {
-        m_item = item;
-        m_hash = Mathf::hashString(m_item);
-        m_dirtyMesh = true;
-    }
 }
 /*!
     Returns a draw mode for the image.
@@ -266,7 +252,7 @@ void Image::spriteUpdated(int state, void *ptr) {
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
         } break;
         case Resource::ToBeDeleted: {
-            p->m_sheet = nullptr;
+            p->m_sprite = nullptr;
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
         } break;
         default: break;

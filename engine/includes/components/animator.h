@@ -81,7 +81,7 @@ public:
     void setInteger(const TString &name, int32_t value);
     void setIntegerHash(int hash, int32_t value);
 
-    void setClip(AnimationClip *clip, float position = 0.0f);
+    void setClip(AnimationClip *clip, float position = -1.0f);
 
     void rebind();
 

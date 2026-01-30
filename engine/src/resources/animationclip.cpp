@@ -217,6 +217,9 @@ void AnimationTrack::fromVariant(const Variant &variant) {
 
         AnimationCurve::KeyFrame key;
         key.m_position = (*k).toFloat();
+        if(!std::isfinite(key.m_position)) {
+            key.m_position = 0.0f;
+        }
         k++;
         key.m_type = static_cast<AnimationCurve::KeyFrame::Type>((*k).toInt());
         k++;
@@ -245,6 +248,9 @@ void AnimationTrack::fromVariant(const Variant &variant) {
 
             Frame frame;
             frame.m_position = (*f).toFloat();
+            if(!std::isfinite(frame.m_position)) {
+                frame.m_position = 0.0f;
+            }
             f++;
             frame.m_value = (*f).toString();
 
@@ -296,7 +302,6 @@ VariantMap AnimationClip::saveUserData() const {
     result[gTracks] = tracks;
     return result;
 }
-
 /*!
     Returns duration of the animation clip in milliseconds.
 */

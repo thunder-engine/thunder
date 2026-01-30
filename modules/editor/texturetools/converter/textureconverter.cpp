@@ -19,7 +19,7 @@
 
 #include <editor/projectsettings.h>
 
-#define FORMAT_VERSION 9
+#define FORMAT_VERSION 10
 
 TextureImportSettings::TextureImportSettings() :
         m_assetType(AssetType::Texture2D),
@@ -239,26 +239,15 @@ void TextureConverter::init() {
 }
 
 AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings *settings) {
-    Resource *resource = nullptr;
+    Texture *texture = nullptr;
 
-    settings->info().type = settings->typeName();
+    settings->info().type = MetaType::name<Texture>();
 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
+        texture = convertTexture(s);
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
-            Sprite *sprite = Engine::loadResource<Sprite>(settings->destination());
-            if(sprite == nullptr) {
-                sprite = Engine::objectCreate<Sprite>(settings->destination());
-            }
-            convertSprite(sprite, s);
-            resource = sprite;
-        } else {
-            Texture *texture = Engine::loadResource<Texture>(settings->destination());
-            if(texture == nullptr) {
-                texture = Engine::objectCreate<Texture>(settings->destination());
-            }
-            convertTexture(texture, s);
-            resource = texture;
+            convertSprite(texture, s);
         }
 
         uint32_t uuid = settings->info().id;
@@ -267,17 +256,22 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             settings->info().id = uuid;
         }
 
-        if(resource->uuid() != uuid) {
-            Engine::replaceUUID(resource, uuid);
+        if(texture->uuid() != uuid) {
+            Engine::replaceUUID(texture, uuid);
         }
 
-        return settings->saveBinary(Engine::toVariant(resource), settings->absoluteDestination());
+        return settings->saveBinary(Engine::toVariant(texture), settings->absoluteDestination());
     }
 
     return InternalError;
 }
 
-void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *settings) {
+Texture *TextureConverter::convertTexture(TextureImportSettings *settings) const {
+    Texture *texture = Engine::loadResource<Texture>(settings->destination());
+    if(texture == nullptr) {
+        texture = Engine::objectCreate<Texture>(settings->destination());
+    }
+
     int32_t width = 1;
     int32_t height = 1;
     int32_t channels;
@@ -444,9 +438,11 @@ void TextureConverter::convertTexture(Texture *texture, TextureImportSettings *s
 
         stbi_image_free(sourceData);
     }
+
+    return texture;
 }
 
-void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror) {
+void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sourceSize, int channels, ByteArray &data, const Vector2 &pos, const Vector2 &size, bool mirror) const {
     for(int y = 0; y < size.y; y++) {
         for(int x = 0; x < size.x; x++) {
             int srcY = pos.y + ((mirror) ? sourceSize.y - y - 1 : y);
@@ -460,44 +456,33 @@ void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sour
     }
 }
 
-void TextureConverter::convertSprite(Sprite *sprite, TextureImportSettings *settings) {
-    TString pageName("_Page1");
-
-    ResourceSystem::ResourceInfo info;
-    Texture *texture = sprite->page();
-    if(texture == nullptr) {
-        info = settings->subItem(pageName, true);
-        texture = Engine::loadResource<Texture>(info.uuid);
-        if(texture == nullptr) {
-            texture = Engine::objectCreate<Texture>(info.uuid);
-        }
-        sprite->addPage(texture);
-    }
-
-    convertTexture(texture, settings);
-
+void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *settings) const {
     Url dst(settings->absoluteDestination());
 
-    if(info.uuid.isEmpty()) {
-        info.uuid = texture->name();
-    }
-
-    AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(texture), dst.absoluteDir() + "/" + info.uuid);
-    if(result == AssetConverter::Success) {
-        info.id = texture->uuid();
-        info.type = MetaType::name<Texture>();
-        settings->setSubItem(pageName, info);
-    }
-
-    sprite->setPixelsPerUnit(settings->pixels());
-
     for(auto &it : settings->elements()) {
+        ResourceSystem::ResourceInfo info = settings->subItem(it.first, true);
+
+        Sprite *sprite = Engine::loadResource<Sprite>(info.uuid);
+        if(sprite == nullptr) {
+            sprite = Engine::objectCreate<Sprite>(info.uuid);
+        }
+
+        sprite->setTexture(texture);
+        sprite->setPixelsPerUnit(settings->pixels());
+
         auto value = it.second;
 
-        Vector4 bounds(value.min.x, value.min.y, value.max.x, value.max.y);
-        Vector4 borders(value.borderMin.x, value.borderMin.y, value.borderMax.x, value.borderMax.y);
+        sprite->setBounds(Vector4(value.min.x, value.min.y, value.max.x, value.max.y));
+        sprite->setBorder(Vector4(value.borderMin.x, value.borderMin.y, value.borderMax.x, value.borderMax.y));
+        sprite->setPivot(value.pivot);
+        sprite->setMode(Sprite::Sliced);
 
-        sprite->setRegion(Mathf::hashString(it.first), bounds, borders, value.pivot);
+        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + info.uuid);
+        if(result == AssetConverter::Success) {
+            info.id = sprite->uuid();
+            info.type = MetaType::name<Sprite>();
+            settings->setSubItem(it.first, info);
+        }
     }
 }
 

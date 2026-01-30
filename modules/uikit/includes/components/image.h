@@ -16,7 +16,6 @@ class UIKIT_EXPORT Image : public Widget {
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, Image::material, Image::setMaterial, "editor=Asset"),
         A_PROPERTYEX(Sprite *, sprite, Image::sprite, Image::setSprite, "editor=Asset"),
-        A_PROPERTY(TString, item, Image::item, Image::setItem),
         A_PROPERTYEX(Mode, drawMode, Image::drawMode, Image::setDrawMode, "enum=Mode"),
         A_PROPERTYEX(Vector4, color, Image::color, Image::setColor, "editor=Color")
     )
@@ -51,9 +50,6 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 &color);
 
-    TString item() const;
-    void setItem(const TString &item);
-
     int drawMode() const;
     void setDrawMode(int mode);
 
@@ -67,21 +63,17 @@ protected:
     static void spriteUpdated(int state, void *ptr);
 
 protected:
-    TString m_item;
-
     Vector4 m_color;
 
     Vector2 m_size;
 
     Mesh *m_mesh;
 
-    Sprite *m_sheet;
+    Sprite *m_sprite;
 
     Texture *m_texture;
 
     MaterialInstance *m_material;
-
-    int m_hash;
 
     int m_drawMode;
 

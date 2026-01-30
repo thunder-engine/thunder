@@ -33,7 +33,7 @@ namespace  {
 SpriteRender::SpriteRender() :
         m_color(1.0f),
         m_size(1.0f),
-        m_sheet(nullptr),
+        m_sprite(nullptr),
         m_texture(nullptr),
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(Engine::objectCreate<Mesh>()),
@@ -46,8 +46,8 @@ SpriteRender::SpriteRender() :
 }
 
 SpriteRender::~SpriteRender() {
-    if(m_sheet) {
-        m_sheet->unsubscribe(this);
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
     }
 
     delete m_customMesh;
@@ -59,10 +59,8 @@ SpriteRender::~SpriteRender() {
 Mesh *SpriteRender::meshToDraw(int instance) {
     if(m_dirtyMesh) {
         m_useCustom = false;
-        if(m_sheet) {
-            int hash = Mathf::hashString(m_item);
-
-            Mesh *mesh = m_sheet->composeMesh(m_customMesh, hash, static_cast<Sprite::Mode>(m_drawMode), m_size);
+        if(m_sprite) {
+            Mesh *mesh = m_sprite->composeMesh(m_customMesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
             if(mesh != m_customMesh) {
                 if(mesh) {
                     m_mesh = mesh;
@@ -117,24 +115,27 @@ AABBox SpriteRender::localBound() const {
     Returns a sprite sheet.
 */
 Sprite *SpriteRender::sprite() const {
-    return m_sheet;
+    return m_sprite;
 }
 /*!
     Replaces current sprite \a sheet with a new one.
 */
-void SpriteRender::setSprite(Sprite *sheet) {
-    if(m_sheet != sheet) {
-        if(m_sheet) {
-            m_sheet->unsubscribe(this);
+void SpriteRender::setSprite(Sprite *sprite) {
+    if(m_sprite != sprite) {
+        if(m_sprite) {
+            m_sprite->unsubscribe(this);
         }
 
         if(m_texture) {
             m_texture->decRef();
+            m_texture = nullptr;
         }
 
-        m_sheet = sheet;
-        if(m_sheet) {
-            m_sheet->subscribe(&SpriteRender::spriteUpdated, this);
+        /// \todo remove in 2027 added for backward compatibity of Sprite refactoring
+        Resource *resource = sprite;
+        m_sprite = dynamic_cast<Sprite *>(resource);
+        if(m_sprite) {
+            m_sprite->subscribe(&SpriteRender::spriteUpdated, this);
         }
         m_dirtyMesh = m_dirtyMaterial = true;
     }
@@ -143,8 +144,8 @@ void SpriteRender::setSprite(Sprite *sheet) {
     Returns current assigned texture.
 */
 Texture *SpriteRender::texture() const {
-    if(m_sheet && m_sheet->state() == Resource::Ready) {
-        return m_sheet->page();
+    if(m_sprite && m_sprite->state() == Resource::Ready) {
+        return m_sprite->texture();
     }
 
     return m_texture;
@@ -153,9 +154,9 @@ Texture *SpriteRender::texture() const {
     Replaces current \a texture with a new one.
 */
 void SpriteRender::setTexture(Texture *texture) {
-    if(m_sheet) {
-        m_sheet->unsubscribe(this);
-        m_sheet = nullptr;
+    if(m_sprite) {
+        m_sprite->unsubscribe(this);
+        m_sprite = nullptr;
     }
 
     m_texture = texture;
@@ -180,21 +181,6 @@ void SpriteRender::setColor(const Vector4 &color) {
     m_color = color;
 
     m_dirtyMaterial = true;
-}
-/*!
-    Returns the current item name of sprite from the sprite sheet.
-*/
-TString SpriteRender::item() const {
-    return m_item;
-}
-/*!
-    Sets the current sub \a item name of sprite from the sprite sheet.
-*/
-void SpriteRender::setItem(const TString &item) {
-    if(m_item != item) {
-        m_item = item;
-        m_dirtyMesh = true;
-    }
 }
 /*!
     Returns size of sprite.
@@ -272,7 +258,7 @@ void SpriteRender::spriteUpdated(int state, void *ptr) {
         p->m_dirtyMesh = p->m_dirtyMaterial = true;
     } break;
     case Resource::ToBeDeleted: {
-        p->m_sheet = nullptr;
+        p->m_sprite = nullptr;
         p->m_dirtyMesh = p->m_dirtyMaterial = true;
     } break;
     default: break;

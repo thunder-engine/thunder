@@ -1,7 +1,5 @@
 #include "spineconverter.h"
 
-#include <cstring>
-
 #include <json.h>
 #include <bson.h>
 
@@ -27,16 +25,6 @@ enum class SkinTypes {
     Path,
     Point,
     Clipping
-};
-
-std::map<TString, SkinTypes> gTypeMap = {
-    {"region", SkinTypes::Region},
-    {"mesh", SkinTypes::Mesh},
-    {"linkedmesh", SkinTypes::LinkedMesh},
-    {"boundingbox", SkinTypes::BoundingBox},
-    {"path", SkinTypes::Path},
-    {"point", SkinTypes::Point},
-    {"clipping", SkinTypes::Clipping},
 };
 
 SpineConverterSettings::SpineConverterSettings() :
@@ -243,13 +231,9 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
         if(skinIt != skinFields.end()) {
             TString skinName(skinFields[gName].toString());
 
-            ResourceSystem::ResourceInfo resSprite = settings->subItem(skinName, true);
-            Sprite *sprite = Engine::loadResource<Sprite>(resSprite.uuid);
-            if(sprite == nullptr) {
-                sprite = Engine::objectCreate<Sprite>(resSprite.uuid);
-            }
+            importAtlas(settings);
 
-            importAtlas(sprite, settings);
+            Url dst(settings->absoluteDestination());
 
             for(auto &slotIt : skinIt->second.value<VariantMap>()) {
                 Slot &slot = settings->m_slots[slotIt.first];
@@ -257,6 +241,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                 Actor *bone = settings->m_boneStructure[slot.bone];
 
                 Actor *slotActor = Engine::composeActor<SpriteRender>(slotIt.first, bone);
+                slot.render = slotActor->getComponent<SpriteRender>();
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
                     TString attachmentName = attachmentIt.first;
@@ -267,7 +252,20 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 
                     auto it = attachmentFields.find(gType);
                     if(it != attachmentFields.end()) {
-                        type = gTypeMap[it->second.toString()];
+                        static const std::map<TString, SkinTypes> typeMap = {
+                            {"region", SkinTypes::Region},
+                            {"mesh", SkinTypes::Mesh},
+                            {"linkedmesh", SkinTypes::LinkedMesh},
+                            {"boundingbox", SkinTypes::BoundingBox},
+                            {"path", SkinTypes::Path},
+                            {"point", SkinTypes::Point},
+                            {"clipping", SkinTypes::Clipping},
+                        };
+
+                        auto typeInt = typeMap.find(it->second.toString());
+                        if(typeInt != typeMap.end()) {
+                            type = typeInt->second;
+                        }
                     }
 
                     it = attachmentFields.find(gPath);
@@ -275,11 +273,15 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         attachmentName = it->second.toString();
                     }
 
-                    ResourceSystem::ResourceInfo resMesh = settings->subItem(attachmentName, true);
-                    Mesh *mesh = Engine::loadResource<Mesh>(resMesh.uuid);
-                    if(mesh == nullptr) {
-                        mesh = Engine::objectCreate<Mesh>(resMesh.uuid);
+                    ResourceSystem::ResourceInfo resSprite = settings->subItem(attachmentName, true);
+                    Sprite *sprite = Engine::loadResource<Sprite>(resSprite.uuid);
+                    if(sprite == nullptr) {
+                        sprite = Engine::objectCreate<Sprite>(resSprite.uuid);
                     }
+
+                    sprite->setMode(Sprite::Complex);
+                    sprite->setTexture(Engine::loadResource<Texture>(settings->m_texture));
+                    Mesh *mesh = sprite->mesh();
 
                     switch(type) {
                         case SkinTypes::Region: {
@@ -294,46 +296,29 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     if(!mesh->vertices().empty()) {
                         mesh->setColors(Vector4Vector(mesh->vertices().size(), Vector4(1.0f)));
                         mesh->recalcBounds();
+                    }
 
-                        Url dst(settings->absoluteDestination());
+                    AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
+                    if(result == AssetConverter::Success) {
+                        resSprite.id = sprite->uuid();
+                        resSprite.type = MetaType::name<Sprite>();
+                        settings->setSubItem(attachmentName, resSprite);
+                    }
 
-                        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(mesh), dst.absoluteDir() + "/" + resMesh.uuid);
-                        if(result == AssetConverter::Success) {
-                            resMesh.id = mesh->uuid();
-                            resMesh.type = MetaType::name<Mesh>();
-                            settings->setSubItem(attachmentName, resMesh);
+                    if(slot.render && slot.render->sprite() == nullptr) {
+                        slot.render->setSprite(sprite);
+                        slot.render->setLayer(slot.layer);
+                        if(!slot.color.isEmpty()) {
+                            slot.render->setColor(toColor(slot.color));
                         }
-
-                        sprite->setShape(Mathf::hashString(attachmentName), mesh);
-                    } else {
-                        delete mesh;
                     }
                 }
-
-                slot.render = slotActor->getComponent<SpriteRender>();
-                if(slot.render) {
-                    slot.render->setItem(slot.item);
-                    slot.render->setSprite(sprite);
-                    slot.render->setLayer(slot.layer);
-                    if(!slot.color.isEmpty()) {
-                        slot.render->setColor(toColor(slot.color));
-                    }
-                }
-            }
-
-            Url dst(settings->absoluteDestination());
-
-            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
-            if(result == AssetConverter::Success) {
-                resSprite.id = sprite->uuid();
-                resSprite.type = MetaType::name<Sprite>();
-                settings->setSubItem(skinName, resSprite);
             }
         }
     }
 }
 
-void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *settings) {
+void SpineConverter::importAtlas(SpineConverterSettings *settings) {
     Url info(settings->source());
     File file(info.absoluteDir() + "/" + info.baseName() + ".atlas");
     if(file.open(File::ReadOnly)) {
@@ -357,12 +342,8 @@ void SpineConverter::importAtlas(Sprite *sprite, SpineConverterSettings *setting
             switch(currentState) {
                 case State::FileName: {
                     TString path = (info.absoluteDir() + "/" + it).toStdString();
-                    TString uuid = AssetManager::instance()->pathToUuid(path);
+                    settings->m_texture = AssetManager::instance()->pathToUuid(path);
 
-                    Texture *texture = static_cast<Texture *>(Engine::loadResource(uuid));
-                    if(texture) {
-                        sprite->addPage(texture);
-                    }
                     currentState++;
                 } break;
                 case State::Size: {

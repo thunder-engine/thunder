@@ -106,8 +106,7 @@ void ToolButton::composeComponent() {
     // Add icon
     Actor *icon = Engine::composeActor<Image>(gIcon, actor());
     Image *image = icon->getComponent<Image>();
-    image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png"));
-    image->setItem("Arrow");
+    image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
 
     RectTransform *t = image->rectTransform();
     if(t) {
