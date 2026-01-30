@@ -412,19 +412,29 @@ void Animator::setIntegerHash(int hash, int32_t value) {
 void Animator::stateMachineUpdated(int state, void *ptr) {
     PROFILE_FUNCTION();
 
-    if(state == Resource::Ready) {
-        Animator *p = static_cast<Animator *>(ptr);
+    Animator *p = static_cast<Animator *>(ptr);
 
-        p->m_bindProperties.clear();
-        p->m_currentState = nullptr;
+    switch(state) {
+        case Resource::Ready: {
+            p->m_bindProperties.clear();
+            p->m_currentState = nullptr;
 
-        if(p->m_stateMachine) {
-            p->m_currentVariables = p->m_stateMachine->variables();
-            AnimationState *initialState = p->m_stateMachine->initialState();
-            if(initialState) {
-                p->setStateHash(initialState->m_hash);
+            if(p->m_stateMachine) {
+                p->m_currentVariables = p->m_stateMachine->variables();
+                AnimationState *initialState = p->m_stateMachine->initialState();
+                if(initialState) {
+                    p->setStateHash(initialState->m_hash);
+                }
             }
-        }
+        } break;
+        case Resource::ToBeDeleted: {
+            p->m_bindProperties.clear();
+            p->m_currentVariables.clear();
+            p->m_stateMachine = nullptr;
+            p->m_currentState = nullptr;
+            p->m_currentClip = nullptr;
+        } break;
+        default: break;
     }
 }
 /*!

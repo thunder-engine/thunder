@@ -17,6 +17,7 @@ class ENGINE_EXPORT Prefab : public Resource {
 
 public:
     Prefab();
+    ~Prefab();
 
     Actor *actor() const;
     void setActor(Actor *actor);

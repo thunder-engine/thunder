@@ -72,12 +72,17 @@ ResourceSystem::ResourceSystem() :
     ControlScheme::registerClassFactory(this);
 }
 
+ResourceSystem::~ResourceSystem() {
+    for(auto &it : m_referenceCache) {
+        it.first->setState(Resource::ToBeDeleted);
+    }
+}
+
 void ResourceSystem::update(World *) {
     PROFILE_FUNCTION();
 
-    for(auto it = m_referenceCache.begin(); it != m_referenceCache.end();) {
-        processState(it->first);
-        ++it;
+    for(auto &it : m_referenceCache) {
+        processState(it.first);
     }
 
     while(!m_deleteList.empty()) {

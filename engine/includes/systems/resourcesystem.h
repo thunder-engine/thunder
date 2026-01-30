@@ -20,6 +20,7 @@ public:
 
 public:
     ResourceSystem();
+    ~ResourceSystem();
 
     void setResource(Resource *object, const TString &uuid);
 

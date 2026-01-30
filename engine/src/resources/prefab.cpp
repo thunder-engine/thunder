@@ -18,6 +18,10 @@ Prefab::Prefab() :
 
 }
 
+Prefab::~Prefab() {
+
+}
+
 /*!
     Returns prototype Actor which will should be instanced
 */
