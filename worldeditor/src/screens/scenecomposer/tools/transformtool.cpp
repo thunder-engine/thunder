@@ -12,7 +12,7 @@ TransformTool::TransformTool(ObjectController *controller) :
     SelectTool(controller) {
 
 }
-#include <QDebug>
+
 void TransformTool::update(bool center, bool local, bool snap) {
     SelectTool::update(center, local, snap);
 
