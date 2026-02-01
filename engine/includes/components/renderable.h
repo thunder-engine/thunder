@@ -1,7 +1,7 @@
 #ifndef RENDERABLE_H
 #define RENDERABLE_H
 
-#include "nativebehaviour.h"
+#include <nativebehaviour.h>
 
 #include <amath.h>
 
@@ -16,15 +16,13 @@ class ENGINE_EXPORT Renderable : public NativeBehaviour {
     A_OBJECT(Renderable, NativeBehaviour, General)
 
     A_NOPROPERTIES()
-    A_METHODS(
-        A_METHOD(AABBox, Renderable::bound)
-    )
+    A_NOMETHODS()
 
 public:
     Renderable();
     ~Renderable();
 
-    virtual AABBox bound() const;
+    virtual AABBox bound();
 
     Material *material() const;
     virtual void setMaterial(Material *material);
@@ -37,7 +35,7 @@ protected:
 
     virtual uint32_t subMesh(int instance) const;
 
-    virtual AABBox localBound() const;
+    virtual AABBox localBound();
 
     virtual void setMaterialsList(const std::list<Material *> &materials);
 

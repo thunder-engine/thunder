@@ -9,9 +9,9 @@
 #include <math.h>
 
 namespace  {
-    const char *gColor = "mainColor";
-    const char *gTexture = "mainTexture";
-    const char *gDefaultSprite = ".embedded/DefaultSprite.shader";
+    const char *gColor("mainColor");
+    const char *gTexture("mainTexture");
+    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
 }
 
 /*!
@@ -67,6 +67,7 @@ Mesh *SpriteRender::meshToDraw(int instance) {
                     if(m_drawMode == Sprite::Simple) {
                         m_size = mesh->bound().extent * 2.0f;
                     }
+
                 } else {
                     m_mesh = PipelineContext::defaultPlane();
                 }
@@ -103,11 +104,10 @@ MaterialInstance *SpriteRender::materialInstance(int index) {
 /*!
     \internal
 */
-AABBox SpriteRender::localBound() const {
-    if(m_useCustom) {
-        return m_customMesh->bound();
-    } else if(m_mesh) {
-        return m_mesh->bound();
+AABBox SpriteRender::localBound() {
+    Mesh *mesh = meshToDraw(0);
+    if(mesh) {
+        return mesh->bound();
     }
     return Renderable::localBound();
 }
@@ -192,7 +192,10 @@ Vector2 SpriteRender::size() const {
     Sets a new \a size of sprite.
 */
 void SpriteRender::setSize(const Vector2 &size) {
-    m_size = size;
+    if(m_size != size) {
+        m_size = size;
+        m_dirtyMesh = true;
+    }
 }
 /*!
     Returns a draw mode for the sprite.

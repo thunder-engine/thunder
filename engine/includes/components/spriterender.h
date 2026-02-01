@@ -1,11 +1,12 @@
 #ifndef SPRITERENDER
 #define SPRITERENDER
 
-#include "renderable.h"
+#include <renderable.h>
 
-class Sprite;
+#include <sprite.h>
+#include <material.h>
+
 class Texture;
-class Material;
 class MaterialInstance;
 class Mesh;
 
@@ -66,7 +67,7 @@ private:
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 
-    AABBox localBound() const override;
+    AABBox localBound() override;
 
     void composeComponent() override;
 

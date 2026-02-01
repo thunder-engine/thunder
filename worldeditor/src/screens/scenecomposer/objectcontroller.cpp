@@ -29,6 +29,7 @@
 #include "tools/movetool.h"
 #include "tools/rotatetool.h"
 #include "tools/scaletool.h"
+#include "tools/transformtool.h"
 #include "tools/spline/splinetool.h"
 
 #include "actions/selectobjects.h"
@@ -195,6 +196,7 @@ ObjectController::ObjectController(SceneComposer *editor) :
         new RotateTool(this),
         new ScaleTool(this),
         new SplineTool(this),
+        new TransformTool(this),
     };
 }
 

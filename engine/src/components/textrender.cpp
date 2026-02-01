@@ -248,7 +248,7 @@ void TextRender::composeComponent() {
 /*!
     \internal
 */
-AABBox TextRender::localBound() const {
+AABBox TextRender::localBound() {
     if(m_mesh) {
         return m_mesh->bound();
     }

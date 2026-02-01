@@ -41,7 +41,7 @@ Mesh *TileMapRender::meshToDraw(int instance) {
 /*!
     \internal
 */
-AABBox TileMapRender::localBound() const {
+AABBox TileMapRender::localBound() {
     if(m_tileMap) {
         return m_tileMap->tileMesh()->bound();
     }

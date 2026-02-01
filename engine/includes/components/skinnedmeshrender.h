@@ -30,7 +30,7 @@ public:
 private:
     void setMaterialsList(const std::list<Material *> &materials) override;
 
-    AABBox localBound() const override;
+    AABBox localBound() const;
 
     void onReferenceDestroyed() override;
 

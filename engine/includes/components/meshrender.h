@@ -32,7 +32,7 @@ public:
 protected:
     void setMaterialsList(const std::list<Material *> &materials) override;
 
-    AABBox localBound() const override;
+    AABBox localBound() override;
 
     Mesh *meshToDraw(int instance) override;
 

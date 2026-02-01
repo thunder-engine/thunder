@@ -88,7 +88,7 @@ void EffectRender::setEffect(VisualEffect *effect) {
 /*!
     \internal
 */
-AABBox EffectRender::localBound() const {
+AABBox EffectRender::localBound() {
     if(m_effect) {
         m_effect->bound();
     }

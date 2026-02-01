@@ -32,7 +32,7 @@ public:
     void setLayer(int layer);
 
 private:
-    AABBox localBound() const override;
+    AABBox localBound() override;
 
     Mesh *meshToDraw(int instance) override;
 

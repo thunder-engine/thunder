@@ -56,7 +56,7 @@ void MeshRender::setMaterialsList(const std::list<Material *> &materials) {
 /*!
     \internal
 */
-AABBox MeshRender::localBound() const {
+AABBox MeshRender::localBound() {
     if(m_mesh) {
         return m_mesh->bound();
     }

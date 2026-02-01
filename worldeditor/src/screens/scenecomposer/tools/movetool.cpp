@@ -86,7 +86,7 @@ std::string MoveTool::name() const {
 }
 
 std::string MoveTool::toolTip() const {
-    return QObject::tr("Select and Translate objects").toStdString();
+    return QObject::tr("Select and Move objects").toStdString();
 }
 
 std::string MoveTool::shortcut() const {

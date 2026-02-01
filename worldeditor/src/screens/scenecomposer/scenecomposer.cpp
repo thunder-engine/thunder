@@ -30,8 +30,6 @@
 
 #include <log.h>
 
-#include <float.h>
-
 #include "actions/createobject.h"
 #include "actions/deleteobjects.h"
 #include "actions/pasteobjects.h"
@@ -316,6 +314,7 @@ void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
         for(auto it : m_toolButtons) {
             it->setVisible(it->property(gComponent).toString().toStdString() == t);
         }
+        m_toolButtons.front()->click();
     }
 
     emit objectsSelected(objects);
