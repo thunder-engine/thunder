@@ -49,6 +49,7 @@ float EffectBuilderSettings::thumbnailWarmup() const {
 void EffectBuilderSettings::setThumbnailWarmup(float value) {
     if(m_thumbnailWarmup != value) {
         m_thumbnailWarmup = value;
+        setModified();
     }
 }
 

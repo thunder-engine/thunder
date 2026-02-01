@@ -309,12 +309,12 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     AssetConverterSettings *settings = nullptr;
 
     if(!path.isEmpty() && File::exists(source)) {
-        TString suffix(Url(source).completeSuffix().toLower());
-        auto it = m_converters.find(suffix);
-
-        if(it != m_converters.end()) {
-            settings = it->second->createSettings();
+        AssetConverter *converter = getConverter(source);
+        if(converter) {
+            settings = converter->createSettings();
+            settings->setConverter(converter);
         } else {
+            TString suffix(Url(source).suffix().toLower());
             CodeBuilder *currentBuilder = m_projectManager->currentBuilder();
             CodeBuilder *builder = nullptr;
             for(auto it : m_builders) {
@@ -424,7 +424,7 @@ Actor *AssetManager::createActor(const TString &source) {
     if(!source.isEmpty()) {
         TString uuid;
         TString path = source;
-        if(source.at(0) == '{') {
+        if(source.front() == '{') {
             uuid = source;
             path = uuidToPath(uuid);
         } else {
@@ -433,7 +433,7 @@ Actor *AssetManager::createActor(const TString &source) {
 
         AssetConverterSettings *settings = fetchSettings(path);
         if(settings) {
-            AssetConverter *converter = getConverter(path);
+            AssetConverter *converter = settings->converter();
             if(converter) {
                 return converter->createActor(settings, uuid);
             }
@@ -534,7 +534,7 @@ void AssetManager::onPerform() {
 }
 
 AssetConverter *AssetManager::getConverter(const TString &source) {
-    auto it = m_converters.find(Url(source).suffix().toLower());
+    auto it = m_converters.find(Url(source).completeSuffix().toLower());
     if(it != m_converters.end()) {
         return it->second;
     }
