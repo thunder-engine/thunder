@@ -8,6 +8,17 @@ AnimationBuilderSettings::AnimationBuilderSettings() {
     setVersion(FORMAT_VERSION);
 }
 
+TString AnimationBuilderSettings::previewAsset() const {
+    return m_previewAsset;
+}
+
+void AnimationBuilderSettings::setPreviewAsset(TString &asset) {
+    if(m_previewAsset != asset) {
+        m_previewAsset = asset;
+        setModified();
+    }
+}
+
 StringList AnimationBuilderSettings::typeNames() const {
     return { MetaType::name<AnimationStateMachine>() };
 }

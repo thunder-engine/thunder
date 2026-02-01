@@ -2,10 +2,13 @@
 #include "ui_animationedit.h"
 
 #include <components/world.h>
+#include <components/actor.h>
 #include <components/animator.h>
+#include <components/transform.h>
+#include <components/directlight.h>
 #include <resources/animationstatemachine.h>
 
-#include <editor/undostack.h>
+#include <editor/viewport/cameracontroller.h>
 
 #include <QToolButton>
 
@@ -19,6 +22,7 @@
 
 namespace {
     const char *gProperty("property");
+    const char *gDirectLight("DirectLight");
 };
 
 class AnimationProxy : public Object {
@@ -50,13 +54,29 @@ AnimationEdit::AnimationEdit() :
         ui(new Ui::AnimationEdit),
         m_graph(new AnimationControllerGraph),
         m_assetConverter(new AnimationControllerBuilder),
-        m_stateMachine(nullptr),
+        m_controller(new CameraController),
+        m_light(nullptr),
+        m_animator(nullptr),
         m_proxy(new AnimationProxy),
         m_variableButton(nullptr) {
 
     ui->setupUi(this);
 
     m_proxy->setEditor(this);
+
+    m_controller->blockMovement(true);
+    m_controller->setFree(false);
+
+    World *world = Engine::objectCreate<World>("World");
+    Scene *scene = Engine::objectCreate<Scene>("Scene", world);
+
+    ui->preview->setController(m_controller);
+    ui->preview->setWorld(world);
+    ui->preview->init(); // must be called after all options set
+    ui->preview->showGizmos(false);
+
+    m_light = Engine::composeActor<DirectLight>(gDirectLight, scene);
+    m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(m_graph, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
@@ -198,7 +218,31 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         AssetEditor::loadAsset(settings);
 
-        m_stateMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
+        if(m_animator) {
+            delete m_animator->actor();
+            m_animator = nullptr;
+        }
+
+        AnimationBuilderSettings *builderSettings = static_cast<AnimationBuilderSettings *>(settings);
+
+        Prefab *prefab = Engine::loadResource<Prefab>(builderSettings->previewAsset());
+        if(prefab) {
+            Actor *prefabActor = prefab->actor();
+            if(prefabActor) {
+                Actor *actor = static_cast<Actor *>(prefabActor->clone(m_light->scene()));
+
+                m_animator = actor->getComponent<Animator>();
+                if(m_animator == nullptr) {
+                    m_animator = static_cast<Animator *>(actor->addComponent("Animator"));
+                }
+
+                if(m_animator) {
+                    m_animator->setStateMachine(Engine::loadResource<AnimationStateMachine>(settings->destination()));
+                } else {
+                    delete actor;
+                }
+            }
+        }
 
         m_graph->load(settings->source());
     }

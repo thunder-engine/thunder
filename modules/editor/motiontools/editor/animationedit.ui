@@ -6,14 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1024</width>
     <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Animation Editor</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <property name="windowIcon">
+   <iconset resource="../motiontools.qrc">
+    <normaloff>:/icons/states.png</normaloff>:/icons/states.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -27,7 +34,13 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="GraphView" name="schemeWidget" native="true"/>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="Viewport" name="preview" native="true"/>
+     <widget class="GraphView" name="schemeWidget" native="true"/>
+    </widget>
    </item>
   </layout>
   <action name="actionSave">
@@ -46,7 +59,15 @@
    <header>editor/graph/graphview.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>Viewport</class>
+   <extends>QWidget</extends>
+   <header>editor/viewport/viewport.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../motiontools.qrc"/>
+ </resources>
  <connections/>
 </ui>

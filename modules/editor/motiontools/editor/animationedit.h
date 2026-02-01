@@ -9,7 +9,9 @@ class AnimationControllerGraph;
 class AnimationStateMachine;
 class AssetConverter;
 
-class UndoCommand;
+class CameraController;
+
+class Animator;
 
 class AnimationProxy;
 
@@ -67,7 +69,11 @@ private:
     AnimationControllerGraph *m_graph;
     AssetConverter *m_assetConverter;
 
-    AnimationStateMachine *m_stateMachine;
+    CameraController *m_controller;
+
+    Actor *m_light;
+
+    Animator *m_animator;
 
     AnimationProxy *m_proxy;
 
