@@ -64,7 +64,7 @@ private:
 
     Mesh *meshToDraw(int instance) override;
 
-    AABBox localBound() const override;
+    AABBox localBound() override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 

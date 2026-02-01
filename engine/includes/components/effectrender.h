@@ -23,7 +23,7 @@ public:
     void deltaUpdate(float dt);
 
 private:
-    AABBox localBound() const override;
+    AABBox localBound() override;
 
     Mesh *meshToDraw(int instance) override;
 

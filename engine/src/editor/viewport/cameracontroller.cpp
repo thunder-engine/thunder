@@ -254,7 +254,7 @@ void CameraController::resetCamera() {
 
     m_cameras.clear();
     m_cameras.push_back({rotation, position, dist, 0.0f, false});
-    m_cameras.push_back({Vector3(), Vector3(0.0f, 0.0f, -10.0f), 0.0f, dist, true});
+    m_cameras.push_back({Vector3(), Vector3(0.0f, 0.0f, 10.0f), 0.0f, dist, true});
 
     m_currentCamera = 0;
 

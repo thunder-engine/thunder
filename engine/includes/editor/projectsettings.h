@@ -134,8 +134,6 @@ private:
 
     TString m_myProjectsPath;
 
-
-
     TString m_firstMap;
 
 };

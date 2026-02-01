@@ -33,7 +33,7 @@ Renderable::~Renderable() {
 /*!
     Returns a bound box of the renderable object.
 */
-AABBox Renderable::bound() const {
+AABBox Renderable::bound() {
     AABBox bb = localBound();
     Transform *t = transform();
     if(t) {
@@ -119,7 +119,7 @@ void Renderable::setMaterialsList(const std::list<Material *> &materials) {
 /*!
     \internal
 */
-AABBox Renderable::localBound() const {
+AABBox Renderable::localBound() {
     return AABBox();
 }
 /*!
