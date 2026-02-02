@@ -60,6 +60,12 @@ struct Slot {
 };
 
 class SpineConverterSettings : public AssetConverterSettings {
+    A_OBJECT(SpineConverterSettings, AssetConverterSettings, Editor)
+
+    A_PROPERTIES(
+        A_PROPERTY(float, customScale, SpineConverterSettings::customScale, SpineConverterSettings::setCustomScale)
+    )
+
 public:
     SpineConverterSettings();
 

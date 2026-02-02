@@ -152,6 +152,8 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
 
         Transform *t = actor->transform();
 
+        float customScale = settings->customScale();
+
         Vector3 pos;
         auto it = fields.find(gX);
         if(it != fields.end()) {
@@ -161,7 +163,7 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         if(it != fields.end()) {
             pos.y = it->second.toFloat() * scale;
         }
-        t->setPosition(pos);
+        t->setPosition(pos * customScale);
 
         Vector3 rot;
         it = fields.find(gRotation);
@@ -388,35 +390,20 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
 }
 
 void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
-    float customScale = settings->customScale();
-
     Item item = settings->m_atlasItems[itemName];
 
-    Vector4 bounds(item.bounds);
-    if(item.rotate > 0) {
-        float tmp = bounds.z;
-        bounds.z = bounds.w;
-        bounds.w = tmp;
-    }
-
-    float x = bounds.x / settings->m_atlasSize.x;
-    bounds.x = x;
-    bounds.z = x + bounds.z / settings->m_atlasSize.x;
-
-    float y = 1.0f - bounds.y / settings->m_atlasSize.y;
-    bounds.y = y;
-    bounds.w = y - bounds.w / settings->m_atlasSize.y;
+    float customScale = settings->customScale();
 
     Vector3 pos(transform->position());
     auto it = fields.find(gX);
     if(it != fields.end()) {
-        pos.x = it->second.toString().toFloat() * customScale;
+        pos.x = it->second.toString().toFloat();
     }
     it = fields.find(gY);
     if(it != fields.end()) {
-        pos.y = it->second.toString().toFloat() * customScale;
+        pos.y = it->second.toString().toFloat();
     }
-    transform->setPosition(pos);
+    transform->setPosition(pos * customScale);
 
     Vector3 rot(transform->rotation());
     it = fields.find(gRotation);
@@ -439,11 +426,11 @@ void SpineConverter::importRegion(const VariantMap &fields, const TString &itemN
     Vector2 size;
     it = fields.find(gWidth);
     if(it != fields.end()) {
-        size.x = it->second.toString().toFloat() * customScale;
+        size.x = it->second.toString().toFloat();
     }
     it = fields.find(gHeight);
     if(it != fields.end()) {
-        size.y = it->second.toString().toFloat() * customScale;
+        size.y = it->second.toString().toFloat();
     }
 
     Vector3Vector vertices = {
@@ -457,8 +444,23 @@ void SpineConverter::importRegion(const VariantMap &fields, const TString &itemN
     m.rotate(Vector3(0.0f, 0.0f, 1.0f), -item.rotate);
 
     for(auto &vertex : vertices) {
-        vertex = m * vertex;
+        vertex = m * (vertex * customScale);
     }
+
+    Vector4 bounds(item.bounds);
+    if(item.rotate > 0) {
+        float tmp = bounds.z;
+        bounds.z = bounds.w;
+        bounds.w = tmp;
+    }
+
+    float x = bounds.x / settings->m_atlasSize.x;
+    bounds.x = x;
+    bounds.z = x + bounds.z / settings->m_atlasSize.x;
+
+    float y = 1.0f - bounds.y / settings->m_atlasSize.y;
+    bounds.y = y;
+    bounds.w = y - bounds.w / settings->m_atlasSize.y;
 
     Vector2Vector uvs = {
         {bounds.x, bounds.y},
@@ -475,8 +477,6 @@ void SpineConverter::importRegion(const VariantMap &fields, const TString &itemN
 }
 
 void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings) {
-    float customScale = settings->customScale();
-
     Item item = settings->m_atlasItems[itemName];
 
     uint32_t uvCount = 0;
@@ -583,10 +583,15 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
         } else {
             for(auto &vertex : list) {
                 uint32_t index = vertexCount / 2;
-                vertices[index][vertexCount % 2] = vertex.toFloat() * customScale;
+                vertices[index][vertexCount % 2] = vertex.toFloat();
 
                 vertexCount++;
             }
+        }
+
+        float customScale = settings->customScale();
+        for(auto &vertex : vertices) {
+            vertex = vertex * customScale;
         }
     }
 

@@ -958,18 +958,18 @@ TString ShaderBuilder::loadIncludes(const TString &path, const TString &define, 
 
 TString ShaderBuilder::loadShader(const TString &data, const TString &define, const PragmaMap &pragmas) {
     TString output;
-    QStringList lines(QString(data.data()).split("\n"));
+    StringList lines(data.split("\n"));
 
     static std::regex pragma("^[ ]*#[ ]*pragma[ ]+(.*)[^?]*");
     static std::regex include("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">][^?]*");
 
     for(auto &line : lines) {
         std::smatch matches;
-        TString data = line.simplified().toStdString();
-        if(std::regex_match(data.toStdString(), matches, include)) {
+        TString simplified = line.simplified();
+        if(std::regex_match(simplified.toStdString(), matches, include)) {
             TString next(matches[1]);
-            output += loadIncludes(next.data(), define, pragmas) + "\n";
-        } else if(std::regex_match(data.toStdString(), matches, pragma)) {
+            output += loadIncludes(next, define, pragmas) + "\n";
+        } else if(std::regex_match(simplified.toStdString(), matches, pragma)) {
             if(matches[1] == "flags") {
                 output += define + '\n';
             } else {
@@ -979,7 +979,7 @@ TString ShaderBuilder::loadShader(const TString &data, const TString &define, co
                 }
             }
         } else {
-            output += line.toStdString() + "\n";
+            output += line + "\n";
         }
     }
     return output;

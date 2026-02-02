@@ -327,6 +327,40 @@ TString TString::trim(const char *t) const {
     return rtrim(ltrim(ret, t), t);
 }
 
+static inline bool isWhitespace(char ch) {
+    return ch == ' ' || ch == '\t' || ch == '\n' ||
+           ch == '\r' || ch == '\v' || ch == '\f';
+}
+
+TString TString::simplified() const {
+    if(m_data.empty()) {
+        return TString();
+    }
+
+    std::string result;
+    bool lastWasSpace = true;
+
+    for(char ch : m_data) {
+        if(isWhitespace(ch)) {
+            if(!lastWasSpace) {
+                result.push_back(' ');
+                lastWasSpace = true;
+            }
+        } else {
+            result.push_back(ch);
+            lastWasSpace = false;
+        }
+    }
+
+    if(!result.empty() && result.back() == ' ') {
+        result.pop_back();
+    }
+
+    return TString(result);
+
+    return result;
+}
+
 char TString::front() const {
     return m_data.front();
 }
