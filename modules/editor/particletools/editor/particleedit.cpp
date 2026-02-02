@@ -65,7 +65,7 @@ protected:
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
-        m_controller(new CameraController()),
+        m_controller(new CameraController),
         m_light(nullptr),
         m_effect(nullptr),
         m_render(nullptr),

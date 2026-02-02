@@ -53,6 +53,9 @@ public:
     AssetConverterSettings();
     ~AssetConverterSettings();
 
+    AssetConverter *converter();
+    void setConverter(AssetConverter *converter);
+
     uint32_t type() const;
 
     virtual StringList typeNames() const;
@@ -138,6 +141,8 @@ protected:
     std::map<TString, SubItem> m_subItems;
 
     static std::map<TString, TString> m_defaultIcons;
+
+    AssetConverter *m_converter;
 
 };
 

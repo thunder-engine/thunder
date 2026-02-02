@@ -83,15 +83,19 @@ const QImage IconRender::render(const TString &uuid) {
 
     m_render->update(m_world);
 
+    QImage result;
+
     if(m_color) {
         ByteArray data(m_color->getPixels(0));
-        QImage result(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888);
+        result = QImage(data.data(), m_color->width(), m_color->height(), QImage::Format_RGBA8888);
 
-        object->setParent(nullptr);
-        delete object;
-
-        return result.mirrored();
+        result = result.mirrored();
     }
 
-    return QImage();
+    if(object) {
+        object->setParent(nullptr);
+        delete object;
+    }
+
+    return result;
 }

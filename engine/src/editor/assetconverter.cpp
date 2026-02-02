@@ -45,12 +45,25 @@ AssetConverterSettings::AssetConverterSettings() :
         m_modified(false),
         m_dir(false),
         m_version(0),
-        m_currentVersion(0) {
+        m_currentVersion(0),
+        m_converter(nullptr) {
 
 }
 
 AssetConverterSettings::~AssetConverterSettings() {
 
+}
+/*!
+    Returns assotiated AssetConverter.
+*/
+AssetConverter *AssetConverterSettings::converter() {
+    return m_converter;
+}
+/*!
+    Sets assotiated asset \a converter.
+*/
+void AssetConverterSettings::setConverter(AssetConverter *converter) {
+    m_converter = converter;
 }
 /*!
     Returns the asset type for conversion for more details see MetaType.
