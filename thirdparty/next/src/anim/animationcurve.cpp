@@ -86,12 +86,16 @@ Quaternion AnimationCurve::valueQuaternion(float pos) const {
     Quaternion result;
     if(a != -1 && b != -1) {
         const KeyFrame &keyA = m_keys[a];
+        Quaternion qA(keyA.m_value[0], keyA.m_value[1], keyA.m_value[2], keyA.m_value[3]);
+
+        if(a == b) {
+            return qA;
+        }
+
         const KeyFrame &keyB = m_keys[b];
+        Quaternion qB(keyB.m_value[0], keyB.m_value[1], keyB.m_value[2], keyB.m_value[3]);
 
         float factor = (pos - keyA.m_position) / (keyB.m_position - keyA.m_position);
-
-        Quaternion qA(keyA.m_value[0], keyA.m_value[1], keyA.m_value[2], keyA.m_value[3]);
-        Quaternion qB(keyB.m_value[0], keyB.m_value[1], keyB.m_value[2], keyB.m_value[3]);
         result.mix(qA, qB, factor);
     }
     return result;
