@@ -239,10 +239,11 @@ void ObjectSelect::onDrop(QDropEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         TString path(ProjectSettings::instance()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
+        path = AssetManager::instance()->pathToUuid(path);
         if(m_data.type() == MetaType::STRING) {
             m_data = path;
         } else {
-            Object *object = Engine::loadResource(AssetManager::instance()->pathToUuid(path));
+            Object *object = Engine::loadResource(path);
             m_data = Variant(m_data.userType(), &object);
         }
         setTemplateData(m_data);
