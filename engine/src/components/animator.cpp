@@ -75,6 +75,7 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
     Vector4 vec4;
 
     float factor = 0.0f;
+    bool updated = false;
 
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
@@ -92,6 +93,7 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
             }
 
             vec4 += playback.motion->valueVector4(playback.currentPosition) * playback.weight;
+            updated = true;
         }
 
         if(endOfPlayback) {
@@ -101,20 +103,22 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
         }
     }
 
-    switch(target.defaultValue.type()) {
-        case MetaType::BOOLEAN: target.property.write(target.object, (bool)vec4.x); break;
-        case MetaType::INTEGER: target.property.write(target.object, (int)vec4.x); break;
-        case MetaType::FLOAT: target.property.write(target.object, vec4.x); break;
-        case MetaType::VECTOR2: target.property.write(target.object, Vector2(vec4)); break;
-        case MetaType::VECTOR3: {
-            switch(target.flag) {
-                case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4); break;
-                case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4); break;
-                case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4); break;
-                default: target.property.write(target.object, Vector3(vec4)); break;
-            }
-        } break;
-        default: target.property.write(target.object, vec4); break;
+    if(updated) {
+        switch(target.defaultValue.type()) {
+            case MetaType::BOOLEAN: target.property.write(target.object, (bool)vec4.x); break;
+            case MetaType::INTEGER: target.property.write(target.object, (int)vec4.x); break;
+            case MetaType::FLOAT: target.property.write(target.object, vec4.x); break;
+            case MetaType::VECTOR2: target.property.write(target.object, Vector2(vec4)); break;
+            case MetaType::VECTOR3: {
+                switch(target.flag) {
+                    case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4); break;
+                    case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4); break;
+                    case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4); break;
+                    default: target.property.write(target.object, Vector3(vec4)); break;
+                }
+            } break;
+            default: target.property.write(target.object, vec4); break;
+        }
     }
 }
 
@@ -122,6 +126,7 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
     Quaternion quat;
 
     float factor = 0.0f;
+    bool updated = false;
 
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
@@ -139,6 +144,7 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
             }
 
             quat.mix(quat, playback.motion->valueQuaternion(playback.currentPosition), playback.weight);
+            updated = true;
         }
 
         if(endOfPlayback) {
@@ -148,10 +154,12 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
         }
     }
 
-    if(target.flag == TransformFlags::Quat) {
-        static_cast<Transform *>(target.object)->setQuaternion(quat);
-    } else {
-        target.property.write(target.object, quat);
+    if(updated) {
+        if(target.flag == TransformFlags::Quat) {
+            static_cast<Transform *>(target.object)->setQuaternion(quat);
+        } else {
+            target.property.write(target.object, quat);
+        }
     }
 }
 
@@ -159,6 +167,7 @@ void Animator::sampleString(float dt, TargetProperties &target) {
     TString str;
 
     float factor = 0.0f;
+    bool updated = false;
 
     auto playbackIt = target.playbacks.begin();
     while(playbackIt != target.playbacks.end()) {
@@ -176,6 +185,7 @@ void Animator::sampleString(float dt, TargetProperties &target) {
             }
 
             str = playback.motion->valueString(playback.currentPosition);
+            updated = true;
         }
 
         if(endOfPlayback) {
@@ -185,7 +195,9 @@ void Animator::sampleString(float dt, TargetProperties &target) {
         }
     }
 
-    target.property.write(target.object, str);
+    if(updated) {
+        target.property.write(target.object, str);
+    }
 }
 
 /*!
