@@ -10,8 +10,7 @@ namespace  {
     \inmodule Resources
 */
 
-Bone::Bone() :
-        m_index(0) {
+Bone::Bone() {
 
 }
 
@@ -23,22 +22,22 @@ Bone::~Bone() {
     Returns true if the bones are equal, false otherwise.
 */
 bool Bone::operator== (const Bone &bone) const {
-    return (m_index == bone.m_index) &&
+    return (m_name == bone.m_name) &&
            (m_position == bone.m_position) &&
            (m_rotation == bone.m_rotation) &&
            (m_scale == bone.m_scale);
 }
 /*!
-    Gets the index of the bone.
+    Returns the name of the bone.
 */
-int Bone::index() const {
-    return m_index;
+TString Bone::name() const {
+    return m_name;
 }
 /*!
-    Sets the \a index of the bone.
+    Sets the \a name of the bone.
 */
-void Bone::setIndex(int index) {
-    m_index = index;
+void Bone::setName(const TString &name) {
+    m_name = name;
 }
 /*!
     Gets the position of the bone.
@@ -92,12 +91,16 @@ Pose::~Pose() {
 
 }
 /*!
+    Removes all bones from pose.
+*/
+void Pose::clear() {
+    m_bones.clear();
+}
+/*!
     Adds a \a bone to the pose.
 */
-void Pose::addBone(Bone *bone) {
-    if(bone) {
-        m_bones.push_back(*bone);
-    }
+void Pose::addBone(const Bone &bone) {
+    m_bones.push_back(bone);
 }
 /*!
     Returns a bone with \a index.
@@ -119,7 +122,7 @@ int Pose::boneCount() const {
     \internal
 */
 void Pose::loadUserData(const VariantMap &data) {
-    m_bones.clear();
+    clear();
 
     auto it = data.find(gData);
     if(it != data.end()) {
@@ -135,7 +138,7 @@ void Pose::loadUserData(const VariantMap &data) {
                 i++;
                 bone.setScale(i->toVector3());
                 i++;
-                bone.setIndex(int32_t(i->toInt()));
+                bone.setName(i->toString());
 
                 m_bones.push_back(bone);
             }
@@ -157,7 +160,7 @@ VariantMap Pose::saveUserData() const {
         attribs.push_back(b->position());
         attribs.push_back(b->rotation());
         attribs.push_back(b->scale());
-        attribs.push_back(int(b->index()));
+        attribs.push_back(b->name());
 
         data.push_back(attribs);
     }

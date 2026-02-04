@@ -9,7 +9,7 @@ class ENGINE_EXPORT Bone {
     A_GENERIC(Bone)
 
     A_PROPERTIES(
-        A_PROPERTY(int, index, Bone::index, Bone::setIndex),
+        A_PROPERTY(TString, name, Bone::name, Bone::setName),
         A_PROPERTY(Vector3, position, Bone::position, Bone::setPosition),
         A_PROPERTY(Vector3, rotation, Bone::rotation, Bone::setRotation),
         A_PROPERTY(Vector3, scale, Bone::scale, Bone::setScale)
@@ -22,8 +22,8 @@ public:
 
     bool operator== (const Bone &bone) const;
 
-    int index() const;
-    void setIndex(int index);
+    TString name() const;
+    void setName(const TString &name);
 
     const Vector3 &position() const;
     void setPosition(const Vector3 position);
@@ -35,7 +35,8 @@ public:
     void setScale(const Vector3 scale);
 
 protected:
-    uint32_t m_index;
+    TString m_name;
+
     Vector3 m_position;
     Vector3 m_rotation;
     Vector3 m_scale;
@@ -48,7 +49,6 @@ class ENGINE_EXPORT Pose : public Resource {
     A_NOPROPERTIES()
     A_METHODS(
         A_METHOD(Bone *, Pose::bone),
-        A_METHOD(void, Pose::addBone),
         A_METHOD(int, Pose::boneCount)
     )
 
@@ -56,7 +56,8 @@ public:
     Pose();
     ~Pose();
 
-    void addBone(Bone *bone);
+    void clear();
+    void addBone(const Bone &bone);
 
     const Bone *bone(int index) const;
 

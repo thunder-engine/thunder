@@ -126,9 +126,10 @@ void Armature::drawGizmosSelected() {
     if(bone) {
         Vector4 color(0.0f, 1.0f, 0.0f, 0.1f);
         for(auto it : m_bones) {
-            Transform *p = it.first->parentTransform();
-            Vector3 parent(p->worldPosition());
-            Gizmos::drawMesh(*bone, color, Matrix4(parent, p->worldQuaternion(), Vector3((it.first->worldPosition() - parent).length())));
+            Vector3 current(it.first->worldPosition());
+
+            float length = 0.1f;
+            Gizmos::drawMesh(*bone, color, Matrix4(current, it.first->worldQuaternion(), Vector3(length)));
         }
     }
 }
@@ -146,8 +147,7 @@ void Armature::cleanDirty() {
         for(uint32_t c = 0; c < count; c++) {
             const Bone *b = m_bindPose->bone(c);
             for(auto it : bones) {
-                int hash = Mathf::hashString(it->name());
-                if(hash == b->index()) {
+                if(b->name() == it->name()) {
                     Transform *t = it->transform();
                     m_bones.push_back(std::make_pair(t, 0));
                     m_invertTransform.push_back(Matrix4(b->position(), b->rotation(), b->scale()));

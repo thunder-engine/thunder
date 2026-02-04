@@ -104,10 +104,8 @@ bool Resource::isUnloadable() {
     Sets new \a state for the resource.
 */
 void Resource::setState(State state) {
-    if(m_state != state) {
-        m_state = state;
-        notifyCurrentState();
-    }
+    m_state = state;
+    notifyCurrentState();
 }
 /*!
     Notifies subscribers about the current state of the resource.

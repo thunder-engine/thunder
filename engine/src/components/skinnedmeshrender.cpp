@@ -21,7 +21,7 @@ SkinnedMeshRender::SkinnedMeshRender() :
 /*!
     \internal
 */
-AABBox SkinnedMeshRender::localBound() const {
+AABBox SkinnedMeshRender::localBound() {
     return m_bounds;
 }
 /*!

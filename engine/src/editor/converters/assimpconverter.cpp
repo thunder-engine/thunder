@@ -23,7 +23,7 @@
 
 #include "systems/resourcesystem.h"
 
-#define FORMAT_VERSION 8
+#define FORMAT_VERSION 9
 
 int32_t indexOf(const aiBone *item, const BonesList &list) {
     int i = 0;
@@ -267,9 +267,10 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         } else {
             if(fbxSettings->m_renders.size() == 1) {
                 root = static_cast<Component *>(fbxSettings->m_renders.front())->actor();
-                root->transform()->setPosition(Vector3());
-                root->transform()->setRotation(Vector3());
-                root->transform()->setScale(Vector3(1.0f));
+                Transform *t = root->transform();
+                t->setPosition(Vector3());
+                t->setRotation(Vector3());
+                t->setScale(Vector3(1.0f));
             }
         }
 
@@ -649,6 +650,8 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
             clip = Engine::objectCreate<AnimationClip>(info.uuid);
         }
 
+        clip->tracks().clear();
+
         double animRate = (animation->mTicksPerSecond > 0) ? animation->mTicksPerSecond : 1;
 
         for(uint32_t c = 0; c < animation->mNumChannels; c++) {
@@ -784,6 +787,8 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         pose = Engine::objectCreate<Pose>(info.uuid);
     }
 
+    pose->clear();
+
     for(auto it : fbxSettings->m_bones) {
         aiVector3D scl, rot, pos;
         it->mOffsetMatrix.Decompose(scl, rot, pos);
@@ -795,10 +800,12 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
 
         auto result = fbxSettings->m_actors.find(it->mName.C_Str());
         if(result != fbxSettings->m_actors.end()) {
-            b.setIndex(Mathf::hashString(result->second->name()));
+            b.setName(result->second->name());
+        } else {
+            aWarning() << "Unable to find the bone:" << it->mName.C_Str();
         }
 
-        pose->addBone(&b);
+        pose->addBone(b);
     }
 
     Url dst(fbxSettings->absoluteDestination());
@@ -815,8 +822,10 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
         armature->setBindPose(pose);
 
         for(auto r : fbxSettings->m_renders) {
-            SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(r);
-            render->setArmature(armature);
+            SkinnedMeshRender *render = dynamic_cast<SkinnedMeshRender *>(r);
+            if(render) {
+                render->setArmature(armature);
+            }
         }
     }
 }
