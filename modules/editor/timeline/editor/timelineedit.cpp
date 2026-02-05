@@ -222,9 +222,7 @@ void TimelineEdit::onPropertyUpdated(Object *object, const TString &property) {
 }
 
 void TimelineEdit::onRebind() {
-    if(m_controller) {
-        m_controller->rebind();
-    }
+    setPosition(m_position);
 }
 
 void TimelineEdit::onSelectKey(int row, int index) {

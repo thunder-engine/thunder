@@ -82,7 +82,7 @@ private:
     int m_duration;
 
 };
-typedef std::vector<AnimationTrack> AnimationTracks;
+typedef std::list<AnimationTrack> AnimationTrackList;
 
 class ENGINE_EXPORT AnimationClip : public Resource {
     A_OBJECT(AnimationClip, Resource, Resources)
@@ -98,13 +98,13 @@ public:
     int addAnimationTrack(const AnimationTrack &track);
     void removeAnimationTrack(int index);
 
-    AnimationTracks &tracks();
+    AnimationTrackList &tracks();
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 protected:
-    AnimationTracks m_tracks;
+    AnimationTrackList m_tracks;
 
 };
 

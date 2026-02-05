@@ -280,9 +280,9 @@ void Animator::crossFadeHash(int hash, float duration) {
             }
 
             if(m_currentState->m_clip) {
-                AnimationTracks &tracks = m_currentState->m_clip->tracks();
+                AnimationTrackList &tracks = m_currentState->m_clip->tracks();
                 for(int i = 0; i < tracks.size(); i++) {
-                    AnimationTrack &track = tracks[i];
+                    AnimationTrack &track = *std::next(tracks.begin(), i);
                     TargetProperty *target = bindTrack(track);
                     if(target) {
                         float weight = (m_transitionDuration != 0.0f) ? 0.0f : 1.0f;
@@ -308,9 +308,9 @@ void Animator::setClip(AnimationClip *clip, float position) {
     }
 
     if(clip) {
-        AnimationTracks &tracks = clip->tracks();
+        AnimationTrackList &tracks = clip->tracks();
         for(int i = 0; i < tracks.size(); i++) {
-            AnimationTrack &track = tracks[i];
+            AnimationTrack &track = *std::next(tracks.begin(), i);
             TargetProperty *target = bindTrack(track);
             if(target) {
                 float weight = (m_transitionDuration != 0.0f) ? 0.0f : 1.0f;
