@@ -1,7 +1,7 @@
 #ifndef ANIMATIONCLIP_H
 #define ANIMATIONCLIP_H
 
-#include "resource.h"
+#include <resource.h>
 
 #include <variantanimation.h>
 

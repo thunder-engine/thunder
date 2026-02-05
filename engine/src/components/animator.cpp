@@ -30,7 +30,6 @@ enum TransformFlags {
 Animator::Animator() :
         m_stateMachine(nullptr),
         m_currentState(nullptr),
-        m_currentClip(nullptr),
         m_transitionDuration(0.0f) {
 
 }
@@ -57,7 +56,7 @@ void Animator::process(float dt) {
     PROFILE_FUNCTION();
 
     for(auto &it : m_bindProperties) {
-        TargetProperties &target = it.second;
+        TargetProperty &target = it.second;
 
         switch(target.defaultValue.type()) {
             case MetaType::QUATERNION: sampleQuaternion(dt, target); break;
@@ -71,7 +70,7 @@ void Animator::process(float dt) {
     }
 }
 
-void Animator::sampleVector4(float dt, TargetProperties &target) {
+void Animator::sampleVector4(float dt, TargetProperty &target) {
     Vector4 vec4;
 
     float factor = 0.0f;
@@ -122,7 +121,7 @@ void Animator::sampleVector4(float dt, TargetProperties &target) {
     }
 }
 
-void Animator::sampleQuaternion(float dt, TargetProperties &target) {
+void Animator::sampleQuaternion(float dt, TargetProperty &target) {
     Quaternion quat;
 
     float factor = 0.0f;
@@ -163,7 +162,7 @@ void Animator::sampleQuaternion(float dt, TargetProperties &target) {
     }
 }
 
-void Animator::sampleString(float dt, TargetProperties &target) {
+void Animator::sampleString(float dt, TargetProperty &target) {
     TString str;
 
     float factor = 0.0f;
@@ -274,7 +273,23 @@ void Animator::crossFadeHash(int hash, float duration) {
             m_currentState = newState;
             m_transitionDuration = duration;
 
-            setClip(m_currentState->m_clip);
+            if(m_transitionDuration == 0.0f) {
+                for(auto &it : m_bindProperties) {
+                    it.second.playbacks.clear();
+                }
+            }
+
+            if(m_currentState->m_clip) {
+                AnimationTrackList &tracks = m_currentState->m_clip->tracks();
+                for(int i = 0; i < tracks.size(); i++) {
+                    AnimationTrack &track = *std::next(tracks.begin(), i);
+                    TargetProperty *target = bindTrack(track);
+                    if(target) {
+                        float weight = (m_transitionDuration != 0.0f) ? 0.0f : 1.0f;
+                        target->playbacks.push_back({ &track, m_currentState, 0.0f, weight });
+                    }
+                }
+            }
         }
     }
 }
@@ -292,74 +307,68 @@ void Animator::setClip(AnimationClip *clip, float position) {
         }
     }
 
-    if(clip == nullptr) {
-        return;
-    }
+    if(clip) {
+        AnimationTrackList &tracks = clip->tracks();
+        for(int i = 0; i < tracks.size(); i++) {
+            AnimationTrack &track = *std::next(tracks.begin(), i);
+            TargetProperty *target = bindTrack(track);
+            if(target) {
+                float weight = (m_transitionDuration != 0.0f) ? 0.0f : 1.0f;
+                target->playbacks.push_back({ &track, nullptr, 0.0f, weight });
+            }
+        }
 
-    m_currentClip = clip;
-
-    rebind();
-
-    if(position >= 0.0f) {
-        process(MIN(position, 1.0f) * m_currentClip->duration());
+        if(position >= 0.0f) {
+            process(MIN(position, 1.0f) * clip->duration());
+        }
     }
 }
 /*!
-    Rebinds all animated properties with Animator.
+    \internal
 */
-void Animator::rebind() {
-    PROFILE_FUNCTION();
+Animator::TargetProperty *Animator::bindTrack(const AnimationTrack &track) {
+    static const std::map<TString, TransformFlags> tranformFlags = {
+        { "position", TransformFlags::Position },
+        { "rotation", TransformFlags::Rotation },
+        { "scale", TransformFlags::Scale },
+        { "quaternion", TransformFlags::Quat }
+    };
 
-    if(m_currentClip) {
-        static const std::map<TString, TransformFlags> tranformFlags = {
-            { "position", TransformFlags::Position },
-            { "rotation", TransformFlags::Rotation },
-            { "scale", TransformFlags::Scale },
-            { "quaternion", TransformFlags::Quat }
-        };
+    TargetProperty *target = nullptr;
 
-        Actor *actor = Animator::actor();
-        for(auto &it : m_currentClip->tracks()) {
-            TargetProperties *target = nullptr;
-
-            auto bind = m_bindProperties.find(it.hash());
-            if(bind != m_bindProperties.end()) {
-                target = &(bind->second);
-            } else {
-                Object *object = actor->find(it.path());
-                if(object) {
-                    const MetaObject *meta = object->metaObject();
-                    int32_t index = meta->indexOfProperty(it.property().data());
-                    if(index > -1) {
-                        TargetProperties data;
-                        data.property = meta->property(index);
-                        data.defaultValue = data.property.read(object);
-                        data.object = object;
-                        Transform *t = dynamic_cast<Transform *>(object);
-                        if(t) {
-                            auto transformIt = tranformFlags.find(it.property());
-                            if(transformIt != tranformFlags.end()) {
-                                data.flag = transformIt->second;
-                            }
-                        }
-
-                        m_bindProperties[it.hash()] = data;
-                        target = &m_bindProperties[it.hash()];
+    auto bind = m_bindProperties.find(track.hash());
+    if(bind != m_bindProperties.end()) {
+        target = &(bind->second);
+    } else {
+        Object *object = Animator::actor()->find(track.path());
+        if(object) {
+            const MetaObject *meta = object->metaObject();
+            int32_t index = meta->indexOfProperty(track.property().data());
+            if(index > -1) {
+                TargetProperty data;
+                data.property = meta->property(index);
+                data.defaultValue = data.property.read(object);
+                data.object = object;
+                Transform *t = dynamic_cast<Transform *>(object);
+                if(t) {
+                    auto transformIt = tranformFlags.find(track.property());
+                    if(transformIt != tranformFlags.end()) {
+                        data.flag = transformIt->second;
                     }
                 }
-#ifdef SHARED_DEFINE
-                else {
-                    aDebug() << "Can't resolve animation path:" << it.path();
-                }
-#endif
-            }
 
-            if(target) {
-                float weight = (m_transitionDuration != 0.0f) ? 0.0f : 1.0f;
-                target->playbacks.push_back({ &it, m_currentState, 0.0f, weight });
+                m_bindProperties[track.hash()] = data;
+                target = &m_bindProperties[track.hash()];
             }
         }
+#ifdef SHARED_DEFINE
+        else {
+            aDebug() << "Can't resolve animation path:" << track.path();
+        }
+#endif
     }
+
+    return target;
 }
 /*!
     Sets the new boolean \a value for the parameter with the \a name.
@@ -444,7 +453,6 @@ void Animator::stateMachineUpdated(int state, void *ptr) {
             p->m_currentVariables.clear();
             p->m_stateMachine = nullptr;
             p->m_currentState = nullptr;
-            p->m_currentClip = nullptr;
         } break;
         default: break;
     }
@@ -492,7 +500,7 @@ void Animator::checkEndOfTransition() {
     bool endOfTransition = true;
 
     for(auto &it : m_bindProperties) {
-        const TargetProperties &target = it.second;
+        const TargetProperty &target = it.second;
         for(const auto &playback : target.playbacks) {
             if(playback.state != m_currentState) {
                 endOfTransition = false;
@@ -510,9 +518,8 @@ void Animator::checkEndOfTransition() {
 */
 bool Animator::recalcTransitionWeights(PlaybackState &playback, float position, float &factor) const {
     if(m_transitionDuration > 0.0f) {
-        float offset = 1.0f - m_transitionDuration;
-
         if(playback.state != m_currentState) {
+            float offset = 1.0f - m_transitionDuration;
             factor = MAX((position - offset) / m_transitionDuration, 0.0f);
             playback.weight = 1.0f - factor;
             if(playback.weight <= 0.0f) {
@@ -533,7 +540,7 @@ bool Animator::updatePosition(PlaybackState &playback, float position) const {
     playback.currentPosition = position;
 
     if(playback.currentPosition >= 1.0f) {
-        if(playback.state->m_loop) {
+        if(playback.state && playback.state->m_loop) {
             while(playback.currentPosition >= 1.0f) {
                 playback.currentPosition -= 1.0f;
             }

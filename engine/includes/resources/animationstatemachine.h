@@ -86,11 +86,11 @@ public:
 
     const VariableMap &variables() const;
 
+    void loadUserData(const VariantMap &data) override;
+
     static void registerSuper(ObjectSystem *system);
 
 private:
-    void loadUserData(const VariantMap &data) override;
-
     AnimationTransitionCondition loadCondition(const VariantList &data) const;
 
 private:

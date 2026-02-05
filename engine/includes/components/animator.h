@@ -40,9 +40,9 @@ class ENGINE_EXPORT Animator : public NativeBehaviour {
 
     };
 
-    class TargetProperties {
+    class TargetProperty {
     public:
-        TargetProperties() :
+        TargetProperty() :
             property(nullptr) {
 
         }
@@ -83,10 +83,12 @@ public:
 
     void setClip(AnimationClip *clip, float position = -1.0f);
 
-    void rebind();
+    void update() override;
 
 private:
-    void update() override;
+    TargetProperty *bindTrack(const AnimationTrack &track);
+
+    void process(float dt);
 
     void checkNextState();
 
@@ -96,13 +98,11 @@ private:
 
     bool updatePosition(PlaybackState &playback, float position) const;
 
-    void process(float dt);
+    void sampleVector4(float dt, TargetProperty &target);
 
-    void sampleVector4(float dt, TargetProperties &target);
+    void sampleQuaternion(float dt, TargetProperty &target);
 
-    void sampleQuaternion(float dt, TargetProperties &target);
-
-    void sampleString(float dt, TargetProperties &target);
+    void sampleString(float dt, TargetProperty &target);
 
     static void stateMachineUpdated(int state, void *ptr);
 
@@ -111,13 +111,11 @@ private:
 
     std::unordered_map<int32_t, Variant> m_currentVariables;
 
-    std::unordered_map<uint32_t, TargetProperties> m_bindProperties;
+    std::unordered_map<uint32_t, TargetProperty> m_bindProperties;
 
     AnimationStateMachine *m_stateMachine;
 
     AnimationState *m_currentState;
-
-    AnimationClip *m_currentClip;
 
     float m_transitionDuration;
 

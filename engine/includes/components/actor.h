@@ -56,6 +56,11 @@ public:
 
     Component *componentInChild(const TString &type);
 
+    template<typename T>
+    T *getComponentInChild() {
+        return static_cast<T *>(componentInChild(T::metaClass()->name()));
+    }
+
     std::list<Component *> componentsInChild(const TString &type) const;
 
     Component *addComponent(const TString &type);

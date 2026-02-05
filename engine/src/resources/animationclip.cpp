@@ -83,6 +83,8 @@ void AnimationTrack::setDuration(int duration) {
     Tries to fix animation curves in the animation track. Renormalizes existant keyframes and checks the duration.
 */
 void AnimationTrack::fixCurves() {
+    PROFILE_FUNCTION();
+
     float scale = -1.0f;
     // Sort keys
     for(uint32_t j = 0; j < (m_curve.m_keys.size() - 1); j++) {
@@ -114,6 +116,8 @@ void AnimationTrack::fixCurves() {
     Parameter normalized \a time is used to interpolate value between key frames.
 */
 Vector4 AnimationTrack::valueVector4(float time) const {
+    PROFILE_FUNCTION();
+
     return m_curve.valueVector4(time);
 }
 /*!
@@ -121,12 +125,16 @@ Vector4 AnimationTrack::valueVector4(float time) const {
     Parameter normalized \a time is used to interpolate value between key frames.
 */
 Quaternion AnimationTrack::valueQuaternion(float time) const {
+    PROFILE_FUNCTION();
+
     return m_curve.valueQuaternion(time);
 }
 /*!
     Returns current value at normalized \a time position.
 */
 TString AnimationTrack::valueString(float time) const {
+    PROFILE_FUNCTION();
+
     int32_t b = -1;
     for(uint32_t i = 0; i < m_frames.size(); i++) {
         if(time >= m_frames[i].m_position) {
@@ -158,6 +166,8 @@ AnimationTrack::Frames &AnimationTrack::frames() {
     Serializes current track to Variant.
 */
 Variant AnimationTrack::AnimationTrack::toVariant() const {
+    PROFILE_FUNCTION();
+
     VariantList track;
     track.push_back(path());
     track.push_back(property());
@@ -199,6 +209,8 @@ Variant AnimationTrack::AnimationTrack::toVariant() const {
     Deserializes current track from \a variant.
 */
 void AnimationTrack::fromVariant(const Variant &variant) {
+    PROFILE_FUNCTION();
+
     VariantList &trackData = *(reinterpret_cast<VariantList *>(variant.data()));
     auto i = trackData.begin();
 
@@ -292,6 +304,8 @@ void AnimationClip::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap AnimationClip::saveUserData() const {
+    PROFILE_FUNCTION();
+
     VariantMap result;
 
     VariantList tracks;
@@ -319,6 +333,8 @@ int AnimationClip::duration() const {
     Returns index of added track;
 */
 int AnimationClip::addAnimationTrack(const AnimationTrack &track) {
+    PROFILE_FUNCTION();
+
     m_tracks.push_back(track);
 
     return m_tracks.size() - 1;
@@ -327,12 +343,16 @@ int AnimationClip::addAnimationTrack(const AnimationTrack &track) {
     Removes animation track at givven \a index.
 */
 void AnimationClip::removeAnimationTrack(int index) {
+    PROFILE_FUNCTION();
+
     auto it = std::next(m_tracks.begin(), index);
     if(it != m_tracks.end()) {
         m_tracks.erase(it);
     }
 }
-
+/*!
+    Returns all tracks associated with current animation clip.
+*/
 AnimationTrackList &AnimationClip::tracks() {
     return m_tracks;
 }

@@ -106,6 +106,8 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             }
             block++;
             m_initialState = findState(Mathf::hashString((*block).toString()));
+
+            switchState(ToBeUpdated);
         }
     }
 }
