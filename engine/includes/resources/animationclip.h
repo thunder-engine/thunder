@@ -1,7 +1,7 @@
 #ifndef ANIMATIONCLIP_H
 #define ANIMATIONCLIP_H
 
-#include "resource.h"
+#include <resource.h>
 
 #include <variantanimation.h>
 
@@ -82,7 +82,7 @@ private:
     int m_duration;
 
 };
-typedef std::list<AnimationTrack> AnimationTrackList;
+typedef std::vector<AnimationTrack> AnimationTracks;
 
 class ENGINE_EXPORT AnimationClip : public Resource {
     A_OBJECT(AnimationClip, Resource, Resources)
@@ -98,13 +98,13 @@ public:
     int addAnimationTrack(const AnimationTrack &track);
     void removeAnimationTrack(int index);
 
-    AnimationTrackList &tracks();
+    AnimationTracks &tracks();
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 protected:
-    AnimationTrackList m_tracks;
+    AnimationTracks m_tracks;
 
 };
 

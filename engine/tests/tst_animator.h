@@ -104,15 +104,11 @@ public:
         return animator.m_currentState;
     }
 
-    AnimationClip *currentClip() const {
-        return animator.m_currentClip;
-    }
-
     const std::unordered_map<int, Variant> &currentVariables() const {
         return animator.m_currentVariables;
     }
 
-    const Animator::TargetProperties &targetProperties(int index) const {
+    const Animator::TargetProperty &targetProperties(int index) const {
         auto it = std::next(animator.m_bindProperties.begin(), index);
         return it->second;
     }
@@ -154,7 +150,7 @@ TEST_F(AnimatorTest, StateMachine) {
 
     ASSERT_EQ(&stateMachine, animator.stateMachine());
     ASSERT_EQ(stateMachine.initialState(), currentState());
-    ASSERT_EQ(&idleClip, currentClip());
+    ASSERT_EQ(&idleClip, currentState()->m_clip);
     ASSERT_EQ(4, currentVariables().size());
 }
 
@@ -170,7 +166,7 @@ TEST_F(AnimatorTest, SwitchState) {
     animator.setState(gAttack);
 
     ASSERT_EQ(&attackState, currentState());
-    ASSERT_EQ(&attackClip, currentClip());
+    ASSERT_EQ(&attackClip, currentState()->m_clip);
 
     process(250);
     ASSERT_EQ(Vector3(0.0f, 0.75f, 0.0f), transform.position());
@@ -181,7 +177,7 @@ TEST_F(AnimatorTest, SwitchState) {
 
     checkNextState(); // Back to Idle after attack
     ASSERT_EQ(&idleState, currentState());
-    ASSERT_EQ(&idleClip, currentClip());
+    ASSERT_EQ(&idleClip, currentState()->m_clip);
 
     ASSERT_EQ(1, targetProperties(0).playbacks.size());
     ASSERT_EQ(true, targetProperties(0).playbacks.front().state->m_loop);
@@ -217,7 +213,7 @@ TEST_F(AnimatorTest, CrossFade) {
 
     checkNextState(); // Back to Idle after attack
     ASSERT_EQ(&idleState, currentState());
-    ASSERT_EQ(&idleClip, currentClip());
+    ASSERT_EQ(&idleClip, currentState()->m_clip);
 
     ASSERT_EQ(1, targetProperties(0).playbacks.size());
     ASSERT_EQ(true, targetProperties(0).playbacks.front().state->m_loop);

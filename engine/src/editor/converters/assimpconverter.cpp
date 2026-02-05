@@ -765,7 +765,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
             }
         }
 
-        clip->tracks().sort(compare);
+        std::sort(clip->tracks().begin(), clip->tracks().end(), compare);
 
         Url dst(fbxSettings->absoluteDestination());
 
