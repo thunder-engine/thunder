@@ -44,6 +44,9 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 &color);
 
+    bool translated() const;
+    void setTranslated(bool enable);
+
     bool wordWrap() const;
     void setWordWrap(bool wrap);
 
@@ -54,7 +57,7 @@ public:
     void setAlign(int alignment);
 
     bool kerning() const;
-    void setKerning(const bool kerning);
+    void setKerning(const bool enable);
 
     int layer() const;
     void setLayer(int layer);
@@ -93,15 +96,15 @@ private:
 
     int m_priority;
 
+    int m_flags;
+
     float m_fontWeight;
-
-    bool m_kerning;
-
-    bool m_wrap;
 
     bool m_dirtyMesh;
 
     bool m_dirtyMaterial;
+
+    bool m_translated;
 
 };
 

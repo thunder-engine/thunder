@@ -15,73 +15,75 @@ enum Alignment {
 
 class Mesh;
 class Texture;
+class AtlasNode;
 
 class ENGINE_EXPORT Font : public Resource {
     A_OBJECT(Font, Resource, Resources)
 
     A_NOPROPERTIES()
-    A_METHODS(
-        A_METHOD(int, Font::atlasIndex),
-        A_METHOD(int, Font::requestKerning),
-        A_METHOD(void, Font::requestCharacters),
-        A_METHOD(int, Font::length),
-        A_METHOD(float, Font::spaceWidth),
-        A_METHOD(float, Font::lineHeight)
-    )
+    A_NOMETHODS()
+
+    struct GlyphData {
+        Vector3Vector vertices;
+
+        Vector2Vector uvs;
+
+        IndexVector indices;
+
+        ByteArray data;
+
+        AtlasNode *node = nullptr;
+
+        int width = 0;
+
+        int height = 0;
+
+        bool copied = false;
+
+    };
+
+    enum Flags {
+        Kerning = (1<<0),
+        Wrap = (1<<1),
+        Sdf = (1<<2)
+    };
 
 public:
     Font();
     ~Font();
 
-    Texture *page(int index = 0);
+    Texture *page();
 
-    int atlasIndex(int glyph) const;
+    float textWidth(const TString &text, int size, int flags);
 
-    int requestKerning(int glyph, int previous) const;
-
-    void requestCharacters(const TString &characters);
-
-    int length(const TString &characters) const;
-
-    float spaceWidth() const;
-
-    float lineHeight() const;
-
-    float textWidth(const TString &text, int size, bool kerning);
-
-    void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries);
-
-    void loadUserData(const VariantMap &data) override;
+    void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, int flags, const Vector2 &boundaries);
 
 private:
     void clear();
 
-    Mesh *shape(int key) const;
+    void clearAtlas();
 
-    int addElement(Texture *texture);
+    void requestCharacters(const std::u32string &characters, uint32_t size);
+
+    int requestKerning(int glyph, int previous) const;
+
+    GlyphData *glyph(int key);
 
     void packSheets(int padding);
 
-    void addPage(Texture *texture);
-
-protected:
     VariantMap saveUserData() const override;
+    void loadUserData(const VariantMap &data) override;
 
 private:
-    std::unordered_map<uint32_t, uint32_t> m_glyphMap;
-    std::unordered_map<uint32_t, Mesh *> m_shapes;
-
-    std::vector<Texture *> m_pages;
-    std::vector<Texture *> m_sources;
+    std::unordered_map<uint32_t, GlyphData> m_shapes;
 
     ByteArray m_data;
 
     int32_t *m_face;
 
-    int32_t m_scale;
+    Texture *m_page;
 
-    float m_spaceWidth;
-    float m_lineHeight;
+    AtlasNode *m_root;
 
     bool m_useKerning;
 

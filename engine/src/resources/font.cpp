@@ -19,80 +19,6 @@ namespace  {
 
 #define DF_GLYPH_SIZE 64
 
-struct Point {
-    short dx, dy;
-    int f;
-};
-
-struct Grid {
-    int32_t w, h;
-    Point *grid;
-};
-
-static Point pointInside = { 0, 0, 0 };
-static Point pointEmpty = { 9999, 9999, 9999*9999 };
-
-static FT_Library library = nullptr;
-//FT_Done_FreeType(library);
-
-static inline Point get(Grid &g, int32_t x, int32_t y) {
-    return g.grid[y * (g.w + 2) + x];
-}
-
-static inline void put(Grid &g, int32_t x, int32_t y, const Point &p) {
-    g.grid[y * (g.w + 2) + x] = p;
-}
-
-static inline void compare(Grid &g, Point &p, int32_t x, int32_t y, int32_t offsetx, int32_t offsety) {
-    int add;
-    Point other = get(g, x + offsetx, y + offsety);
-    if(offsety == 0) {
-        add = 2 * other.dx + 1;
-    } else if(offsetx == 0) {
-        add = 2 * other.dy + 1;
-    } else {
-        add = 2 * (other.dy + other.dx + 1);
-    }
-    other.f += add;
-    if(other.f < p.f) {
-        p.f = other.f;
-        if(offsety == 0) {
-            p.dx = other.dx + 1;
-            p.dy = other.dy;
-        } else if(offsetx == 0) {
-            p.dy = other.dy + 1;
-            p.dx = other.dx;
-        } else {
-            p.dy = other.dy + 1;
-            p.dx = other.dx + 1;
-        }
-    }
-}
-
-static void generateSDF(Grid &g) {
-    for(int32_t y = 1; y <= g.h; y++) {
-        for(int32_t x = 1; x <= g.w; x++) {
-            Point p = get(g, x, y);
-            compare(g, p, x, y, -1,  0);
-            compare(g, p, x, y,  0, -1);
-            compare(g, p, x, y, -1, -1);
-            compare(g, p, x, y,  1, -1);
-            put(g, x, y, p);
-        }
-    }
-
-    for(int32_t y = g.h; y > 0; y--) {
-        for(int32_t x = g.w; x > 0; x--) {
-            Point p = get(g, x, y);
-            compare(g, p, x, y,  1,  0);
-            compare(g, p, x, y,  0,  1);
-            compare(g, p, x, y, -1,  1);
-            compare(g, p, x, y,  1,  1);
-            put(g, x, y, p);
-        }
-    }
-}
-
 /*!
     \class Font
     \brief The Font resource provides support for vector fonts.
@@ -105,85 +31,72 @@ static void generateSDF(Grid &g) {
 
 Font::Font() :
         m_face(nullptr),
-        m_scale(DF_GLYPH_SIZE),
-        m_spaceWidth(0.0f),
-        m_lineHeight(0.0f),
+        m_page(nullptr),
+        m_root(new AtlasNode),
         m_useKerning(false) {
 
-    FT_Init_FreeType( &library );
 }
 
 Font::~Font() {
-     Font::clear();
+    clear();
 }
 /*!
-    Returns the index of the \a glyph in the atlas.
+    \internal
 */
-int Font::atlasIndex(int glyph) const {
-    auto it = m_glyphMap.find(glyph);
-    if(it != m_glyphMap.end()) {
-        return (*it).second;
+void Font::requestCharacters(const std::u32string &characters, uint32_t size) {
+    FT_Face face = reinterpret_cast<FT_Face>(m_face);
+    if(face == nullptr) {
+        return;
     }
-    return 0;
-}
-/*!
-    Requests \a characters to be added to the font atlas.
-*/
-void Font::requestCharacters(const TString &characters) {
-    std::u32string u32 = characters.toUtf32();
+
+    FT_Error error = FT_Set_Pixel_Sizes(face, 0, size);
+    if(error != 0) {
+        return;
+    }
 
     bool isNew = false;
-    for(auto it : u32) {
+    for(auto it : characters) {
         uint32_t ch = it;
-        if(m_glyphMap.find(ch) == m_glyphMap.end() && m_face) {
-            FT_Error error = FT_Load_Glyph(reinterpret_cast<FT_FaceRec_ *>(m_face), FT_Get_Char_Index(reinterpret_cast<FT_FaceRec_ *>(m_face), it), FT_LOAD_RENDER);
+        Mathf::hashCombine(ch, size);
+        if(m_shapes.find(ch) == m_shapes.end()) {
+            error = FT_Load_Glyph(face, FT_Get_Char_Index(face, it), FT_LOAD_RENDER);
             if(!error) {
-                int index = -1;
-
-                FT_GlyphSlot slot = reinterpret_cast<FT_FaceRec_ *>(m_face)->glyph;
-                error = FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
+                FT_GlyphSlot slot = face->glyph;
+                error = FT_Render_Glyph(slot, (size < DF_GLYPH_SIZE) ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_SDF);
                 if(!error) {
                     if(slot->bitmap.width && slot->bitmap.rows) {
-                        Texture::Surface s;
-                        ByteArray buffer;
-                        buffer.resize(slot->bitmap.width * slot->bitmap.rows);
+                        GlyphData data;
 
-                        memcpy(buffer.data(), slot->bitmap.buffer, buffer.size());
+                        FT_Glyph ftGlyph;
+                        error = FT_Get_Glyph(slot, &ftGlyph);
+                        if(!error) {
+                            FT_BBox bbox;
+                            FT_Glyph_Get_CBox(ftGlyph, ft_glyph_bbox_pixels, &bbox);
 
-                        s.push_back(buffer);
+                            data.vertices = {Vector3(bbox.xMin, bbox.yMax, 0.0f) / static_cast<float>(size),
+                                             Vector3(bbox.xMax, bbox.yMax, 0.0f) / static_cast<float>(size),
+                                             Vector3(bbox.xMax, bbox.yMin, 0.0f) / static_cast<float>(size),
+                                             Vector3(bbox.xMin, bbox.yMin, 0.0f) / static_cast<float>(size)};
 
-                        Texture *t = Engine::objectCreate<Texture>("", this);
-                        t->resize(slot->bitmap.width, slot->bitmap.rows);
-                        t->clear();
-                        t->addSurface(s);
+                            data.indices = {0, 1, 2, 0, 2, 3};
 
-                        index = addElement(t);
+                            isNew = true;
+                        }
+
+                        data.width = slot->bitmap.width;
+                        data.height = slot->bitmap.rows;
+                        data.data.resize(data.width * data.height);
+                        memcpy(data.data.data(), slot->bitmap.buffer, data.data.size());
+
+                        m_shapes[ch] = data;
                     }
-                }
-
-                FT_Glyph glyph;
-                error = FT_Get_Glyph(slot, &glyph);
-                if(!error && index > -1) {
-                    FT_BBox bbox;
-                    FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
-
-                    Mesh *m = shape(index);
-                    if(m) {
-                        m->setVertices({Vector3(bbox.xMin, bbox.yMax, 0.0f) / m_scale,
-                                        Vector3(bbox.xMax, bbox.yMax, 0.0f) / m_scale,
-                                        Vector3(bbox.xMax, bbox.yMin, 0.0f) / m_scale,
-                                        Vector3(bbox.xMin, bbox.yMin, 0.0f) / m_scale});
-                    }
-                    m_glyphMap[ch] = index;
-
-                    isNew = true;
                 }
             }
         }
     }
 
     if(isNew) {
-        packSheets(1);
+        packSheets(10);
         notifyCurrentState();
     }
 }
@@ -194,63 +107,53 @@ void Font::requestCharacters(const TString &characters) {
 int Font::requestKerning(int glyph, int previous) const {
     if(m_useKerning && previous)  {
         FT_Vector delta;
-        FT_Get_Kerning( reinterpret_cast<FT_FaceRec_ *>(m_face), previous, glyph, FT_KERNING_DEFAULT, &delta );
+        FT_Get_Kerning( reinterpret_cast<FT_Face>(m_face), previous, glyph, FT_KERNING_DEFAULT, &delta );
         return delta.x >> 6;
     }
     return 0;
 }
-/*!
-    Returns the number of \a characters in the string.
-*/
-int Font::length(const TString &characters) const {
-    return characters.toUtf32().length();
-}
-/*!
-    Returns visual width of space character for the font in world units.
-*/
-float Font::spaceWidth() const {
-    return m_spaceWidth;
-}
-/*!
-    Returns visual height for the font in world units.
-*/
-float Font::lineHeight() const {
-    return m_lineHeight;
-}
 
-float Font::textWidth(const TString &text, int size, bool kerning) {
-    TString data = Engine::translate(text);
-    requestCharacters(data);
-
+float Font::textWidth(const TString &text, int size, int flags) {
     float pos = 0;
 
-    uint32_t length = Font::length(data);
+    std::u32string u32 = text.toUtf32();
+    uint32_t length = u32.length();
     if(length) {
-        std::u32string u32 = data.toUtf32();
+        int adjustedSize = (flags & Sdf) ? DF_GLYPH_SIZE : size;
+        requestCharacters(u32, adjustedSize);
+
+        FT_Face face = reinterpret_cast<FT_Face>(m_face);
 
         uint32_t previous = 0;
         uint32_t it = 0;
 
+        float spaceWidth = 0;
+        FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
+        if(!error) {
+            spaceWidth = (adjustedSize == DF_GLYPH_SIZE) ? (DF_GLYPH_SIZE * 64.0f * size) : 64.0f;
+            spaceWidth = face->glyph->advance.x / spaceWidth;
+        }
+
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
+            Mathf::hashCombine(ch, size);
             switch(ch) {
                 case ' ': {
-                    pos += m_spaceWidth * size;
+                    pos += spaceWidth;
                 } break;
                 case '\t': {
-                    pos += m_spaceWidth * size * 4;
+                    pos += spaceWidth * 4;
                 } break;
                 default: {
-                    if(kerning) {
+                    if(flags & Kerning) {
                         pos += requestKerning(ch, previous);
                     }
-                    uint32_t index = atlasIndex(ch);
 
-                    Mesh *glyph = shape(index);
-                    if(glyph == nullptr) {
+                    GlyphData *data = glyph(ch);
+                    if(data == nullptr) {
                         continue;
                     }
-                    Vector3Vector &shape = glyph->vertices();
+                    Vector3Vector &shape = data->vertices;
 
                     pos += shape[2].x * size;
                     it++;
@@ -263,16 +166,29 @@ float Font::textWidth(const TString &text, int size, bool kerning) {
     return pos;
 }
 
-void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment, bool kerning, bool wrap, const Vector2 &boundaries) {
-    float spaceWidth = m_spaceWidth * size;
-    float spaceLine = m_lineHeight * size;
-
-    TString data = Engine::translate(text);
-    requestCharacters(data);
-
-    uint32_t length = Font::length(data);
+void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment, int flags, const Vector2 &boundaries) {
+    std::u32string u32 = text.toUtf32();
+    uint32_t length = u32.length();
     if(length) {
-        std::u32string u32 = data.toUtf32();
+        int adjustedSize = (flags & Sdf) ? DF_GLYPH_SIZE : size;
+        requestCharacters(u32, adjustedSize);
+
+        FT_Face face = reinterpret_cast<FT_Face>(m_face);
+
+        float spaceWidth = 0;
+        float spaceLine = 0;
+
+        FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
+        if(!error) {
+            spaceWidth = (adjustedSize == DF_GLYPH_SIZE) ? (DF_GLYPH_SIZE * 64.0f * size) : 64.0f;
+            spaceWidth = face->glyph->advance.x / spaceWidth;
+        }
+
+        error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '\n' ), FT_LOAD_BITMAP_METRICS_ONLY );
+        if(!error) {
+            spaceLine = (adjustedSize == DF_GLYPH_SIZE) ? (adjustedSize + size) : size;
+            spaceLine = face->glyph->metrics.height / spaceLine / 2;
+        }
 
         IndexVector &indices = mesh->indices();
         Vector3Vector &vertices = mesh->vertices();
@@ -282,7 +198,6 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
         vertices.resize(length * 4);
         indices.resize(length * 6);
         uv0.resize(vertices.size());
-        colors.resize(vertices.size());
 
         std::list<float> width;
         std::list<uint32_t> position;
@@ -294,6 +209,7 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
+            Mathf::hashCombine(ch, size);
             switch(ch) {
                 case ' ': {
                     pos += Vector3(spaceWidth, 0.0f, 0.0f);
@@ -311,21 +227,20 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                     space = 0;
                 } break;
                 default: {
-                    if(kerning) {
+                    if(flags & Kerning) {
                         pos.x += requestKerning(ch, previous);
                     }
-                    uint32_t index = atlasIndex(ch);
 
-                    Mesh *glyph = shape(index);
-                    if(glyph == nullptr) {
+                    GlyphData *data = glyph(ch);
+                    if(data == nullptr) {
                         continue;
                     }
 
-                    Vector3Vector &shape = glyph->vertices();
-                    Vector2Vector &uv = glyph->uv0();
+                    Vector3Vector &shape = data->vertices;
+                    Vector2Vector &uv = data->uvs;
 
                     float x = pos.x + shape[2].x * size;
-                    if(wrap && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
+                    if((flags & Wrap) && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
                         float shift = vertices[space * 4].x;
                         if((shift - spaceWidth) > 0.0f) {
                             for(uint32_t s = space; s < it; s++) {
@@ -349,11 +264,6 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                     uv0[it * 4 + 1] = uv[1];
                     uv0[it * 4 + 2] = uv[2];
                     uv0[it * 4 + 3] = uv[3];
-
-                    colors[it * 4 + 0] = Vector4(1.0f);
-                    colors[it * 4 + 1] = Vector4(1.0f);
-                    colors[it * 4 + 2] = Vector4(1.0f);
-                    colors[it * 4 + 3] = Vector4(1.0f);
 
                     indices[it * 6 + 0] = it * 4 + 0;
                     indices[it * 6 + 1] = it * 4 + 1;
@@ -401,34 +311,22 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
 void Font::loadUserData(const VariantMap &data) {
     clear();
     {
+        static FT_Library library = nullptr;
+        if(library == nullptr) {
+            FT_Init_FreeType( &library );
+        }
+
         auto it = data.find(gData);
         if(it != data.end()) {
-
-            FT_FaceRec_ *face = reinterpret_cast<FT_FaceRec_ *>(m_face);
+            FT_Face face = reinterpret_cast<FT_Face>(m_face);
             m_data = (*it).second.toByteArray();
-            FT_Error error = FT_New_Memory_Face(library, reinterpret_cast<const uint8_t *>(&m_data[0]), m_data.size(), 0, &face);
+            FT_Error error = FT_New_Memory_Face(library, m_data.data(), m_data.size(), 0, &face);
             if(error) {
                 Log(Log::ERR) << "Can't load font. System returned error:" << error;
                 return;
             }
-
-            m_face = reinterpret_cast<int32_t *>(face);
-            error = FT_Set_Char_Size( face, m_scale * 64, 0, 0, 0 );
-            if(error) {
-                Log(Log::ERR) << "Can't set default font size. System returned error:" << error;
-                return;
-            }
             m_useKerning = FT_HAS_KERNING( face );
-
-            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_DEFAULT );
-            if(!error) {
-                m_spaceWidth = static_cast<float>(face->glyph->advance.x) / m_scale / 64.0f;
-            }
-
-            error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '\n' ), FT_LOAD_DEFAULT );
-            if(!error) {
-                m_lineHeight = static_cast<float>(face->glyph->metrics.height) / m_scale / 32.0f;
-            }
+            m_face = reinterpret_cast<int32_t *>(face);
         }
     }
 }
@@ -447,173 +345,131 @@ VariantMap Font::saveUserData() const {
     Cleans up all font data.
 */
 void Font::clear() {
-    m_glyphMap.clear();
     FT_Done_Face(reinterpret_cast<FT_FaceRec_ *>(m_face));
 
-    for(auto it : m_sources) {
-        it->decRef();
+    if(m_page) {
+        m_page->decRef();
     }
-    m_sources.clear();
+    m_page = nullptr;
 
-    for(auto it : m_pages) {
-        it->decRef();
-    }
-    m_pages.clear();
+    m_shapes.clear();
 }
+/*!
+    \internal
+*/
+void Font::clearAtlas() {
+    if(m_root->left) {
+        delete m_root->left;
+        m_root->left = nullptr;
+    }
 
-Mesh *Font::shape(int key) const {
+    if(m_root->right) {
+        delete m_root->right;
+        m_root->right = nullptr;
+    }
+
+    m_root->occupied = false;
+}
+/*!
+    \internal
+*/
+Font::GlyphData *Font::glyph(int key) {
     PROFILE_FUNCTION();
 
     auto it = m_shapes.find(key);
     if(it != m_shapes.end()) {
-        return it->second;
+        return &(it->second);
     }
     return nullptr;
 }
 /*!
-    Adds new sub \a texture as element to current glyph sheet.
-    All elements will be packed to a single glyph sheet texture using Font::packSheets() method.
-    Returns the id of the new element.
-
-    \sa packSheets()
-*/
-int Font::addElement(Texture *texture) {
-    PROFILE_FUNCTION();
-
-    m_sources.push_back(texture);
-
-    Mesh *mesh = Engine::objectCreate<Mesh>();
-    mesh->makeDynamic();
-    mesh->setVertices({Vector3(0.0f, 0.0f, 0.0f),
-                       Vector3(0.0f, texture->height(), 0.0f),
-                       Vector3(texture->width(), texture->height(), 0.0f),
-                       Vector3(texture->width(), 0.0f, 0.0f) });
-
-    mesh->setIndices({0, 1, 2, 0, 2, 3});
-
-    int index = (m_sources.size() - 1);
-    m_shapes[index] = mesh;
-
-    return index;
-}
-/*!
     Packs all added elements into a glyph sheets.
     Parameter \a padding can be used to delimit elements.
-
-    \sa addElement()
 */
 void Font::packSheets(int padding) {
     PROFILE_FUNCTION();
 
-    uint32_t atlasWidth = 1;
-    uint32_t atlasHeight = 1;
+    uint32_t atlasWidth = 1024;
+    uint32_t atlasHeight = 1024;
 
-    std::vector<AtlasNode *> nodes;
-    nodes.resize(m_sources.size());
-
-    AtlasNode root;
-
-    if(m_pages.empty()) {
-        Texture *texture = Engine::objectCreate<Texture>();
-        texture->setFiltering(Texture::Bilinear);
-        addPage(texture);
+    if(m_page == nullptr) {
+        m_page = Engine::objectCreate<Texture>();
+        m_page->incRef();
+        m_page->setFiltering(Texture::None);
     }
 
     while(true) {
-        root.w = atlasWidth;
-        root.h = atlasHeight;
+        m_root->w = atlasWidth;
+        m_root->h = atlasHeight;
 
-        uint32_t i;
-        for(i = 0; i < m_sources.size(); i++) {
-            Texture *texture = m_sources[i];
+        uint32_t i = 0;
+        for(auto &it : m_shapes) {
+            i++;
+            if(it.second.node) {
+                continue;
+            }
+            int32_t width = (it.second.width + padding * 2);
+            int32_t height = (it.second.height + padding * 2);
 
-            int32_t width = (texture->width() + padding * 2);
-            int32_t height = (texture->height() + padding * 2);
-
-            AtlasNode *node = root.insert(width, height);
+            AtlasNode *node = m_root->insert(width, height);
             if(node) {
                 node->occupied = true;
-
-                nodes[i] = node;
-            } else {
+                it.second.node = node;
+            } else { // Not enough space. Increasing page size
                 atlasWidth *= 2;
                 atlasHeight *= 2;
 
-                if(root.left) {
-                    delete root.left;
-                    root.left = nullptr;
-                }
+                clearAtlas();
 
-                if(root.right) {
-                    delete root.right;
-                    root.right = nullptr;
+                for(auto &it : m_shapes) {
+                    it.second.copied = false;
+                    it.second.node = nullptr;
                 }
-
-                root.occupied = false;
 
                 break;
             }
         }
 
-        if(i == m_sources.size()) {
+        if(i == m_shapes.size()) {
             break;
         }
     }
 
-    for(auto it : m_pages) {
-        it->resize(atlasWidth, atlasHeight);
-        for(uint32_t i = 0; i < nodes.size(); i++) {
-            AtlasNode *node = nodes[i];
+    if(m_page) {
+        m_page->resize(atlasWidth, atlasHeight);
+        for(auto &it : m_shapes) {
+            if(!it.second.copied) {
+                AtlasNode *node = it.second.node;
+                uint8_t *src = it.second.data.data();
+                uint8_t *dst = m_page->surface(0).front().data();
+                for(int32_t y = 0; y < it.second.height; y++) {
+                    uint32_t index = (node->y + y + padding) * atlasWidth + node->x + padding;
+                    memcpy(&dst[index], &src[y * it.second.width], it.second.width);
+                }
 
-            int32_t w = node->w - padding * 2;
-            int32_t h = node->h - padding * 2;
+                it.second.copied = true;
 
-            uint8_t *src = m_sources[i]->surface(0).front().data();
-            uint8_t *dst = it->surface(0).front().data();
-            for(int32_t y = 0; y < h; y++) {
-                memcpy(&dst[(y + node->y + padding) * atlasWidth + node->x], &src[y * w], w);
-            }
-
-            Mesh *mesh = shape(i);
-            if(mesh) {
                 Vector4 uvFrame;
-                uvFrame.x = node->x / static_cast<float>(atlasWidth);
+                uvFrame.x = (node->x + padding) / static_cast<float>(atlasWidth);
                 uvFrame.y = (node->y + padding) / static_cast<float>(atlasHeight);
-                uvFrame.z = uvFrame.x + w / static_cast<float>(atlasWidth);
-                uvFrame.w = uvFrame.y + h / static_cast<float>(atlasHeight);
+                uvFrame.z = uvFrame.x + it.second.width / static_cast<float>(atlasWidth);
+                uvFrame.w = uvFrame.y + it.second.height / static_cast<float>(atlasHeight);
 
-                mesh->setUv0({Vector2(uvFrame.x, uvFrame.y),
-                              Vector2(uvFrame.z, uvFrame.y),
-                              Vector2(uvFrame.z, uvFrame.w),
-                              Vector2(uvFrame.x, uvFrame.w)});
-
-                mesh->recalcBounds();
+                it.second.uvs = {Vector2(uvFrame.x, uvFrame.y),
+                                 Vector2(uvFrame.z, uvFrame.y),
+                                 Vector2(uvFrame.z, uvFrame.w),
+                                 Vector2(uvFrame.x, uvFrame.w)};
             }
         }
 
-        it->setDirty();
+        m_page->setDirty();
     }
 }
 /*!
-    Returns glyph sheet texture at \a index.
+    Returns glyph sheet texture.
 */
-Texture *Font::page(int index) {
+Texture *Font::page() {
     PROFILE_FUNCTION();
 
-    if(index < m_pages.size()) {
-        return m_pages[index];
-    }
-
-    return nullptr;
-}
-/*!
-    Adds a new glyph sheet \a texture.
-*/
-void Font::addPage(Texture *texture) {
-    PROFILE_FUNCTION();
-
-    if(texture) {
-        texture->incRef();
-        m_pages.push_back(texture);
-    }
+    return m_page;
 }

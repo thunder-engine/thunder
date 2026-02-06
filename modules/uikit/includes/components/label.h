@@ -14,6 +14,7 @@ class UIKIT_EXPORT Label : public Widget {
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Label::text, Label::setText),
+        A_PROPERTY(bool, translated, Label::translated, Label::setTranslated),
         A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment, css=text-align"),
         A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Asset"),
         A_PROPERTYEX(int, fontSize, Label::fontSize, Label::setFontSize, "css=font-size"),
@@ -39,6 +40,9 @@ public:
     Vector4 color() const;
     void setColor(const Vector4 &color);
 
+    bool translated() const;
+    void setTranslated(bool enable);
+
     bool wordWrap() const;
     void setWordWrap(bool wrap);
 
@@ -46,11 +50,9 @@ public:
     void setAlign(int alignment);
 
     bool kerning() const;
-    void setKerning(const bool kerning);
+    void setKerning(const bool enable);
 
     Vector2 cursorAt(int position);
-
-    void setClipOffset(const Vector2 &offset);
 
 private:
     void draw(CommandBuffer &buffer) override;
@@ -75,8 +77,6 @@ private:
 
     Vector2 m_meshSize;
 
-    Vector2 m_clipOffset;
-
     Font *m_font;
 
     MaterialInstance *m_material;
@@ -87,13 +87,13 @@ private:
 
     int m_alignment;
 
+    int m_flags;
+
     float m_fontWeight;
 
-    bool m_kerning;
-
-    bool m_wrap;
-
     bool m_dirty;
+
+    bool m_translated;
 
 };
 

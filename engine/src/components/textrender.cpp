@@ -29,10 +29,10 @@ TextRender::TextRender() :
         m_alignment(Left),
         m_priority(0),
         m_fontWeight(0.5f),
-        m_kerning(true),
-        m_wrap(false),
+        m_flags(Font::Kerning | Font::Sdf),
         m_dirtyMesh(true),
-        m_dirtyMaterial(true) {
+        m_dirtyMaterial(true),
+        m_translated(false) {
 
     m_mesh->makeDynamic();
 
@@ -56,8 +56,8 @@ TextRender::~TextRender() {
 Mesh *TextRender::meshToDraw(int instance) {
     A_UNUSED(instance);
     if(m_dirtyMesh && m_font && !m_text.isEmpty()) {
-        m_font->composeMesh(m_mesh, m_text, m_size, m_alignment, m_kerning, m_wrap, m_boundaries);
-
+        m_font->composeMesh(m_mesh, m_translated ?  Engine::translate(m_text) : m_text, m_size, m_alignment, m_flags, m_boundaries);
+        m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
         m_dirtyMesh = false;
     }
 
@@ -140,16 +140,37 @@ void TextRender::setColor(const Vector4 &color) {
     m_dirtyMaterial = true;
 }
 /*!
+    Returns true if text in text render must be translated; othewise returns false.
+*/
+bool TextRender::translated() const {
+    return m_translated;
+}
+/*!
+    Sets \a enable or disable translation from dictionary for current text render.
+*/
+void TextRender::setTranslated(bool enable) {
+    if(m_translated != enable) {
+        m_translated = enable;
+        m_dirtyMesh = true;
+    }
+}
+/*!
     Returns true if word wrap enabled; otherwise returns false.
 */
 bool TextRender::wordWrap() const {
-    return m_wrap;
+    return m_flags & Font::Wrap;
 }
 /*!
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
 void TextRender::setWordWrap(bool wrap) {
-    m_wrap = wrap;
+    if(wordWrap() != wrap) {
+        if(wrap) {
+            m_flags |= Font::Wrap;
+        } else {
+            m_flags &= ~Font::Wrap;
+        }
+    }
     m_dirtyMesh = true;
 }
 /*!
@@ -182,15 +203,19 @@ void TextRender::setAlign(int alignment) {
     Returns true if glyph kerning enabled; otherwise returns false.
 */
 bool TextRender::kerning() const {
-    return m_kerning;
+    return m_flags & Font::Kerning;
 }
 /*!
-    Set true to enable glyph \a kerning and false to disable.
+    Set true to \a enable glyph kerning and false to disable.
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
-void TextRender::setKerning(const bool kerning) {
-    if(m_kerning != kerning) {
-        m_kerning = kerning;
+void TextRender::setKerning(const bool enable) {
+    if(kerning() != enable) {
+        if(enable) {
+            m_flags |= Font::Kerning;
+        } else {
+            m_flags &= ~Font::Kerning;
+        }
         m_dirtyMesh = true;
     }
 }
