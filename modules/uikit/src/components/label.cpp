@@ -20,8 +20,8 @@ namespace  {
 
     const char *gColor("mainColor");
     const char *gTexture("mainTexture");
-    const char *gClipRect("clipRect");
     const char *gWeight("weight");
+    const char *gUseSDF("useSdf");
 };
 
 /*!
@@ -41,9 +41,9 @@ Label::Label() :
         m_size(16),
         m_alignment(Left),
         m_fontWeight(0.5f),
-        m_kerning(true),
-        m_wrap(false),
-        m_dirty(true) {
+        m_flags(Font::Wrap),
+        m_dirty(true),
+        m_translated(false) {
 
     m_mesh->makeDynamic();
 
@@ -58,6 +58,7 @@ Label::~Label() {
     if(m_font) {
         m_font->unsubscribe(this);
     }
+    m_font = nullptr;
 }
 /*!
     \internal
@@ -68,11 +69,12 @@ void Label::draw(CommandBuffer &buffer) {
 
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
-            m_font->composeMesh(m_mesh, m_text, m_size, m_alignment, m_kerning, m_wrap, m_meshSize);
-
-            if(m_material) {
-                m_material->setTexture(gTexture, m_font->page());
-            }
+            m_font->composeMesh(m_mesh,
+                                m_translated ? Engine::translate(m_text) : m_text,
+                                m_size, m_alignment, m_flags, m_meshSize);
+            m_material->setTexture(gTexture, m_font->page());
+            bool sdf = m_flags & Font::Sdf;
+            m_material->setBool(gUseSDF, &sdf);
 
             m_dirty = false;
         }
@@ -191,17 +193,36 @@ void Label::setColor(const Vector4 &color) {
     }
 }
 /*!
+    Returns true if text in label must be translated; othewise returns false.
+*/
+bool Label::translated() const {
+    return m_translated;
+}
+/*!
+    Sets \a enable or disable translation from dictionary for current label.
+*/
+void Label::setTranslated(bool enable) {
+    if(m_translated != enable) {
+        m_translated = enable;
+        m_dirty = true;
+    }
+}
+/*!
     Returns true if word wrap enabled; otherwise returns false.
 */
 bool Label::wordWrap() const {
-    return m_wrap;
+    return m_flags & Font::Wrap;
 }
 /*!
     Sets the word \a wrap policy. Set true to enable word wrap and false to disable.
 */
 void Label::setWordWrap(bool wrap) {
-    if(m_wrap != wrap) {
-        m_wrap = wrap;
+    if(wordWrap() != wrap) {
+        if(wrap) {
+            m_flags |= Font::Wrap;
+        } else {
+            m_flags &= ~Font::Wrap;
+        }
         m_dirty = true;
     }
 }
@@ -224,15 +245,19 @@ void Label::setAlign(int alignment) {
     Returns true if glyph kerning enabled; otherwise returns false.
 */
 bool Label::kerning() const {
-    return m_kerning;
+    return m_flags & Font::Kerning;
 }
 /*!
-    Set true to enable glyph \a kerning and false to disable.
+    Set true to \a enable glyph kerning and false to disable.
     \note Glyph kerning functionality depends on fonts which you are using. In case of font doesn't support kerning, you will not see the difference.
 */
-void Label::setKerning(const bool kerning) {
-    if(m_kerning != kerning) {
-        m_kerning = kerning;
+void Label::setKerning(const bool enable) {
+    if(kerning() != enable) {
+        if(enable) {
+            m_flags |= Font::Kerning;
+        } else {
+            m_flags &= ~Font::Kerning;
+        }
         m_dirty = true;
     }
 }
@@ -241,20 +266,7 @@ void Label::setKerning(const bool kerning) {
 */
 Vector2 Label::cursorAt(int position) {
     std::u32string u32 = m_text.toUtf32();
-    return Vector2(m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_size, m_kerning), 0.0f);
-}
-/*!
-    \internal
-*/
-void Label::setClipOffset(const Vector2 &offset) {
-    if(m_clipOffset != offset) {
-        m_clipOffset = offset;
-        if(m_material) {
-            Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
-
-            m_material->setVector4(gClipRect, &clipRect);
-        }
-    }
+    return Vector2(m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_size, m_flags), 0.0f);
 }
 /*!
     \internal
@@ -307,12 +319,6 @@ void Label::boundChanged(const Vector2 &size) {
     if(m_meshSize != size) {
         m_meshSize = size;
         m_dirty = true;
-
-        if(m_material) {
-            Vector4 clipRect(m_clipOffset, m_meshSize.x + m_clipOffset.x, m_meshSize.y + m_clipOffset.y);
-
-            m_material->setVector4(gClipRect, &clipRect);
-        }
     }
 }
 /*!

@@ -3,6 +3,7 @@
     <properties>
         <property name="mainColor" type="vec4" />
         <property name="weight" type="float" />
+        <property name="useSdf" type="bool" />
         <property name="mainTexture" binding="0" type="texture2d" />
     </properties>
     <fragment><![CDATA[
@@ -26,10 +27,13 @@ const float softness = 0.0625f;
 void main() {
 #pragma instance
 
-    float min = 1.0f - weight - softness;
-    float max = 1.0f - weight + softness;
+    float mask = texture(mainTexture, _uv).x;
+    if(useSdf) {
+        float min = 1.0f - weight - softness;
+        float max = 1.0f - weight + softness;
 
-    float mask = smoothstep(min, max, texture(mainTexture, _uv).x);
+        mask = smoothstep(min, max, mask);
+    }
 
     if(mask < 0.1f) {
         discard;
