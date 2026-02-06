@@ -57,6 +57,7 @@ void Font::requestCharacters(const std::u32string &characters, uint32_t size) {
     bool isNew = false;
     for(auto it : characters) {
         uint32_t ch = it;
+        Mathf::hashCombine(ch, size);
         if(m_shapes.find(ch) == m_shapes.end()) {
             error = FT_Load_Glyph(face, FT_Get_Char_Index(face, it), FT_LOAD_RENDER);
             if(!error) {
@@ -129,11 +130,13 @@ float Font::textWidth(const TString &text, int size, int flags) {
         float spaceWidth = 0;
         FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
         if(!error) {
-            spaceWidth = face->glyph->advance.x / (DF_GLYPH_SIZE * 64.0f) * size;
+            spaceWidth = (adjustedSize == DF_GLYPH_SIZE) ? (DF_GLYPH_SIZE * 64.0f * size) : 64.0f;
+            spaceWidth = face->glyph->advance.x / spaceWidth;
         }
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
+            Mathf::hashCombine(ch, size);
             switch(ch) {
                 case ' ': {
                     pos += spaceWidth;
@@ -195,7 +198,6 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
         vertices.resize(length * 4);
         indices.resize(length * 6);
         uv0.resize(vertices.size());
-        colors.resize(vertices.size());
 
         std::list<float> width;
         std::list<uint32_t> position;
@@ -207,6 +209,7 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
+            Mathf::hashCombine(ch, size);
             switch(ch) {
                 case ' ': {
                     pos += Vector3(spaceWidth, 0.0f, 0.0f);
@@ -261,11 +264,6 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                     uv0[it * 4 + 1] = uv[1];
                     uv0[it * 4 + 2] = uv[2];
                     uv0[it * 4 + 3] = uv[3];
-
-                    colors[it * 4 + 0] = Vector4(1.0f);
-                    colors[it * 4 + 1] = Vector4(1.0f);
-                    colors[it * 4 + 2] = Vector4(1.0f);
-                    colors[it * 4 + 3] = Vector4(1.0f);
 
                     indices[it * 6 + 0] = it * 4 + 0;
                     indices[it * 6 + 1] = it * 4 + 1;

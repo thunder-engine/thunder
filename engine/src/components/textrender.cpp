@@ -57,6 +57,7 @@ Mesh *TextRender::meshToDraw(int instance) {
     A_UNUSED(instance);
     if(m_dirtyMesh && m_font && !m_text.isEmpty()) {
         m_font->composeMesh(m_mesh, m_translated ?  Engine::translate(m_text) : m_text, m_size, m_alignment, m_flags, m_boundaries);
+        m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
         m_dirtyMesh = false;
     }
 

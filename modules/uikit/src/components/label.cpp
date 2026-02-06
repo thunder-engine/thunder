@@ -72,6 +72,9 @@ void Label::draw(CommandBuffer &buffer) {
             m_font->composeMesh(m_mesh,
                                 m_translated ? Engine::translate(m_text) : m_text,
                                 m_size, m_alignment, m_flags, m_meshSize);
+
+            m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
+
             m_material->setTexture(gTexture, m_font->page());
             bool sdf = m_flags & Font::Sdf;
             m_material->setBool(gUseSDF, &sdf);
