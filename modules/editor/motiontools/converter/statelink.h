@@ -21,22 +21,12 @@ namespace {
 class StateLink : public GraphLink {
     A_OBJECT(StateLink, GraphLink, Graph)
 
-    A_PROPERTIES(
-        A_PROPERTY(float, duration, StateLink::duration, StateLink::setDuration)
-    )
-
-public:
-    float duration() const {
-        return m_duration;
-    }
-
-    void setDuration(float duration) {
-        m_duration = duration;
-    }
-
 private:
     void toXml(pugi::xml_node &element) override {
-        element.append_attribute(gDuration) = m_duration;
+        Variant duration = property(gDuration);
+        if(duration.isValid()) {
+            element.append_attribute(gDuration) = duration.toFloat();
+        }
 
         AnimationControllerGraph *graph = static_cast<AnimationControllerGraph *>(sender->graph());
         if(graph) {
@@ -56,7 +46,10 @@ private:
     }
 
     void fromXml(const pugi::xml_node &element) override {
-        m_duration = element.attribute(gDuration).as_float();
+        pugi::xml_attribute duration = element.attribute(gDuration);
+        if(duration) {
+            m_duration = duration.as_float();
+        }
 
         VariantList conditions;
 
@@ -85,7 +78,9 @@ private:
             sub = sub.next_sibling();
         }
 
-        setProperty(gCondition, conditions);
+        if(!conditions.empty()) {
+            setProperty(gCondition, conditions);
+        }
     }
 
     void setEndpoints(GraphNode *sender, NodePort *oport, GraphNode *receiver, NodePort *iport) override {
@@ -93,6 +88,7 @@ private:
 
         EntryState *entry = dynamic_cast<EntryState *>(sender);
         if(entry == nullptr) {
+            setProperty(gDuration, 0.0f);
             setProperty(gCondition, VariantList());
             setDynamicPropertyInfo(gCondition, "editor=Condition");
         }
