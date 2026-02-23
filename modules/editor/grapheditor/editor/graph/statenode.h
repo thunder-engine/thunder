@@ -6,7 +6,9 @@
 class NODEGRAPH_EXPORT StateNode : public GraphNode {
     A_OBJECT(StateNode, GraphNode, Graph)
 
-private:
+protected:
+    void updateName();
+
     Widget *widget() override;
 
 };

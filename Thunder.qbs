@@ -101,7 +101,6 @@ Project {
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
         "build/install.qbs",
-        "build/qbsinstall.qbs",
         "tests/tests.qbs"
     ]
 }

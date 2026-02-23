@@ -11,7 +11,7 @@ class BaseState : public StateNode {
     A_OBJECT(BaseState, StateNode, Motion)
 
     A_PROPERTIES(
-        A_PROPERTY(TString, Name, BaseState::name, BaseState::setName),
+        A_PROPERTY(TString, Name, BaseState::name, BaseState::setBaseName),
         A_PROPERTYEX(AnimationClip *, Clip, BaseState::clip, BaseState::setClip, "editor=Asset"),
         A_PROPERTY(bool, Loop, BaseState::loop, BaseState::setLoop)
     )
@@ -31,6 +31,12 @@ public:
 
     void setLoop(bool loop) {
         m_loop = loop;
+    }
+
+    void setBaseName(const TString &name) {
+        setName(name);
+
+        updateName();
     }
 
 protected:

@@ -222,44 +222,42 @@ Variant AnimationControllerGraph::data() const {
     }
     machine.push_back(variables);
     // Pack transitions
+    TString entry;
     VariantList transitions;
     for(auto it : m_links) {
         StateLink *link = dynamic_cast<StateLink *>(it);
         if(link) {
-            VariantList transition;
-            transition.push_back(link->sender->name());
-            transition.push_back(link->receiver->name());
-            transition.push_back(link->duration());
+            if(link->sender != m_entryState) {
+                VariantList transition;
+                transition.push_back(link->sender->name());
+                transition.push_back(link->receiver->name());
+                transition.push_back(link->property(gDuration).toFloat());
 
-            Variant condition(link->property(gCondition));
-            if(condition.isValid()) {
-                VariantList conditions;
-                for(auto &it : condition.toList()) {
-                    VariantMap map(it.toMap());
+                Variant condition(link->property(gCondition));
+                if(condition.isValid()) {
+                    VariantList conditions;
+                    for(auto &it : condition.toList()) {
+                        VariantMap map(it.toMap());
 
-                    VariantList data;
-                    data.push_back(map[gName]);
-                    data.push_back(map[gType]);
-                    data.push_back(map[gValue]);
-                    conditions.push_back(data);
+                        VariantList data;
+                        data.push_back(map[gName]);
+                        data.push_back(map[gType]);
+                        data.push_back(map[gValue]);
+                        conditions.push_back(data);
+                    }
+                    if(!conditions.empty()) {
+                        transition.push_back(conditions);
+                    }
                 }
-                if(!conditions.empty()) {
-                    transition.push_back(conditions);
-                }
+
+                transitions.push_back(transition);
+            } else {
+                entry = it->receiver->name();
             }
-
-            transitions.push_back(transition);
         }
     }
     machine.push_back(transitions);
     // Set initial state
-    TString entry;
-    for(const auto it : m_links) {
-        if(it->sender == m_entryState) {
-            entry = it->receiver->name();
-            break;
-        }
-    }
     machine.push_back(entry);
 
     result[gMachine] = machine;
