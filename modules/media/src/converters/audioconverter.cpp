@@ -1,16 +1,14 @@
 #include "converters/audioconverter.h"
 
-#include <QAudioDecoder>
-#include <QEventLoop>
-#include <QBuffer>
-#include <QUrl>
-
-#include <ctime>
+#define MINIAUDIO_IMPLEMENTATION
+#include <miniaudio.h>
 
 #include <log.h>
 #include <url.h>
 
 #include <vorbis/vorbisfile.h>
+
+#include "resources/audioclip.h"
 
 #define HEADER      "Header"
 #define BLOCK_SIZE  1024
@@ -62,20 +60,8 @@ void AudioImportSettings::setQuality(float quality) {
     }
 }
 
-AudioConverter::AudioConverter() :
-        m_proxy(new AudioProxy),
-        m_decoder(new QAudioDecoder(m_proxy)),
-        m_loop(new QEventLoop(m_proxy)) {
+AudioConverter::AudioConverter()  {
 
-    m_proxy->setConverter(this);
-
-    QObject::connect(m_decoder, &QAudioDecoder::bufferReady, m_proxy, &AudioProxy::onBufferReady);
-    QObject::connect(m_decoder, &QAudioDecoder::finished, m_proxy, &AudioProxy::onFinished);
-
-    AudioProxy::connect(m_decoder, QOverload<QAudioDecoder::Error>::of(&QAudioDecoder::error), [=](QAudioDecoder::Error error) {
-
-        m_loop->exit(error);
-    });
 }
 
 void AudioConverter::init() {
@@ -86,30 +72,91 @@ void AudioConverter::init() {
     }
 }
 
+ma_result customReadProc(ma_decoder *decoder, void *buffer, size_t bytesToRead, size_t *bytesRead) {
+    FILE *fp = reinterpret_cast<FILE *>(decoder->pUserData);
+    *bytesRead = fread(buffer, 1, bytesToRead, fp);
+
+    return MA_SUCCESS;
+}
+
+ma_result customSeekProc(ma_decoder *decoder, ma_int64 offset, ma_seek_origin origin) {
+    FILE *fp = reinterpret_cast<FILE *>(decoder->pUserData);
+
+    int fseek_origin = (origin == ma_seek_origin_start) ? SEEK_SET : SEEK_CUR;
+    if(fseek(fp, offset, fseek_origin) == 0) {
+        return MA_SUCCESS;
+    }
+
+    return MA_BAD_SEEK;
+}
+
+size_t read(const ByteArray &data, char *buffer, size_t maxSize, size_t &pos) {
+    if(pos >= data.size()) {
+        return 0;
+    }
+
+    size_t bytesToRead = MIN(maxSize, data.size() - pos);
+    std::copy(data.begin() + pos, data.begin() + pos + bytesToRead, buffer);
+    pos += bytesToRead;
+
+    return bytesToRead;
+}
+
 AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *settings) {
-    m_buffer.clear();
+    ByteArray buffer;
 
     int32_t channels = 1;
+    int32_t sampleRate = 0;
+
     Url info(settings->source());
 
     if(info.suffix() == "ogg") {
-        readOgg(settings, channels);
+        readOgg(settings, channels, buffer);
     } else {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        m_decoder->setSourceFilename(settings->source().data());
-#else
-        m_decoder->setSource(QUrl(settings->source().data()));
-#endif
-        m_decoder->start();
+        TString filename(settings->source());
 
-        int32_t code = m_loop->exec();
-        if(code != QAudioDecoder::NoError) {
-            aError() << "Unable to convert:" << info.baseName() << "error code:" << code;
-
+        FILE *fp = fopen(filename.data(), "rb");
+        if(!fp) {
+            aError() << "Unable to open file:" << filename.data();
             return InternalError;
         }
 
-        channels = m_decoder->audioFormat().channelCount();
+        ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_s16, 0, 0);
+        ma_decoder decoder;
+
+        ma_result decodeResult = ma_decoder_init(customReadProc, customSeekProc, fp, &decoderConfig, &decoder);
+        if(decodeResult != MA_SUCCESS) {
+            aError() << "Unable to initilize decoder:" << decodeResult;
+            fclose(fp);
+            return InternalError;
+        }
+
+        channels = decoder.outputChannels;
+        sampleRate = decoder.outputSampleRate;
+
+        ma_uint64 totalFrames;
+        decodeResult = ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
+        if(decodeResult != MA_SUCCESS) {
+            aError() << "Unable to read file length";
+            ma_decoder_uninit(&decoder);
+            fclose(fp);
+            return InternalError;
+        }
+
+        ma_uint32 sampleSize = ma_get_bytes_per_sample(decoder.outputFormat);
+        ma_uint64 dataSizeInBytes = totalFrames * channels * sampleSize;
+
+        buffer.resize(dataSizeInBytes);
+
+        ma_uint64 framesRead;
+        decodeResult = ma_decoder_read_pcm_frames(&decoder, buffer.data(), totalFrames, &framesRead);
+        if(decodeResult != MA_SUCCESS || framesRead != totalFrames) {
+            aError() << "Unable to decode file. Frames converted:" << framesRead << "from" << totalFrames;
+            return InternalError;
+        }
+
+        ma_decoder_uninit(&decoder);
+        fclose(fp);
     }
 
     AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
@@ -127,12 +174,12 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
         Engine::replaceUUID(clip, uuid);
     }
 
-    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels));
+    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels, sampleRate, buffer));
 
     return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
 }
 
-VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels) {
+VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels, int32_t sampleRate, const ByteArray &buffer) {
     VariantMap result;
 
     ogg_stream_state stream;
@@ -144,13 +191,14 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     vorbis_comment comment;
 
     vorbis_info_init(&info);
-    vorbis_comment_init(&comment);
 
     int32_t channels = srcChanels;
     if(settings->mono()) {
         channels = 1;
     }
-    vorbis_encode_init_vbr(&info, channels, 44100, CLAMP(settings->quality(), 0.0, 1.0));
+    vorbis_encode_init_vbr(&info, channels, sampleRate, CLAMP(settings->quality(), 0.0, 1.0));
+
+    vorbis_comment_init(&comment);
     vorbis_comment_add_tag(&comment, "encoder", "thunder");
 
     vorbis_analysis_init(&state, &info);
@@ -188,25 +236,23 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
             file.write(reinterpret_cast<const char *>(page.body), page.body_len);
         }
 
-        QBuffer buffer(&m_buffer);
-        buffer.open(QIODevice::ReadOnly);
-
         int64_t offset = 2 * srcChanels;
+        size_t pos = 0;
 
         char *ptr = new char[BLOCK_SIZE * offset];
 
         bool eof = false;
         while(!eof) {
-            int64_t bytes = buffer.read(ptr, BLOCK_SIZE * offset);
+            int64_t bytes = read(buffer, ptr, BLOCK_SIZE * offset, pos);
             if(bytes == 0) {
                 vorbis_analysis_wrote(&state, 0);
             } else {
                 float **data = vorbis_analysis_buffer(&state, bytes / offset);
                 uint64_t i;
                 for(i = 0; i < bytes / offset; i++) {
-                    data[0][i]  = ((ptr[i*offset+1] << 8) | (0x00ff & (int)ptr[i * offset])) / 32768.f;
+                    data[0][i] = ((ptr[i*offset+1] << 8) | (0x00ff & (int)ptr[i * offset])) / 32768.f;
                     if(channels > 1) {
-                        data[1][i]  = ((ptr[i*offset+3] << 8) | (0x00ff & (int)ptr[i*offset+2])) / 32768.f;
+                        data[1][i] = ((ptr[i*offset+3] << 8) | (0x00ff & (int)ptr[i*offset+2])) / 32768.f;
                     }
                 }
                 vorbis_analysis_wrote(&state, i);
@@ -252,7 +298,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     VariantList header;
     header.push_back(resInfo.uuid);
     header.push_back(settings->stream());
-    result[HEADER]  = header;
+    result[HEADER] = header;
 
     return result;
 }
@@ -261,17 +307,7 @@ AssetConverterSettings *AudioConverter::createSettings() {
     return new AudioImportSettings();
 }
 
-void AudioConverter::onBufferReady() {
-    QAudioBuffer buffer = m_decoder->read();
-
-    m_buffer.append(buffer.constData<char>(), buffer.byteCount());
-}
-
-void AudioConverter::onFinished() {
-    m_loop->exit();
-}
-
-bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels) {
+bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels, ByteArray &buffer) {
     OggVorbis_File vorbisFile;
     if(ov_fopen(settings->source().data(), &vorbisFile) < 0) {
         return false;
@@ -285,12 +321,12 @@ bool AudioConverter::readOgg(AssetConverterSettings *settings, int32_t &channels
         int32_t	section = 0;
         int32_t result = 0;
         while(result < BLOCK_SIZE) {
-            int32_t length  = ov_read(&vorbisFile, out + result, BLOCK_SIZE - result, 0, 2, 1, &section);
+            int32_t length = ov_read(&vorbisFile, out + result, BLOCK_SIZE - result, 0, 2, 1, &section);
             if(length <= 0) {
                 return true;
             }
             result += length;
         }
-        m_buffer.append(out, result);
+        buffer.insert(buffer.end(), out, out + result);
     }
 }

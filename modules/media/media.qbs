@@ -20,7 +20,8 @@ Project {
         "../../thirdparty/next/inc/core",
         "../../thirdparty/openal/include",
         "../../thirdparty/libogg/src",
-        "../../thirdparty/libvorbis/src"
+        "../../thirdparty/libvorbis/src",
+        "../../thirdparty/miniaudio"
     ]
 
     DynamicLibrary {
@@ -39,7 +40,7 @@ Project {
         Depends { name: "ogg-editor" }
         Depends { name: "vorbis-editor" }
         Depends { name: "vorbisfile-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "multimedia"]; }
+        Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "MEDIA_LIBRARY"]
