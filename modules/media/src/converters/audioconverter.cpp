@@ -73,17 +73,17 @@ void AudioConverter::init() {
 }
 
 ma_result customReadProc(ma_decoder *decoder, void *buffer, size_t bytesToRead, size_t *bytesRead) {
-    FILE *fp = (FILE*)decoder->pUserData;
+    FILE *fp = reinterpret_cast<FILE *>(decoder->pUserData);
     *bytesRead = fread(buffer, 1, bytesToRead, fp);
 
     return MA_SUCCESS;
 }
 
 ma_result customSeekProc(ma_decoder *decoder, ma_int64 offset, ma_seek_origin origin) {
-    FILE *fp = (FILE*)decoder->pUserData;
+    FILE *fp = reinterpret_cast<FILE *>(decoder->pUserData);
 
     int fseek_origin = (origin == ma_seek_origin_start) ? SEEK_SET : SEEK_CUR;
-    if(fseek(fp, (long)offset, fseek_origin) == 0) {
+    if(fseek(fp, offset, fseek_origin) == 0) {
         return MA_SUCCESS;
     }
 
