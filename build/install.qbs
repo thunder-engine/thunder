@@ -68,7 +68,7 @@ Product {
             if (!Qt.core.frameworkBuild) {
                 var libPrefix = (qbs.targetOS.contains("linux") ? "lib" : "") + "Qt" + Qt.core.versionMajor
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
-                var libs = ["Core", "Gui", "Network", "Multimedia", "Svg", "Widgets"]
+                var libs = ["Core", "Gui", "Svg", "Widgets"]
 
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
@@ -97,8 +97,6 @@ Product {
                 list.push("**/QtCore.framework/**")
                 list.push("**/QtGui.framework/**")
                 list.push("**/QtWidgets.framework/**")
-                list.push("**/QtNetwork.framework/**")
-                list.push("**/QtMultimedia.framework/**")
                 list.push("**/QtSvg.framework/**")
                 list.push("**/QtDBus.framework/**")
 
@@ -135,16 +133,6 @@ Product {
         excludeFiles: pluginExcludeFiles
         qbs.install: true
         qbs.installDir: install.QTPLUGINS_PATH + "/imageformats"
-        qbs.installPrefix: install.PREFIX
-    }
-
-    Group {
-        name: "Qt Media Service Plugins"
-        prefix: FileInfo.joinPaths(Qt.core.pluginPath, "/mediaservice/")
-        files: pluginFiles
-        excludeFiles: pluginExcludeFiles
-        qbs.install: true
-        qbs.installDir: install.QTPLUGINS_PATH + "/mediaservice"
         qbs.installPrefix: install.PREFIX
     }
 

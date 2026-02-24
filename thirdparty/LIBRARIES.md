@@ -55,6 +55,12 @@
 - Version: 1.3.6
 - License: Vorbis License (BSD-like)
 
+## miniaudio
+
+- Link: https://github.com/mackron/miniaudio
+- Version: 0.11.24
+- License: Public Domain
+
 ## next
 
 - Link: https://github.com/eprikazchikov/platformnext

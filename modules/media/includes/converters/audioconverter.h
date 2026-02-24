@@ -1,27 +1,17 @@
 #ifndef AUDIOCONVERTER_H
 #define AUDIOCONVERTER_H
 
-#include "resources/audioclip.h"
-
 #include <assetconverter.h>
 
 #include <vorbis/vorbisenc.h>
-
-#include <QObject>
-
-class QAudioDecoder;
-class QAudioFormat;
-class QEventLoop;
-
-class AudioProxy;
 
 class AudioImportSettings : public AssetConverterSettings {
     A_OBJECT(AudioImportSettings, AssetConverterSettings, Editor)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, Streamed, AudioImportSettings::stream, AudioImportSettings::setStream),
-        A_PROPERTY(bool, Force_Mono, AudioImportSettings::mono, AudioImportSettings::setMono),
-        A_PROPERTY(float, Quality, AudioImportSettings::quality, AudioImportSettings::setQuality)
+        A_PROPERTY(bool, streamed, AudioImportSettings::stream, AudioImportSettings::setStream),
+        A_PROPERTY(bool, forceMono, AudioImportSettings::mono, AudioImportSettings::setMono),
+        A_PROPERTY(float, quality, AudioImportSettings::quality, AudioImportSettings::setQuality)
     )
 
 public:
@@ -52,9 +42,6 @@ class AudioConverter : public AssetConverter {
 public:
     AudioConverter();
 
-    void onBufferReady();
-    void onFinished();
-
 protected:
     void init() override;
 
@@ -62,39 +49,9 @@ protected:
     ReturnCode convertFile(AssetConverterSettings *) override;
     AssetConverterSettings *createSettings() override;
 
-    VariantMap convertResource(AudioImportSettings *, int32_t srcChanels);
+    VariantMap convertResource(AudioImportSettings *, int32_t srcChanels, int32_t sampleRate, const ByteArray &buffer);
 
-    bool readOgg(AssetConverterSettings *settings, int32_t &channels);
-
-private:
-    QByteArray m_buffer;
-
-    AudioProxy *m_proxy;
-
-    QAudioDecoder *m_decoder;
-
-    QEventLoop *m_loop;
-
-};
-
-class AudioProxy : public QObject {
-    Q_OBJECT
-public:
-    void setConverter(AudioConverter *converter) {
-        m_converter = converter;
-    }
-
-public slots:
-    void onBufferReady() {
-        m_converter->onBufferReady();
-    }
-
-    void onFinished() {
-        m_converter->onFinished();
-    }
-
-private:
-    AudioConverter *m_converter;
+    bool readOgg(AssetConverterSettings *settings, int32_t &channels, ByteArray &buffer);
 
 };
 
