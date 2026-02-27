@@ -208,9 +208,9 @@ void Widget::applyStyle() {
             }
 
             if(layoutMode == "block") {
-                layout->setDirection(Layout::Vertical);
+                layout->setOrientation(Vertical);
             } else if(layoutMode == "inline") {
-                layout->setDirection(Layout::Horizontal);
+                layout->setOrientation(Horizontal);
             }
 
             m_transform->setLayout(layout);

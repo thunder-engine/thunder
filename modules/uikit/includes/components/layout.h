@@ -5,12 +5,6 @@
 
 class UIKIT_EXPORT Layout {
 public:
-    enum Direction {
-        Vertical,
-        Horizontal
-    };
-
-public:
     Layout();
     ~Layout();
 
@@ -34,8 +28,8 @@ public:
     float spacing() const;
     void setSpacing(float spacing);
 
-    int direction() const;
-    void setDirection(int direction);
+    int orientation() const;
+    void setOrientation(int orientation);
 
     Vector2 sizeHint();
 
@@ -56,7 +50,7 @@ protected:
 
     float m_spacing;
 
-    int m_direction;
+    int m_orientation;
 
     bool m_dirty;
 

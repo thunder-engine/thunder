@@ -187,7 +187,7 @@ void Foldout::composeComponent() {
     rect->setVerticalPolicy(RectTransform::Preferred);
 
     Layout *horizontalLauout = new Layout;
-    horizontalLauout->setOrientation(Horizontal);
+    horizontalLauout->setOrientation(Widget::Horizontal);
     horizontalLauout->setSpacing(8.0f);
     layout->addLayout(horizontalLauout);
 
