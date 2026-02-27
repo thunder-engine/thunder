@@ -14,6 +14,7 @@ class UIKIT_EXPORT ToolButton : public AbstractButton {
         A_SLOT(ToolButton::hideMenu),
         A_SLOT(ToolButton::onTriggered)
     )
+    A_NOENUMS()
 
     ToolButton();
 

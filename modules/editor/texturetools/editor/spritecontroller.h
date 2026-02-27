@@ -1,7 +1,6 @@
 #ifndef SPRITECONTROLLER_H
 #define SPRITECONTROLLER_H
 
-#include <editor/undostack.h>
 #include <editor/viewport/cameracontroller.h>
 
 #include "../converter/textureconverter.h"
@@ -59,79 +58,5 @@ private:
     bool m_drag;
 };
 
-class UndoSprite : public UndoCommand {
-public:
-    UndoSprite(SpriteController *ctrl, const TString &text, UndoCommand *parent = nullptr) :
-            UndoCommand(text, parent),
-            m_controller(ctrl) {
-
-    }
-
-protected:
-    SpriteController *m_controller;
-
-};
-
-class SelectSprite : public UndoSprite {
-public:
-    SelectSprite(const TString &key, SpriteController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TString m_key;
-
-};
-
-class CreateSprite : public UndoSprite {
-public:
-    CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TextureImportSettings::Element m_element;
-
-    TString m_uuid;
-    TString m_key;
-
-};
-
-class DestroySprite : public UndoSprite {
-public:
-    DestroySprite(SpriteController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TString m_key;
-
-    TextureImportSettings::Element m_element;
-
-};
-
-class UpdateSprite : public UndoSprite {
-public:
-    UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TString m_key;
-
-    TextureImportSettings::Element m_element;
-
-};
-
-class RenameSprite : public UndoSprite {
-public:
-    RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    TString m_newKey;
-    TString m_oldKey;
-};
 
 #endif // SPRITECONTROLLER_H

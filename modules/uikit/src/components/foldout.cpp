@@ -153,9 +153,7 @@ void Foldout::composeComponent() {
     containerRect->setAnchors(0.0f, 1.0f);
     containerRect->setPivot(Vector2(0.0f, 0.0f));
     containerRect->setVerticalPolicy(RectTransform::Preferred);
-
-    Layout *containerLayout = new Layout;
-    containerRect->setLayout(containerLayout);
+    containerRect->setLayout(new Layout);
 
     Actor *indicatorActor = Engine::composeActor<Button>(gIndicator, actor());
     Button *indicator = indicatorActor->getComponent<Button>();
@@ -182,19 +180,19 @@ void Foldout::composeComponent() {
 
     RectTransform *labelRect = label->rectTransform();
 
-    Layout *horizontalLauout = new Layout;
-    horizontalLauout->setDirection(Layout::Horizontal);
-    horizontalLauout->setSpacing(8.0f);
+    RectTransform *rect = rectTransform();
 
     Layout *layout = new Layout;
-
-    RectTransform *rect = rectTransform();
     rect->setLayout(layout);
     rect->setVerticalPolicy(RectTransform::Preferred);
+
+    Layout *horizontalLauout = new Layout;
+    horizontalLauout->setOrientation(Horizontal);
+    horizontalLauout->setSpacing(8.0f);
+    layout->addLayout(horizontalLauout);
 
     horizontalLauout->addTransform(indicatorRect);
     horizontalLauout->addTransform(labelRect);
 
-    layout->addLayout(horizontalLauout);
     layout->addTransform(containerRect);
 }

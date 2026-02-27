@@ -13,6 +13,10 @@
 #include <editor/viewport/handles.h>
 
 #include "../spritecontroller.h"
+#include "../actions/selectsprite.h"
+#include "../actions/updatesprite.h"
+#include "../actions/createsprite.h"
+#include "../actions/destroysprite.h"
 
 SpriteTool::SpriteTool(SpriteController *controller) :
         m_controller(controller),

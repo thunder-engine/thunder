@@ -132,6 +132,9 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
 
             m_controller->setSettings(dynamic_cast<TextureImportSettings *>(m_settings.front()));
             m_controller->setSize(size.x, size.y);
+
+            float bottom;
+            m_controller->setFocusOn(m_render->actor(), bottom);
         }
     }
 

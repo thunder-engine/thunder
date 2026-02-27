@@ -183,11 +183,9 @@ void Menu::composeComponent() {
     setCorners(Vector4(gCorner));
     rectTransform()->setPivot(Vector2(0.0f, 1.0f));
 
-    Layout *layout = new Layout;
-    Vector4 c = corners();
     RectTransform *r = rectTransform();
     if(r) {
-        r->setLayout(layout);
+        r->setLayout(new Layout);
     }
 
     Actor *actor = Engine::composeActor<Frame>(gSelected, Menu::actor());

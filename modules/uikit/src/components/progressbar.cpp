@@ -1,7 +1,6 @@
 #include "components/progressbar.h"
 
 #include "components/recttransform.h"
-#include "components/image.h"
 
 #include <components/actor.h>
 

@@ -1,7 +1,6 @@
 #include "components/toolbutton.h"
 
 #include "components/recttransform.h"
-#include "components/label.h"
 #include <components/image.h>
 #include "components/frame.h"
 #include <components/menu.h>

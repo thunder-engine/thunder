@@ -144,8 +144,10 @@ void Frame::setCorners(const Vector4 &corners) {
     m_borderRadius = corners;
     if(m_material) {
         RectTransform *rect = rectTransform();
-        Vector4 normCorners(m_borderRadius / rect->size().y);
-        m_material->setVector4(gBorderRadius, &normCorners);
+        if(rect) {
+            Vector4 normCorners(m_borderRadius / rect->size().y);
+            m_material->setVector4(gBorderRadius, &normCorners);
+        }
     }
 }
 /*!
