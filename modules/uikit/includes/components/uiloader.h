@@ -17,6 +17,7 @@ class UIKIT_EXPORT UiLoader : public Widget {
         A_METHOD(void, UiLoader::fromBuffer),
         A_SIGNAL(UiLoader::documentLoaded)
     )
+    A_NOENUMS()
 
 public:
     UiLoader();

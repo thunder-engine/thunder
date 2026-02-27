@@ -223,7 +223,7 @@ void NodeWidget::composePort(NodePort &port) {
                         }
                     } else {
                         m_callLayout = new Layout;
-                        m_callLayout->setDirection(Layout::Horizontal);
+                        m_callLayout->setOrientation(Widget::Horizontal);
                         m_callLayout->addTransform(portRect);
                         layout->addLayout(m_callLayout);
                     }

@@ -38,8 +38,8 @@ Label::Label() :
         m_font(nullptr),
         m_material(nullptr),
         m_mesh(Engine::objectCreate<Mesh>()),
-        m_size(16),
-        m_alignment(Left),
+        m_size(14),
+        m_alignment(Alignment::Center | Alignment::Middle),
         m_fontWeight(0.5f),
         m_flags(Font::Wrap),
         m_dirty(true),
@@ -330,9 +330,6 @@ void Label::boundChanged(const Vector2 &size) {
 void Label::composeComponent() {
     Widget::composeComponent();
 
-    setFontSize(14);
-    setColor(Vector4(1.0f));
-    setAlign(Alignment::Center | Alignment::Middle);
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
 

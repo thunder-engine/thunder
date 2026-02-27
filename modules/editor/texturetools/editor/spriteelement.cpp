@@ -2,6 +2,9 @@
 
 #include "spritecontroller.h"
 
+#include "actions/renamesprite.h"
+#include "actions/updatesprite.h"
+
 SpriteElement::SpriteElement() :
         m_controller(nullptr),
         m_settings(nullptr) {

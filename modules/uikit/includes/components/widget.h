@@ -17,6 +17,11 @@ class UIKIT_EXPORT Widget : public NativeBehaviour {
         A_SLOT(Widget::lower),
         A_SLOT(Widget::raise)
     )
+public:
+    enum Orentation {
+        Horizontal,
+        Vertical
+    };
 
 public:
     Widget();

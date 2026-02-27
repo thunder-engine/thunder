@@ -15,14 +15,14 @@ class UIKIT_EXPORT Slider : public AbstractSlider {
 public:
     Slider();
 
+    void setOrientation(int value) override;
+
     ProgressBar *background() const;
     void setBackground(ProgressBar *background);
 
     void setValue(int value) override;
     void setMinimum(int value) override;
     void setMaximum(int value) override;
-
-    void setOrientation(int value) override;
 
 private:
     void update() override;

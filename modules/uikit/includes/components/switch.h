@@ -12,6 +12,7 @@ class UIKIT_EXPORT Switch : public AbstractButton {
         A_PROPERTYEX(Vector4, knobColor, Switch::knobColor, Switch::setKnobColor, "editor=Color")
     )
     A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Switch();

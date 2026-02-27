@@ -25,6 +25,8 @@ public:
 
     void onUpdateTemplate();
 
+
+
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &) override;

@@ -19,6 +19,7 @@ class UIKIT_EXPORT Foldout : public Widget {
     A_METHODS(
         A_SLOT(Foldout::onExpand)
     )
+    A_NOENUMS()
 
 public:
     Foldout();

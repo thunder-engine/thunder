@@ -24,6 +24,7 @@ class UIKIT_EXPORT FloatInput : public Widget {
         A_SLOT(FloatInput::onDecrease),
         A_SLOT(FloatInput::onEditingFinished)
     )
+    A_NOENUMS()
 
 public:
     FloatInput();

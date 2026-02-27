@@ -23,6 +23,7 @@ class UIKIT_EXPORT Label : public Widget {
         A_PROPERTYEX(bool, kerning, Label::kerning, Label::setKerning, "css=font-kerning")
     )
     A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     Label();

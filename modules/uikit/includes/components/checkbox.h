@@ -11,6 +11,7 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
         A_PROPERTYEX(Vector4, knobColor, CheckBox::knobColor, CheckBox::setKnobColor, "editor=Color")
     )
     A_NOMETHODS()
+    A_NOENUMS()
 
 public:
     CheckBox();

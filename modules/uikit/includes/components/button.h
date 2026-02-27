@@ -8,6 +8,7 @@ class UIKIT_EXPORT Button : public AbstractButton {
 
     A_NOPROPERTIES()
     A_NOMETHODS()
+    A_NOENUMS()
 
 private:
     void composeComponent() override;

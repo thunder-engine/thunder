@@ -19,7 +19,7 @@ Layout::Layout() :
         m_attachedTransform(nullptr),
         m_rectTransform(nullptr),
         m_spacing(0.0f),
-        m_direction(Vertical),
+        m_orientation(Widget::Vertical),
         m_dirty(false) {
 
 }
@@ -177,16 +177,16 @@ void Layout::setSpacing(float spacing) {
     invalidate();
 }
 /*!
-    Returns the layout direction (Vertical or Horizontal).
+    Returns the layout orientation (Vertical or Horizontal).
 */
-int Layout::direction() const {
-    return m_direction;
+int Layout::orientation() const {
+    return m_orientation;
 }
 /*!
-    Sets the layout \a direction.
+    Sets the layout \a orientation.
 */
-void Layout::setDirection(int direction) {
-    m_direction = direction;
+void Layout::setOrientation(int orientation) {
+    m_orientation = orientation;
     invalidate();
 }
 /*!
@@ -216,7 +216,7 @@ Vector2 Layout::sizeHint() {
             size = it->sizeHint();
         }
 
-        if(m_direction == Vertical) {
+        if(m_orientation == Widget::Vertical) {
             result.x = MAX(result.x, size.x);
             result.y += ((it != *m_items.begin()) ? m_spacing : 0.0f) + size.y;
         } else {
@@ -255,7 +255,7 @@ void Layout::update() {
         }
 
         // Top and left paddings
-        float offset = ((m_direction == Vertical) ? padding.x + border.x : padding.w + border.w);
+        float offset = ((m_orientation == Widget::Vertical) ? padding.x + border.x : padding.w + border.w);
 
         for(auto it : m_items) {
             if(it->m_attachedTransform) {
@@ -267,7 +267,7 @@ void Layout::update() {
                     Vector2 pivot(r->pivot());
                     Vector4 margin(r->margin());
 
-                    if(m_direction == Vertical) {
+                    if(m_orientation == Widget::Vertical) {
                         offset += size.y * (1.0f - pivot.y) - margin.z;
                         Vector3 newPos(m_position.x + padding.w + border.w + size.x * pivot.x,
                                        m_position.y - offset, 0.0f);
@@ -286,12 +286,12 @@ void Layout::update() {
             } else {
                 offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
 
-                it->m_position = (m_direction == Vertical) ? Vector2(m_position.x, m_position.y - offset) :
-                                                             Vector2(m_position.x + offset, m_position.y);
+                it->m_position = (m_orientation == Widget::Vertical) ? Vector2(m_position.x, m_position.y - offset) :
+                                                                       Vector2(m_position.x + offset, m_position.y);
                 it->update();
 
                 Vector2 size(it->sizeHint());
-                if(m_direction == Vertical) {
+                if(m_orientation == Widget::Vertical) {
                     offset += size.y;
                 } else {
                     offset += size.x;
