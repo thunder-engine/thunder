@@ -435,7 +435,7 @@ void GraphController::update() {
 
 NodeWidget *GraphController::hoveredNode(float mouseX, float mouseY) {
     NodeWidget *hovered = nullptr;
-    Qt::CursorShape shape = Qt::ArrowCursor;
+
     for(auto node : m_graph->nodes()) {
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
         if(widget) {
@@ -443,20 +443,7 @@ NodeWidget *GraphController::hoveredNode(float mouseX, float mouseY) {
             if(rect->isHovered(mouseX, mouseY)) {
                 hovered = widget;
             }
-            GroupWidget *group = dynamic_cast<GroupWidget *>(widget);
-            if(group) {
-                Qt::CursorShape s = static_cast<Qt::CursorShape>(group->cursorShape());
-                if(s != Qt::ArrowCursor) {
-                    shape = s;
-                }
-            }
         }
-    }
-
-    if(shape != Qt::ArrowCursor) {
-        emit setCursor(QCursor(shape));
-    } else {
-        emit unsetCursor();
     }
 
     return hovered;

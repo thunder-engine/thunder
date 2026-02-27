@@ -19,8 +19,6 @@ class GroupWidget : public NodeWidget {
 public:
     GroupWidget();
 
-    int cursorShape() const;
-
 private:
     void update() override;
 
@@ -30,8 +28,6 @@ private:
     void setSize(const Vector2 &size);
 
 private:
-    int m_shape;
-
     int m_resize;
 
 };

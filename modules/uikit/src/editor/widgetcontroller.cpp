@@ -172,14 +172,6 @@ void WidgetController::update() {
             }
         }
     }
-
-    if(m_widgetTool->cursor() != Qt::ArrowCursor) {
-        emit setCursor(QCursor(m_widgetTool->cursor()));
-    } else if(focusWidget) {
-        emit setCursor(QCursor(Qt::CrossCursor));
-    } else {
-        emit unsetCursor();
-    }
 }
 
 void WidgetController::cameraMove(const Vector3 &delta) {

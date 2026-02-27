@@ -94,6 +94,12 @@ void Input::mouseLockCursor(bool lock) {
     s_pPlatform->mouseLockCursor(lock);
 }
 /*!
+    Sets the cursor \a shape.
+*/
+void Input::mouseSetCursor(CursorShape shape) {
+    s_pPlatform->setMouseCursor(shape);
+}
+/*!
     Returns the state of mouse \a button.
     Example code:
     \code

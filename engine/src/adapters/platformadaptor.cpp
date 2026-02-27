@@ -58,6 +58,10 @@ void PlatformAdaptor::mouseLockCursor(bool lock) {
     A_UNUSED(lock);
 }
 
+void PlatformAdaptor::setMouseCursor(Input::CursorShape shape) {
+    A_UNUSED(shape);
+}
+
 uint32_t PlatformAdaptor::joystickCount() const {
     return 0;
 }

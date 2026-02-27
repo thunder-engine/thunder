@@ -1,12 +1,5 @@
 #include "editor/editortool.h"
 
-#include "components/actor.h"
-#include "components/transform.h"
-#include "components/renderable.h"
-#include "components/camera.h"
-
-#include "editor/viewport/handletools.h"
-
 /*!
     \class EditorTool
     \brief The EditorTool class is an abstract base class that defines the interface for editor tools in the application.
@@ -43,8 +36,7 @@
         };
 */
 
-EditorTool::EditorTool() :
-        m_cursor(Qt::ArrowCursor) {
+EditorTool::EditorTool() {
 
 }
 
@@ -115,10 +107,4 @@ void EditorTool::endControl() {
 */
 void EditorTool::cancelControl() {
 
-}
-/*!
-    Returns a cursor shape for the active tool action.
-*/
-Qt::CursorShape EditorTool::cursor() const {
-    return m_cursor;
 }

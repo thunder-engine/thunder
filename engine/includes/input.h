@@ -161,11 +161,23 @@ public:
     };
 
     enum TouchState {
-        TOUCH_HOVER         = 0,
+        TOUCH_HOVER = 0,
         TOUCH_BEGAN,
         TOUCH_MOVED,
         TOUCH_ENDED,
         TOUCH_CANCELLED
+    };
+
+    enum CursorShape {
+        CURSOR_ARROW = 0,
+        CURSOR_CROSS,
+        CURSOR_IBEAM,
+        CURSOR_HAND,
+        CURSOR_HORSIZE,
+        CURSOR_VERSIZE,
+        CURSOR_FDIAGSIZE,
+        CURSOR_BDIAGSIZE,
+        CURSOR_ALLSIZE,
     };
 
 public:
@@ -187,6 +199,7 @@ public:
     static float mouseScrollDelta();
 
     static void mouseLockCursor(bool lock);
+    static void mouseSetCursor(CursorShape shape);
 
     static uint32_t joystickCount();
     static uint32_t joystickButtons(uint32_t index);

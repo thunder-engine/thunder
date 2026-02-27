@@ -59,7 +59,7 @@ void SpriteTool::cancelControl() {
 
 void SpriteTool::update(bool pivot, bool local, bool snap) {
     bool isDrag = m_controller->isDrag();
-    Qt::CursorShape shape = Qt::ArrowCursor;
+    Input::CursorShape shape = Input::CURSOR_ARROW;
 
     m_currentPoint = m_controller->world();
 
@@ -167,21 +167,21 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                 if(m_borderAxes != 0 && m_borderAxes != (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
                     axes = m_borderAxes;
                 }
-                shape = Qt::SizeAllCursor;
+                shape = Input::CURSOR_ALLSIZE;
             }
 
             if(axes == (Handles::TOP | Handles::RIGHT)) {
-                shape = Qt::SizeBDiagCursor;
+                shape = Input::CURSOR_BDIAGSIZE;
             } else if(axes == (Handles::TOP | Handles::LEFT)) {
-                shape = Qt::SizeFDiagCursor;
+                shape = Input::CURSOR_FDIAGSIZE;
             } else if(axes == (Handles::BOTTOM | Handles::RIGHT)) {
-                shape = Qt::SizeFDiagCursor;
+                shape = Input::CURSOR_FDIAGSIZE;
             } else if(axes == (Handles::BOTTOM | Handles::LEFT)) {
-                shape = Qt::SizeBDiagCursor;
+                shape = Input::CURSOR_BDIAGSIZE;
             } else if(axes == Handles::TOP || axes == Handles::BOTTOM) {
-                shape = Qt::SizeVerCursor;
+                shape = Input::CURSOR_VERSIZE;
             } else if(axes == Handles::LEFT || axes == Handles::RIGHT) {
-                shape = Qt::SizeHorCursor;
+                shape = Input::CURSOR_HORSIZE;
             }
 
             element = it.second;
@@ -257,7 +257,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         m_controller->undoRedo()->push(new DestroySprite(m_controller));
     }
 
-    m_cursor = shape;
+    Input::mouseSetCursor(shape);
 }
 
 std::string SpriteTool::icon() const {
