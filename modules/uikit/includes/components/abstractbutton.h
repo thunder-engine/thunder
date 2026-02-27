@@ -2,10 +2,9 @@
 #define ABSTRACTBUTTON_H
 
 #include "widget.h"
-
-class Image;
-class Frame;
-class Label;
+#include "frame.h"
+#include "label.h"
+#include "image.h"
 
 class UIKIT_EXPORT AbstractButton : public Widget {
     A_OBJECT(AbstractButton, Widget, General)
@@ -25,6 +24,7 @@ class UIKIT_EXPORT AbstractButton : public Widget {
         A_SIGNAL(AbstractButton::clicked),
         A_SIGNAL(AbstractButton::toggled)
     )
+    A_NOENUMS()
 
 public:
     AbstractButton();
