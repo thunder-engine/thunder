@@ -326,7 +326,7 @@ QCursor EditorPlatform::mouseCursor() const {
     return m_mouseCursor;
 }
 
-void EditorPlatform::setMouseCursor(Input::CursorShape shape) {
+void EditorPlatform::mouseSetCursor(Input::CursorShape shape) {
     switch(shape) {
         case Input::CURSOR_ARROW: m_mouseCursor = Qt::ArrowCursor; break;
         case Input::CURSOR_CROSS: m_mouseCursor = Qt::CrossCursor; break;

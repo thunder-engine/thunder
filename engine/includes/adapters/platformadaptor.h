@@ -44,7 +44,7 @@ public:
     virtual bool mousePressed(int code) const;
     virtual bool mouseReleased(int code) const;
     virtual void mouseLockCursor(bool lock);
-    virtual void setMouseCursor(Input::CursorShape shape);
+    virtual void mouseSetCursor(Input::CursorShape shape);
 
     virtual uint32_t joystickCount() const;
     virtual uint32_t joystickButtons(int index) const;

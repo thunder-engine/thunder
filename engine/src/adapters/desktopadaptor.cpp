@@ -52,6 +52,7 @@ TString DesktopAdaptor::s_inputString;
 
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_keys;
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_mouseButtons;
+std::unordered_map<int32_t, GLFWcursor *> DesktopAdaptor::s_mouseCursors;
 
 DesktopAdaptor::DesktopAdaptor() :
         m_window(nullptr),
@@ -273,6 +274,37 @@ bool DesktopAdaptor::mouseReleased(int  button) const {
 
 void DesktopAdaptor::mouseLockCursor(bool lock) {
     glfwSetInputMode(m_window, GLFW_CURSOR, lock ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+}
+
+void DesktopAdaptor::mouseSetCursor(Input::CursorShape shape) {
+    GLFWcursor *cursor = nullptr;
+
+    if(shape != Input::CURSOR_ARROW) {
+        auto it = s_mouseCursors.find(shape);
+        if(it == s_mouseCursors.end()) {
+            int glfwShape = 0;
+            switch(shape) {
+                case Input::CURSOR_ARROW: glfwShape = GLFW_ARROW_CURSOR; break;
+                case Input::CURSOR_CROSS: glfwShape = GLFW_CROSSHAIR_CURSOR; break;
+                case Input::CURSOR_IBEAM: glfwShape = GLFW_IBEAM_CURSOR; break;
+                case Input::CURSOR_HAND: glfwShape = GLFW_POINTING_HAND_CURSOR; break;
+                case Input::CURSOR_HORSIZE: glfwShape = GLFW_HRESIZE_CURSOR; break;
+                case Input::CURSOR_VERSIZE: glfwShape = GLFW_VRESIZE_CURSOR; break;
+                case Input::CURSOR_FDIAGSIZE: glfwShape = GLFW_RESIZE_NWSE_CURSOR; break;
+                case Input::CURSOR_BDIAGSIZE: glfwShape = GLFW_RESIZE_NESW_CURSOR; break;
+                case Input::CURSOR_ALLSIZE: glfwShape = GLFW_RESIZE_ALL_CURSOR; break;
+                default: break;
+            }
+
+            if(glfwShape != 0) {
+                cursor = glfwCreateStandardCursor(glfwShape);
+            }
+        } else {
+            cursor = it->second;
+        }
+    }
+
+    glfwSetCursor(m_window, cursor);
 }
 
 uint32_t DesktopAdaptor::screenWidth() const {

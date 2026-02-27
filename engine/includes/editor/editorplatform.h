@@ -61,7 +61,7 @@ protected:
     Vector4 mousePosition() const override;
     void mouseLockCursor(bool lock) override;
 
-    void setMouseCursor(Input::CursorShape shape) override;
+    void mouseSetCursor(Input::CursorShape shape) override;
 
     Vector4 mouseDelta() const override;
     float mouseScrollDelta() const override;
