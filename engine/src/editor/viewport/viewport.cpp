@@ -131,9 +131,6 @@ CameraController *Viewport::controller() {
 
 void Viewport::setController(CameraController *ctrl) {
     m_controller = ctrl;
-
-    connect(m_controller, &CameraController::setCursor, this, &Viewport::onCursorSet);
-    connect(m_controller, &CameraController::unsetCursor, this, &Viewport::onCursorUnset);
 }
 
 void Viewport::setWorld(World *world) {
@@ -222,6 +219,7 @@ void Viewport::onDraw() {
             if(!m_gameView && m_controller) {
                 m_controller->update();
             }
+            onCursorSet(instance.mouseCursor());
             instance.update();
         }
 

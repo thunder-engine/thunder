@@ -3,8 +3,7 @@
 
 #include <engine.h>
 
-#include <cstdint>
-#include <QCursor>
+#include <QWidget>
 
 class ENGINE_EXPORT EditorTool {
 public:
@@ -28,12 +27,8 @@ public:
 
     virtual QWidget *panel();
 
-    Qt::CursorShape cursor() const;
-
 protected:
     VariantList m_propertiesCache;
-
-    Qt::CursorShape m_cursor;
 
 };
 

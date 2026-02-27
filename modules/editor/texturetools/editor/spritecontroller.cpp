@@ -65,20 +65,6 @@ Vector3 SpriteController::world() const {
     return m_world;
 }
 
-void SpriteController::update() {
-    CameraController::update();
-
-    if(m_settings == nullptr) {
-        return;
-    }
-
-    if(m_spriteTool->cursor() != Qt::ArrowCursor) {
-        emit setCursor(QCursor(m_spriteTool->cursor()));
-    } else {
-        emit unsetCursor();
-    }
-}
-
 void SpriteController::drawHandles() {
     CameraController::drawHandles();
 

@@ -5,6 +5,7 @@
 
 struct GLFWwindow;
 struct GLFWmonitor;
+struct GLFWcursor;
 
 class DesktopAdaptor : public PlatformAdaptor {
 public:
@@ -38,6 +39,7 @@ public:
     bool mouseReleased(int button) const override;
 
     void mouseLockCursor(bool lock) override;
+    void mouseSetCursor(Input::CursorShape shape) override;
 
     uint32_t screenWidth() const override;
     uint32_t screenHeight() const override;
@@ -79,6 +81,7 @@ protected:
 
     static std::unordered_map<int32_t, int32_t> s_keys;
     static std::unordered_map<int32_t, int32_t> s_mouseButtons;
+    static std::unordered_map<int32_t, GLFWcursor *> s_mouseCursors;
 
     static Vector4 s_mousePosition;
     static Vector4 s_oldMousePosition;

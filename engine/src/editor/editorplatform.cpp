@@ -139,10 +139,7 @@ Input::KeyCode mapToInput(int32_t key) {
     return (Input::KeyCode)map.value(key, Input::KEY_UNKNOWN);
 }
 
-EditorPlatform::EditorPlatform() :
-        m_mouseScrollDelta(0.0f),
-        m_mouseLock(false) {
-
+EditorPlatform::EditorPlatform() {
     File::setHandler(new DefaultFileHandler);
 
     QObject::connect(qApp, &QGuiApplication::applicationStateChanged, [](Qt::ApplicationState state) {
@@ -305,10 +302,6 @@ void EditorPlatform::setKeys(QKeyEvent *ev, bool release) {
     }
 }
 
-bool EditorPlatform::isMouseLocked() const {
-    return m_mouseLock;
-}
-
 Vector4 EditorPlatform::mousePosition() const {
     return m_mousePosition;
 }
@@ -321,8 +314,31 @@ float EditorPlatform::mouseScrollDelta() const {
     return m_mouseScrollDelta;
 }
 
+bool EditorPlatform::isMouseLocked() const {
+    return m_mouseLock;
+}
+
 void EditorPlatform::mouseLockCursor(bool lock) {
     m_mouseLock = lock;
+}
+
+QCursor EditorPlatform::mouseCursor() const {
+    return m_mouseCursor;
+}
+
+void EditorPlatform::mouseSetCursor(Input::CursorShape shape) {
+    switch(shape) {
+        case Input::CURSOR_ARROW: m_mouseCursor = Qt::ArrowCursor; break;
+        case Input::CURSOR_CROSS: m_mouseCursor = Qt::CrossCursor; break;
+        case Input::CURSOR_IBEAM: m_mouseCursor = Qt::IBeamCursor; break;
+        case Input::CURSOR_HAND:  m_mouseCursor = Qt::PointingHandCursor; break;
+        case Input::CURSOR_HORSIZE: m_mouseCursor = Qt::SizeHorCursor; break;
+        case Input::CURSOR_VERSIZE: m_mouseCursor = Qt::SizeVerCursor; break;
+        case Input::CURSOR_FDIAGSIZE: m_mouseCursor = Qt::SizeFDiagCursor; break;
+        case Input::CURSOR_BDIAGSIZE: m_mouseCursor = Qt::SizeBDiagCursor; break;
+        case Input::CURSOR_ALLSIZE: m_mouseCursor = Qt::SizeAllCursor; break;
+        default: break;
+    }
 }
 
 TString EditorPlatform::locationLocalDir() const {

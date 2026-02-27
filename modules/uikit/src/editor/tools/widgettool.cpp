@@ -1,6 +1,7 @@
 #include "widgettool.h"
 
 #include <gizmos.h>
+#include <input.h>
 
 #include <actor.h>
 #include <transform.h>
@@ -253,24 +254,24 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
         }
     }
 
-    Qt::CursorShape shape = Qt::ArrowCursor;
+    Input::CursorShape shape = Input::CURSOR_ARROW;
     if(Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
-        shape = Qt::SizeAllCursor;
+        shape = Input::CURSOR_ALLSIZE;
     } else if(Handles::s_Axes == (Handles::TOP | Handles::RIGHT)) {
-        shape = Qt::SizeBDiagCursor;
+        shape = Input::CURSOR_BDIAGSIZE;
     } else if(Handles::s_Axes == (Handles::TOP | Handles::LEFT)) {
-        shape = Qt::SizeFDiagCursor;
+        shape = Input::CURSOR_FDIAGSIZE;
     } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::RIGHT)) {
-        shape = Qt::SizeFDiagCursor;
+        shape = Input::CURSOR_FDIAGSIZE;
     } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
-        shape = Qt::SizeBDiagCursor;
+        shape = Input::CURSOR_BDIAGSIZE;
     } else if(Handles::s_Axes == Handles::TOP || Handles::s_Axes == Handles::BOTTOM) {
-        shape = Qt::SizeVerCursor;
+        shape = Input::CURSOR_VERSIZE;
     } else if(Handles::s_Axes == Handles::LEFT || Handles::s_Axes == Handles::RIGHT) {
-        shape = Qt::SizeHorCursor;
+        shape = Input::CURSOR_HORSIZE;
     }
 
-    m_cursor = shape;
+    Input::mouseSetCursor(shape);
 }
 
 std::string WidgetTool::icon() const {

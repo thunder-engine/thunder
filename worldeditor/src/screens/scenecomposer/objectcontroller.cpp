@@ -268,18 +268,9 @@ void ObjectController::update() {
         setDrag(false);
     }
 
-    for(auto it : m_selected) {
+    for(auto &it : m_selected) {
         updateComponents(it.object);
     }
-
-    if(m_activeTool->cursor() != Qt::ArrowCursor) {
-        emit setCursor(QCursor(m_activeTool->cursor()));
-    } else if(!m_objectsList.empty()) {
-        emit setCursor(QCursor(Qt::CrossCursor));
-    } else {
-        emit unsetCursor();
-    }
-
 }
 
 void ObjectController::updateComponents(Actor *parent) {
@@ -357,7 +348,7 @@ void ObjectController::setDrag(bool drag) {
 
 void ObjectController::copySelected() {
     VariantList list;
-    for(auto it : m_selected) {
+    for(auto &it : m_selected) {
         if(it.object) {
             list.push_back(Engine::toVariant(it.object));
         }

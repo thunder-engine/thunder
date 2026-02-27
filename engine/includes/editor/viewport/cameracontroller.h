@@ -83,11 +83,6 @@ public:
 
     void resetCamera();
 
-signals:
-    void setCursor(const QCursor &cursor);
-
-    void unsetCursor();
-
 public slots:
     virtual void onOrthographic(bool flag);
 

@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QSize>
 #include <QPoint>
+#include <QCursor>
 
 #include <adapters/platformadaptor.h>
 
@@ -25,6 +26,7 @@ public:
     void setScreenSize(const QSize &size);
 
     bool isMouseLocked() const;
+    QCursor mouseCursor() const;
     void setMousePosition(const QPoint &position);
     void setMouseDelta(const QPoint &position);
     void setMouseScrollDelta(float delta);
@@ -59,6 +61,8 @@ protected:
     Vector4 mousePosition() const override;
     void mouseLockCursor(bool lock) override;
 
+    void mouseSetCursor(Input::CursorShape shape) override;
+
     Vector4 mouseDelta() const override;
     float mouseScrollDelta() const override;
 
@@ -81,9 +85,11 @@ protected:
 
     Vector4 m_mousePosition;
 
-    float m_mouseScrollDelta;
+    float m_mouseScrollDelta = 0.0f;
 
-    bool m_mouseLock;
+    Qt::CursorShape m_mouseCursor = Qt::ArrowCursor;
+
+    bool m_mouseLock = false;
 
     static bool s_appActive;
 

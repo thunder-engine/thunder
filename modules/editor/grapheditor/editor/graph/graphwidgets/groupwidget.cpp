@@ -1,7 +1,6 @@
 #include "groupwidget.h"
 
 #include "../nodegroup.h"
-#include "../graphcontroller.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
@@ -21,7 +20,6 @@ namespace {
 };
 
 GroupWidget::GroupWidget() :
-    m_shape(Qt::ArrowCursor),
     m_resize(0) {
 
 }
@@ -39,10 +37,6 @@ void GroupWidget::setSize(const Vector2 &size) {
     rect->setSize(size);
 }
 
-int GroupWidget::cursorShape() const {
-    return m_shape;
-}
-
 void GroupWidget::update() {
     Widget::update();
 
@@ -52,7 +46,7 @@ void GroupWidget::update() {
         m_title->setColor(newColor);
     }
 
-    m_shape = Qt::ArrowCursor;
+    Input::CursorShape shape = Input::CURSOR_ARROW;
 
     Vector4 cursor = Input::mousePosition();
     if(m_title) {
@@ -71,33 +65,31 @@ void GroupWidget::update() {
 
             Vector2 c(cursor.x, cursor.y);
 
-            bool isMouse = Input::isMouseButton(Input::MOUSE_LEFT);
-
             int resize = 0;
             if(Mathf::distanceToSegment(lb, lt, c) < sensor) {
-                m_shape = Qt::SizeHorCursor;
+                shape = Input::CURSOR_HORSIZE;
                 resize |= POINT_L;
             }
             if(Mathf::distanceToSegment(rb, rt, c) < sensor) {
-                m_shape = Qt::SizeHorCursor;
+                shape = Input::CURSOR_HORSIZE;
                 resize |= POINT_R;
             }
             if(Mathf::distanceToSegment(lt, rt, c) < sensor) {
-                m_shape = Qt::SizeVerCursor;
+                shape = Input::CURSOR_VERSIZE;
                 resize |= POINT_T;
             }
             if(Mathf::distanceToSegment(lb, rb, c) < sensor) {
-                m_shape = Qt::SizeVerCursor;
+                shape = Input::CURSOR_VERSIZE;
                 resize |= POINT_B;
             }
 
             if((resize & POINT_L && resize & POINT_T) ||
                (resize & POINT_R && resize & POINT_B)) {
-                m_shape = Qt::SizeFDiagCursor;
+                shape = Input::CURSOR_FDIAGSIZE;
             }
             if((resize & POINT_L && resize & POINT_B) ||
                (resize & POINT_R && resize & POINT_T)) {
-                m_shape = Qt::SizeBDiagCursor;
+                shape = Input::CURSOR_BDIAGSIZE;
             }
 
             if(m_resize != 0) {
@@ -133,6 +125,10 @@ void GroupWidget::update() {
             } else if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
                 m_resize = resize;
             }
+        }
+
+        if(shape != Input::CURSOR_ARROW) {
+            Input::mouseSetCursor(shape);
         }
     }
 }

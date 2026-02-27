@@ -40,8 +40,6 @@ signals:
     void updated();
 
 private:
-    void update() override;
-
     void drawHandles() override;
 
 private:
