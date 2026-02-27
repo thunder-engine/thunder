@@ -242,7 +242,7 @@ Widget *ShaderNode::widget() {
 
                 Actor *title = result->actor();
                 for(auto it : title->getChildren()) {
-                    if(it->name() == "Title") {
+                    if(it->name() == "Header") {
                         title = static_cast<Actor *>(it);
                     }
                 }

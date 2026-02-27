@@ -30,9 +30,9 @@ public:
     bool isSelected() const;
     void setSelected(bool flag);
 
-    Frame *title() const;
+    Frame *header() const;
 
-    Label *label() const;
+    Label *title() const;
 
     GraphNode *node() const;
 
@@ -51,9 +51,9 @@ protected:
 protected:
     GraphNode *m_node;
 
-    Label *m_label;
+    Label *m_title;
 
-    Frame *m_title;
+    Frame *m_header;
 
     Layout *m_callLayout;
 

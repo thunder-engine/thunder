@@ -23,12 +23,13 @@ Widget *StateNode::widget() {
                 rect->setVerticalPolicy(RectTransform::Fixed);
                 rect->setHorizontalPolicy(RectTransform::Fixed);
 
-                Frame *title = nodeWidget->title();
-                Vector4 corners(title->corners());
+                Frame *header = nodeWidget->header();
+                Vector4 corners(header->corners());
                 corners.z = corners.w = corners.x;
-                title->setCorners(corners);
+                header->setCorners(corners);
 
-                RectTransform *titleRect = title->rectTransform();
+
+                RectTransform *titleRect = header->rectTransform();
                 titleRect->setMargin(Vector4(5.0f));
                 titleRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
 

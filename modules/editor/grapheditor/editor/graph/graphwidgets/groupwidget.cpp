@@ -41,16 +41,16 @@ void GroupWidget::update() {
     Widget::update();
 
     Vector4 newColor = m_node->color();
-    if(m_title->color() != newColor) {
+    if(m_header->color() != newColor) {
         setColor(Vector4(newColor.x, newColor.y, newColor.z, 0.5f));
-        m_title->setColor(newColor);
+        m_header->setColor(newColor);
     }
 
     Input::CursorShape shape = Input::CURSOR_ARROW;
 
     Vector4 cursor = Input::mousePosition();
-    if(m_title) {
-        bool hover = m_title->rectTransform()->isHovered(cursor.x, cursor.y);
+    if(m_header) {
+        bool hover = m_header->rectTransform()->isHovered(cursor.x, cursor.y);
         if(hover && Input::isMouseButtonDown(0)) {
             emitSignal(_SIGNAL(pressed()));
         } else {
@@ -138,11 +138,11 @@ void GroupWidget::composeComponent() {
 
     setColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
 
-    Actor *title = Engine::composeActor<Frame>("Title", actor());
-    if(title) {
-        m_title = title->getComponent<Frame>();
-        if(m_title) {
-            RectTransform *rect = m_title->rectTransform();
+    Actor *header = Engine::composeActor<Frame>("Header", actor());
+    if(header) {
+        m_header = header->getComponent<Frame>();
+        if(m_header) {
+            RectTransform *rect = m_header->rectTransform();
             rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
             rect->setSize(Vector2(0, row));
             rect->setPivot(Vector2(0.0f, 1.0f));
@@ -150,18 +150,18 @@ void GroupWidget::composeComponent() {
             Vector4 corn(corners());
             corn.x = corn.y = 0.0f;
             corn.w = corn.z;
-            m_title->setCorners(corn);
-            m_title->setBorderColor(Vector4());
+            m_header->setCorners(corn);
+            m_header->setBorderColor(Vector4());
 
-            m_label = Engine::objectCreate<Label>("", title);
-            if(m_label) {
-                m_label->lower();
-                m_label->setFontSize(32);
-                m_label->setAlign(Alignment::Middle | Alignment::Center);
-                m_label->setColor(Vector4(0.66f, 0.66f, 0.66f, 1.0f));
-                m_label->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+            m_title = Engine::objectCreate<Label>("Title", header);
+            if(m_title) {
+                m_title->lower();
+                m_title->setFontSize(32);
+                m_title->setAlign(Alignment::Middle | Alignment::Center);
+                m_title->setColor(Vector4(0.66f, 0.66f, 0.66f, 1.0f));
+                m_title->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
             }
-            m_title->lower();
+            m_header->lower();
         }
     }
 

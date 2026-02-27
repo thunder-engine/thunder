@@ -27,8 +27,8 @@ const float row = 20.0f;
 
 NodeWidget::NodeWidget() :
         m_node(nullptr),
-        m_label(nullptr),
         m_title(nullptr),
+        m_header(nullptr),
         m_callLayout(nullptr),
         m_hovered(false) {
 
@@ -39,8 +39,8 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 
     updateName();
 
-    if(m_title) {
-        m_title->setColor(m_node->color());
+    if(m_header) {
+        m_header->setColor(m_node->color());
     }
 
     rectTransform()->setSize(m_node->defaultSize());
@@ -68,8 +68,8 @@ void NodeWidget::setGraphNode(GraphNode *node) {
 }
 
 void NodeWidget::updateName() {
-    if(m_label) {
-        m_label->setText(!m_node->name().isEmpty() ? m_node->name() : m_node->typeName());
+    if(m_title) {
+        m_title->setText(!m_node->name().isEmpty() ? m_node->name() : m_node->typeName());
     }
 }
 
@@ -86,12 +86,12 @@ void NodeWidget::setSelected(bool flag) {
     }
 }
 
-Frame *NodeWidget::title() const {
-    return m_title;
+Frame *NodeWidget::header() const {
+    return m_header;
 }
 
-Label *NodeWidget::label() const {
-    return m_label;
+Label *NodeWidget::title() const {
+    return m_title;
 }
 
 GraphNode *NodeWidget::node() const {
@@ -115,10 +115,10 @@ void NodeWidget::update() {
 
     Vector4 pos = Input::mousePosition();
 
-    if(m_title) {
+    if(m_header) {
         RectTransform *hoveredRect = rectTransform()->hoveredTransform(pos.x, pos.y);
 
-        if(hoveredRect == m_title->rectTransform() && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(hoveredRect == m_header->rectTransform() && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
             pressed();
         } else if(dynamic_cast<StateNode *>(m_node)) {
             bool hover = (hoveredRect == rectTransform());
@@ -166,29 +166,26 @@ void NodeWidget::composeComponent() {
     rect->setHorizontalPolicy(RectTransform::Fixed);
     rect->setBorder(2.0f);
 
-    Actor *title = Engine::composeActor<Frame>("Title", actor());
-    if(title) {
-        m_title = title->getComponent<Frame>();
-        if(m_title) {
-            RectTransform *titleRect = m_title->rectTransform();
-            layout->addTransform(titleRect);
+    Actor *header = Engine::composeActor<Frame>("Header", actor());
+    if(header) {
+        m_header = header->getComponent<Frame>();
+        if(m_header) {
+            RectTransform *headerRect = m_header->rectTransform();
+            layout->addTransform(headerRect);
 
-            titleRect->setSize(Vector2(0, row));
-            titleRect->setPivot(Vector2(0.0f, 1.0f));
-            titleRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+            headerRect->setSize(Vector2(0, row));
+            headerRect->setPivot(Vector2(0.0f, 1.0f));
+            headerRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
 
             Vector4 corn(corners() - 1);
             corn.x = corn.y;
             corn.w = corn.z = 0.0f;
-            m_title->setCorners(corn);
-            m_title->setBorderColor(Vector4());
+            m_header->setCorners(corn);
+            m_header->setBorderColor(Vector4());
 
-            m_label = Engine::objectCreate<Label>("", title);
-            if(m_label) {
-                m_label->setFontSize(14);
-                m_label->setAlign(Alignment::Middle | Alignment::Center);
-                m_label->setColor(Vector4(1.0f));
-                m_label->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+            Actor *title = Engine::composeActor<Label>("Title", header);
+            if(title) {
+                m_title = title->getComponent<Label>();
             }
         }
     }

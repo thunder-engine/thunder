@@ -439,7 +439,7 @@ NodeWidget *GraphController::hoveredNode(float mouseX, float mouseY) {
     for(auto node : m_graph->nodes()) {
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
         if(widget) {
-            RectTransform *rect = widget->title()->rectTransform();
+            RectTransform *rect = widget->header()->rectTransform();
             if(rect->isHovered(mouseX, mouseY)) {
                 hovered = widget;
             }
