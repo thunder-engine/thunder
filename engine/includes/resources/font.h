@@ -58,6 +58,8 @@ public:
 
     void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, int flags, const Vector2 &boundaries);
 
+    void loadUserData(const VariantMap &data) override;
+
 private:
     void clear();
 
@@ -72,7 +74,6 @@ private:
     void packSheets(int padding);
 
     VariantMap saveUserData() const override;
-    void loadUserData(const VariantMap &data) override;
 
 private:
     std::unordered_map<uint32_t, GlyphData> m_shapes;
