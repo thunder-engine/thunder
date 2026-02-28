@@ -3,12 +3,11 @@
 #include "components/widget.h"
 #include "components/recttransform.h"
 
-#include <QCursor>
-
 #include <components/camera.h>
 #include <components/actor.h>
 
 #include <editor/viewport/handles.h>
+#include <editor/editorplatform.h>
 #include <gizmos.h>
 #include <input.h>
 
@@ -108,9 +107,11 @@ void WidgetController::drawHandles() {
 
 Widget *widgetHoverHelper(Widget *widget, float x, float y) {
     for(auto it : widget->childWidgets()) {
-        Widget *result = widgetHoverHelper(it, x, y);
-        if(result) {
-            return result;
+        if(!widget->isSubWidget()) {
+            Widget *result = widgetHoverHelper(it, x, y);
+            if(result) {
+                return result;
+            }
         }
     }
 
@@ -195,7 +196,6 @@ void WidgetController::cameraZoom(float delta) {
     Vector3 world(m_activeCamera->unproject(rect->position()));
 
     Transform *cameraTransform = m_activeCamera->transform();
-    Vector3 worldCamera(m_activeCamera->unproject(cameraTransform->position()));
 
     float scale = 1.1f - ((float)m_zoom / 10.0f);
     m_activeCamera->setOrthoSize(m_screenSize.y / scale);

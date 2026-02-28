@@ -17,8 +17,15 @@ class UIKIT_EXPORT Widget : public NativeBehaviour {
         A_SLOT(Widget::lower),
         A_SLOT(Widget::raise)
     )
+    A_ENUMS(
+        A_ENUM(Orientation,
+            A_VALUE(Horizontal),
+            A_VALUE(Vertical)
+        )
+    )
+
 public:
-    enum Orentation {
+    enum Orientation {
         Horizontal,
         Vertical
     };
@@ -35,9 +42,9 @@ public:
     Widget *parentWidget() const;
     std::list<Widget *> &childWidgets();
 
-    RectTransform *rectTransform() const;
+    RectTransform *rectTransform();
 
-    bool isSubWidget(Widget *widget) const;
+    bool isSubWidget() const;
 
     static Widget *focusWidget();
 
@@ -57,11 +64,9 @@ protected:
 
     void setRectTransform(RectTransform *transform);
 
-    void actorParentChanged() override;
+    void onHierarchyUpdated();
 
     void composeComponent() override;
-
-    void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
     float styleLength(const TString &key, float value, bool &pixels);
     Vector2 styleBlock2Length(const TString &property, const Vector2 &value, bool &pixels);
@@ -72,6 +77,8 @@ protected:
 
     static void setFocusWidget(Widget *widget);
 
+    void updateStyleProperty(const TString &name, const float *v, int32_t size);
+
 private:
     void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
 
@@ -79,8 +86,6 @@ private:
 
 protected:
     std::map<TString, std::pair<uint32_t, TString>> m_styleRules;
-
-    std::list<Widget *> m_subWidgets;
 
     std::list<Widget *> m_childWidgets;
 
@@ -95,6 +100,8 @@ private:
     Widget *m_parent;
 
     RectTransform *m_transform;
+
+    bool m_subWidget;
 
     static Widget *m_focusWidget;
 

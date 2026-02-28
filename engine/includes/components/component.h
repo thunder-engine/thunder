@@ -54,8 +54,6 @@ public:
 
     TString tr(const TString &source);
 
-    virtual void actorParentChanged();
-
     virtual void composeComponent();
 
     virtual void drawGizmos();

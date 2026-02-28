@@ -22,6 +22,12 @@ namespace  {
     const char *gTexture("mainTexture");
     const char *gWeight("weight");
     const char *gUseSDF("useSdf");
+
+    const char *gCssColor("color");
+    const char *gCssFontSize("font-size");
+    const char *gCssFontWeight("font-weight");
+    const char *gCssFontKerning("font-kerning");
+    const char *gCssWhiteSpace("white-space");
 };
 
 /*!
@@ -94,17 +100,18 @@ void Label::draw(CommandBuffer &buffer) {
 void Label::applyStyle() {
     Widget::applyStyle();
 
-    auto it = m_styleRules.find("color");
+    blockSignals(true);
+    auto it = m_styleRules.find(gCssColor);
     if(it != m_styleRules.end()) {
         setColor(StyleSheet::toColor(it->second.second));
     }
 
-    it = m_styleRules.find("font-size");
+    it = m_styleRules.find(gCssFontSize);
     if(it != m_styleRules.end()) {
         setFontSize(it->second.second.toInt());
     }
 
-    it = m_styleRules.find("font-weight");
+    it = m_styleRules.find(gCssFontWeight);
     if(it != m_styleRules.end()) {
         m_fontWeight = 0.5f;
         if(it->second.second == "normal") {
@@ -120,11 +127,16 @@ void Label::applyStyle() {
         }
     }
 
-    it = m_styleRules.find("white-space");
+    it = m_styleRules.find(gCssWhiteSpace);
     if(it != m_styleRules.end()) {
-        bool wordWrap = it->second.second != "nowrap";
-        setWordWrap(wordWrap);
+        setWordWrap(it->second.second != "nowrap");
     }
+
+    it = m_styleRules.find(gCssFontKerning);
+    if(it != m_styleRules.end()) {
+        setKerning(it->second.second != "none");
+    }
+    blockSignals(false);
 }
 /*!
     Returns the text which will be drawn.
@@ -177,6 +189,11 @@ void Label::setFontSize(int size) {
     if(m_size != size) {
         m_size = size;
         m_dirty = true;
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_size) + "px");
+        }
+#endif
     }
 }
 /*!
@@ -194,6 +211,11 @@ void Label::setColor(const Vector4 &color) {
     if(m_material) {
         m_material->setVector4(gColor, &m_color);
     }
+#ifdef SHARED_DEFINE
+    if(!isSignalsBlocked()) {
+        StyleSheet::setStyleProperty(this, gCssWhiteSpace, StyleSheet::toColor(m_color));
+    }
+#endif
 }
 /*!
     Returns true if text in label must be translated; othewise returns false.
@@ -227,6 +249,11 @@ void Label::setWordWrap(bool wrap) {
             m_flags &= ~Font::Wrap;
         }
         m_dirty = true;
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            StyleSheet::setStyleProperty(this, gCssWhiteSpace, wrap ? "normal" : "nowrap");
+        }
+#endif
     }
 }
 /*!
@@ -262,6 +289,11 @@ void Label::setKerning(const bool enable) {
             m_flags &= ~Font::Kerning;
         }
         m_dirty = true;
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            StyleSheet::setStyleProperty(this, gCssFontKerning, enable ? "normal" : "none");
+        }
+#endif
     }
 }
 /*!
@@ -295,13 +327,13 @@ void Label::loadUserData(const VariantMap &data) {
 */
 VariantMap Label::saveUserData() const {
     VariantMap result = Widget::saveUserData();
-    {
-        Font *o = font();
-        TString ref = Engine::reference(o);
-        if(!ref.isEmpty()) {
-            result[gFont] = ref;
-        }
+
+    Font *o = font();
+    TString ref = Engine::reference(o);
+    if(!ref.isEmpty()) {
+        result[gFont] = ref;
     }
+
     return result;
 }
 /*!

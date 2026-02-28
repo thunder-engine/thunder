@@ -225,6 +225,20 @@ Component *Actor::component(const TString &type) {
     return nullptr;
 }
 /*!
+    Returns a list of the components with \a type attached to this Actor.
+*/
+std::list<Component *> Actor::components(const TString &type) {
+    PROFILE_FUNCTION();
+    std::list<Component *> result;
+    for(auto it : getChildren()) {
+        const MetaObject *meta = it->metaObject();
+        if(meta->canCastTo(type.data())) {
+            result.push_back(static_cast<Component *>(it));
+        }
+    }
+    return result;
+}
+/*!
     Returns the component with \a type in the Actor's children using depth search.
     A component is returned only if it's found on a current Actor; otherwise returns nullptr.
 */
@@ -293,7 +307,9 @@ void Actor::clearCloneRef() {
 */
 void Actor::setParent(Object *parent, int32_t position, bool force) {
     PROFILE_FUNCTION();
-    if(parent == this || (Object::parent() == parent && position == -1)) {
+    Object *oldParent = Object::parent();
+
+    if(parent == this || (oldParent == parent && position == -1)) {
         return;
     }
 
@@ -304,19 +320,13 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
     } else {
         setScene(dynamic_cast<Scene *>(parent));
     }
+
+    Object::setParent(parent, position, force);
     if(m_transform) {
-        Object::setParent(parent, position, force);
         if(actor) {
             m_transform->setParentTransform(actor->transform(), force);
-        }
-    } else {
-        Object::setParent(parent, position);
-    }
-
-    for(auto it : getChildren()) {
-        Component *component = dynamic_cast<Component *>(it);
-        if(component) {
-            component->actorParentChanged();
+        } else {
+            m_transform->setParentTransform(nullptr, force);
         }
     }
 }

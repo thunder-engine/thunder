@@ -209,6 +209,25 @@ Vector4 StyleSheet::toColor(const TString &value) {
 
     return result;
 }
+
+TString StyleSheet::toColor(const Vector4 &value) {
+    std::stringstream ss;
+    ss << "#";
+
+    for(uint32_t i = 0; i < 4; i++) { // ARGB
+        uint32_t index = (i == 0) ? 3 : (i - 1);
+        uint32_t c = value[index] * 255.0f;
+
+        if(c == 0) {
+            ss << "00";
+        } else {
+            ss << std::hex << c;
+        }
+    }
+
+    return ss.str();
+}
+
 /*!
     Converts a length \a value (e.g., "10px" or "50%") into a numeric value and returns whether the value is in \a pixels or percentages.
 */

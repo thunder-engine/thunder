@@ -33,6 +33,8 @@ public:
     RectTransform();
     ~RectTransform();
 
+    void setPosition(const Vector3 &position) override;
+
     Vector2 size() const;
     void setSize(const Vector2 &size);
 
@@ -59,7 +61,10 @@ public:
     bool mouseTracking() const;
     void setMouseTracking(bool tracking);
 
+    Vector2 mapFromGlobal(float x, float y);
     bool isHovered(float x, float y) const;
+
+    Widget *widget();
 
     RectTransform *hoveredTransform(float x, float y);
 
@@ -87,12 +92,15 @@ public:
 
 private:
     friend class Layout;
+    friend class Widget;
 
     void cleanDirty() const override;
 
     void recalcChilds() const;
 
     void recalcParent();
+
+    void applyStyle();
 
 private:
     std::list<Widget *> m_subscribers;

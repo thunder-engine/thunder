@@ -137,13 +137,6 @@ TString Component::tr(const TString &source) {
     return Engine::translate(source);
 }
 /*!
-    This method will be triggered in case of Actor will change its own parent.
-    \internal
-*/
-void Component::actorParentChanged() {
-
-}
-/*!
     \internal
 */
 void Component::composeComponent() {

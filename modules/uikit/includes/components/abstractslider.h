@@ -3,8 +3,6 @@
 
 #include "widget.h"
 
-class Frame;
-
 class UIKIT_EXPORT AbstractSlider : public Widget {
     A_OBJECT(AbstractSlider, Widget, General)
 
@@ -19,18 +17,7 @@ class UIKIT_EXPORT AbstractSlider : public Widget {
         A_SIGNAL(AbstractSlider::pressed),
         A_SIGNAL(AbstractSlider::valueChanged)
     )
-    A_ENUMS(
-        A_ENUM(Orientation,
-            A_VALUE(Horizontal),
-            A_VALUE(Vertical)
-        )
-    )
-
-public:
-    enum Orientation {
-        Horizontal,
-        Vertical
-    };
+    A_NOENUMS()
 
 public:
     AbstractSlider();

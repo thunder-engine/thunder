@@ -166,9 +166,11 @@ void UiLoader::setStyleSheet(StyleSheet *style) {
 */
 void UiLoader::resolveStyleSheet(Widget *widget) {
     for(auto it : widget->childWidgets()) {
-        m_styleSheet->resolve(it);
-        if(widget != this) {
-            resolveStyleSheet(widget);
+        if(!it->isSubWidget()) {
+            m_styleSheet->resolve(it);
+            if(widget != this) {
+                resolveStyleSheet(widget);
+            }
         }
     }
 }
@@ -179,6 +181,8 @@ void UiLoader::cleanHierarchy(Widget *widget) {
     std::list<Widget *> childen = widget->childWidgets();
 
     for(auto it : childen) {
-        delete it->actor();
+        if(!it->isSubWidget()) {
+            delete it->actor();
+        }
     }
 }

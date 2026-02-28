@@ -1,7 +1,6 @@
 #include "components/widget.h"
 
 #include "components/recttransform.h"
-#include "components/layout.h"
 
 #include "stylesheet.h"
 #include "uisystem.h"
@@ -29,7 +28,8 @@ Widget *Widget::m_focusWidget = nullptr;
 
 Widget::Widget() :
         m_parent(nullptr),
-        m_transform(nullptr) {
+        m_transform(nullptr),
+        m_subWidget(false) {
 
 }
 
@@ -42,13 +42,8 @@ Widget::~Widget() {
         it->m_parent = nullptr;
     }
 
-    for(auto it : m_subWidgets) {
-        it->m_parent = nullptr;
-    }
-
     if(m_parent) {
         m_parent->m_childWidgets.remove(this);
-        m_parent->m_subWidgets.remove(this);
     }
 
     static_cast<UiSystem *>(system())->removeWidget(this);
@@ -87,7 +82,7 @@ void Widget::draw(CommandBuffer &buffer) {
     drawSub(buffer);
 
     for(auto it : m_childWidgets) {
-        if(it->actor()->isEnabled() && it->isEnabled()) {
+        if(!it->m_subWidget && it->actor()->isEnabled() && it->isEnabled()) {
             it->draw(buffer);
         }
     }
@@ -97,8 +92,8 @@ void Widget::draw(CommandBuffer &buffer) {
     Internal method called to draw the sub widget using the provided command buffer.
 */
 void Widget::drawSub(CommandBuffer &buffer) {
-    for(auto it : m_subWidgets) {
-        if(it && it->actor()->isEnabled() && it->isEnabled()) {
+    for(auto it : m_childWidgets) {
+        if(it->m_subWidget && it->actor()->isEnabled() && it->isEnabled()) {
             it->draw(buffer);
         }
     }
@@ -137,95 +132,13 @@ void Widget::boundChanged(const Vector2 &size) {
     Applies style settings assigned to widget.
 */
 void Widget::applyStyle() {
-    // Size
-    bool pixels;
-    Vector2 size = m_transform->size();
-
-    size = styleBlock2Length("-uikit-size", size, pixels);
-
-    size.x = styleLength("width", size.x, pixels);
-    size.y = styleLength("height", size.y, pixels);
-
-    m_transform->setSize(size);
-
-    // Pivot point
-    Vector2 pivot = m_transform->pivot();
-    pivot = styleBlock2Length("-uikit-pivot", pivot, pixels);
-    m_transform->setPivot(pivot);
-
-    // Anchors
-    Vector2 minAnchors = m_transform->minAnchors();
-    minAnchors = styleBlock2Length("-uikit-min-anchors", minAnchors, pixels);
-    m_transform->setMinAnchors(minAnchors);
-
-    Vector2 maxAnchors = m_transform->maxAnchors();
-    maxAnchors = styleBlock2Length("-uikit-max-anchors", maxAnchors, pixels);
-    m_transform->setMaxAnchors(maxAnchors);
-
-    // Border width
-    Vector4 border(m_transform->border());
-    border = styleBlock4Length("border-width", border, pixels);
-
-    border.x = styleLength("border-top-width", border.x, pixels);
-    border.y = styleLength("border-right-width", border.y, pixels);
-    border.z = styleLength("border-bottom-width", border.z, pixels);
-    border.w = styleLength("border-left-width", border.w, pixels);
-
-    m_transform->setBorder(border);
-
-    // Margins
-    Vector4 margin(m_transform->margin());
-    margin = styleBlock4Length("margin", margin, pixels);
-
-    margin.x = styleLength("margin-top", margin.x, pixels);
-    margin.y = styleLength("margin-right", margin.y, pixels);
-    margin.z = styleLength("margin-bottom", margin.z, pixels);
-    margin.w = styleLength("margin-left", margin.w, pixels);
-
-    m_transform->setMargin(margin);
-
-    // Padding
-    Vector4 padding(m_transform->padding());
-    padding = styleBlock4Length("padding", padding, pixels);
-
-    padding.x = styleLength("padding-top", padding.x, pixels);
-    padding.y = styleLength("padding-right", padding.y, pixels);
-    padding.z = styleLength("padding-bottom", padding.z, pixels);
-    padding.w = styleLength("padding-left", padding.w, pixels);
-
-    m_transform->setPadding(padding);
-
-    // Display
-    auto it = m_styleRules.find("display");
-    if(it != m_styleRules.end()) {
-        TString layoutMode = it->second.second;
-        if(layoutMode == "none") {
-            actor()->setEnabled(false);
-        } else {
-            Layout *layout = m_transform->layout();
-            if(layout == nullptr) {
-                layout = new Layout;
-            }
-
-            if(layoutMode == "block") {
-                layout->setOrientation(Vertical);
-            } else if(layoutMode == "inline") {
-                layout->setOrientation(Horizontal);
-            }
-
-            m_transform->setLayout(layout);
-
-            for(auto it : m_childWidgets) {
-                layout->addTransform(it->rectTransform());
-            }
-        }
+    blockSignals(true);
+    if(m_transform) {
+        m_transform->applyStyle();
     }
+    blockSignals(false);
 
     for(auto it : m_childWidgets) {
-        it->applyStyle();
-    }
-
-    for(auto it : m_subWidgets) {
         it->applyStyle();
     }
 }
@@ -244,19 +157,17 @@ std::list<Widget *> &Widget::childWidgets() {
 /*!
     Returns RectTransform component attached to parent Actor.
 */
-RectTransform *Widget::rectTransform() const {
+RectTransform *Widget::rectTransform() {
+    if(m_transform == nullptr) {
+        setRectTransform(dynamic_cast<RectTransform *>(transform()));
+    }
     return m_transform;
 }
 /*!
     Returns true if provided \a widget is a part of complex widget; otherwise returns false.
 */
-bool Widget::isSubWidget(Widget *widget) const {
-    for(auto it : m_subWidgets) {
-        if(it == widget) {
-            return true;
-        }
-    }
-    return false;
+bool Widget::isSubWidget() const {
+    return m_subWidget;
 }
 /*!
     Returns the application widget that has the keyboard input focus, or nullptr if no widget in this application has the focus.
@@ -264,27 +175,28 @@ bool Widget::isSubWidget(Widget *widget) const {
 Widget *Widget::focusWidget() {
     return m_focusWidget;
 }
-
+/*!
+    Return a sub widget (a part of more complex widget) with specified \a name.
+*/
 Widget *Widget::subWidget(const TString &name) const {
-    for(auto it : m_subWidgets) {
-        if(it->actor()->name() == name) {
+    for(auto it : m_childWidgets) {
+        if(it->m_subWidget && it->actor()->name() == name) {
             return it;
         }
     }
     return nullptr;
 }
-
+/*!
+    \internal
+    Marks \a widget as a part of more complex widget.
+*/
 void Widget::setSubWidget(Widget *widget) {
     Widget *current = subWidget(widget->actor()->name());
     if(current != widget) {
-        if(current) {
-            m_subWidgets.remove(current);
-            m_childWidgets.push_back(current);
-        }
+        widget->m_subWidget = true;
 
-        if(widget) {
-            m_subWidgets.push_back(widget);
-            m_childWidgets.remove(widget);
+        if(current) {
+            current->m_subWidget = false;
         }
     }
 }
@@ -297,45 +209,37 @@ void Widget::setFocusWidget(Widget *widget) {
 }
 /*!
     \internal
-     Internal method to set the RectTransform component for the widget.
+    Internal method to set the RectTransform component for the widget.
 */
 void Widget::setRectTransform(RectTransform *transform) {
-    if(m_transform) {
-        m_transform->unsubscribe(this);
-    }
+    if(m_transform != transform) {
+        if(m_transform) {
+            m_transform->unsubscribe(this);
+        }
 
-    m_transform = transform;
-    if(m_transform) {
-        m_transform->subscribe(this);
+        m_transform = transform;
+        if(m_transform) {
+            m_transform->subscribe(this);
+            onHierarchyUpdated();
+        }
     }
-}
-/*!
-    \internal
-     Internal method to set the parent of the widget and handle changes.
-*/
-void Widget::setParent(Object *parent, int32_t position, bool force) {
-    NativeBehaviour::setParent(parent, position, force);
-
-    actorParentChanged();
 }
 /*!
     \internal
     Internal method called when the parent actor of the widget changes.
 */
-void Widget::actorParentChanged() {
+void Widget::onHierarchyUpdated() {
     Actor *object = actor();
     if(object) {
-        setRectTransform(dynamic_cast<RectTransform *>(object->transform()));
-
-        object = dynamic_cast<Actor *>(object->parent());
-        if(object) {
-            if(m_parent) {
-                m_parent->m_childWidgets.remove(this);
-            }
-
-            m_parent = object->getComponent<Widget>();
-            if(m_parent) {
-                m_parent->m_childWidgets.push_back(this);
+        m_childWidgets.clear();
+        for(auto it : object->getChildren()) {
+            Actor *childActor = dynamic_cast<Actor *>(it);
+            if(childActor) {
+                for(auto widgetIt : childActor->components("Widget")) {
+                    Widget *widget = static_cast<Widget *>(widgetIt);
+                    widget->m_parent = this;
+                    m_childWidgets.push_back(widget);
+                }
             }
         }
     }
@@ -345,10 +249,9 @@ void Widget::actorParentChanged() {
     Internal method to compose the widget component, creating and setting the RectTransform.
 */
 void Widget::composeComponent() {
-    Actor *a = actor();
-
-    if(a) {
-        Transform *transform = a->transform();
+    Actor *object = Widget::actor();
+    if(object) {
+        Transform *transform = object->transform();
 
         RectTransform *rect = dynamic_cast<RectTransform *>(transform);
         if(rect == nullptr) {
@@ -356,8 +259,8 @@ void Widget::composeComponent() {
                 delete transform;
             }
 
-            rect = Engine::objectCreate<RectTransform>("RectTransform", a);
-            a->setTransform(rect);
+            rect = Engine::objectCreate<RectTransform>("RectTransform", object);
+            object->setTransform(rect);
 
             setRectTransform(rect);
         }
@@ -386,8 +289,10 @@ void Widget::addStyleRules(const std::map<TString, TString> &rules, uint32_t wei
         }
     }
 
-    for(auto it : m_subWidgets) {
-        it->addStyleRules(rules, weight);
+    for(auto it : m_childWidgets) {
+        if(it->m_subWidget) {
+            it->addStyleRules(rules, weight);
+        }
     }
 }
 /*!
@@ -465,4 +370,15 @@ Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value,
     }
 
     return result;
+}
+
+void Widget::updateStyleProperty(const TString &name, const float *v, int32_t size) {
+    if(!isSignalsBlocked()) {
+        TString data;
+        for(uint32_t i = 0; i < size; i++) {
+            data += TString::number((int)v[i]) + "px ";
+        }
+        data.removeLast();
+        StyleSheet::setStyleProperty(this, name, data);
+    }
 }

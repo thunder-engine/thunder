@@ -31,6 +31,26 @@ void Slider::update() {
     }
 }
 
+void Slider::setOrientation(int value) {
+    AbstractSlider::setOrientation(value);
+
+    ProgressBar *bar = background();
+    if(bar) {
+        bar->setOrientation(value);
+
+        RectTransform *rectBar = bar->rectTransform();
+        if(m_orientation == Horizontal) {
+            rectBar->setSize(Vector2(0.0f, 10.0f));
+            rectBar->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
+        } else {
+            rectBar->setSize(Vector2(10.0f, 0.0f));
+            rectBar->setAnchors(Vector2(0.5f, 0.0f), Vector2(0.5f, 1.0f));
+        }
+    }
+
+    setValue(m_value);
+}
+
 ProgressBar *Slider::background() const {
     return static_cast<ProgressBar *>(subWidget(gBackground));
 }
@@ -81,26 +101,6 @@ void Slider::setMaximum(int value) {
     if(bar) {
         bar->setTo(value);
     }
-}
-
-void Slider::setOrientation(int value) {
-    AbstractSlider::setOrientation(value);
-
-    ProgressBar *bar = background();
-    if(bar) {
-        bar->setOrientation(value);
-
-        RectTransform *rectBar = bar->rectTransform();
-        if(m_orientation == Horizontal) {
-            rectBar->setSize(Vector2(0.0f, 10.0f));
-            rectBar->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
-        } else {
-            rectBar->setSize(Vector2(10.0f, 0.0f));
-            rectBar->setAnchors(Vector2(0.5f, 0.0f), Vector2(0.5f, 1.0f));
-        }
-    }
-
-    setValue(m_value);
 }
 
 void Slider::composeComponent() {
