@@ -30,6 +30,8 @@ public:
     static void setStyleProperty(Widget *widget, const TString &key, const TString &value);
 
     static Vector4 toColor(const TString &value);
+    static TString toColor(const Vector4 &value);
+
     static float toLength(const TString &value, bool &pixels);
 
 private:

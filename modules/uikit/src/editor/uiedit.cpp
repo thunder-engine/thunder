@@ -46,9 +46,8 @@ UiEdit::UiEdit() :
     m_loader = actor->getComponent<UiLoader>();
 
     m_controller->setRoot(m_loader);
-    m_controller->doRotation(Vector3());
+    m_controller->activateCamera(1, true);
     m_controller->setGridAxis(CameraController::Axis::Z);
-    m_controller->blockRotations(true);
     m_controller->setZoomLimits(Vector2(300, 1500));
 
     ui->preview->setController(m_controller);
@@ -167,92 +166,12 @@ void UiEdit::onWidgetDuplicate() {
     m_undoRedo->push(new PasteWidget(m_controller, "Duplicate Widget"));
 }
 
-void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    for(auto object : objects) {
-        const MetaObject *meta = object->metaObject();
-
-        int32_t index = meta->indexOfProperty(property.data());
-        if(index > -1) {
-            MetaProperty property = meta->property(index);
-
-            TString tag(propertyTag(property, gCss));
-            if(!tag.isEmpty()) {
-                TString editor(propertyTag(property, gEditorTag));
-
-                std::string data;
-
-                switch(value.userType()) {
-                    case MetaType::BOOLEAN: {
-                        bool v = value.toBool();
-                        if(tag == "white-space") {
-                            data = v ? "normal" : "nowrap";
-                        } else if(tag == "font-kerning") {
-                            data = v ? "normal" : "none";
-                        }
-                    } break;
-                    case MetaType::INTEGER: {
-                        if(tag == "text-align") {
-                            value.toInt();
-                        } else {
-                            data += std::to_string(value.toInt()) + "px";
-                        }
-                    } break;
-                    case MetaType::FLOAT: {
-                        data += std::to_string(value.toFloat()) + "px";
-                    } break;
-                    case MetaType::VECTOR2: {
-                        Vector2 v = value.toVector2();
-                        for(uint32_t i = 0; i < 2; i++) {
-                            data += std::to_string(v[i]) + "px ";
-                        }
-                        data.pop_back();
-                    } break;
-                    case MetaType::VECTOR3: {
-                        Vector3 v = value.toVector3();
-                        for(uint32_t i = 0; i < 3; i++) {
-                            data += std::to_string(v[i]) + "px ";
-                        }
-                        data.pop_back();
-                    } break;
-                    case MetaType::VECTOR4: {
-                        Vector4 v = value.toVector4();
-                        if(editor == "Color") {
-                            std::stringstream ss;
-                            ss << "#";
-
-                            for(uint32_t i = 0; i < 4; i++) {
-                                uint32_t c = v[i] * 255.0f;
-
-                                if(c == 0) {
-                                    ss << "00";
-                                } else {
-                                    ss << std::hex << c;
-                                }
-                            }
-
-                            data = ss.str();
-                        } else {
-                            for(uint32_t i = 0; i < 4; i++) {
-                                data += std::to_string(v[i]) + "px ";
-                            }
-                            data.pop_back();
-                        }
-                    } break;
-                }
-
-                Widget *widget = dynamic_cast<Widget *>(object);
-                if(widget) {
-                    StyleSheet::setStyleProperty(widget, tag, data);
-                }
-            }
-        }
-    }
-
-    TString capital = property;
+void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &propertyName, const Variant &value) {
+    TString capital = propertyName;
     capital[0] = std::toupper(capital.at(0));
-    TString name(QObject::tr("Change %1").arg(capital.data()).toStdString());
+    TString name(Engine::translate("Change %1").arg(capital));
 
-    m_undoRedo->push(new ChangeProperty(objects, property, value, m_controller, name));
+    m_undoRedo->push(new ChangeProperty(objects, propertyName, value, m_controller, name));
 }
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
@@ -302,7 +221,7 @@ void UiEdit::saveAsset(const TString &path) {
 
 void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
     for(auto it : widget->childWidgets()) {
-        if(widget->isSubWidget(it)) {
+        if(it->isSubWidget()) {
             continue;
         }
         auto originIt = m_widgets.find(it->typeName());
@@ -350,7 +269,6 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
 
             saveElementHelper(element, it);
         }
-
     }
 }
 

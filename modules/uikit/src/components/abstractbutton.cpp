@@ -20,6 +20,8 @@ namespace {
     const char *gIcon("icon");
 
     const float gCorner = 4.0f;
+
+    const char *gCssBackgroundColor("background-color");
 }
 /*!
     \class AbstractButton
@@ -144,6 +146,12 @@ void AbstractButton::setColor(const Vector4 &color) {
     if(back) {
         back->setColor(m_normalColor);
     }
+
+#ifdef SHARED_DEFINE
+    if(!isSignalsBlocked()) {
+        StyleSheet::setStyleProperty(this, gCssBackgroundColor, StyleSheet::toColor(m_normalColor));
+    }
+#endif
 }
 /*!
     Returns the color used when the button is highlighted.
@@ -277,7 +285,9 @@ void AbstractButton::update() {
             m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
             m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
+            back->blockSignals(true);
             back->setColor(MIX(back->color(), color, m_currentFade));
+            back->blockSignals(false);
         }
     }
 
@@ -291,7 +301,7 @@ void AbstractButton::applyStyle() {
     Widget::applyStyle();
 
     // Background color
-    auto it = m_styleRules.find("background-color");
+    auto it = m_styleRules.find(gCssBackgroundColor);
     if(it != m_styleRules.end()) {
         setColor(StyleSheet::toColor(it->second.second));
     }

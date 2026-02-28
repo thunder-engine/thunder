@@ -84,11 +84,11 @@ void CombineSelector::initialNormalInhericalList(Selector *root, Selector *child
 }
 
 void CombineSelector::initialInstanceInhericalList(Selector *root, Selector *child) {
-    if (m_combineType != NoCombine) {
+    if(m_combineType != NoCombine) {
         assert(0);
     }
 
-    if (!root || !child) {
+    if(!root || !child) {
         return;
     }
 
@@ -134,18 +134,7 @@ bool CombineSelector::isMeet(Widget *widget) {
         }
 
         switch(m_combineType) {
-            case CombineSelector::NormalSibling: { // Unsupported
-                //int idx = widget->GetIndexWithinParent();
-                //for(const auto &sibling : parent->childWidgets()) {
-                //    if(sibling->GetIndexWithinParent() >= idx) {
-                //        continue;
-                //    }
-                //    if(doesWidgetSelector(sibling, before)) {
-                //        selector->matchingWidgets.push_back(sibling);
-                //    }
-                //}
-                break;
-            }
+            case CombineSelector::NormalSibling: break;
             case CombineSelector::InstanceSibling: {
                 Widget *lastWidget = nullptr;
                 for(const auto &sibling : parent->childWidgets()) {

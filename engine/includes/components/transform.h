@@ -31,7 +31,7 @@ public:
     ~Transform();
 
     Vector3 position() const;
-    void setPosition(const Vector3 &position);
+    virtual void setPosition(const Vector3 &position);
 
     Vector3 rotation() const;
     void setRotation(const Vector3 &angles);

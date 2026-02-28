@@ -33,7 +33,7 @@ private slots:
     void onObjectCreate(TString type) override;
     void onObjectsSelected(Object::ObjectList objects, bool force) override;
     void onObjectsDeleted(Object::ObjectList objects) override;
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
+    void onObjectsChanged(const Object::ObjectList &objects, const TString &propertyName, const Variant &value) override;
 
     void onCutAction() override;
     void onCopyAction() override;

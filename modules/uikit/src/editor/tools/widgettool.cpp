@@ -103,7 +103,9 @@ void WidgetTool::cancelControl() {
             const MetaObject *meta = component->metaObject();
             for(int i = 0; i < meta->propertyCount(); i++) {
                 MetaProperty property = meta->property(i);
+                component->blockSignals(true);
                 property.write(component, properties[property.name()]);
+                component->blockSignals(false);
             }
         }
     }

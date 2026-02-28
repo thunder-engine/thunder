@@ -7,7 +7,7 @@ class UIKIT_EXPORT ProgressBar : public Widget {
     A_OBJECT(ProgressBar, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(ProgressOrientation, orientation, ProgressBar::orientation, ProgressBar::setOrientation, "enum=ProgressOrientation"),
+        A_PROPERTYEX(Orientation, orientation, ProgressBar::orientation, ProgressBar::setOrientation, "enum=Orientation"),
         A_PROPERTY(float, from, ProgressBar::from, ProgressBar::setFrom),
         A_PROPERTY(float, to, ProgressBar::to, ProgressBar::setTo),
         A_PROPERTY(float, value, ProgressBar::value, ProgressBar::setValue),
@@ -17,18 +17,7 @@ class UIKIT_EXPORT ProgressBar : public Widget {
         A_PROPERTYEX(Frame *, chunk, ProgressBar::chunk, ProgressBar::setChunk, "editor=Component")
     )
     A_NOMETHODS()
-    A_ENUMS(
-        A_ENUM(BarOrientation,
-            A_VALUE(Horizontal),
-            A_VALUE(Vertical)
-        )
-    )
-
-public:
-    enum ProgressOrientation {
-        Horizontal,
-        Vertical
-    };
+    A_NOENUMS()
 
 public:
     ProgressBar();

@@ -2,6 +2,19 @@
 
 #include "components/widget.h"
 #include "components/layout.h"
+#include "stylesheet.h"
+
+namespace {
+    const char *gCssSize("-uikit-size");
+    const char *gCssPosition("-uikit-position");
+    const char *gCssPivot("-uikit-pivot");
+    const char *gCssMinAchors("-uikit-min-anchors");
+    const char *gCssMaxAchors("-uikit-max-anchors");
+    const char *gCssBorder("border-width");
+    const char *gCssMargin("margin");
+    const char *gCssPadding("padding");
+    const char *gCssDisplay("display");
+}
 
 /*!
     \class RectTransform
@@ -37,6 +50,21 @@ RectTransform::~RectTransform() {
     delete m_layout;
 }
 /*!
+    Changes \a position of the Transform in local space.
+*/
+void RectTransform::setPosition(const Vector3 &position) {
+    Transform::setPosition(position);
+
+#ifdef SHARED_DEFINE
+    if(!isSignalsBlocked()) {
+        Widget *widget = RectTransform::widget();
+        if(widget) {
+            widget->updateStyleProperty(gCssPosition, position.v, 2);
+        }
+    }
+#endif
+}
+/*!
     Returns the size of the associated UI element.
 */
 Vector2 RectTransform::size() const {
@@ -57,6 +85,14 @@ void RectTransform::setSize(const Vector2 &size) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssSize, m_size.v, 2);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -74,6 +110,14 @@ void RectTransform::setPivot(const Vector2 &pivot) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssPivot, m_pivot.v, 2);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -91,6 +135,14 @@ void RectTransform::setMinAnchors(const Vector2 &anchors) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMinAchors, m_minAnchors.v, 2);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -108,6 +160,14 @@ void RectTransform::setMaxAnchors(const Vector2 &anchors) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMaxAchors, m_maxAnchors.v, 2);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -116,10 +176,26 @@ void RectTransform::setMaxAnchors(const Vector2 &anchors) {
 void RectTransform::setAnchors(const Vector2 &minimum, const Vector2 &maximum) {
     if(m_minAnchors != minimum) {
         m_minAnchors = minimum;
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMinAchors, m_minAnchors.v, 2);
+            }
+        }
+#endif
     }
 
     if(m_maxAnchors != maximum) {
         m_maxAnchors = maximum;
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMaxAchors, m_maxAnchors.v, 2);
+            }
+        }
+#endif
     }
 
     setDirty();
@@ -141,6 +217,14 @@ void RectTransform::setMargin(const Vector4 &margin) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMargin, m_margin.v, 4);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -159,6 +243,14 @@ void RectTransform::setBorder(const Vector4 &border) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssMargin, m_border.v, 4);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -177,6 +269,14 @@ void RectTransform::setPadding(const Vector4 &padding) {
 
         setDirty();
         recalcChilds();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            Widget *widget = RectTransform::widget();
+            if(widget) {
+                widget->updateStyleProperty(gCssPadding, m_border.v, 4);
+            }
+        }
+#endif
     }
 }
 /*!
@@ -191,6 +291,13 @@ bool RectTransform::mouseTracking() const {
 */
 void RectTransform::setMouseTracking(bool tracking) {
     m_mouseTracking = tracking;
+}
+/*!
+    Translates the global screen \a x and \a y coordinates to widget space.
+*/
+Vector2 RectTransform::mapFromGlobal(float x, float y)  {
+    return Vector2(x - m_worldTransform[12],
+                   y - m_worldTransform[13]);
 }
 /*!
     Returns true if the point with coordinates \a x and \a y is within the bounds, otherwise false.
@@ -209,6 +316,15 @@ bool RectTransform::isHovered(float x, float y) const {
     }
 
     return false;
+}
+/*!
+    Returns the first widget associated with this rect transform.
+*/
+Widget *RectTransform::widget() {
+    if(!m_subscribers.empty()) {
+        return m_subscribers.front();
+    }
+    return nullptr;
 }
 /*!
     Returns the most top RectTransform in hierarchy wich contains the point with coodinates \a x and \a y.
@@ -252,9 +368,18 @@ Layout *RectTransform::layout() const {
     Sets the \a layout for the RectTransform.
 */
 void RectTransform::setLayout(Layout *layout) {
-    m_layout = layout;
-    if(m_layout) {
-        m_layout->setRectTransform(this);
+    if(m_layout != layout) {
+        m_layout = layout;
+        if(m_layout) {
+            m_layout->setRectTransform(this);
+
+            for(auto &it : m_children) {
+                RectTransform *rect = dynamic_cast<RectTransform *>(it);
+                if(rect) {
+                    m_layout->addTransform(rect);
+                }
+            }
+        }
     }
 }
 /*!
@@ -309,13 +434,35 @@ void RectTransform::setHorizontalPolicy(SizePolicy policy) {
     In addition adds current transfrom to the parent layout if it exists.
 */
 void RectTransform::setParentTransform(Transform *parent, bool force) {
-    Transform::setParentTransform(parent, force);
+    if(parent != m_parent || force) {
+        RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
+        if(parentRect) {
+            Layout *layout = parentRect->layout();
+            if(layout) {
+                layout->removeTransform(this);
+            }
 
-    RectTransform *parentRect = dynamic_cast<RectTransform *>(m_parent);
-    if(parentRect) {
-        Layout *layout = parentRect->layout();
-        if(layout) {
-            layout->addTransform(this);
+            for(auto it : parentRect->m_subscribers) {
+                it->onHierarchyUpdated();
+            }
+        }
+
+        Transform::setParentTransform(parent, force);
+
+        parentRect = dynamic_cast<RectTransform *>(m_parent);
+        if(parentRect) {
+            Layout *layout = parentRect->layout();
+            if(layout) {
+                layout->addTransform(this);
+            }
+
+            for(auto it : parentRect->m_subscribers) {
+                it->onHierarchyUpdated();
+            }
+        } else {
+            for(auto it : m_subscribers) {
+                it->m_parent = nullptr;
+            }
         }
     }
 }
@@ -481,4 +628,90 @@ void RectTransform::recalcParent() {
             }
         }
     }
+}
+
+void RectTransform::applyStyle() {
+    Widget *widget = RectTransform::widget();
+
+    blockSignals(true);
+
+    bool pixels;
+
+    // Position
+    Vector2 position(RectTransform::position());
+    position = widget->styleBlock2Length(gCssPosition, position, pixels);
+    position.x = widget->styleLength("top", position.x, pixels);
+    position.y = widget->styleLength("left", position.y, pixels);
+    setPosition(Vector3(position, 0.0f));
+
+    // Size
+    Vector2 size(RectTransform::size());
+    size = widget->styleBlock2Length(gCssSize, size, pixels);
+    size.x = widget->styleLength("width", size.x, pixels);
+    size.y = widget->styleLength("height", size.y, pixels);
+    setSize(size);
+
+    // Pivot point
+    Vector2 pivot(RectTransform::pivot());
+    pivot = widget->styleBlock2Length(gCssPivot, pivot, pixels);
+    setPivot(pivot);
+
+    // Anchors
+    Vector2 minAnchors(RectTransform::minAnchors());
+    minAnchors = widget->styleBlock2Length(gCssMinAchors, minAnchors, pixels);
+    setMinAnchors(minAnchors);
+
+    Vector2 maxAnchors(RectTransform::maxAnchors());
+    maxAnchors = widget->styleBlock2Length(gCssMaxAchors, maxAnchors, pixels);
+    setMaxAnchors(maxAnchors);
+
+    // Border width
+    Vector4 border(RectTransform::border());
+    border = widget->styleBlock4Length(gCssBorder, border, pixels);
+    border.x = widget->styleLength("border-top-width", border.x, pixels);
+    border.y = widget->styleLength("border-right-width", border.y, pixels);
+    border.z = widget->styleLength("border-bottom-width", border.z, pixels);
+    border.w = widget->styleLength("border-left-width", border.w, pixels);
+    setBorder(border);
+
+    // Margins
+    Vector4 margin(RectTransform::margin());
+    margin = widget->styleBlock4Length(gCssMargin, margin, pixels);
+    margin.x = widget->styleLength("margin-top", margin.x, pixels);
+    margin.y = widget->styleLength("margin-right", margin.y, pixels);
+    margin.z = widget->styleLength("margin-bottom", margin.z, pixels);
+    margin.w = widget->styleLength("margin-left", margin.w, pixels);
+    setMargin(margin);
+
+    // Padding
+    Vector4 padding(RectTransform::padding());
+    padding = widget->styleBlock4Length(gCssPadding, padding, pixels);
+    padding.x = widget->styleLength("padding-top", padding.x, pixels);
+    padding.y = widget->styleLength("padding-right", padding.y, pixels);
+    padding.z = widget->styleLength("padding-bottom", padding.z, pixels);
+    padding.w = widget->styleLength("padding-left", padding.w, pixels);
+    setPadding(padding);
+
+    // Display
+    auto it = widget->m_styleRules.find(gCssDisplay);
+    if(it != widget->m_styleRules.end()) {
+        TString layoutMode = it->second.second;
+        if(layoutMode == "none") {
+            actor()->setEnabled(false);
+        } else {
+            Layout *layout = RectTransform::layout();
+            if(layout == nullptr) {
+                layout = new Layout;
+            }
+
+            if(layoutMode == "block") {
+                layout->setOrientation(Widget::Vertical);
+            } else if(layoutMode == "inline") {
+                layout->setOrientation(Widget::Horizontal);
+            }
+            setLayout(layout);
+        }
+    }
+
+    blockSignals(false);
 }

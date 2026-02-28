@@ -18,7 +18,7 @@ Layout::Layout() :
         m_parentLayout(nullptr),
         m_attachedTransform(nullptr),
         m_rectTransform(nullptr),
-        m_spacing(0.0f),
+        m_spacing(0),
         m_orientation(Widget::Vertical),
         m_dirty(false) {
 
@@ -81,6 +81,10 @@ void Layout::insertTransform(int index, RectTransform *transform) {
         transform->m_attachedLayout = this;
 
         insertLayout(index, layout);
+
+        // Tranfering the ownership
+        RectTransform *rect = rectTransform();
+        transform->actor()->setParent(rect->actor(), index);
     }
 }
 /*!
@@ -100,6 +104,9 @@ void Layout::removeTransform(RectTransform *transform) {
                 Layout *tmp = it;
                 m_items.remove(tmp);
                 delete tmp;
+
+                transform->m_attachedLayout = nullptr;
+
                 invalidate();
 
                 if(m_rectTransform) {
@@ -138,6 +145,16 @@ int Layout::indexOf(const RectTransform *transform) const {
     return result;
 }
 /*!
+    Returns transform located at \a index.
+*/
+RectTransform *Layout::transformAt(int index) {
+    if(index > -1 && index < m_items.size()) {
+        auto it = std::next(m_items.begin(), index);
+        return (*it)->m_attachedTransform;
+    }
+    return nullptr;
+}
+/*!
     Returns the parent rect transform of this layout, or nullptr if this layout is not installed on any rect transform.
     If the layout is a sub-layout, this function returns the parent rect transform of the parent layout.
 */
@@ -166,13 +183,13 @@ int Layout::count() const {
 /*!
     Returns the spacing between items in the layout.
 */
-float Layout::spacing() const {
+int Layout::spacing() const {
     return m_spacing;
 }
 /*!
     Sets the \a spacing between items in the layout.
 */
-void Layout::setSpacing(float spacing) {
+void Layout::setSpacing(int spacing) {
     m_spacing = spacing;
     invalidate();
 }

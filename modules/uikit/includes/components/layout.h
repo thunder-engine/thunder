@@ -20,13 +20,15 @@ public:
     int indexOf(const Layout *layout) const;
     int indexOf(const RectTransform *transform) const;
 
+    RectTransform *transformAt(int index);
+
     RectTransform *rectTransform();
     void setRectTransform(RectTransform *transform);
 
     int count() const;
 
-    float spacing() const;
-    void setSpacing(float spacing);
+    int spacing() const;
+    void setSpacing(int spacing);
 
     int orientation() const;
     void setOrientation(int orientation);
@@ -48,7 +50,7 @@ protected:
 
     RectTransform *m_rectTransform;
 
-    float m_spacing;
+    int m_spacing;
 
     int m_orientation;
 
