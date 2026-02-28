@@ -46,6 +46,8 @@ AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *se
         map[gData] = src.readAll();
         src.close();
 
+        font->loadUserData(map);
+
         return settings->saveBinary(Engine::toVariant(font), settings->absoluteDestination());
     }
     return InternalError;
