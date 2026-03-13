@@ -182,18 +182,18 @@ if (desktop)
     target_include_directories(${EDITOR_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     set_target_properties(${EDITOR_NAME} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${BIN_PATH}"
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${BIN_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${BIN_PATH}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${BIN_PATH}"
     )
 
     install(TARGETS ${EDITOR_NAME}
-            DESTINATION "${BIN_PATH}"
+        DESTINATION "${BIN_PATH}"
     )
 
     if(APPLE)
         install(FILES
-                "res/icons/thunder.icns"
-                DESTINATION "${BIN_PATH}/../Resources"
+            "res/icons/thunder.icns"
+            DESTINATION "${BIN_PATH}/../Resources"
         )
     endif()
 endif()

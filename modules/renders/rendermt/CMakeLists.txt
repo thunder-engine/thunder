@@ -19,7 +19,7 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc/core"
     "../../../thirdparty/glfw/include"
     "../../../thirdparty/glfm/include"
-    "../../../thirdparty/metal/metal-cpp",
+    "../../../thirdparty/metal/metal-cpp"
     "../../../thirdparty/metal/metal-cpp-extensions"
 )
 

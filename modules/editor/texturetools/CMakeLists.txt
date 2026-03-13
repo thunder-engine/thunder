@@ -6,6 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
     "editor/*.cpp"
+    "editor/actions/*.cpp"
     "editor/tools/*.cpp"
 )
 
@@ -18,6 +19,8 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
+    "../../../thirdparty/stb"
+    "../../../thirdparty/basisu"
 )
 
 # This path is only needed on the BSDs
@@ -48,6 +51,7 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
+        basisu
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
