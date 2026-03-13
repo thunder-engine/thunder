@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 project(editor)
 
 add_subdirectory(grapheditor)
-add_subdirectory(iostools)
 add_subdirectory(motiontools)
 add_subdirectory(particletools)
 add_subdirectory(pipelinetools)

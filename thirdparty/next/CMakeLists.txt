@@ -10,12 +10,17 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/analytics/*.cpp"
 )
 
+file(GLOB ${PROJECT_NAME}_osFiles
+    "src/os/*.cpp"
+)
+
 set(${PROJECT_NAME}_incPaths
     "inc"
     "inc/core"
     "inc/math"
     "inc/anim"
     "inc/analytics"
+    "inc/os"
 )
 
 # This path is only needed on the BSDs
@@ -26,11 +31,11 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
     )
 endif()
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles} ${${PROJECT_NAME}_osFiles})
 
 # Dynamic Library
 if(desktop)
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles})
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${${PROJECT_NAME}_osFiles})
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE SHARED_DEFINE NEXT_LIBRARY)
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
 

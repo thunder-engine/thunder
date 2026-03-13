@@ -6,8 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
     "*.qrc"
-    "*.h"
-    
+    "*.h" 
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -19,6 +18,8 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
+    "../../../thirdparty/zlib/src"
+    "../../../thirdparty/minizip"
 )
 
 # This path is only needed on the BSDs
@@ -47,6 +48,8 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
+        zlib-editor
+        minizip
         Qt5::Gui
     )
 

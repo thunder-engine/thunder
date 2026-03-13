@@ -21,6 +21,7 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/openal/include"
     "../../thirdparty/libogg/src"
     "../../thirdparty/libvorbis/src"
+    "../../thirdparty/miniaudio"
 )
 
 # find where OpenAL is installed on user's system
@@ -70,7 +71,6 @@ if(desktop)
         vorbisfile-editor
         Qt5::Core
         Qt5::Gui
-        Qt5::Multimedia
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE

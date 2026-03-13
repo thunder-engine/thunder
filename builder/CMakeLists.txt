@@ -32,6 +32,7 @@ endif()
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
     -DBUILDER_NAME="${BUILDER_NAME}"
+    -DPRODUCT_NAME="${PRODUCT_NAME}"
     -DSDK_VERSION="${SDK_VERSION}"
 )
 

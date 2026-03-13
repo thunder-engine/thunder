@@ -22,14 +22,16 @@ set(${PROJECT_NAME}_incPaths
     "../modules/network/tests"
     "../modules/network/includes"
     "../modules/network/includes/objects"
+    "../modules/uikit/tests"
+    "../modules/uikit/includes"
 )
 
 # This path is only needed on the BSDs
 if(UNIX AND NOT APPLE AND NOT LINUX)
-	set(${PROJECT_NAME}_incPaths
-        ${${PROJECT_NAME}_incPaths}
-		"/usr/local/include"
-	)
+    set(${PROJECT_NAME}_incPaths
+    ${${PROJECT_NAME}_incPaths}
+        "/usr/local/include"
+    )
 endif()
 
 if (desktop)
@@ -40,7 +42,7 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
-        network-editor
+        uikit-editor
         GTest
     )
 

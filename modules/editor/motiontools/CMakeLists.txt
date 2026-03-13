@@ -6,10 +6,12 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
     "editor/*.cpp"
+    "editor/actions/*.cpp"
+    "editor/property/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
-    "editor"
+    "converter"
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
@@ -32,12 +34,14 @@ endif()
 
 file(GLOB ${PROJECT_NAME}_ui
     "editor/*.ui"
+    "editor/property/*.ui"
 )
 
 file(GLOB MOC_HEADERS
     "*.h"
     "converter/*.h"
     "editor/*.h"
+    "editor/property/*.h"
 )
 
 QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})

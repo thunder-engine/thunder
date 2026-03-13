@@ -80,7 +80,6 @@ if(desktop)
         Core
         Gui
         Widgets
-        Multimedia
         Svg
     )
 

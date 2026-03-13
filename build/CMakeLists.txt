@@ -18,10 +18,6 @@ if(desktop)
         DESTINATION "${PLATFORM_PATH}/plugins"
     )
 
-    install(DIRECTORY ${QT_PLUGINS_DIR}/mediaservice
-        DESTINATION "${PLATFORM_PATH}/mediaservice"
-    )
-
     if(LINUX)
         install(DIRECTORY ${QT_PLUGINS_DIR}/xcbglintegrations
             DESTINATION "${PLATFORM_PATH}/xcbglintegrations"
@@ -45,8 +41,6 @@ if(desktop)
     set(QT_LIBS
         "Qt5Core"
         "Qt5Gui"
-        "Qt5Network"
-        "Qt5Multimedia"
         "Qt5Svg"
         "Qt5Widgets"
     )
