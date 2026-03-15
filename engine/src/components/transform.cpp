@@ -123,15 +123,6 @@ void Transform::setScale(const Vector3 &scale) {
     }
 }
 /*!
-    Marks transform as dirty.
-*/
-void Transform::setDirty() {
-    m_dirty = true;
-    for(auto it : m_children) {
-        it->setDirty();
-    }
-}
-/*!
     Returns parent of the transform.
 */
 Transform *Transform::parentTransform() const {
@@ -233,6 +224,16 @@ uint32_t Transform::hash() const {
 */
 const std::list<Transform *> &Transform::children() const {
     return m_children;
+}
+/*!
+    \internal
+    Marks transform as dirty.
+*/
+void Transform::setDirty() {
+    m_dirty = true;
+    for(auto it : m_children) {
+        it->setDirty();
+    }
 }
 /*!
     \internal

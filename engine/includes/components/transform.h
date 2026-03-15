@@ -60,10 +60,10 @@ public:
     const std::list<Transform *> &children() const;
 
 protected:
-    virtual void setDirty();
-    virtual void cleanDirty() const;
-
     virtual void updateHierarchy(Transform *parent, bool force);
+
+    void setDirty();
+    virtual void cleanDirty() const;
 
 protected:
     friend class Actor;
