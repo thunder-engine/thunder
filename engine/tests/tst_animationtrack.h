@@ -2,100 +2,103 @@
 
 #include "resources/animationclip.h"
 
-TEST(AnimationTrack, Fix_curves) {
-    AnimationTrack track;
+namespace EngineSuite {
 
-    AnimationCurve &curve = track.curve();
+    TEST(AnimationTrack, Fix_curves) {
+        AnimationTrack track;
 
-    // AnimationTrack::fixCurves must sort frames before normalization
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 2.0f, {0.0f, 1.0f}});
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 0.0f, {1.0f, 0.0f}});
+        AnimationCurve& curve = track.curve();
 
-    track.fixCurves();
+        // AnimationTrack::fixCurves must sort frames before normalization
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 2.0f, {0.0f, 1.0f} });
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 0.0f, {1.0f, 0.0f} });
 
-    ASSERT_FLOAT_EQ(1.0f, curve.m_keys.back().m_position);
-    ASSERT_FLOAT_EQ(2.0f, track.duration());
-}
+        track.fixCurves();
 
-TEST(AnimationTrack, Sample_Vector4) {
-    AnimationTrack track;
+        ASSERT_FLOAT_EQ(1.0f, curve.m_keys.back().m_position);
+        ASSERT_FLOAT_EQ(2.0f, track.duration());
+    }
 
-    AnimationTrack::Frames &frames = track.frames();
-    AnimationCurve &curve = track.curve();
+    TEST(AnimationTrack, Sample_Vector4) {
+        AnimationTrack track;
 
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 0.0f, {1.0f, 0.0f}});
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 1.0f, {0.0f, 1.0f}});
+        AnimationTrack::Frames& frames = track.frames();
+        AnimationCurve& curve = track.curve();
 
-    ASSERT_EQ(Vector4(0.5f, 0.5f, 0.0f, 0.0f), track.valueVector4(0.5f));
-}
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 0.0f, {1.0f, 0.0f} });
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 1.0f, {0.0f, 1.0f} });
 
-TEST(AnimationTrack, Sample_Quaternion) {
-    AnimationTrack track;
+        ASSERT_EQ(Vector4(0.5f, 0.5f, 0.0f, 0.0f), track.valueVector4(0.5f));
+    }
 
-    AnimationTrack::Frames &frames = track.frames();
-    AnimationCurve &curve = track.curve();
+    TEST(AnimationTrack, Sample_Quaternion) {
+        AnimationTrack track;
 
-    Quaternion q0;
-    Quaternion q1(Vector3(90.0f, 0.0f, 0.0f));
+        AnimationTrack::Frames& frames = track.frames();
+        AnimationCurve& curve = track.curve();
 
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 0.0f, {q0.x, q0.y, q0.z, q0.w}});
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 1.0f, {q1.x, q1.y, q1.z, q1.w}});
+        Quaternion q0;
+        Quaternion q1(Vector3(90.0f, 0.0f, 0.0f));
 
-    Quaternion sample(track.valueQuaternion(0.5f));
-    Quaternion result(Vector3(45.0f, 0.0f, 0.0f));
-    ASSERT_TRUE(result.equal(sample));
-}
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 0.0f, {q0.x, q0.y, q0.z, q0.w} });
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 1.0f, {q1.x, q1.y, q1.z, q1.w} });
 
-TEST(AnimationTrack, Sample_String) {
-    AnimationTrack track;
+        Quaternion sample(track.valueQuaternion(0.5f));
+        Quaternion result(Vector3(45.0f, 0.0f, 0.0f));
+        ASSERT_TRUE(result.equal(sample));
+    }
 
-    AnimationTrack::Frames &frames = track.frames();
-    frames.push_back({"test1", 0.0f });
-    frames.push_back({"test2", 0.5f });
-    frames.push_back({"test3", 1.0f });
+    TEST(AnimationTrack, Sample_String) {
+        AnimationTrack track;
 
-    ASSERT_EQ(TString("test1"), track.valueString(0.45f));
-    ASSERT_EQ(TString("test2"), track.valueString(0.55f));
-    ASSERT_EQ(TString("test3"), track.valueString(1.0f));
-}
+        AnimationTrack::Frames& frames = track.frames();
+        frames.push_back({ "test1", 0.0f });
+        frames.push_back({ "test2", 0.5f });
+        frames.push_back({ "test3", 1.0f });
 
-TEST(AnimationTrack, Serialization) {
-    AnimationTrack track;
+        ASSERT_EQ(TString("test1"), track.valueString(0.45f));
+        ASSERT_EQ(TString("test2"), track.valueString(0.55f));
+        ASSERT_EQ(TString("test3"), track.valueString(1.0f));
+    }
 
-    const TString path("/test/path");
-    const TString property("testProperty");
+    TEST(AnimationTrack, Serialization) {
+        AnimationTrack track;
 
-    track.setPath(path);
-    track.setProperty(property);
+        const TString path("/test/path");
+        const TString property("testProperty");
 
-    AnimationCurve &curve = track.curve();
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 0.0f, {0.0f, 1.0f, 2.0f, 3.0f}});
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 0.5f, {1.0f, 2.0f, 3.0f, 0.0f}});
-    curve.m_keys.push_back({AnimationCurve::KeyFrame::Linear, 1.0f, {2.0f, 3.0f, 0.0f, 1.0f}});
+        track.setPath(path);
+        track.setProperty(property);
 
-    track.setDuration(1000);
+        AnimationCurve& curve = track.curve();
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 0.0f, {0.0f, 1.0f, 2.0f, 3.0f} });
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 0.5f, {1.0f, 2.0f, 3.0f, 0.0f} });
+        curve.m_keys.push_back({ AnimationCurve::KeyFrame::Linear, 1.0f, {2.0f, 3.0f, 0.0f, 1.0f} });
 
-    AnimationTrack::Frames &frames = track.frames();
-    frames.push_back({"test1", 0.0f});
-    frames.push_back({"test2", 1.0f});
+        track.setDuration(1000);
 
-    Variant data = track.toVariant();
+        AnimationTrack::Frames& frames = track.frames();
+        frames.push_back({ "test1", 0.0f });
+        frames.push_back({ "test2", 1.0f });
 
-    AnimationTrack dataTrack;
-    dataTrack.fromVariant(data);
+        Variant data = track.toVariant();
 
-    ASSERT_EQ(path, dataTrack.path());
-    ASSERT_EQ(property, dataTrack.property());
+        AnimationTrack dataTrack;
+        dataTrack.fromVariant(data);
 
-    ASSERT_EQ(1000, dataTrack.duration());
+        ASSERT_EQ(path, dataTrack.path());
+        ASSERT_EQ(property, dataTrack.property());
 
-    AnimationCurve &dataCurve = dataTrack.curve();
-    ASSERT_EQ(3, dataCurve.m_keys.size());
-    ASSERT_FLOAT_EQ(1.0f, dataCurve.m_keys[0].m_value[1]);
-    ASSERT_FLOAT_EQ(3.0f, dataCurve.m_keys[1].m_value[2]);
-    ASSERT_FLOAT_EQ(2.0f, dataCurve.m_keys[2].m_value[0]);
+        ASSERT_EQ(1000, dataTrack.duration());
 
-    AnimationTrack::Frames &dataFrames = dataTrack.frames();
-    ASSERT_EQ(2, dataFrames.size());
-    ASSERT_EQ(TString("test2"), dataFrames.back().m_value);
+        AnimationCurve& dataCurve = dataTrack.curve();
+        ASSERT_EQ(3, dataCurve.m_keys.size());
+        ASSERT_FLOAT_EQ(1.0f, dataCurve.m_keys[0].m_value[1]);
+        ASSERT_FLOAT_EQ(3.0f, dataCurve.m_keys[1].m_value[2]);
+        ASSERT_FLOAT_EQ(2.0f, dataCurve.m_keys[2].m_value[0]);
+
+        AnimationTrack::Frames& dataFrames = dataTrack.frames();
+        ASSERT_EQ(2, dataFrames.size());
+        ASSERT_EQ(TString("test2"), dataFrames.back().m_value);
+    }
 }

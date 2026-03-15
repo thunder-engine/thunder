@@ -41,303 +41,306 @@ public:
 
 };
 
-class ActorTest : public ::testing::Test {
-public:
-    void switchStatePrefab(Prefab &fab, Resource::State state) {
-        fab.switchState(state);
+namespace EngineSuite {
+
+    class ActorTest : public ::testing::Test {
+    public:
+        void switchStatePrefab(Prefab& fab, Resource::State state) {
+            fab.switchState(state);
+        }
+    };
+
+    TEST_F(ActorTest, Basic_properties) {
+        Actor actor;
+
+        ASSERT_TRUE(actor.isEnabled());
+        actor.setEnabled(false);
+        ASSERT_FALSE(actor.isEnabled());
     }
-};
 
-TEST_F(ActorTest, Basic_properties) {
-    Actor actor;
+    TEST_F(ActorTest, Transform_hierarchy) {
+        ObjectSystem system;
+        Actor::registerClassFactory(&system);
+        Transform::registerClassFactory(&system);
 
-    ASSERT_TRUE(actor.isEnabled());
-    actor.setEnabled(false);
-    ASSERT_FALSE(actor.isEnabled());
-}
+        Actor a1;
+        a1.addComponent("Transform");
 
-TEST_F(ActorTest, Transform_hierarchy) {
-    ObjectSystem system;
-    Actor::registerClassFactory(&system);
-    Transform::registerClassFactory(&system);
+        Actor a2;
+        a2.addComponent("Transform");
 
-    Actor a1;
-    a1.addComponent("Transform");
+        Transform* t1 = a1.transform();
+        Transform* t2 = a2.transform();
 
-    Actor a2;
-    a2.addComponent("Transform");
+        ASSERT_TRUE(t1 != nullptr);
+        ASSERT_TRUE(t2 != nullptr);
 
-    Transform *t1 = a1.transform();
-    Transform *t2 = a2.transform();
+        a2.setParent(&a1);
 
-    ASSERT_TRUE(t1 != nullptr);
-    ASSERT_TRUE(t2 != nullptr);
+        ASSERT_TRUE(t2->parentTransform() == t1);
+    }
 
-    a2.setParent(&a1);
+    TEST_F(ActorTest, Add_Remove_Component) {
+        ObjectSystem system;
+        Actor::registerClassFactory(&system);
+        Component::registerClassFactory(&system);
 
-    ASSERT_TRUE(t2->parentTransform() == t1);
-}
+        Actor parent;
 
-TEST_F(ActorTest, Add_Remove_Component) {
-    ObjectSystem system;
-    Actor::registerClassFactory(&system);
-    Component::registerClassFactory(&system);
+        Actor a1;
 
-    Actor parent;
+        Component* component = a1.addComponent("Component");
+        ASSERT_TRUE(a1.getChildren().size() == 1);
 
-    Actor a1;
+        Component* result1 = a1.component("Component");
+        ASSERT_TRUE(component == result1);
 
-    Component *component = a1.addComponent("Component");
-    ASSERT_TRUE(a1.getChildren().size() == 1);
+        a1.setParent(&parent);
 
-    Component *result1 = a1.component("Component");
-    ASSERT_TRUE(component == result1);
+        Component* result2 = parent.componentInChild("Component");
+        ASSERT_TRUE(component == result2);
 
-    a1.setParent(&parent);
+        delete component;
+        ASSERT_TRUE(a1.getChildren().size() == 0);
+    }
 
-    Component *result2 = parent.componentInChild("Component");
-    ASSERT_TRUE(component == result2);
+    TEST_F(ActorTest, Prefab_serialization) {
+        Engine system("");
+        SkinnedMeshRender::registerClassFactory(&system);
+        MeshRender::registerClassFactory(&system);
+        RenderSystem render;
 
-    delete component;
-    ASSERT_TRUE(a1.getChildren().size() == 0);
-}
+        Actor* root = Engine::objectCreate<Actor>("Root");
+        root->addComponent("Transform");
+        ASSERT_TRUE(root != nullptr);
 
-TEST_F(ActorTest, Prefab_serialization) {
-    Engine system("");
-    SkinnedMeshRender::registerClassFactory(&system);
-    MeshRender::registerClassFactory(&system);
-    RenderSystem render;
+        Transform* t0 = root->transform();
+        ASSERT_TRUE(t0 != nullptr);
+        t0->setPosition(Vector3(1.0f, 2.0f, 3.0f));
 
-    Actor *root = Engine::objectCreate<Actor>("Root");
-    root->addComponent("Transform");
-    ASSERT_TRUE(root != nullptr);
+        SkinnedMeshRender* prefabSkinned = dynamic_cast<SkinnedMeshRender*>(root->addComponent("SkinnedMeshRender"));
+        ASSERT_TRUE(prefabSkinned != nullptr);
 
-    Transform *t0 = root->transform();
-    ASSERT_TRUE(t0 != nullptr);
-    t0->setPosition(Vector3(1.0f, 2.0f, 3.0f));
+        Actor* level1 = Engine::composeActor("", "Level1", root);
+        Camera* prefabCamera = dynamic_cast<Camera*>(level1->addComponent("Camera"));
+        ASSERT_TRUE(prefabCamera != nullptr);
+        prefabCamera->setFocalDistance(10.0f);
 
-    SkinnedMeshRender *prefabSkinned = dynamic_cast<SkinnedMeshRender *>(root->addComponent("SkinnedMeshRender"));
-    ASSERT_TRUE(prefabSkinned != nullptr);
+        // Make a prefab
+        Prefab* prefab = Engine::objectCreate<Prefab>("");
+        prefab->setActor(root);
 
-    Actor *level1 = Engine::composeActor("", "Level1", root);
-    Camera *prefabCamera = dynamic_cast<Camera *>(level1->addComponent("Camera"));
-    ASSERT_TRUE(prefabCamera != nullptr);
-    prefabCamera->setFocalDistance(10.0f);
+        system.resourceSystem()->setResource(prefab, "TestPrefab");
 
-    // Make a prefab
-    Prefab *prefab = Engine::objectCreate<Prefab>("");
-    prefab->setActor(root);
+        // Make a clone of prefab
+        Actor* clone = dynamic_cast<Actor*>(prefab->actor()->clone());
+        ASSERT_TRUE(clone != nullptr);
 
-    system.resourceSystem()->setResource(prefab, "TestPrefab");
+        ASSERT_TRUE(clone->transform()->position() == t0->position());
+        Camera* cloneCamera = dynamic_cast<Camera*>(clone->componentInChild("Camera"));
+        ASSERT_TRUE(cloneCamera != nullptr);
+        ASSERT_TRUE(cloneCamera->focalDistance() == 10.0f);
+        ASSERT_TRUE(cloneCamera->actor()->name() == "Level1");
 
-    // Make a clone of prefab
-    Actor *clone = dynamic_cast<Actor *>(prefab->actor()->clone());
-    ASSERT_TRUE(clone != nullptr);
+        // Change a property of clone
+        Transform* t1 = cloneCamera->transform();
+        ASSERT_TRUE(t1 != nullptr);
+        t1->setPosition(Vector3(3.0f, 2.0f, 1.0f));
 
-    ASSERT_TRUE(clone->transform()->position() == t0->position());
-    Camera *cloneCamera = dynamic_cast<Camera *>(clone->componentInChild("Camera"));
-    ASSERT_TRUE(cloneCamera != nullptr);
-    ASSERT_TRUE(cloneCamera->focalDistance() == 10.0f);
-    ASSERT_TRUE(cloneCamera->actor()->name() == "Level1");
+        // Add additional component to clone
+        Actor* level2 = Engine::composeActor("", "Level2", cloneCamera->actor());
+        MeshRender* cloneMesh = dynamic_cast<MeshRender*>(level2->addComponent("MeshRender"));
+        ASSERT_TRUE(cloneMesh != nullptr);
 
-    // Change a property of clone
-    Transform *t1 = cloneCamera->transform();
-    ASSERT_TRUE(t1 != nullptr);
-    t1->setPosition(Vector3(3.0f, 2.0f, 1.0f));
+        // Serialize clone
+        Variant data = Engine::toVariant(clone);
 
-    // Add additional component to clone
-    Actor *level2 = Engine::composeActor("", "Level2", cloneCamera->actor());
-    MeshRender *cloneMesh = dynamic_cast<MeshRender *>(level2->addComponent("MeshRender"));
-    ASSERT_TRUE(cloneMesh != nullptr);
+        // Delete the original clone
+        delete clone;
 
-    // Serialize clone
-    Variant data = Engine::toVariant(clone);
+        // Deserialize clone
+        Object* object = Engine::toObject(data);
 
-    // Delete the original clone
-    delete clone;
+        Actor* result = dynamic_cast<Actor*>(object);
+        ASSERT_TRUE(result != nullptr);
 
-    // Deserialize clone
-    Object *object = Engine::toObject(data);
+        ASSERT_TRUE(result->transform()->position() == t0->position());
+        Camera* resultCamera = dynamic_cast<Camera*>(result->componentInChild("Camera"));
+        ASSERT_TRUE(resultCamera != nullptr);
+        ASSERT_TRUE(resultCamera->focalDistance() == 10.0f);
+        ASSERT_TRUE(resultCamera->actor()->name() == "Level1");
+        Transform* resultCameraTransform = resultCamera->transform();
+        ASSERT_TRUE(resultCameraTransform->position() == Vector3(3.0f, 2.0f, 1.0f));
 
-    Actor *result = dynamic_cast<Actor *>(object);
-    ASSERT_TRUE(result != nullptr);
+        MeshRender* resultMesh = dynamic_cast<MeshRender*>(result->componentInChild("MeshRender"));
+        ASSERT_TRUE(resultMesh != nullptr);
+        ASSERT_TRUE(resultMesh->actor()->name() == "Level2");
 
-    ASSERT_TRUE(result->transform()->position() == t0->position());
-    Camera *resultCamera = dynamic_cast<Camera *>(result->componentInChild("Camera"));
-    ASSERT_TRUE(resultCamera != nullptr);
-    ASSERT_TRUE(resultCamera->focalDistance() == 10.0f);
-    ASSERT_TRUE(resultCamera->actor()->name() == "Level1");
-    Transform *resultCameraTransform = resultCamera->transform();
-    ASSERT_TRUE(resultCameraTransform->position() == Vector3(3.0f, 2.0f, 1.0f));
+        delete result;
 
-    MeshRender *resultMesh = dynamic_cast<MeshRender *>(result->componentInChild("MeshRender"));
-    ASSERT_TRUE(resultMesh != nullptr);
-    ASSERT_TRUE(resultMesh->actor()->name() == "Level2");
+        delete prefab;
+    }
 
-    delete result;
+    TEST_F(ActorTest, Cross_reference_prefab) {
+        Engine system("");
+        TestComponent::registerClassFactory(&system);
 
-    delete prefab;
-}
+        Actor* prefab = Engine::objectCreate<Actor>("Prefab");
+        ASSERT_TRUE(prefab != nullptr);
 
-TEST_F(ActorTest, Cross_reference_prefab) {
-    Engine system("");
-    TestComponent::registerClassFactory(&system);
+        Actor* level1 = Engine::objectCreate<Actor>("Level1", prefab);
+        TestComponent* prefabTestComponent = dynamic_cast<TestComponent*>(level1->addComponent("TestComponent"));
+        ASSERT_TRUE(prefabTestComponent != nullptr);
 
-    Actor *prefab = Engine::objectCreate<Actor>("Prefab");
-    ASSERT_TRUE(prefab != nullptr);
+        Prefab* fab = Engine::objectCreate<Prefab>("");
+        fab->setActor(prefab);
 
-    Actor *level1 = Engine::objectCreate<Actor>("Level1", prefab);
-    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
-    ASSERT_TRUE(prefabTestComponent != nullptr);
+        system.resourceSystem()->setResource(fab, "TestPrefab");
 
-    Prefab *fab = Engine::objectCreate<Prefab>("");
-    fab->setActor(prefab);
+        Actor* root = Engine::objectCreate<Actor>("Root");
 
-    system.resourceSystem()->setResource(fab, "TestPrefab");
+        Actor* clone1 = dynamic_cast<Actor*>(prefab->clone(root));
+        ASSERT_TRUE(clone1 != nullptr);
 
-    Actor *root = Engine::objectCreate<Actor>("Root");
+        TestComponent* cloneTestComponent1 = dynamic_cast<TestComponent*>(clone1->componentInChild("TestComponent"));
+        ASSERT_TRUE(cloneTestComponent1 != nullptr);
 
-    Actor *clone1 = dynamic_cast<Actor *>(prefab->clone(root));
-    ASSERT_TRUE(clone1 != nullptr);
+        Actor* clone2 = dynamic_cast<Actor*>(prefab->clone(root));
+        ASSERT_TRUE(clone2 != nullptr);
 
-    TestComponent *cloneTestComponent1 = dynamic_cast<TestComponent *>(clone1->componentInChild("TestComponent"));
-    ASSERT_TRUE(cloneTestComponent1 != nullptr);
+        TestComponent* cloneTestComponent2 = dynamic_cast<TestComponent*>(clone2->componentInChild("TestComponent"));
+        ASSERT_TRUE(cloneTestComponent2 != nullptr);
 
-    Actor *clone2 = dynamic_cast<Actor *>(prefab->clone(root));
-    ASSERT_TRUE(clone2 != nullptr);
+        cloneTestComponent1->setReference(cloneTestComponent2);
+        cloneTestComponent2->setReference(cloneTestComponent1);
 
-    TestComponent *cloneTestComponent2 = dynamic_cast<TestComponent *>(clone2->componentInChild("TestComponent"));
-    ASSERT_TRUE(cloneTestComponent2 != nullptr);
+        Variant data = Engine::toVariant(root);
 
-    cloneTestComponent1->setReference(cloneTestComponent2);
-    cloneTestComponent2->setReference(cloneTestComponent1);
+        delete root;
 
-    Variant data = Engine::toVariant(root);
+        Object* object = Engine::toObject(data);
+        Actor* result = dynamic_cast<Actor*>(object);
+        ASSERT_TRUE(result != nullptr);
 
-    delete root;
+        TestComponent* resultTestComponent = dynamic_cast<TestComponent*>(result->componentInChild("TestComponent"));
+        ASSERT_TRUE(resultTestComponent != nullptr);
+        TestComponent* referenceTestComponent = resultTestComponent->reference();
 
-    Object *object = Engine::toObject(data);
-    Actor *result = dynamic_cast<Actor *>(object);
-    ASSERT_TRUE(result != nullptr);
+        ASSERT_TRUE(referenceTestComponent != nullptr);
 
-    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
-    ASSERT_TRUE(resultTestComponent != nullptr);
-    TestComponent *referenceTestComponent = resultTestComponent->reference();
+        ASSERT_TRUE(referenceTestComponent != resultTestComponent);
+        ASSERT_TRUE(resultTestComponent->reference() == referenceTestComponent);
+        //ASSERT_TRUE(referenceTestComponent->reference() == resultTestComponent);
 
-    ASSERT_TRUE(referenceTestComponent != nullptr);
+        delete result;
 
-    ASSERT_TRUE(referenceTestComponent != resultTestComponent);
-    ASSERT_TRUE(resultTestComponent->reference() == referenceTestComponent);
-    //ASSERT_TRUE(referenceTestComponent->reference() == resultTestComponent);
+        delete prefab;
+    }
 
-    delete result;
+    TEST_F(ActorTest, Remove_component_from_prefab_instance) {
+        Engine system("");
+        TestComponent::registerClassFactory(&system);
 
-    delete prefab;
-}
+        // Create a root boject
+        Actor* root = Engine::objectCreate<Actor>("Root");
+        ASSERT_TRUE(root != nullptr);
 
-TEST_F(ActorTest, Remove_component_from_prefab_instance) {
-    Engine system("");
-    TestComponent::registerClassFactory(&system);
+        Actor* level1 = Engine::objectCreate<Actor>("Level1", root);
+        TestComponent* prefabTestComponent = dynamic_cast<TestComponent*>(level1->addComponent("TestComponent"));
+        ASSERT_TRUE(prefabTestComponent != nullptr);
 
-    // Create a root boject
-    Actor *root = Engine::objectCreate<Actor>("Root");
-    ASSERT_TRUE(root != nullptr);
+        // Create prefab
+        Prefab* prefab = Engine::objectCreate<Prefab>("");
+        prefab->setActor(root);
 
-    Actor *level1 = Engine::objectCreate<Actor>("Level1", root);
-    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(level1->addComponent("TestComponent"));
-    ASSERT_TRUE(prefabTestComponent != nullptr);
+        system.resourceSystem()->setResource(prefab, "TestPrefab");
 
-    // Create prefab
-    Prefab *prefab = Engine::objectCreate<Prefab>("");
-    prefab->setActor(root);
+        // Instantiate a prefab
+        Actor* clone = dynamic_cast<Actor*>(prefab->actor()->clone());
+        ASSERT_TRUE(clone != nullptr);
+        ASSERT_TRUE(clone->isInstance());
 
-    system.resourceSystem()->setResource(prefab, "TestPrefab");
+        // Delete a component from instantiated hierarchy
+        TestComponent* cloneTestComponent = dynamic_cast<TestComponent*>(clone->componentInChild("TestComponent"));
+        ASSERT_TRUE(cloneTestComponent != nullptr);
 
-    // Instantiate a prefab
-    Actor *clone = dynamic_cast<Actor *>(prefab->actor()->clone());
-    ASSERT_TRUE(clone != nullptr);
-    ASSERT_TRUE(clone->isInstance());
+        delete cloneTestComponent;
 
-    // Delete a component from instantiated hierarchy
-    TestComponent *cloneTestComponent = dynamic_cast<TestComponent *>(clone->componentInChild("TestComponent"));
-    ASSERT_TRUE(cloneTestComponent != nullptr);
+        // Serialize instantiated hierarchy
+        Variant data = Engine::toVariant(clone);
 
-    delete cloneTestComponent;
+        // Delete a clone
+        delete clone;
 
-    // Serialize instantiated hierarchy
-    Variant data = Engine::toVariant(clone);
+        // Deserialize instantiated hierarchy
+        Object* object = Engine::toObject(data);
+        Actor* result = dynamic_cast<Actor*>(object);
+        ASSERT_TRUE(result != nullptr);
 
-    // Delete a clone
-    delete clone;
+        TestComponent* resultTestComponent = dynamic_cast<TestComponent*>(result->componentInChild("TestComponent"));
+        ASSERT_TRUE(resultTestComponent == nullptr);
 
-    // Deserialize instantiated hierarchy
-    Object *object = Engine::toObject(data);
-    Actor *result = dynamic_cast<Actor *>(object);
-    ASSERT_TRUE(result != nullptr);
+        delete result;
 
-    TestComponent *resultTestComponent = dynamic_cast<TestComponent *>(result->componentInChild("TestComponent"));
-    ASSERT_TRUE(resultTestComponent == nullptr);
+        delete prefab;
+    }
 
-    delete result;
+    TEST_F(ActorTest, Update_prefab_instance) {
+        Engine system("");
+        TestComponent::registerClassFactory(&system);
 
-    delete prefab;
-}
+        Actor* root = Engine::objectCreate<Actor>("Root");
+        ASSERT_TRUE(root != nullptr);
 
-TEST_F(ActorTest, Update_prefab_instance) {
-    Engine system("");
-    TestComponent::registerClassFactory(&system);
+        Actor* level1 = Engine::composeActor("TestComponent", "Level1", root);
 
-    Actor *root = Engine::objectCreate<Actor>("Root");
-    ASSERT_TRUE(root != nullptr);
+        uint32_t uuidLevel1 = level1->uuid();
 
-    Actor *level1 = Engine::composeActor("TestComponent", "Level1", root);
+        Actor* level2 = Engine::composeActor("", "Level2", root);
 
-    uint32_t uuidLevel1 = level1->uuid();
+        Prefab* prefab = Engine::objectCreate<Prefab>("");
+        prefab->setActor(root);
 
-    Actor *level2 = Engine::composeActor("", "Level2", root);
+        system.resourceSystem()->setResource(prefab, "TestPrefab");
 
-    Prefab *prefab = Engine::objectCreate<Prefab>("");
-    prefab->setActor(root);
+        // Create an instance before do changes in prefab
+        Actor* clone = dynamic_cast<Actor*>(root->clone());
+        ASSERT_TRUE(clone != nullptr);
+        ASSERT_TRUE(clone->isInstance());
 
-    system.resourceSystem()->setResource(prefab, "TestPrefab");
+        switchStatePrefab(*prefab, Resource::Loading);
 
-    // Create an instance before do changes in prefab
-    Actor *clone = dynamic_cast<Actor *>(root->clone());
-    ASSERT_TRUE(clone != nullptr);
-    ASSERT_TRUE(clone->isInstance());
+        // Step 1 - Add item to prefab
+        TestComponent* prefabTestComponent = dynamic_cast<TestComponent*>(root->addComponent("TestComponent"));
+        ASSERT_TRUE(prefabTestComponent != nullptr);
 
-    switchStatePrefab(*prefab, Resource::Loading);
+        // Step 2 - Delete item from prefab
+        delete level1;
 
-    // Step 1 - Add item to prefab
-    TestComponent *prefabTestComponent = dynamic_cast<TestComponent *>(root->addComponent("TestComponent"));
-    ASSERT_TRUE(prefabTestComponent != nullptr);
+        // Step 3 - Change prefab property
+        const Vector3 value(1.0f, 2.0f, 3.0f);
+        level2->transform()->setPosition(value);
 
-    // Step 2 - Delete item from prefab
-    delete level1;
+        // Sync instance with prefab
+        switchStatePrefab(*prefab, Resource::Ready);
 
-    // Step 3 - Change prefab property
-    const Vector3 value(1.0f, 2.0f, 3.0f);
-    level2->transform()->setPosition(value);
+        // Check instance state from Step 1
+        TestComponent* resultTestComponent = clone->getComponent<TestComponent>();
+        ASSERT_TRUE(resultTestComponent != nullptr);
+        ASSERT_TRUE(resultTestComponent->parent()->name() == "Root");
 
-    // Sync instance with prefab
-    switchStatePrefab(*prefab, Resource::Ready);
+        // Check instance state from Step 2
+        Actor* cloneLevel1 = dynamic_cast<Actor*>(Engine::findObject(uuidLevel1));
+        ASSERT_TRUE(cloneLevel1 == nullptr);
 
-    // Check instance state from Step 1
-    TestComponent *resultTestComponent = clone->getComponent<TestComponent>();
-    ASSERT_TRUE(resultTestComponent != nullptr);
-    ASSERT_TRUE(resultTestComponent->parent()->name() == "Root");
+        // Check instance state from Step 3
+        Actor* cloneLevel2 = dynamic_cast<Actor*>(Engine::findObject(level2->uuid()));
+        ASSERT_TRUE(cloneLevel2 != nullptr);
+        ASSERT_TRUE(cloneLevel2->name() == level2->name());
+        ASSERT_TRUE(cloneLevel2->transform() != nullptr);
+        ASSERT_TRUE(cloneLevel2->transform()->position() == value);
 
-    // Check instance state from Step 2
-    Actor *cloneLevel1 = dynamic_cast<Actor *>(Engine::findObject(uuidLevel1));
-    ASSERT_TRUE(cloneLevel1 == nullptr);
-
-    // Check instance state from Step 3
-    Actor *cloneLevel2 = dynamic_cast<Actor *>(Engine::findObject(level2->uuid()));
-    ASSERT_TRUE(cloneLevel2 != nullptr);
-    ASSERT_TRUE(cloneLevel2->name() == level2->name());
-    ASSERT_TRUE(cloneLevel2->transform() != nullptr);
-    ASSERT_TRUE(cloneLevel2->transform()->position() == value);
-
-    delete clone;
-    delete prefab;
+        delete clone;
+        delete prefab;
+    }
 }

@@ -3,9 +3,8 @@
 
 #include "widget.h"
 
-class Button;
+class CheckBox;
 class Frame;
-class Label;
 
 class UIKIT_EXPORT Foldout : public Widget {
     A_OBJECT(Foldout, Widget, Components/UI)
@@ -13,8 +12,7 @@ class UIKIT_EXPORT Foldout : public Widget {
     A_PROPERTIES(
         A_PROPERTY(TString, text, Foldout::text, Foldout::setText),
         A_PROPERTYEX(Frame *, container, Foldout::container, Foldout::setContainer, "editor=Component"),
-        A_PROPERTYEX(Button *, indicator, Foldout::indicator, Foldout::setIndicator, "editor=Component"),
-        A_PROPERTYEX(Label *, label, Foldout::label, Foldout::setLabel, "editor=Component")
+        A_PROPERTYEX(CheckBox *, indicator, Foldout::indicator, Foldout::setIndicator, "editor=Component")
     )
     A_METHODS(
         A_SLOT(Foldout::onExpand)
@@ -35,11 +33,8 @@ public:
     Frame *container() const;
     void setContainer(Frame *container);
 
-    Button *indicator() const;
-    void setIndicator(Button *indicator);
-
-    Label *label() const;
-    void setLabel(Label *label);
+    CheckBox *indicator() const;
+    void setIndicator(CheckBox *indicator);
 
     void onExpand();
 

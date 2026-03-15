@@ -6,7 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "tests.cpp"
     "../thirdparty/next/tests/tst_*.h"
     "../engine/tests/tst_*.h"
-    "../modules/network/tests/tst_*.h"
+    "../modules/uikit/tests/tst_*.h"
 )
 
 set(${PROJECT_NAME}_incPaths

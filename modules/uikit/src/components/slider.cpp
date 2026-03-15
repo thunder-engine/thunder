@@ -130,9 +130,5 @@ void Slider::composeComponent() {
 
     setValue(m_value);
 
-    if(m_orientation == Horizontal) {
-        rectTransform()->setSize(Vector2(100.0f, 20.0f));
-    } else {
-        rectTransform()->setSize(Vector2(20.0f, 100.0f));
-    }
+    rectTransform()->setSize(Vector2(100.0f, 20.0f));
 }

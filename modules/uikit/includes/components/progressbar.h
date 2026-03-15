@@ -3,17 +3,15 @@
 
 #include "frame.h"
 
-class UIKIT_EXPORT ProgressBar : public Widget {
-    A_OBJECT(ProgressBar, Widget, Components/UI)
+class UIKIT_EXPORT ProgressBar : public Frame {
+    A_OBJECT(ProgressBar, Frame, Components/UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Orientation, orientation, ProgressBar::orientation, ProgressBar::setOrientation, "enum=Orientation"),
         A_PROPERTY(float, from, ProgressBar::from, ProgressBar::setFrom),
         A_PROPERTY(float, to, ProgressBar::to, ProgressBar::setTo),
         A_PROPERTY(float, value, ProgressBar::value, ProgressBar::setValue),
-        A_PROPERTYEX(Vector4, backgroundColor, ProgressBar::backgroundColor, ProgressBar::setBackgroundColor, "editor=Color"),
         A_PROPERTYEX(Vector4, progressColor, ProgressBar::progressColor, ProgressBar::setProgressColor, "editor=Color"),
-        A_PROPERTYEX(Frame *, background, ProgressBar::background, ProgressBar::setBackground, "editor=Component"),
         A_PROPERTYEX(Frame *, chunk, ProgressBar::chunk, ProgressBar::setChunk, "editor=Component")
     )
     A_NOMETHODS()
@@ -34,17 +32,11 @@ public:
     float value() const;
     void setValue(float value);
 
-    Vector4 backgroundColor() const;
-    void setBackgroundColor(const Vector4 color);
-
     Vector4 progressColor() const;
     void setProgressColor(const Vector4 color);
 
     Frame *chunk() const;
     void setChunk(Frame *frame);
-
-    Frame *background() const;
-    void setBackground(Frame *frame);
 
 private:
     void composeComponent() override;

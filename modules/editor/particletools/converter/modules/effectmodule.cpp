@@ -38,13 +38,11 @@ Widget *EffectModule::widget(Object *parent) {
 
         Actor *function = Engine::composeActor<CheckBox>(moduleName, parent);
         m_checkBoxWidget = function->getComponent<CheckBox>();
-        RectTransform *checkBoxRect = m_checkBoxWidget->rectTransform();
-        checkBoxRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
-        checkBoxRect->setSize(Vector2(200.0f, 20.0f));
-
         m_checkBoxWidget->setChecked(m_enabled);
         m_checkBoxWidget->setText(moduleName);
         m_checkBoxWidget->setMirrored(true);
+
+        m_checkBoxWidget->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
 
         Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }

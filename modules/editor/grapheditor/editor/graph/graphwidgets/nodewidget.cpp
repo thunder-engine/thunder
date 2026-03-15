@@ -29,7 +29,7 @@ NodeWidget::NodeWidget() :
         m_node(nullptr),
         m_title(nullptr),
         m_header(nullptr),
-        m_callLayout(nullptr),
+        m_callRect(nullptr),
         m_hovered(false) {
 
 }
@@ -175,7 +175,8 @@ void NodeWidget::composeComponent() {
 
             headerRect->setSize(Vector2(0, row));
             headerRect->setPivot(Vector2(0.0f, 1.0f));
-            headerRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+            headerRect->setHorizontalPolicy(RectTransform::Expanding);
+            headerRect->setVerticalPolicy(RectTransform::Fixed);
 
             Vector4 corn(corners() - 1);
             corn.x = corn.y;
@@ -200,35 +201,37 @@ void NodeWidget::composePort(NodePort &port) {
         if(portWidget) {
             RectTransform *portRect = portWidget->rectTransform();
             portRect->setSize(Vector2(0, row));
+            portRect->setHorizontalPolicy(RectTransform::Expanding);
+
             portWidget->setNodePort(&port);
 
-            Layout *layout = rectTransform()->layout();
-            if(layout) {
-                if(port.m_call) {
-                    if(port.m_out) {
-                        portRect->setMinAnchors(Vector2(0.5f, 1.0f));
-                    } else {
-                        portRect->setMaxAnchors(Vector2(0.5f, 1.0f));
-                    }
-                    portRect->setPivot(Vector2(0.0f, 0.5f));
+            if(port.m_call) {
+                if(port.m_out) {
+                    portRect->setMinAnchors(Vector2(0.5f, 1.0f));
+                } else {
+                    portRect->setMaxAnchors(Vector2(0.5f, 1.0f));
+                }
+                portRect->setPivot(Vector2(0.0f, 0.5f));
 
-                    if(m_callLayout) {
-                        if(port.m_out) {
-                            m_callLayout->insertTransform(-1, portRect);
-                        } else {
-                            m_callLayout->insertTransform(0, portRect);
-                        }
+                if(m_callRect) {
+                    Layout *layout = m_callRect->layout();
+                    if(port.m_out) {
+                        layout->insertTransform(-1, portRect);
                     } else {
-                        m_callLayout = new Layout;
-                        m_callLayout->setOrientation(Widget::Horizontal);
-                        m_callLayout->addTransform(portRect);
-                        layout->addLayout(m_callLayout);
+                        layout->insertTransform(0, portRect);
                     }
                 } else {
-                    layout->addTransform(portRect);
-                    portRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+                    Actor *callPannel = Engine::composeActor<Widget>("CallPannel");
+                    m_callRect = dynamic_cast<RectTransform *>(callPannel->transform());
+                    if(m_callRect) {
+                        Layout *layout = new Layout;
+                        layout->setOrientation(Widget::Horizontal);
+                        layout->addTransform(portRect);
+                        m_callRect->setLayout(layout);
+                    }
                 }
             }
+
             connect(portWidget, _SIGNAL(pressed(int)), this, _SIGNAL(portPressed(int)));
             connect(portWidget, _SIGNAL(released(int)), this, _SIGNAL(portReleased(int)));
         }

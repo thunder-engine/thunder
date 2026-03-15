@@ -180,8 +180,15 @@ Widget *Widget::focusWidget() {
 */
 Widget *Widget::subWidget(const TString &name) const {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget && it->actor()->name() == name) {
-            return it;
+        if(it->m_subWidget ) {
+            if(it->actor()->name() == name) {
+                return it;
+            } else {
+                Widget *result = it->subWidget(name);
+                if(result) {
+                    return result;
+                }
+            }
         }
     }
     return nullptr;

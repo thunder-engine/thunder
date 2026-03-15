@@ -2,8 +2,6 @@
 
 #include "components/recttransform.h"
 
-#include <components/actor.h>
-
 /*!
     \class Layout
     \brief The Layout class is a base class for managing the layout and positioning of widgets within a graphical user interface.
@@ -15,8 +13,6 @@
 */
 
 Layout::Layout() :
-        m_parentLayout(nullptr),
-        m_attachedTransform(nullptr),
         m_rectTransform(nullptr),
         m_spacing(0),
         m_orientation(Widget::Vertical),
@@ -26,43 +22,14 @@ Layout::Layout() :
 
 Layout::~Layout() {
     for(auto it : m_items) {
-        if(it->m_attachedTransform) {
-            it->m_attachedTransform->m_attachedLayout = nullptr;
-        }
+        it->m_attachedLayout = nullptr;
     }
-}
-/*!
-    Adds a child \a layout to the current layout.
-*/
-void Layout::addLayout(Layout *layout) {
-    insertLayout(-1, layout);
 }
 /*!
     Adds a \a transform to the current layout.
 */
 void Layout::addTransform(RectTransform *transform) {
     insertTransform(-1, transform);
-}
-/*!
-    Inserts a child \a layout at the specified \a index.
-    If -1, the layout is appended to the end.
-*/
-void Layout::insertLayout(int index, Layout *layout) {
-    if(layout) {
-        layout->m_parentLayout = this;
-        if(index > 0 && index < m_items.size()) {
-            m_items.insert(std::next(m_items.begin(), index), layout);
-        } else {
-            m_items.push_back(layout);
-        }
-        invalidate();
-
-        if(m_rectTransform) {
-            m_rectTransform->recalcParent();
-        }
-
-        update();
-    }
 }
 /*!
      Inserts a \a transform at the specified \a index.
@@ -75,61 +42,29 @@ void Layout::insertTransform(int index, RectTransform *transform) {
             transform->m_attachedLayout = nullptr;
         }
 
-        Layout *layout = new Layout;
-        layout->m_attachedTransform = transform;
-        layout->m_attachedTransform->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
         transform->m_attachedLayout = this;
 
-        insertLayout(index, layout);
+        if(index >= 0 && index < m_items.size()) {
+            m_items.insert(std::next(m_items.begin(), index), transform);
+        } else {
+            m_items.push_back(transform);
+        }
+        invalidate();
 
         // Tranfering the ownership
-        RectTransform *rect = rectTransform();
-        transform->actor()->setParent(rect->actor(), index);
+        transform->setParentTransform(rectTransform());
     }
-}
-/*!
-    Removes a child \a layout from the current layout.
-*/
-void Layout::removeLayout(Layout *layout) {
-    m_items.remove(layout);
-    invalidate();
 }
 /*!
     Removes a \a transform from the current layout.
 */
 void Layout::removeTransform(RectTransform *transform) {
     if(transform) {
-        for(auto it : m_items) {
-            if(it->m_attachedTransform == transform) {
-                Layout *tmp = it;
-                m_items.remove(tmp);
-                delete tmp;
+        m_items.remove(transform);
+        transform->m_attachedLayout = nullptr;
 
-                transform->m_attachedLayout = nullptr;
-
-                invalidate();
-
-                if(m_rectTransform) {
-                    m_rectTransform->recalcParent();
-                }
-
-                break;
-            }
-        }
+        invalidate();
     }
-}
-/*!
-    Returns the index of the specified child \a layout.
-*/
-int Layout::indexOf(const Layout *layout) const {
-    int result = -1;
-    for(auto it : m_items) {
-        ++result;
-        if(it == layout) {
-            break;
-        }
-    }
-    return result;
 }
 /*!
     Returns the index of the specified \a transform.
@@ -138,11 +73,11 @@ int Layout::indexOf(const RectTransform *transform) const {
     int result = -1;
     for(auto it : m_items) {
         ++result;
-        if(it->m_attachedTransform == transform) {
-            break;
+        if(it == transform) {
+            return result;
         }
     }
-    return result;
+    return -1;
 }
 /*!
     Returns transform located at \a index.
@@ -150,7 +85,7 @@ int Layout::indexOf(const RectTransform *transform) const {
 RectTransform *Layout::transformAt(int index) {
     if(index > -1 && index < m_items.size()) {
         auto it = std::next(m_items.begin(), index);
-        return (*it)->m_attachedTransform;
+        return (*it);
     }
     return nullptr;
 }
@@ -159,10 +94,6 @@ RectTransform *Layout::transformAt(int index) {
     If the layout is a sub-layout, this function returns the parent rect transform of the parent layout.
 */
 RectTransform *Layout::rectTransform() {
-    if(m_parentLayout) {
-        return m_parentLayout->rectTransform();
-    }
-
     return m_rectTransform;
 }
 /*!
@@ -217,33 +148,34 @@ Vector2 Layout::sizeHint() {
         border = m_rectTransform->border();
     }
 
-    Vector2 result(padding.w + border.w, padding.x + border.x);
+    bool first = true;
+    Vector2 result;
     for(auto it : m_items) {
         Vector2 size;
 
-        if(it->m_attachedTransform) { // Item is widget
-            if(it->m_attachedTransform->actor()->isEnabled()) {
-                Vector4 margin = it->m_attachedTransform->margin();
+        float spacing = (!first) ? m_spacing : 0.0f;
 
-                size = Vector2(margin.w, margin.x);
-                size += it->m_attachedTransform->size();
-                size += Vector2(margin.y, margin.z);
-            }
-        } else { // Item is layout
-            size = it->sizeHint();
+        if(it->isEnabled()) {
+            Vector4 margin(it->margin());
+
+            size = Vector2(margin.w, margin.x);
+            size += it->size();
+            size += Vector2(margin.y, margin.z);
+
+            first = false;
         }
 
         if(m_orientation == Widget::Vertical) {
             result.x = MAX(result.x, size.x);
-            result.y += ((it != *m_items.begin()) ? m_spacing : 0.0f) + size.y;
+            result.y += spacing + size.y;
         } else {
-            result.x += ((it != *m_items.begin()) ? m_spacing : 0.0f) + size.x;
+            result.x += spacing + size.x;
             result.y = MAX(result.y, size.y);
         }
     }
 
-    result.x += padding.y + border.y;
-    result.y += padding.z + border.z;
+    result.x += padding.w + padding.y + border.y + border.w;
+    result.y += padding.x + padding.z + border.x + border.z;
 
     return result;
 }
@@ -252,70 +184,203 @@ Vector2 Layout::sizeHint() {
 */
 void Layout::invalidate() {
     m_dirty = true;
-    for(auto it : m_items) {
-        if(it->m_attachedTransform == nullptr) {
-            it->invalidate();
+
+    if(m_rectTransform) {
+        Layout *attachedLayout = m_rectTransform->m_attachedLayout;
+        if(attachedLayout) {
+            attachedLayout->invalidate();
         }
     }
 }
 /*!
     \internal
-     Updates the layout. If the layout is marked as dirty, it recomputes the positions of child widgets and layouts.
+    Updates the layout. If the layout is marked as dirty, it recomputes the positions of child widgets and layouts.
 */
 void Layout::update() {
     if(m_dirty) {
-        Vector4 padding;
-        Vector4 border;
-        if(m_rectTransform) {
-            padding = m_rectTransform->padding();
-            border = m_rectTransform->border();
-        }
+        Vector4 padding(m_rectTransform->padding());
+        Vector4 border(m_rectTransform->border());
+        Vector2 size(m_rectTransform->size());
+        Vector2 offset(padding.w + border.w, padding.x + border.x);
 
-        // Top and left paddings
-        float offset = ((m_orientation == Widget::Vertical) ? padding.x + border.x : padding.w + border.w);
+        // Change parrent size if needed
+        Vector2 hint(sizeHint());
+        if(m_rectTransform->horizontalPolicy() == RectTransform::Preferred) {
+            size.x = hint.x;
+        }
+        if(m_rectTransform->verticalPolicy() == RectTransform::Preferred) {
+            size.y = hint.y;
+        }
+        m_rectTransform->setSize(size);
+
+        // Solve size
+        Vector2 bottomRight(padding.y + border.y, padding.z + border.z);
+        Vector2 internalSize(size - offset - bottomRight);
+
+        solveItemsDimension(MAX(internalSize.x, 0.0f), true);
+        solveItemsDimension(MAX(internalSize.y, 0.0f), false);
+
+        // Solve positions
+        solveItemsPosition(size.y, offset);
+
+        m_dirty = false;
+    }
+}
+/*!
+    \internal
+*/
+void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
+    if(m_orientation == Widget::Vertical) {
+        if(horizontal) {
+            for(auto it : m_items) {
+                if(it->horizontalPolicy() == RectTransform::Expanding) {
+                    Vector4 margin(it->margin());
+                    Vector2 size(it->size());
+                    size.x = availableSpace - (margin.w + margin.y);
+                    it->setSize(size);
+                }
+            }
+            return;
+        }
+    } else {
+        if(!horizontal) {
+            for(auto it : m_items) {
+                if(it->verticalPolicy() == RectTransform::Expanding) {
+                    Vector4 margin(it->margin());
+                    Vector2 size(it->size());
+                    size.y = availableSpace - (margin.x + margin.z);
+                    it->setSize(size);
+                }
+            }
+            return;
+        }
+    }
+
+    int totalPref = 0;
+    int expandingCount = 0;
+    int preferredCount = 0;
+    int fixedCount = 0;
+
+    for(auto it : m_items) {
+        if(it->isEnabled()) {
+            RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+            int pref = horizontal ? it->size().x : it->size().y;
+            Vector4 margin(it->margin());
+            pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
+
+            totalPref += pref;
+
+            switch(policy) {
+                case RectTransform::Fixed: fixedCount++; break;
+                case RectTransform::Preferred: preferredCount++; break;
+                case RectTransform::Expanding: expandingCount++; break;
+                default: break;
+            }
+        }
+    }
+
+    int spacesCount = MAX(expandingCount + preferredCount + fixedCount - 1, 0);
+
+    totalPref += spacesCount * m_spacing;
+
+    if(availableSpace <= totalPref) { // Need to reduce size of widgets
+        int remainingSpace = availableSpace;
 
         for(auto it : m_items) {
-            if(it->m_attachedTransform) {
-                RectTransform *r = it->m_attachedTransform;
-                if(r->actor()->isEnabled()) {
-                    offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
+            if(it->isEnabled()) {
+                RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+                if(policy == RectTransform::Fixed) {
+                    int pref = horizontal ? it->size().x : it->size().y;
+                    Vector4 margin(it->margin());
+                    pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
 
-                    Vector2 size(r->size());
-                    Vector2 pivot(r->pivot());
-                    Vector4 margin(r->margin());
-
-                    if(m_orientation == Widget::Vertical) {
-                        offset += size.y * (1.0f - pivot.y) - margin.z;
-                        Vector3 newPos(m_position.x + padding.w + border.w + size.x * pivot.x,
-                                       m_position.y - offset, 0.0f);
-
-                        r->setPosition(newPos);
-                        offset += size.y * pivot.y;
-                    } else {
-                        offset += size.x * pivot.x + margin.w;
-                        Vector3 newPos(m_position.x + offset,
-                                       m_position.y - padding.x - border.x - size.y * pivot.y, 0.0f);
-
-                        r->setPosition(newPos);
-                        offset += size.x * (1.0f - pivot.x);
-                    }
-                }
-            } else {
-                offset += (it != *m_items.begin()) ? m_spacing : 0.0f;
-
-                it->m_position = (m_orientation == Widget::Vertical) ? Vector2(m_position.x, m_position.y - offset) :
-                                                                       Vector2(m_position.x + offset, m_position.y);
-                it->update();
-
-                Vector2 size(it->sizeHint());
-                if(m_orientation == Widget::Vertical) {
-                    offset += size.y;
-                } else {
-                    offset += size.x;
+                    remainingSpace -= pref;
                 }
             }
         }
 
-        m_dirty = false;
+        remainingSpace -= spacesCount * m_spacing;
+
+        int flexibleCount = preferredCount + expandingCount;
+        if(flexibleCount > 0 && remainingSpace > 0) {
+            int spacePerFlexible = remainingSpace / flexibleCount;
+
+            for(auto it : m_items) {
+                if(it->isEnabled()) {
+                    RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+                    if(policy == RectTransform::Preferred || policy == RectTransform::Expanding) {
+                        Vector4 margin(it->margin());
+                        Vector2 size(it->size());
+                        if(horizontal) {
+                            size.x = spacePerFlexible - (margin.w + margin.y);
+                        } else {
+                            size.y = spacePerFlexible - (margin.x + margin.z);
+                        }
+                        it->setSize(size);
+                    }
+                }
+            }
+        }
+    } else { // Need to expand widgets
+        int extra = availableSpace - totalPref;
+
+        for(auto it : m_items) {
+            if(it->isEnabled()) {
+                RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+
+                float extraSize = 0;
+                if(expandingCount > 0) {
+                    if(policy == RectTransform::Expanding) {
+                        extraSize = extra / static_cast<float>(expandingCount);
+                    }
+                } else if(preferredCount > 0) {
+                    if(policy == RectTransform::Preferred) {
+                        extraSize = extra / static_cast<float>(preferredCount);
+                    }
+                }
+
+                if(extraSize != 0) {
+                    Vector2 size(it->size());
+                    if(horizontal) {
+                        size.x += extraSize;
+                    } else {
+                        size.y += extraSize;
+                    }
+                    it->setSize(size);
+                }
+            }
+        }
+    }
+}
+/*!
+    \internal
+*/
+void Layout::solveItemsPosition(float height, const Vector2 &offset) {
+    bool first = true;
+    float shift = ((m_orientation == Widget::Vertical) ? offset.y : offset.x);
+    for(auto it : m_items) {
+        if(it->isEnabled()) {
+            shift += (!first) ? m_spacing : 0.0f;
+
+            Vector2 size(it->size());
+            Vector2 pivot(it->pivot());
+            Vector4 margin(it->margin());
+
+            if(m_orientation == Widget::Vertical) {
+                shift += size.y * pivot.y + margin.z;
+                it->m_position.x = offset.x + size.x * pivot.x + margin.w;
+                it->m_position.y = height - shift;
+                it->setDirty();
+                shift += size.y * (1.0f - pivot.y) + margin.x;
+            } else {
+                shift += size.x * pivot.x + margin.w;
+                it->m_position.x = shift;
+                it->m_position.y = offset.y - size.y * pivot.y - margin.z;
+                it->setDirty();
+                shift += size.x * (1.0f - pivot.x) + margin.y;
+            }
+
+            first = false;
+        }
     }
 }

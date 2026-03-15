@@ -1,16 +1,14 @@
 #include "components/foldout.h"
 
-#include "components/label.h"
 #include "components/frame.h"
 #include "components/image.h"
-#include "components/button.h"
+#include "components/checkbox.h"
 #include "components/recttransform.h"
 #include "components/layout.h"
 
 #include <components/textrender.h>
 
 namespace {
-    const char *gLabel("label");
     const char *gIndicator("indicator");
     const char *gContainer("container");
 }
@@ -33,13 +31,10 @@ Foldout::Foldout() {
 void Foldout::insertWidget(int index, Widget *widget) {
     Frame *container = Foldout::container();
     if(container) {
-        RectTransform *rect = container->rectTransform();
-        widget->rectTransform()->setParentTransform(rect);
-
-        Layout *layout = rect->layout();
-        if(layout) {
-            layout->insertTransform(index, widget->rectTransform());
-        }
+        RectTransform *parentRect = container->rectTransform();
+        RectTransform *rect = widget->rectTransform();
+        rect->setPivot(Vector2(0.0f, 1.0f));
+        rect->setParentTransform(parentRect);
     }
 }
 /*!
@@ -59,31 +54,15 @@ void Foldout::setExpanded(bool expanded) {
     Frame *container = Foldout::container();
     if(container) {
         container->actor()->setEnabled(expanded);
-
-        Button *indicator = Foldout::indicator();
-        if(indicator) {
-            Image *icon = indicator->icon();
-            if(icon) {
-                RectTransform *rect = icon->rectTransform();
-                if(rect) {
-                    rect->setRotation(Vector3(0.0f, 0.0f, expanded ? 0.0f : 90.0f));
-                }
-            }
-
-            RectTransform *rect = rectTransform();
-            Layout *layout = rect->layout();
-
-            layout->invalidate();
-        }
     }
 }
 /*!
     Returns the current text of the foldout's label.
 */
 TString Foldout::text() const {
-    Label *label = Foldout::label();
-    if(label) {
-        return label->text();
+    CheckBox *button = Foldout::indicator();
+    if(button) {
+        return button->text();
     }
     return TString();
 }
@@ -91,9 +70,9 @@ TString Foldout::text() const {
     Sets the label \a text for the foldout.
 */
 void Foldout::setText(const TString text) {
-    Label *label = Foldout::label();
-    if(label) {
-        label->setText(text);
+    CheckBox *button = Foldout::indicator();
+    if(button) {
+        button->setText(text);
     }
 }
 /*!
@@ -111,26 +90,14 @@ void Foldout::setContainer(Frame *container) {
 /*!
     Returns indicator button to fold and unfold container with content.
 */
-Button *Foldout::indicator() const {
-    return static_cast<Button *>(subWidget(gIndicator));
+CheckBox *Foldout::indicator() const {
+    return static_cast<CheckBox *>(subWidget(gIndicator));
 }
 /*!
     Sets \a indicator button to fold and unfold container with content.
 */
-void Foldout::setIndicator(Button *indicator) {
+void Foldout::setIndicator(CheckBox *indicator) {
     setSubWidget(indicator);
-}
-/*!
-    Returns a text label represents foldout header.
-*/
-Label *Foldout::label() const {
-    return static_cast<Label *>(subWidget(gLabel));
-}
-/*!
-    Sets a text \a label represents foldout header.
-*/
-void Foldout::setLabel(Label *label) {
-    setSubWidget(label);
 }
 /*!
     Toggles the expanded state of the foldout when the indicator is clicked.
@@ -144,55 +111,42 @@ void Foldout::onExpand() {
 void Foldout::composeComponent() {
     Widget::composeComponent();
 
+    RectTransform *rect = rectTransform();
+    rect->setLayout(new Layout);
+    rect->setVerticalPolicy(RectTransform::Preferred);
+
+    // Fold button
+    Actor *indicatorActor = Engine::composeActor<CheckBox>(gIndicator, actor());
+    CheckBox *indicator = indicatorActor->getComponent<CheckBox>();
+
+    indicator->setText("");
+    indicator->setIconSize(Vector2(16.0f, 8.0f));
+    indicator->setColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
+    indicator->setFoldMode(true);
+    setIndicator(indicator);
+
+    Image *icon = indicator->knobGraphic();
+    if(icon) {
+        icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+    }
+
+    RectTransform *indicatorRect = indicator->rectTransform();
+    indicatorRect->setSize(20);
+    indicatorRect->setPivot(Vector2(0.0f, 1.0f));
+
+    Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
+
+    // Content container
     Actor *containerActor = Engine::composeActor<Frame>(gContainer, actor());
     Frame *container = containerActor->getComponent<Frame>();
     container->setColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
     setContainer(container);
 
     RectTransform *containerRect = container->rectTransform();
-    containerRect->setAnchors(0.0f, 1.0f);
-    containerRect->setPivot(Vector2(0.0f, 0.0f));
+    containerRect->setPivot(Vector2(0.0f, 1.0f));
+    containerRect->setHorizontalPolicy(RectTransform::Expanding);
     containerRect->setVerticalPolicy(RectTransform::Preferred);
     containerRect->setLayout(new Layout);
 
-    Actor *indicatorActor = Engine::composeActor<Button>(gIndicator, actor());
-    Button *indicator = indicatorActor->getComponent<Button>();
-
-    indicator->setText("");
-    indicator->setIconSize(Vector2(16.0f, 8.0f));
-    indicator->setColor(Vector4(1.0f, 1.0f, 1.0f, 0.0f));
-    setIndicator(indicator);
-
-    Image *icon = indicator->icon();
-    if(icon) {
-        icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
-    }
-
-    Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
-
-    RectTransform *indicatorRect = indicator->rectTransform();
-    indicatorRect->setSize(20);
-
-    Actor *labelActor = Engine::composeActor<Label>(gLabel, actor());
-    Label *label = labelActor->getComponent<Label>();
-    label->setAlign(Alignment::Top | Alignment::Left);
-    setLabel(label);
-
-    RectTransform *labelRect = label->rectTransform();
-
-    RectTransform *rect = rectTransform();
-
-    Layout *layout = new Layout;
-    rect->setLayout(layout);
-    rect->setVerticalPolicy(RectTransform::Preferred);
-
-    Layout *horizontalLauout = new Layout;
-    horizontalLauout->setOrientation(Widget::Horizontal);
-    horizontalLauout->setSpacing(8.0f);
-    layout->addLayout(horizontalLauout);
-
-    horizontalLauout->addTransform(indicatorRect);
-    horizontalLauout->addTransform(labelRect);
-
-    layout->addTransform(containerRect);
+    rect->setSize(Vector2(100.0f, 30.0f));
 }

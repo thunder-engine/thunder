@@ -39,7 +39,7 @@ private:
     VariantMap saveUserData() const override;
 
 private:
-    friend class ActorTest;
+    friend class EngineSuite::ActorTest;
 
     mutable ObjectMap m_dictionary;
 

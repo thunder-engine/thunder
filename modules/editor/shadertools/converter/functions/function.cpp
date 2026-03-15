@@ -196,21 +196,12 @@ TString ShaderNode::typeToString(int type) {
 
 void ShaderNode::switchPreview() {
     Actor *p = m_preview->actor();
-//    if(p->isEnabled()) {
-//        rect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
-//    } else {
-//        rect->setRotation(Vector3(0.0f, 0.0f, 0.0f));
-//    }
     p->setEnabled(!p->isEnabled());
 
     ShaderGraph *graph = static_cast<ShaderGraph *>(GraphNode::graph());
     graph->setPreviewVisible(this, p->isEnabled());
 
     m_nodeWidget->raise();
-    RectTransform *rect = m_nodeWidget->rectTransform();
-    Layout *layout = rect->layout();
-
-    layout->invalidate();
 }
 
 Widget *ShaderNode::widget() {
@@ -229,14 +220,8 @@ Widget *ShaderNode::widget() {
                     m_preview->setDrawMode(SpriteRender::Simple);
 
                     RectTransform *r = m_preview->rectTransform();
-                    r->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
                     r->setSize(Vector2(preview->width(), preview->height()));
-                    r->setPivot(Vector2(0.5f, 1.0f));
-
-                    Layout *layout = result->rectTransform()->layout();
-                    if(layout) {
-                        layout->addTransform(r);
-                    }
+                    r->setPivot(Vector2(0.0, 1.0f));
                 }
                 actor->setEnabled(false);
 
