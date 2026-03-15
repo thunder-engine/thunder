@@ -32,9 +32,10 @@ void Foldout::insertWidget(int index, Widget *widget) {
     Frame *container = Foldout::container();
     if(container) {
         RectTransform *parentRect = container->rectTransform();
-        RectTransform *rect = widget->rectTransform();
-        rect->setPivot(Vector2(0.0f, 1.0f));
-        rect->setParentTransform(parentRect);
+        Layout *layout = parentRect->layout();
+        if(layout) {
+            layout->insertTransform(index, widget->rectTransform());
+        }
     }
 }
 /*!
@@ -148,5 +149,5 @@ void Foldout::composeComponent() {
     containerRect->setVerticalPolicy(RectTransform::Preferred);
     containerRect->setLayout(new Layout);
 
-    rect->setSize(Vector2(100.0f, 30.0f));
+    rect->setSize(Vector2(100.0f, 20.0f));
 }

@@ -33,8 +33,6 @@ public:
 
     void invalidate();
 
-    void update();
-
     void solveItemsDimension(int availableSpace, bool horizontal);
     void solveItemsPosition(float height, const Vector2 &offset);
 
@@ -46,9 +44,6 @@ protected:
     int m_spacing;
 
     int m_orientation;
-
-    bool m_dirty;
-
 };
 
 #endif // LAYOUT_H

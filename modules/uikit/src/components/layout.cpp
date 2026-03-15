@@ -15,8 +15,7 @@
 Layout::Layout() :
         m_rectTransform(nullptr),
         m_spacing(0),
-        m_orientation(Widget::Vertical),
-        m_dirty(false) {
+        m_orientation(Widget::Vertical) {
 
 }
 
@@ -43,6 +42,7 @@ void Layout::insertTransform(int index, RectTransform *transform) {
         }
 
         transform->m_attachedLayout = this;
+        transform->setPivot(Vector2(0, 1));
 
         if(index >= 0 && index < m_items.size()) {
             m_items.insert(std::next(m_items.begin(), index), transform);
@@ -183,47 +183,12 @@ Vector2 Layout::sizeHint() {
     Marks the layout as dirty, indicating that it needs to be recomputed.
 */
 void Layout::invalidate() {
-    m_dirty = true;
-
     if(m_rectTransform) {
         Layout *attachedLayout = m_rectTransform->m_attachedLayout;
         if(attachedLayout) {
             attachedLayout->invalidate();
+            attachedLayout->m_rectTransform->m_dirty = true;
         }
-    }
-}
-/*!
-    \internal
-    Updates the layout. If the layout is marked as dirty, it recomputes the positions of child widgets and layouts.
-*/
-void Layout::update() {
-    if(m_dirty) {
-        Vector4 padding(m_rectTransform->padding());
-        Vector4 border(m_rectTransform->border());
-        Vector2 size(m_rectTransform->size());
-        Vector2 offset(padding.w + border.w, padding.x + border.x);
-
-        // Change parrent size if needed
-        Vector2 hint(sizeHint());
-        if(m_rectTransform->horizontalPolicy() == RectTransform::Preferred) {
-            size.x = hint.x;
-        }
-        if(m_rectTransform->verticalPolicy() == RectTransform::Preferred) {
-            size.y = hint.y;
-        }
-        m_rectTransform->setSize(size);
-
-        // Solve size
-        Vector2 bottomRight(padding.y + border.y, padding.z + border.z);
-        Vector2 internalSize(size - offset - bottomRight);
-
-        solveItemsDimension(MAX(internalSize.x, 0.0f), true);
-        solveItemsDimension(MAX(internalSize.y, 0.0f), false);
-
-        // Solve positions
-        solveItemsPosition(size.y, offset);
-
-        m_dirty = false;
     }
 }
 /*!
@@ -301,14 +266,13 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
 
         remainingSpace -= spacesCount * m_spacing;
 
-        int flexibleCount = preferredCount + expandingCount;
-        if(flexibleCount > 0 && remainingSpace > 0) {
-            int spacePerFlexible = remainingSpace / flexibleCount;
+        if(expandingCount > 0 && remainingSpace > 0) {
+            int spacePerFlexible = remainingSpace / expandingCount;
 
             for(auto it : m_items) {
                 if(it->isEnabled()) {
                     RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-                    if(policy == RectTransform::Preferred || policy == RectTransform::Expanding) {
+                    if(policy == RectTransform::Expanding) {
                         Vector4 margin(it->margin());
                         Vector2 size(it->size());
                         if(horizontal) {
@@ -332,10 +296,6 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
                 if(expandingCount > 0) {
                     if(policy == RectTransform::Expanding) {
                         extraSize = extra / static_cast<float>(expandingCount);
-                    }
-                } else if(preferredCount > 0) {
-                    if(policy == RectTransform::Preferred) {
-                        extraSize = extra / static_cast<float>(preferredCount);
                     }
                 }
 
@@ -370,15 +330,14 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
                 shift += size.y * pivot.y + margin.z;
                 it->m_position.x = offset.x + size.x * pivot.x + margin.w;
                 it->m_position.y = height - shift;
-                it->setDirty();
                 shift += size.y * (1.0f - pivot.y) + margin.x;
             } else {
                 shift += size.x * pivot.x + margin.w;
                 it->m_position.x = shift;
                 it->m_position.y = offset.y - size.y * pivot.y - margin.z;
-                it->setDirty();
                 shift += size.x * (1.0f - pivot.x) + margin.y;
             }
+            it->setDirty();
 
             first = false;
         }

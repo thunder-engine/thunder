@@ -89,7 +89,6 @@ Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
     result->setText(name);
     RectTransform *rect = result->rectTransform();
     if(rect) {
-        rect->setPivot(Vector2(0, 1));
         rect->setHorizontalPolicy(RectTransform::Expanding);
     }
 
@@ -99,11 +98,11 @@ Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
 Widget *EffectRootNode::widget() {
     Widget *result = GraphNode::widget();
 
-    if(m_particleSpawnFold == nullptr) {
+    if(m_emitterUpdateFold == nullptr) {
         m_emitterUpdateFold = createFold("Emitter Update", result->actor());
-        m_particleSpawnFold = createFold("Particle Spawn", result->actor());
-        m_particleUpdateFold = createFold("Particle Update", result->actor());
-        m_renderFold = createFold("Render", result->actor());
+        //m_particleSpawnFold = createFold("Particle Spawn", result->actor());
+        //m_particleUpdateFold = createFold("Particle Update", result->actor());
+        //m_renderFold = createFold("Render", result->actor());
 
         for(auto it : getChildren()) {
             EffectModule *module = static_cast<EffectModule *>(it);
