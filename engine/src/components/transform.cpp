@@ -230,10 +230,12 @@ const std::list<Transform *> &Transform::children() const {
     Marks transform as dirty.
 */
 void Transform::setDirty() {
-    m_dirty = true;
-    for(auto it : m_children) {
-        it->setDirty();
+    if(!m_dirty) {
+        for(auto it : m_children) {
+            it->setDirty();
+        }
     }
+    m_dirty = true;
 }
 /*!
     \internal

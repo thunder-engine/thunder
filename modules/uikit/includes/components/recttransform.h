@@ -91,7 +91,7 @@ private:
     friend class Layout;
     friend class Widget;
 
-    void cleanSize() const;
+    void cleanDirtySize() const;
     void cleanDirty() const override;
 
     void applyStyle();

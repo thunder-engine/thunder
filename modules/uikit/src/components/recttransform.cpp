@@ -378,9 +378,11 @@ void RectTransform::setLayout(Layout *layout) {
                     m_layout->addTransform(rect);
                 }
             }
+
+            layout->invalidate();
+        } else {
+            setDirty();
         }
-        setDirty();
-        cleanDirty();
     }
 }
 /*!
@@ -400,9 +402,10 @@ AABBox RectTransform::bound() const {
 */
 void RectTransform::setEnabled(bool enabled) {
     Transform::setEnabled(enabled);
+
     if(m_attachedLayout) {
         m_attachedLayout->invalidate();
-        m_attachedLayout->rectTransform()->setDirty();
+        cleanDirty();
     }
 }
 /*!
@@ -416,6 +419,10 @@ RectTransform::SizePolicy RectTransform::verticalPolicy() const {
 */
 void RectTransform::setVerticalPolicy(SizePolicy policy) {
     m_verticalPolicy = policy;
+
+    if(m_attachedLayout) {
+        m_attachedLayout->invalidate();
+    }
 }
 /*!
     Returns horizontal size policy.
@@ -428,6 +435,10 @@ RectTransform::SizePolicy RectTransform::horizontalPolicy() const {
 */
 void RectTransform::setHorizontalPolicy(SizePolicy policy) {
     m_horizontalPolicy = policy;
+
+    if(m_attachedLayout) {
+        m_attachedLayout->invalidate();
+    }
 }
 /*!
     Changing the \a parent will modify the parent-relative position, scale and rotation but keep the world space position, rotation and scale the same.
@@ -475,7 +486,7 @@ void RectTransform::updateHierarchy(Transform *parent, bool force) {
 /*!
     \internal
 */
-void RectTransform::cleanSize() const {
+void RectTransform::cleanDirtySize() const {
     if(m_attachedLayout == nullptr) { // Control size by anchors
         bool controlWidth = abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON;
         bool controlHeight = abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON;
@@ -537,7 +548,7 @@ void RectTransform::cleanSize() const {
 */
 void RectTransform::cleanDirty() const {
     if(m_dirty) {
-        cleanSize();
+        cleanDirtySize();
 
         Transform::cleanDirty();
 

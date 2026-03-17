@@ -49,10 +49,10 @@ void Layout::insertTransform(int index, RectTransform *transform) {
         } else {
             m_items.push_back(transform);
         }
-        invalidate();
-
         // Tranfering the ownership
         transform->setParentTransform(rectTransform());
+
+        invalidate();
     }
 }
 /*!
@@ -61,7 +61,9 @@ void Layout::insertTransform(int index, RectTransform *transform) {
 void Layout::removeTransform(RectTransform *transform) {
     if(transform) {
         m_items.remove(transform);
-        transform->m_attachedLayout = nullptr;
+        if(transform->m_attachedLayout == this) {
+            transform->m_attachedLayout = nullptr;
+        }
 
         invalidate();
     }
@@ -141,41 +143,37 @@ void Layout::setOrientation(int orientation) {
     Returns the size hint for the layout.
 */
 Vector2 Layout::sizeHint() {
-    Vector4 padding;
-    Vector4 border;
-    if(m_rectTransform) {
-        padding = m_rectTransform->padding();
-        border = m_rectTransform->border();
-    }
+    Vector2 result;
 
     bool first = true;
-    Vector2 result;
     for(auto it : m_items) {
-        Vector2 size;
-
-        float spacing = (!first) ? m_spacing : 0.0f;
-
         if(it->isEnabled()) {
-            Vector4 margin(it->margin());
+            float spacing = (!first) ? m_spacing : 0.0f;
 
-            size = Vector2(margin.w, margin.x);
-            size += it->size();
-            size += Vector2(margin.y, margin.z);
+            Vector4 margin(it->margin());
+            Vector2 size(it->size());
+            size.x += (margin.w + margin.y);
+            size.x += (margin.x + margin.z);
+
+            if(m_orientation == Widget::Vertical) {
+                result.x = MAX(result.x, size.x);
+                result.y += spacing + size.y;
+            } else {
+                result.x += spacing + size.x;
+                result.y = MAX(result.y, size.y);
+            }
 
             first = false;
         }
-
-        if(m_orientation == Widget::Vertical) {
-            result.x = MAX(result.x, size.x);
-            result.y += spacing + size.y;
-        } else {
-            result.x += spacing + size.x;
-            result.y = MAX(result.y, size.y);
-        }
     }
 
-    result.x += padding.w + padding.y + border.y + border.w;
-    result.y += padding.x + padding.z + border.x + border.z;
+    if(m_rectTransform) {
+        Vector4 padding(m_rectTransform->padding());
+        Vector4 border(m_rectTransform->border());
+
+        result.x += padding.w + padding.y + border.y + border.w;
+        result.y += padding.x + padding.z + border.x + border.z;
+    }
 
     return result;
 }
@@ -184,10 +182,11 @@ Vector2 Layout::sizeHint() {
 */
 void Layout::invalidate() {
     if(m_rectTransform) {
-        Layout *attachedLayout = m_rectTransform->m_attachedLayout;
-        if(attachedLayout) {
-            attachedLayout->invalidate();
-            attachedLayout->m_rectTransform->m_dirty = true;
+        m_rectTransform->setDirty();
+
+        Layout *layout = m_rectTransform->m_attachedLayout;
+        if(layout) {
+            layout->invalidate();
         }
     }
 }

@@ -34,7 +34,9 @@ void Foldout::insertWidget(int index, Widget *widget) {
         RectTransform *parentRect = container->rectTransform();
         Layout *layout = parentRect->layout();
         if(layout) {
-            layout->insertTransform(index, widget->rectTransform());
+            RectTransform *rect = widget->rectTransform();
+            rect->setAnchors(Vector2(0, 1), Vector2(0, 1));
+            layout->insertTransform(index, rect);
         }
     }
 }
@@ -134,6 +136,7 @@ void Foldout::composeComponent() {
     RectTransform *indicatorRect = indicator->rectTransform();
     indicatorRect->setSize(20);
     indicatorRect->setPivot(Vector2(0.0f, 1.0f));
+    indicatorRect->setHorizontalPolicy(RectTransform::Expanding);
 
     Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
 
