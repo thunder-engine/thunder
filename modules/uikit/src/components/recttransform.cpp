@@ -379,7 +379,8 @@ void RectTransform::setLayout(Layout *layout) {
                 }
             }
 
-            layout->invalidate();
+            m_layout->invalidate();
+            cleanDirty();
         } else {
             setDirty();
         }

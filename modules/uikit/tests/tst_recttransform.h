@@ -74,7 +74,6 @@ namespace UikitSuite {
         ASSERT_TRUE(child2Rect != nullptr);
 
         Layout* layout = new Layout;
-
         parentRect->setLayout(layout);
         child2Rect->setParentTransform(parentRect);
         child1Rect->setParentTransform(parentRect);
@@ -109,7 +108,6 @@ namespace UikitSuite {
         ASSERT_TRUE(child2Rect != nullptr);
 
         Layout* layout = new Layout;
-
         parentRect->setLayout(layout);
 
         ASSERT_EQ(2, layout->count());
@@ -142,7 +140,6 @@ namespace UikitSuite {
         ASSERT_TRUE(child2Rect != nullptr);
 
         Layout* layout = new Layout;
-
         parentRect->setLayout(layout);
         layout->insertTransform(0, child1Rect);
 
@@ -183,7 +180,6 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Vertical);
         layout->setSpacing(2);
         parentRect.setLayout(layout);
-        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().x);
         ASSERT_EQ(210.0f, parentRect.size().y);
@@ -234,7 +230,6 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Horizontal);
         layout->setSpacing(1);
         parentRect.setLayout(layout);
-        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().x);
         ASSERT_EQ( 3.0f, child1Rect.position().x);
@@ -282,7 +277,6 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Vertical);
         layout->setSpacing(1);
         parentRect.setLayout(layout);
-        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().y);
         ASSERT_EQ(67.0f, child1Rect.position().y);
@@ -295,5 +289,7 @@ namespace UikitSuite {
         ASSERT_EQ(94.0f, child3Rect.size().x);
         ASSERT_EQ(38.0f, child3Rect.size().y);
     }
+
+
 
 }
