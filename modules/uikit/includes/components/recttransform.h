@@ -7,6 +7,10 @@
 class Widget;
 class Layout;
 
+namespace UikitSuite {
+    class RectTransformTest;
+}
+
 class UIKIT_EXPORT RectTransform : public Transform {
     A_OBJECT(RectTransform, Transform, General)
 
@@ -88,6 +92,7 @@ public:
     Vector4 scissorArea() const;
 
 private:
+    friend class UikitSuite::RectTransformTest;
     friend class Layout;
     friend class Widget;
 

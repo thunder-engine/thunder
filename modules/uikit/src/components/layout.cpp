@@ -153,7 +153,7 @@ Vector2 Layout::sizeHint() {
             Vector4 margin(it->margin());
             Vector2 size(it->size());
             size.x += (margin.w + margin.y);
-            size.x += (margin.x + margin.z);
+            size.y += (margin.x + margin.z);
 
             if(m_orientation == Widget::Vertical) {
                 result.x = MAX(result.x, size.x);

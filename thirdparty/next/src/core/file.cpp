@@ -24,7 +24,7 @@ void File::setFileName(const TString &filename) {
 }
 
 bool File::open(int openMode) {
-    return (m_handle = s_handler->open(m_fileName.data(), openMode)) != nullptr;
+    return (s_handler && (m_handle = s_handler->open(m_fileName.data(), openMode)) != nullptr);
 }
 
 bool File::exists() const {

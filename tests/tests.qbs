@@ -23,6 +23,8 @@ Project {
         "../modules/network/tests",
         "../modules/network/includes",
         "../modules/network/includes/objects",
+        "../modules/uikit/tests",
+        "../modules/uikit/includes"
     ]
 
     Application {
@@ -38,6 +40,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "uikit-editor" }
         Depends { name: "gtest" }
 
         bundle.isBundle: false

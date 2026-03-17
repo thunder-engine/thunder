@@ -9,10 +9,13 @@
 namespace UikitSuite {
 
     class RectTransformTest : public ::testing::Test {
-
+    public:
+        void cleanDirty(RectTransform &rect) {
+            rect.cleanDirty();
+        }
     };
 
-    TEST(RectTransformTest, AddRemoveChild) {
+    TEST_F(RectTransformTest, AddRemoveChild) {
         Engine engine("");
         engine.addModule(new UiKit(&engine));
 
@@ -48,7 +51,7 @@ namespace UikitSuite {
         ASSERT_EQ(0, parentFrame->childWidgets().size());
     }
 
-    TEST(RectTransformTest, CreateLayoutAndAddChilds) {
+    TEST_F(RectTransformTest, CreateLayoutAndAddChilds) {
         Engine engine("");
         engine.addModule(new UiKit(&engine));
 
@@ -83,7 +86,7 @@ namespace UikitSuite {
         ASSERT_EQ(child1Rect, layout->transformAt(1));
     }
 
-    TEST(RectTransformTest, AddChildsAndCreateLayout) {
+    TEST_F(RectTransformTest, AddChildsAndCreateLayout) {
         Engine engine("");
         engine.addModule(new UiKit(&engine));
 
@@ -116,7 +119,7 @@ namespace UikitSuite {
         ASSERT_EQ(child2Rect, layout->transformAt(1));
     }
 
-    TEST(RectTransformTest, CreateLayoutAndInsertChild) {
+    TEST_F(RectTransformTest, CreateLayoutAndInsertChild) {
         Engine engine("");
         engine.addModule(new UiKit(&engine));
 
@@ -155,7 +158,7 @@ namespace UikitSuite {
         ASSERT_EQ(1, layout->indexOf(child1Rect));
     }
 
-    TEST(RectTransformTest, LayoutAutoFitParentSize) {
+    TEST_F(RectTransformTest, LayoutAutoFitParentSize) {
         RectTransform parentRect;
         parentRect.setVerticalPolicy(RectTransform::Preferred);
         parentRect.setBorder(Vector4(1));
@@ -180,6 +183,7 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Vertical);
         layout->setSpacing(2);
         parentRect.setLayout(layout);
+        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().x);
         ASSERT_EQ(210.0f, parentRect.size().y);
@@ -188,7 +192,7 @@ namespace UikitSuite {
         ASSERT_EQ(94.0f, child2Rect.size().x);
         ASSERT_EQ(3.0f, child2Rect.position().y);
 
-        // Hiding first child
+        // Hide first child
         child1Rect.setEnabled(false);
 
         ASSERT_EQ(100.0f, parentRect.size().x);
@@ -196,7 +200,7 @@ namespace UikitSuite {
         ASSERT_EQ(3.0f, child2Rect.position().y);
     }
 
-    TEST(RectTransformTest, LayoutHorizontalPreferedExpand) {
+    TEST_F(RectTransformTest, LayoutHorizontalPreferedExpand) {
         RectTransform parentRect;
         parentRect.setBorder(Vector4(1));
         parentRect.setPadding(Vector4(1));
@@ -230,6 +234,7 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Horizontal);
         layout->setSpacing(1);
         parentRect.setLayout(layout);
+        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().x);
         ASSERT_EQ( 3.0f, child1Rect.position().x);
@@ -243,7 +248,7 @@ namespace UikitSuite {
         ASSERT_EQ(94.0f, child3Rect.size().y);
     }
 
-    TEST(RectTransformTest, LayoutVerticalPreferedExpand) {
+    TEST_F(RectTransformTest, LayoutVerticalPreferedExpand) {
         RectTransform parentRect;
         parentRect.setBorder(Vector4(1));
         parentRect.setPadding(Vector4(1));
@@ -277,6 +282,7 @@ namespace UikitSuite {
         layout->setOrientation(Widget::Vertical);
         layout->setSpacing(1);
         parentRect.setLayout(layout);
+        cleanDirty(parentRect);
 
         ASSERT_EQ(100.0f, parentRect.size().y);
         ASSERT_EQ(67.0f, child1Rect.position().y);
