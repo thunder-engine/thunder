@@ -226,25 +226,3 @@ void WidgetController::copySelected() {
         emit copied();
     }
 }
-
-TString WidgetController::findFreeObjectName(const TString &name, Object *parent) {
-    TString newName = name;
-    if(!newName.isEmpty()) {
-        Object *o = parent->find(parent->name() + "/" + newName);
-        if(o != nullptr) {
-            std::string number;
-            while(isdigit(newName.back())) {
-                number.insert(0, 1, newName.back());
-                newName.removeLast();
-            }
-            int32_t i = atoi(number.c_str());
-            i++;
-            while(parent->find(parent->name() + "/" + newName + std::to_string(i)) != nullptr) {
-                i++;
-            }
-            return (newName + std::to_string(i));
-        }
-        return newName;
-    }
-    return "Widget";
-}

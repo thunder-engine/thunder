@@ -33,7 +33,7 @@ public:
 
     void invalidate();
 
-    void solveItemsDimension(int availableSpace, bool horizontal);
+    void solveItemsDimension(float availableSpace, bool horizontal);
     void solveItemsPosition(float height, const Vector2 &offset);
 
 protected:
