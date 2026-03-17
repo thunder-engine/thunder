@@ -9,7 +9,7 @@
 #include "tst_actor.h"
 #include "tst_animationtrack.h"
 #include "tst_animator.h"
-//#include "tst_network.h"
+#include "tst_uikit.h"
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -15,7 +15,7 @@
 
 class UiSystem;
 
-class UiKit : public Module {
+class UIKIT_EXPORT UiKit : public Module {
 public:
     UiKit(Engine *engine);
     ~UiKit();
