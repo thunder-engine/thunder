@@ -33,7 +33,7 @@
 
 class ObjectSystem;
 
-namespace Next {
+namespace NextSuite {
     class ObjectTest;
 }
 
@@ -216,7 +216,7 @@ private:
     uint8_t m_flags;
 
 private:
-    friend class Next::ObjectTest;
+    friend class NextSuite::ObjectTest;
     
     friend class PoolWorker;
     friend class ObjectSystem;

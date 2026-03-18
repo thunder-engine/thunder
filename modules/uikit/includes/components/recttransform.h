@@ -7,6 +7,10 @@
 class Widget;
 class Layout;
 
+namespace UikitSuite {
+    class RectTransformTest;
+}
+
 class UIKIT_EXPORT RectTransform : public Transform {
     A_OBJECT(RectTransform, Transform, General)
 
@@ -24,9 +28,8 @@ class UIKIT_EXPORT RectTransform : public Transform {
 
     enum SizePolicy {
         Fixed = 0,
-        Minimum,
-        Maximum,
-        Preferred
+        Preferred,
+        Expanding
     };
 
 public:
@@ -88,19 +91,17 @@ public:
 
     Vector4 scissorArea() const;
 
-    void setParentTransform(Transform *parent, bool force = false) override;
-
 private:
+    friend class UikitSuite::RectTransformTest;
     friend class Layout;
     friend class Widget;
 
+    void cleanDirtySize() const;
     void cleanDirty() const override;
 
-    void recalcChilds() const;
-
-    void recalcParent();
-
     void applyStyle();
+
+    void updateHierarchy(Transform *parent, bool force = false) override;
 
 private:
     std::list<Widget *> m_subscribers;

@@ -5,8 +5,7 @@
 #include <components/actor.h>
 
 namespace  {
-    const char *gChunk = "chunk";
-    const char *gBackground = "background";
+    const char *gChunk("chunk");
 }
 
 /*!
@@ -104,39 +103,6 @@ void ProgressBar::setChunk(Frame *frame) {
     }
 }
 /*!
-    Returns the frame representing the background.
-*/
-Frame *ProgressBar::background() const {
-    return static_cast<Frame *>(subWidget(gBackground));
-}
-/*!
-    Sets the \a frame representing the background.
-*/
-void ProgressBar::setBackground(Frame *frame) {
-    setSubWidget(frame);
-
-    if(frame) {
-        frame->setColor(m_backgroundColor);
-    }
-}
-/*!
-    Returns the background color of the progress bar.
-*/
-Vector4 ProgressBar::backgroundColor() const {
-    return m_backgroundColor;
-}
-/*!
-    Sets the background \a color of the progress bar.
-*/
-void ProgressBar::setBackgroundColor(const Vector4 color) {
-    m_backgroundColor = color;
-
-    Frame *background = ProgressBar::background();
-    if(background) {
-        background->setColor(m_backgroundColor);
-    }
-}
-/*!
     Returns the color of the progress indicator.
 */
 Vector4 ProgressBar::progressColor() const {
@@ -160,14 +126,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
-    Actor *background = Engine::composeActor<Frame>(gBackground, actor());
-    Frame *backgroundFrame = background->getComponent<Frame>();
-    backgroundFrame->setColor(m_backgroundColor);
-    backgroundFrame->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-    setBackground(backgroundFrame);
-
-    Actor *progress = Engine::composeActor<Frame>(gChunk, background);
+    Actor *progress = Engine::composeActor<Frame>(gChunk, actor());
     Frame *progressFrame = progress->getComponent<Frame>();
     progressFrame->setColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);

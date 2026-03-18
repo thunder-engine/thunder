@@ -16,7 +16,7 @@
 
 #include "effectgraph.h"
 #include "modules/custommodule.h"
-#include "modules/spritemodule.h"
+#include "modules/renderablemodule.h"
 
 namespace {
     const char *gModules("modules");
@@ -67,8 +67,6 @@ void EffectRootNode::fromXml(const pugi::xml_node &element) {
     pugi::xml_node modulesElement = element.first_child();
     while(modulesElement) {
         if(std::string(modulesElement.name()) == gModules) {
-            EffectGraph *graph = static_cast<EffectGraph *>(m_graph);
-
             pugi::xml_node moduleElement = modulesElement.first_child();
             while(moduleElement) {
                 if(std::string(moduleElement.name()) == gModule) {
@@ -89,9 +87,10 @@ Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
     Actor *spawnActor = Engine::composeActor<Foldout>(name, parent);
     Foldout *result = spawnActor->getComponent<Foldout>();
     result->setText(name);
-
     RectTransform *rect = result->rectTransform();
-    rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
+    if(rect) {
+        rect->setHorizontalPolicy(RectTransform::Expanding);
+    }
 
     return result;
 }
@@ -99,22 +98,11 @@ Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
 Widget *EffectRootNode::widget() {
     Widget *result = GraphNode::widget();
 
-    if(m_particleSpawnFold == nullptr) {
+    if(m_emitterUpdateFold == nullptr) {
         m_emitterUpdateFold = createFold("Emitter Update", result->actor());
         m_particleSpawnFold = createFold("Particle Spawn", result->actor());
         m_particleUpdateFold = createFold("Particle Update", result->actor());
         m_renderFold = createFold("Render", result->actor());
-
-        RectTransform *rect = result->rectTransform();
-        Vector4 padding(rect->padding());
-        padding.z += 10.0f;
-        rect->setPadding(padding);
-
-        Layout *layout = rect->layout();
-        layout->addTransform(m_emitterUpdateFold->rectTransform());
-        layout->addTransform(m_particleSpawnFold->rectTransform());
-        layout->addTransform(m_particleUpdateFold->rectTransform());
-        layout->addTransform(m_renderFold->rectTransform());
 
         for(auto it : getChildren()) {
             EffectModule *module = static_cast<EffectModule *>(it);
@@ -141,7 +129,7 @@ Widget *EffectRootNode::widget() {
 
 void EffectRootNode::addAttribute(const TString &name, MetaType::Type type) {
     int offset = 0;
-    for(auto it : m_attributes) {
+    for(auto &it : m_attributes) {
         if(it.name == name) {
             return;
         }
@@ -191,7 +179,7 @@ int EffectRootNode::attributeOffset(const TString &name) {
         }
     }
 
-    for(auto it : m_attributes) {
+    for(auto &it : m_attributes) {
         if(it.name == local) {
             return it.offset + offset;
         }
@@ -212,7 +200,7 @@ int EffectRootNode::attributeSize(const TString &name) {
         }
     }
 
-    for(auto it : m_attributes) {
+    for(auto &it : m_attributes) {
         if(it.name == local) {
             return (size > 0) ? MIN(size, it.size) : it.size;
         }
@@ -469,9 +457,6 @@ void EffectRootNode::removeAllModules() {
     Object::ObjectList children = getChildren();
 
     for(auto it : children) {
-        Widget *widget = static_cast<EffectModule *>(it)->widget(nullptr);
-        delete widget->actor();
-
         delete it;
     }
 }

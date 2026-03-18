@@ -9,6 +9,10 @@ class Transform;
 
 class Prefab;
 
+namespace EngineSuite {
+    class ActorTest;
+}
+
 class ENGINE_EXPORT Actor : public Object {
     A_OBJECT(Actor, Object, Actor)
 
@@ -107,7 +111,7 @@ private:
     static void prefabUpdated(int state, void *ptr);
 
 private:
-    friend class ActorTest;
+    friend class EngineSuite::ActorTest;
 
     VariantMap m_data;
 

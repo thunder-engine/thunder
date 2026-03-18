@@ -9,6 +9,10 @@ class AnimationClip;
 class AnimationState;
 class AnimationStateMachine;
 
+namespace EngineSuite {
+    class AnimatorTest;
+}
+
 class ENGINE_EXPORT Animator : public NativeBehaviour {
     A_OBJECT(Animator, NativeBehaviour, Components/Animation)
 
@@ -107,7 +111,7 @@ private:
     static void stateMachineUpdated(int state, void *ptr);
 
 private:
-    friend class AnimatorTest;
+    friend class EngineSuite::AnimatorTest;
 
     std::unordered_map<int32_t, Variant> m_currentVariables;
 

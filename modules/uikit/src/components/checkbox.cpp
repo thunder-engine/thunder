@@ -11,7 +11,7 @@
 #include <timer.h>
 
 namespace  {
-    const char *gKnob("knob");
+    const char *gKnob("icon");
 }
 
 /*!
@@ -25,7 +25,8 @@ namespace  {
 
 CheckBox::CheckBox() :
         AbstractButton(),
-        m_knobColor(1.0f) {
+        m_knobColor(1.0f),
+        m_foldMode(false) {
 
     setCheckable(true);
 }
@@ -84,12 +85,29 @@ void CheckBox::setMirrored(bool flag) {
 }
 /*!
     \internal
+    Changes knob behaviour to \a fold icon.
+*/
+void CheckBox::setFoldMode(bool fold) {
+    m_foldMode = fold;
+}
+/*!
+    \internal
     Overrides the checkStateSet method to handle state changes.
 */
 void CheckBox::checkStateSet() {
     AbstractButton::checkStateSet();
 
-    knobGraphic()->actor()->setEnabled(m_checked);
+    Image *knob = knobGraphic();
+    if(knob) {
+        if(m_foldMode) {
+            RectTransform *rect = knob->rectTransform();
+            if(rect) {
+                rect->setRotation(Vector3(0.0f, 0.0f, m_checked ? 90.0f : 0.0f));
+            }
+        } else {
+            knob->actor()->setEnabled(m_checked);
+        }
+    }
 }
 /*!
     \internal
@@ -113,19 +131,15 @@ void CheckBox::composeComponent() {
         }
 
         // Add knob
-        Actor *knob = Engine::composeActor<Image>(gKnob, background()->actor());
-        Image *image = knob->getComponent<Image>();
+        Image *image = icon();
         if(image) {
             image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
-
             RectTransform *knobRect = image->rectTransform();
             knobRect->setSize(Vector2(16, 8));
+            knobRect->setParentTransform(backRect);
+            knobRect->setPosition(Vector3());
 
-            knob->setEnabled(m_checked);
+            setKnobGraphic(image);
         }
-        setKnobGraphic(image);
     }
-
-    // Disable Icon by the default
-    icon()->actor()->setEnabled(false);
 }

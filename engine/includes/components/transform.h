@@ -43,7 +43,7 @@ public:
     void setScale(const Vector3 &scale);
 
     Transform *parentTransform() const;
-    virtual void setParentTransform(Transform *parent, bool force = false);
+    void setParentTransform(Transform *parent, bool force = false);
 
     const Matrix4 &localTransform() const;
     const Matrix4 &worldTransform() const;
@@ -60,10 +60,14 @@ public:
     const std::list<Transform *> &children() const;
 
 protected:
-    virtual void setDirty();
+    virtual void updateHierarchy(Transform *parent, bool force);
+
+    void setDirty();
     virtual void cleanDirty() const;
 
 protected:
+    friend class Actor;
+
     Vector3 m_position;
     Vector3 m_rotation;
     Vector3 m_scale;

@@ -39,6 +39,8 @@ Image::Image() :
         m_material = material->createInstance();
         m_material->setVector4(gColor, &m_color);
     }
+
+    m_mesh->makeDynamic();
 }
 
 Image::~Image() {
@@ -71,6 +73,8 @@ void Image::draw(CommandBuffer &buffer) {
                             it.y = it.y * scl.y;
                         }
                     }
+
+                    m_mesh->recalcBounds();
                 } else {
                     makeDefaultMesh();
                 }
@@ -154,6 +158,7 @@ void Image::setSprite(Sprite *sprite) {
         }
 
         m_dirtyMaterial = true;
+        m_dirtyMesh = true;
     }
 }
 /*!

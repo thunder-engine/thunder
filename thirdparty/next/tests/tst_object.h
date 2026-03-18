@@ -12,14 +12,14 @@
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+    along with Thunder Next. If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright: 2008-2025 Evgeniy Prikazchikov
+    Copyright: 2008-2026 Evgeniy Prikazchikov
 */
 
 #include "tst_common.h"
 
-namespace Next {
+namespace NextSuite {
 
     class ObjectTest : public ::testing::Test {
     protected:

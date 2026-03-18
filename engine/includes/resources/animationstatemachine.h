@@ -7,6 +7,10 @@
 
 class AnimationState;
 
+namespace EngineSuite {
+    class AnimatorTest;
+}
+
 class ENGINE_EXPORT AnimationTransitionCondition {
 public:
     enum CompareRules {
@@ -94,7 +98,7 @@ private:
     AnimationTransitionCondition loadCondition(const VariantList &data) const;
 
 private:
-    friend class AnimatorTest;
+    friend class EngineSuite::AnimatorTest;
 
     AnimationStateVector m_states;
 

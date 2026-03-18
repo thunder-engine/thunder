@@ -71,19 +71,19 @@ UiEdit::UiEdit() :
     m_widgetMenu.addAction(createAction(tr("Duplicate"), SLOT(onWidgetDuplicate()), false));
     m_widgetMenu.addAction(createAction(tr("Delete"), SLOT(onWidgetDelete()), false, QKeySequence(Qt::Key_Delete)));
 
-    auto groups = componentGroups();
-    TString group = groups.back().toStdString();
-    for(auto &it : Engine::factories()) {
-        if(it.second.indexOf(group) != -1) {
-            Actor *actor = Engine::composeActor(it.first, it.first);
-            if(actor) {
-                Widget *widget = dynamic_cast<Widget *>(actor->component(it.first));
-                if(widget) {
-                    m_widgets[it.first] = widget;
-                }
-            }
-        }
-    }
+    //auto groups = componentGroups();
+    //TString group = groups.back().toStdString();
+    //for(auto &it : Engine::factories()) {
+    //    if(it.second.indexOf(group) != -1) {
+    //        Actor *actor = Engine::composeActor(it.first, it.first);
+    //        if(actor) {
+    //            Widget *widget = dynamic_cast<Widget *>(actor->component(it.first));
+    //            if(widget) {
+    //                m_widgets[it.first] = widget;
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 UiEdit::~UiEdit() {

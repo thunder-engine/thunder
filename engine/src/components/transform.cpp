@@ -47,11 +47,11 @@ Transform::Transform(const Transform &origin) :
 }
 
 Transform::~Transform() {
-    setParentTransform(nullptr, true);
+    updateHierarchy(nullptr, true);
 
     std::list<Transform *> temp = m_children;
     for(auto it : temp) {
-        it->setParentTransform(nullptr, true);
+        it->updateHierarchy(nullptr, true);
     }
 }
 /*!
@@ -123,15 +123,6 @@ void Transform::setScale(const Vector3 &scale) {
     }
 }
 /*!
-    Marks transform as dirty.
-*/
-void Transform::setDirty() {
-    m_dirty = true;
-    for(auto it : m_children) {
-        it->setDirty();
-    }
-}
-/*!
     Returns parent of the transform.
 */
 Transform *Transform::parentTransform() const {
@@ -146,44 +137,22 @@ void Transform::setParentTransform(Transform *parent, bool force) {
         return;
     }
 
-    if(parent && actor()->parent() != parent->actor()) {
-        actor()->setParent(parent->actor());
-        return;
-    }
-
-    Vector3 p;
-    Vector3 e;
-    Vector3 s;
-
     if(parent) {
-        p = worldPosition();
-        e = worldRotation();
-        s = worldScale();
-    }
-
-    if(m_parent) {
-        auto it = std::find(m_parent->m_children.begin(),
-                            m_parent->m_children.end(),
-                            this);
-        if(it != m_parent->m_children.end()) {
-            m_parent->m_children.erase(it);
+        Actor *actor = Transform::actor();
+        Actor *parentActor =  parent->actor();
+        if(actor && actor->parent() != parentActor) {
+            actor->setParent(parentActor);
+            return;
+        }
+    } else {
+        Actor *actor = Transform::actor();
+        if(actor) {
+            actor->setParent(nullptr);
+            return;
         }
     }
 
-    m_parent = parent;
-    if(m_parent) {
-        m_parent->m_children.push_back(this);
-        if(!force) {
-            Vector3 scale = m_parent->worldScale();
-            scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
-
-            m_position = m_parent->worldQuaternion().inverse() * ((p - m_parent->worldPosition()) * scale);
-            m_scale = s * scale;
-            setRotation(e - m_parent->worldRotation());
-        } else {
-            setDirty();
-        }
-    }
+    updateHierarchy(parent, force);
 }
 /*!
     Returns current transform matrix in local space.
@@ -256,7 +225,21 @@ uint32_t Transform::hash() const {
 const std::list<Transform *> &Transform::children() const {
     return m_children;
 }
-
+/*!
+    \internal
+    Marks transform as dirty.
+*/
+void Transform::setDirty() {
+    if(!m_dirty) {
+        for(auto it : m_children) {
+            it->setDirty();
+        }
+    }
+    m_dirty = true;
+}
+/*!
+    \internal
+*/
 void Transform::cleanDirty() const {
     if(m_dirty) {
         std::unique_lock<std::mutex> locker(m_mutex);
@@ -277,5 +260,41 @@ void Transform::cleanDirty() const {
             Mathf::hashCombine(m_hash, m_worldTransform[i]);
         }
         m_dirty = false;
+    }
+}
+/*!
+    \internal
+*/
+void Transform::updateHierarchy(Transform *parent, bool force) {
+    Vector3 p;
+    Vector3 e;
+    Vector3 s;
+
+    if(parent) {
+        p = worldPosition();
+        e = worldRotation();
+        s = worldScale();
+    }
+
+    if(m_parent) {
+        auto it = std::find(m_parent->m_children.begin(), m_parent->m_children.end(), this);
+        if(it != m_parent->m_children.end()) {
+            m_parent->m_children.erase(it);
+        }
+    }
+
+    m_parent = parent;
+    if(m_parent) {
+        m_parent->m_children.push_back(this);
+        if(!force) {
+            Vector3 scale = m_parent->worldScale();
+            scale = Vector3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z);
+
+            m_position = m_parent->worldQuaternion().inverse() * ((p - m_parent->worldPosition()) * scale);
+            m_scale = s * scale;
+            setRotation(e - m_parent->worldRotation());
+        } else {
+            setDirty();
+        }
     }
 }

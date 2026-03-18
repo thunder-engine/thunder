@@ -24,6 +24,8 @@ public:
 
     void setMirrored(bool flag) override;
 
+    void setFoldMode(bool fold);
+
 private:
     void checkStateSet() override;
 
@@ -31,6 +33,8 @@ private:
 
 private:
     Vector4 m_knobColor;
+
+    bool m_foldMode;
 
 };
 

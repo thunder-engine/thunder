@@ -323,11 +323,7 @@ void Actor::setParent(Object *parent, int32_t position, bool force) {
 
     Object::setParent(parent, position, force);
     if(m_transform) {
-        if(actor) {
-            m_transform->setParentTransform(actor->transform(), force);
-        } else {
-            m_transform->setParentTransform(nullptr, force);
-        }
+        m_transform->updateHierarchy(actor ? actor->transform() : nullptr, force);
     }
 }
 /*!

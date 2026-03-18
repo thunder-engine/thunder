@@ -21,21 +21,15 @@ Widget *StateNode::widget() {
             if(nodeWidget) {
                 RectTransform *rect = nodeWidget->rectTransform();
                 rect->setVerticalPolicy(RectTransform::Fixed);
-                rect->setHorizontalPolicy(RectTransform::Fixed);
 
                 Frame *header = nodeWidget->header();
                 Vector4 corners(header->corners());
                 corners.z = corners.w = corners.x;
                 header->setCorners(corners);
 
-
-                RectTransform *titleRect = header->rectTransform();
-                titleRect->setMargin(Vector4(5.0f));
-                titleRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-                Layout *layout = rect->layout();
-                layout->invalidate();
-                layout->update();
+                RectTransform *headerRect = header->rectTransform();
+                headerRect->setVerticalPolicy(RectTransform::Expanding);
+                headerRect->setMargin(Vector4(5.0f));
 
                 nodeWidget->setGraphNode(this);
 
