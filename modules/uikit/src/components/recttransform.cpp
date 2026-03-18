@@ -83,6 +83,9 @@ void RectTransform::setSize(const Vector2 &size) {
             m_size.y = size.y;
         }
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -108,6 +111,9 @@ void RectTransform::setPivot(const Vector2 &pivot) {
     if(m_pivot != pivot) {
         m_pivot = pivot;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -133,6 +139,9 @@ void RectTransform::setMinAnchors(const Vector2 &anchors) {
     if(m_minAnchors != anchors) {
         m_minAnchors = anchors;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -158,6 +167,9 @@ void RectTransform::setMaxAnchors(const Vector2 &anchors) {
     if(m_maxAnchors != anchors) {
         m_maxAnchors = anchors;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -198,6 +210,9 @@ void RectTransform::setAnchors(const Vector2 &minimum, const Vector2 &maximum) {
 #endif
     }
 
+    if(m_attachedLayout) {
+        m_attachedLayout->invalidate();
+    }
     setDirty();
 }
 /*!
@@ -214,6 +229,9 @@ void RectTransform::setMargin(const Vector4 &margin) {
     if(m_margin != margin) {
         m_margin = margin;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -240,6 +258,9 @@ void RectTransform::setBorder(const Vector4 &border) {
     if(m_border != border) {
         m_border = border;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -266,6 +287,9 @@ void RectTransform::setPadding(const Vector4 &padding) {
     if(m_padding != padding) {
         m_padding = padding;
 
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -382,6 +406,9 @@ void RectTransform::setLayout(Layout *layout) {
             m_layout->invalidate();
             cleanDirty();
         } else {
+            if(m_attachedLayout) {
+                m_attachedLayout->invalidate();
+            }
             setDirty();
         }
     }
@@ -406,8 +433,8 @@ void RectTransform::setEnabled(bool enabled) {
 
     if(m_attachedLayout) {
         m_attachedLayout->invalidate();
-        cleanDirty();
     }
+    cleanDirty();
 }
 /*!
     Returns vertical size policy.
@@ -585,6 +612,9 @@ void RectTransform::cleanDirty() const {
     }
 }
 
+/*!
+    Returns the size recommended to contain all visible content.
+*/
 Vector2 RectTransform::sizeHint() const {
     if(m_layout) {
         return m_layout->sizeHint();
@@ -592,7 +622,9 @@ Vector2 RectTransform::sizeHint() const {
 
     return m_size;
 }
-
+/*!
+    Returns the internal scissor area. All content outside of this are will not be rendered.
+*/
 Vector4 RectTransform::scissorArea() const {
     cleanDirty();
 
@@ -603,7 +635,9 @@ Vector4 RectTransform::scissorArea() const {
                    (m_size.x - (offsets.y + offsets.w)) * m_worldScale.x,
                    (m_size.y - (offsets.x + offsets.z)) * m_worldScale.y);
 }
-
+/*!
+    \internal
+*/
 void RectTransform::applyStyle() {
     Widget *widget = RectTransform::widget();
 

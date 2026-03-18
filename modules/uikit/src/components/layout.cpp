@@ -151,7 +151,7 @@ Vector2 Layout::sizeHint() {
             float spacing = (!first) ? m_spacing : 0.0f;
 
             Vector4 margin(it->margin());
-            Vector2 size(it->size());
+            Vector2 size(it->sizeHint());
             size.x += (margin.w + margin.y);
             size.y += (margin.x + margin.z);
 
@@ -187,6 +187,8 @@ void Layout::invalidate() {
         Layout *layout = m_rectTransform->m_attachedLayout;
         if(layout) {
             layout->invalidate();
+        } else {
+            layout = nullptr;
         }
     }
 }

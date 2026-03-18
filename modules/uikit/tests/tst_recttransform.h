@@ -9,10 +9,7 @@
 namespace UikitSuite {
 
     class RectTransformTest : public ::testing::Test {
-    public:
-        void cleanDirty(RectTransform &rect) {
-            rect.cleanDirty();
-        }
+
     };
 
     TEST_F(RectTransformTest, AddRemoveChild) {

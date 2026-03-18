@@ -100,9 +100,9 @@ Widget *EffectRootNode::widget() {
 
     if(m_emitterUpdateFold == nullptr) {
         m_emitterUpdateFold = createFold("Emitter Update", result->actor());
-        m_particleSpawnFold = createFold("Particle Spawn", result->actor());
-        m_particleUpdateFold = createFold("Particle Update", result->actor());
-        m_renderFold = createFold("Render", result->actor());
+        //m_particleSpawnFold = createFold("Particle Spawn", result->actor());
+        //m_particleUpdateFold = createFold("Particle Update", result->actor());
+        //m_renderFold = createFold("Render", result->actor());
 
         for(auto it : getChildren()) {
             EffectModule *module = static_cast<EffectModule *>(it);
