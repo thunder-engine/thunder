@@ -36,8 +36,6 @@ public:
 
     UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
-    static TString findFreeObjectName(const TString &name, Object *parent);
-
 signals:
     void sceneUpdated();
     void objectsSelected(Object::ObjectList objects);

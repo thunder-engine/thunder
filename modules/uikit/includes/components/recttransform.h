@@ -91,6 +91,8 @@ public:
 
     Vector4 scissorArea() const;
 
+    void setParentTransform(Transform *parent, bool force = false) override;
+
 private:
     friend class UikitSuite::RectTransformTest;
     friend class Layout;

@@ -4,23 +4,24 @@
 #include <systems/resourcesystem.h>
 #include <commandbuffer.h>
 
-#include "components/recttransform.h"
-#include "components/widget.h"
+#include "components/button.h"
+#include "components/checkbox.h"
+#include "components/floatinput.h"
+#include "components/foldout.h"
+#include "components/frame.h"
 #include "components/image.h"
 #include "components/label.h"
-#include "components/button.h"
-#include "components/switch.h"
-#include "components/checkbox.h"
-#include "components/progressbar.h"
-#include "components/frame.h"
-#include "components/menu.h"
 #include "components/lineedit.h"
-#include "components/floatinput.h"
-#include "components/toolbutton.h"
-#include "components/foldout.h"
-#include "components/uiloader.h"
-#include "components/slider.h"
+#include "components/menu.h"
+#include "components/progressbar.h"
+#include "components/recttransform.h"
 #include "components/scrollbar.h"
+#include "components/slider.h"
+#include "components/splitter.h"
+#include "components/switch.h"
+#include "components/toolbutton.h"
+#include "components/uiloader.h"
+#include "components/widget.h"
 
 #include "pipelinetasks/guilayer.h"
 
@@ -51,6 +52,8 @@ UiSystem::UiSystem() :
     AbstractSlider::registerClassFactory(this);
     Slider::registerClassFactory(this);
     ScrollBar::registerClassFactory(this);
+
+    Splitter::registerClassFactory(this);
 
     Menu::registerClassFactory(this);
 
@@ -86,6 +89,8 @@ UiSystem::~UiSystem() {
     AbstractSlider::unregisterClassFactory(this);
     Slider::unregisterClassFactory(this);
     ScrollBar::unregisterClassFactory(this);
+
+    Splitter::unregisterClassFactory(this);
 
     Menu::unregisterClassFactory(this);
 

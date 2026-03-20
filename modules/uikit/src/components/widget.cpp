@@ -285,6 +285,13 @@ void Widget::setSystem(ObjectSystem *system) {
 }
 /*!
     \internal
+    This call back can be used to modify some properties for a new \a child.
+*/
+void Widget::childAdded(RectTransform *child) const {
+    A_UNUSED(child);
+}
+/*!
+    \internal
     Applies a new stylesheet \a rules to the widget.
     A \a wieght parameter required to select rules between new one and existant.
 */

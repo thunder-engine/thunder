@@ -296,7 +296,7 @@ void RectTransform::setPadding(const Vector4 &padding) {
         if(!isSignalsBlocked()) {
             Widget *widget = RectTransform::widget();
             if(widget) {
-                widget->updateStyleProperty(gCssPadding, m_border.v, 4);
+                widget->updateStyleProperty(gCssPadding, m_padding.v, 4);
             }
         }
 #endif
@@ -634,6 +634,19 @@ Vector4 RectTransform::scissorArea() const {
                    m_worldTransform[13] + offsets.x,
                    (m_size.x - (offsets.y + offsets.w)) * m_worldScale.x,
                    (m_size.y - (offsets.x + offsets.z)) * m_worldScale.y);
+}
+/*!
+    \internal
+*/
+void RectTransform::setParentTransform(Transform *parent, bool force) {
+    Transform::setParentTransform(parent, force);
+
+    RectTransform *rect = dynamic_cast<RectTransform *>(parent);
+    if(rect) {
+        for(auto it : rect->m_subscribers) {
+            it->childAdded(this);
+        }
+    }
 }
 /*!
     \internal

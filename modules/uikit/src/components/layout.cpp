@@ -195,7 +195,7 @@ void Layout::invalidate() {
 /*!
     \internal
 */
-void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
+void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
     if(m_orientation == Widget::Vertical) {
         if(horizontal) {
             for(auto it : m_items) {
@@ -222,15 +222,17 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
         }
     }
 
-    int totalPref = 0;
+    float totalPref = 0.0f;
     int expandingCount = 0;
     int preferredCount = 0;
     int fixedCount = 0;
 
+    std::list<float> sizes;
+
     for(auto it : m_items) {
         if(it->isEnabled()) {
             RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-            int pref = horizontal ? it->size().x : it->size().y;
+            float pref = horizontal ? it->size().x : it->size().y;
             Vector4 margin(it->margin());
             pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
 
@@ -239,7 +241,7 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
             switch(policy) {
                 case RectTransform::Fixed: fixedCount++; break;
                 case RectTransform::Preferred: preferredCount++; break;
-                case RectTransform::Expanding: expandingCount++; break;
+                case RectTransform::Expanding: expandingCount++; sizes.push_back(pref); break;
                 default: break;
             }
         }
@@ -249,17 +251,29 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
 
     totalPref += spacesCount * m_spacing;
 
+    auto size = sizes.begin();
+    std::list<float> weights;
+    for(auto it : m_items) {
+        if(it->isEnabled()) {
+            RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+            if(policy == RectTransform::Expanding) {
+                float weight = (*size) / totalPref;
+                weights.push_back(weight);
+                ++size;
+            }
+        }
+    }
+
     if(availableSpace <= totalPref) { // Need to reduce size of widgets
-        int remainingSpace = availableSpace;
+        float remainingSpace = availableSpace;
 
         for(auto it : m_items) {
             if(it->isEnabled()) {
                 RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-                if(policy == RectTransform::Fixed) {
-                    int pref = horizontal ? it->size().x : it->size().y;
+                if(policy == RectTransform::Fixed || policy == RectTransform::Preferred) {
+                    float pref = horizontal ? it->size().x : it->size().y;
                     Vector4 margin(it->margin());
                     pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
-
                     remainingSpace -= pref;
                 }
             }
@@ -268,8 +282,7 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
         remainingSpace -= spacesCount * m_spacing;
 
         if(expandingCount > 0 && remainingSpace > 0) {
-            int spacePerFlexible = remainingSpace / expandingCount;
-
+            auto weight = weights.begin();
             for(auto it : m_items) {
                 if(it->isEnabled()) {
                     RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
@@ -277,37 +290,34 @@ void Layout::solveItemsDimension(int availableSpace, bool horizontal) {
                         Vector4 margin(it->margin());
                         Vector2 size(it->size());
                         if(horizontal) {
-                            size.x = spacePerFlexible - (margin.w + margin.y);
+                            size.x = remainingSpace * (*weight) - (margin.w + margin.y);
                         } else {
-                            size.y = spacePerFlexible - (margin.x + margin.z);
+                            size.y = remainingSpace * (*weight) - (margin.x + margin.z);
                         }
                         it->setSize(size);
+                        ++weight;
                     }
                 }
             }
         }
     } else { // Need to expand widgets
-        int extra = availableSpace - totalPref;
-
+        float extra = availableSpace - totalPref;
+        auto weight = weights.begin();
         for(auto it : m_items) {
             if(it->isEnabled()) {
                 RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-
-                float extraSize = 0;
-                if(expandingCount > 0) {
-                    if(policy == RectTransform::Expanding) {
-                        extraSize = extra / static_cast<float>(expandingCount);
+                if(policy == RectTransform::Expanding) {
+                    float extraSize = extra * (*weight);
+                    if(extraSize != 0) {
+                        Vector2 size(it->size());
+                        if(horizontal) {
+                            size.x += extraSize;
+                        } else {
+                            size.y += extraSize;
+                        }
+                        it->setSize(size);
                     }
-                }
-
-                if(extraSize != 0) {
-                    Vector2 size(it->size());
-                    if(horizontal) {
-                        size.x += extraSize;
-                    } else {
-                        size.y += extraSize;
-                    }
-                    it->setSize(size);
+                    ++weight;
                 }
             }
         }
@@ -335,7 +345,7 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
             } else {
                 shift += size.x * pivot.x + margin.w;
                 it->m_position.x = shift;
-                it->m_position.y = offset.y - size.y * pivot.y - margin.z;
+                it->m_position.y = offset.y - size.y * (1.0f - pivot.y) - margin.z;
                 shift += size.x * (1.0f - pivot.x) + margin.y;
             }
             it->setDirty();

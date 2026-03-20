@@ -79,15 +79,18 @@ protected:
 
     void updateStyleProperty(const TString &name, const float *v, int32_t size);
 
-private:
-    void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
-
-    void setSystem(ObjectSystem *system) override;
+protected:
+    virtual void childAdded(RectTransform *child) const;
 
 protected:
     std::map<TString, std::pair<uint32_t, TString>> m_styleRules;
 
     std::list<Widget *> m_childWidgets;
+
+private:
+    void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
+
+    void setSystem(ObjectSystem *system) override;
 
 private:
     friend class GuiLayer;

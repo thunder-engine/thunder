@@ -156,124 +156,128 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
         return;
     }
 
-    Widget *root = m_controller->root();
-    RectTransform *rootRect(root->rectTransform());
+    if(parent->layout()) {
 
-    Vector3 size(parent->size(), 0.0f);
-    Vector3 center(recalcPosition(parent, rootRect) + size * 0.5f);
+    } else {
+        Widget *root = m_controller->root();
+        RectTransform *rootRect(root->rectTransform());
 
-    Vector2 minAnchor(rect->minAnchors());
-    Vector2 maxAnchor(rect->maxAnchors());
+        Vector3 size(parent->size(), 0.0f);
+        Vector3 center(recalcPosition(parent, rootRect) + size * 0.5f);
 
-    Vector3 lt(center.x - (0.5f - minAnchor.x) * size.x,
-               center.y + (maxAnchor.y - 0.5f) * size.y, 0.0f);
+        Vector2 minAnchor(rect->minAnchors());
+        Vector2 maxAnchor(rect->maxAnchors());
 
-    Vector3 lb(center.x - (0.5f - minAnchor.x) * size.x,
-               center.y - (0.5f - minAnchor.y) * size.y, 0.0f);
+        Vector3 lt(center.x - (0.5f - minAnchor.x) * size.x,
+                   center.y + (maxAnchor.y - 0.5f) * size.y, 0.0f);
 
-    Vector3 rt(center.x + (maxAnchor.x - 0.5f) * size.x,
-               center.y + (maxAnchor.y - 0.5f) * size.y, 0.0f);
+        Vector3 lb(center.x - (0.5f - minAnchor.x) * size.x,
+                   center.y - (0.5f - minAnchor.y) * size.y, 0.0f);
 
-    Vector3 rb(center.x + (maxAnchor.x - 0.5f) * size.x,
-               center.y - (0.5f - minAnchor.y) * size.y, 0.0f);
+        Vector3 rt(center.x + (maxAnchor.x - 0.5f) * size.x,
+                   center.y + (maxAnchor.y - 0.5f) * size.y, 0.0f);
 
-    Vector3Vector points = {lt, lt - cornerA, lt - cornerB,
-                            lb, lb - cornerC, lb - cornerD,
-                            rt, rt + cornerC, rt + cornerD,
-                            rb, rb + cornerA, rb + cornerB};
-    IndexVector indices = {0, 1, 1, 2, 2, 0,
-                           3, 4, 4, 5, 5, 3,
-                           6, 7, 7, 8, 8, 6,
-                           9,10,10,11,11, 9};
+        Vector3 rb(center.x + (maxAnchor.x - 0.5f) * size.x,
+                   center.y - (0.5f - minAnchor.y) * size.y, 0.0f);
 
-    Gizmos::drawLines(points, indices, Vector4(1.0f));
+        Vector3Vector points = {lt, lt - cornerA, lt - cornerB,
+                                lb, lb - cornerC, lb - cornerD,
+                                rt, rt + cornerC, rt + cornerD,
+                                rb, rb + cornerA, rb + cornerB};
+        IndexVector indices = {0, 1, 1, 2, 2, 0,
+                               3, 4, 4, 5, 5, 3,
+                               6, 7, 7, 8, 8, 6,
+                               9,10,10,11,11, 9};
 
-    Vector2 boxSize(rect->size());
-    Vector2 boxCenter(recalcPosition(rect, rootRect) + boxSize * 0.5f);
+        Gizmos::drawLines(points, indices, Vector4(1.0f));
 
-    bool isDrag = m_controller->isDrag();
+        Vector2 boxSize(rect->size());
+        Vector2 boxCenter(recalcPosition(rect, rootRect) + boxSize * 0.5f);
 
-    Handles::s_Color = Handles::s_Normal;
+        bool isDrag = m_controller->isDrag();
 
-    int axis;
-    m_world = Handles::rectTool(Vector3(boxCenter, 0.0f), Vector3(boxSize), axis, false, isDrag);
+        Handles::s_Color = Handles::s_Normal;
 
-    if(isDrag) {
-        Vector3 delta(m_world - m_savedWorld);
-        if(delta.length() >= 1.0f) {
-            Vector2 pivot(rect->pivot());
-            Vector2 hint(rect->sizeHint());
+        int axis;
+        m_world = Handles::rectTool(Vector3(boxCenter, 0.0f), Vector3(boxSize), axis, false, isDrag);
 
-            Vector2 min(m_min);
-            Vector2 max(m_max);
+        if(isDrag) {
+            Vector3 delta(m_world - m_savedWorld);
+            if(delta.length() >= 1.0f) {
+                Vector2 pivot(rect->pivot());
+                Vector2 hint(rect->sizeHint());
 
-            bool moveAll = Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT);
+                Vector2 min(m_min);
+                Vector2 max(m_max);
 
-            if(Handles::s_Axes & Handles::TOP) {
-                max.y += delta.y;
-                float limit = min.y + hint.y;
-                if(!moveAll && max.y < limit) {
-                    max.y = limit;
+                bool moveAll = Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT);
+
+                if(Handles::s_Axes & Handles::TOP) {
+                    max.y += delta.y;
+                    float limit = min.y + hint.y;
+                    if(!moveAll && max.y < limit) {
+                        max.y = limit;
+                    }
                 }
-            }
-            if(Handles::s_Axes & Handles::BOTTOM) {
-                min.y += delta.y;
-                float limit = max.y - hint.y;
-                if(!moveAll && min.y > limit) {
-                    min.y = limit;
+                if(Handles::s_Axes & Handles::BOTTOM) {
+                    min.y += delta.y;
+                    float limit = max.y - hint.y;
+                    if(!moveAll && min.y > limit) {
+                        min.y = limit;
+                    }
                 }
-            }
-            if(Handles::s_Axes & Handles::LEFT) {
-                min.x += delta.x;
-                float limit = max.x - hint.x;
-                if(!moveAll && min.x > limit) {
-                    min.x = limit;
+                if(Handles::s_Axes & Handles::LEFT) {
+                    min.x += delta.x;
+                    float limit = max.x - hint.x;
+                    if(!moveAll && min.x > limit) {
+                        min.x = limit;
+                    }
                 }
-            }
-            if(Handles::s_Axes & Handles::RIGHT) {
-                max.x += delta.x;
-                float limit = min.x + hint.x;
-                if(!moveAll && max.x < limit) {
-                    max.x = limit;
+                if(Handles::s_Axes & Handles::RIGHT) {
+                    max.x += delta.x;
+                    float limit = min.x + hint.x;
+                    if(!moveAll && max.x < limit) {
+                        max.x = limit;
+                    }
                 }
-            }
 
-            snapSolver(min, max, minAnchor, parent, parent, center);
-            for(auto it : parent->children()) {
-                if(it != rect) {
-                    snapSolver(min, max, minAnchor, dynamic_cast<RectTransform *>(it), parent, center);
+                snapSolver(min, max, minAnchor, parent, parent, center);
+                for(auto it : parent->children()) {
+                    if(it != rect) {
+                        snapSolver(min, max, minAnchor, dynamic_cast<RectTransform *>(it), parent, center);
+                    }
                 }
+
+                Vector2 size(max - min);
+                rect->setSize(size);
+
+                if(rect->parentTransform()) {
+                    rect->setPosition(Vector3(min + size * pivot, m_position.z));
+                }
+
+                m_controller->sceneUpdated();
             }
-
-            Vector2 size(max - min);
-            rect->setSize(size);
-
-            if(rect->parentTransform()) {
-                rect->setPosition(Vector3(min + size * pivot, m_position.z));
-            }
-
-            m_controller->sceneUpdated();
         }
-    }
 
-    Input::CursorShape shape = Input::CURSOR_ARROW;
-    if(Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
-        shape = Input::CURSOR_ALLSIZE;
-    } else if(Handles::s_Axes == (Handles::TOP | Handles::RIGHT)) {
-        shape = Input::CURSOR_BDIAGSIZE;
-    } else if(Handles::s_Axes == (Handles::TOP | Handles::LEFT)) {
-        shape = Input::CURSOR_FDIAGSIZE;
-    } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::RIGHT)) {
-        shape = Input::CURSOR_FDIAGSIZE;
-    } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
-        shape = Input::CURSOR_BDIAGSIZE;
-    } else if(Handles::s_Axes == Handles::TOP || Handles::s_Axes == Handles::BOTTOM) {
-        shape = Input::CURSOR_VERSIZE;
-    } else if(Handles::s_Axes == Handles::LEFT || Handles::s_Axes == Handles::RIGHT) {
-        shape = Input::CURSOR_HORSIZE;
-    }
+        Input::CursorShape shape = Input::CURSOR_ARROW;
+        if(Handles::s_Axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
+            shape = Input::CURSOR_ALLSIZE;
+        } else if(Handles::s_Axes == (Handles::TOP | Handles::RIGHT)) {
+            shape = Input::CURSOR_BDIAGSIZE;
+        } else if(Handles::s_Axes == (Handles::TOP | Handles::LEFT)) {
+            shape = Input::CURSOR_FDIAGSIZE;
+        } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::RIGHT)) {
+            shape = Input::CURSOR_FDIAGSIZE;
+        } else if(Handles::s_Axes == (Handles::BOTTOM | Handles::LEFT)) {
+            shape = Input::CURSOR_BDIAGSIZE;
+        } else if(Handles::s_Axes == Handles::TOP || Handles::s_Axes == Handles::BOTTOM) {
+            shape = Input::CURSOR_VERSIZE;
+        } else if(Handles::s_Axes == Handles::LEFT || Handles::s_Axes == Handles::RIGHT) {
+            shape = Input::CURSOR_HORSIZE;
+        }
 
-    Input::mouseSetCursor(shape);
+        Input::mouseSetCursor(shape);
+    }
 }
 
 std::string WidgetTool::icon() const {
