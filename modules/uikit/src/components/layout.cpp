@@ -223,6 +223,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
     }
 
     float totalPref = 0.0f;
+    float totalExp = 0.0f;
     int expandingCount = 0;
     int preferredCount = 0;
     int fixedCount = 0;
@@ -241,7 +242,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
             switch(policy) {
                 case RectTransform::Fixed: fixedCount++; break;
                 case RectTransform::Preferred: preferredCount++; break;
-                case RectTransform::Expanding: expandingCount++; sizes.push_back(pref); break;
+                case RectTransform::Expanding: expandingCount++; totalExp += pref; sizes.push_back(pref); break;
                 default: break;
             }
         }
@@ -257,7 +258,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
         if(it->isEnabled()) {
             RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
             if(policy == RectTransform::Expanding) {
-                float weight = (*size) / totalPref;
+                float weight = (*size) / totalExp;
                 weights.push_back(weight);
                 ++size;
             }
