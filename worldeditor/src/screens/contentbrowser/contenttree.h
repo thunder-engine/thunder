@@ -13,7 +13,7 @@ class ContentTree : public BaseObjectModel {
 public:
     static ContentTree *instance();
 
-    QString path(const QModelIndex &index) const override;
+    TString path(const QModelIndex &index) const;
 
     bool reimportResource(const QModelIndex &index);
 

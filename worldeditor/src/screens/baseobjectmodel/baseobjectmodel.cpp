@@ -7,7 +7,9 @@ BaseObjectModel::BaseObjectModel(QObject *parent) :
 }
 
 QObject *BaseObjectModel::createRoot() {
-    return new QObject(this);
+    QObject *root = new QObject(this);
+    addItem(root);
+    return root;
 }
 
 int BaseObjectModel::rowCount(const QModelIndex &parent) const {
@@ -15,7 +17,10 @@ int BaseObjectModel::rowCount(const QModelIndex &parent) const {
     if(parent.isValid()) {
         parentItem = getObject(parent);
     }
-    return parentItem->children().size();
+    if(parentItem) {
+        return parentItem->children().size();
+    }
+    return 0;
 }
 
 QModelIndex BaseObjectModel::index(int row, int column, const QModelIndex &parent) const {
@@ -23,7 +28,7 @@ QModelIndex BaseObjectModel::index(int row, int column, const QModelIndex &paren
     if(parent.isValid()) {
         parentItem = getObject(parent);
     }
-    if(row >= parentItem->children().size() || row < 0) {
+    if(!parentItem || row >= parentItem->children().size() || row < 0) {
         return QModelIndex();
     }
 
@@ -37,17 +42,20 @@ QModelIndex BaseObjectModel::parent(const QModelIndex &index) const {
     }
 
     QObject *childItem = getObject(index);
-    QObject *parentItem = childItem->parent();
+    if(childItem) {
+        QObject *parentItem = childItem->parent();
+        if(!parentItem || parentItem == m_rootItem) {
+            return QModelIndex();
+        }
 
-    if(!parentItem || parentItem == m_rootItem) {
-        return QModelIndex();
+        QObject *superParent = parentItem->parent();
+        if(!superParent) {
+            return QModelIndex();
+        }
+        int row = superParent->children().indexOf(parentItem);
+        return createIndex(row, 0, reinterpret_cast<quintptr>(parentItem));
     }
-
-    QObject *superParent = parentItem->parent();
-    if(!superParent) {
-        return QModelIndex();
-    }
-    return createIndex(superParent->children().indexOf(parentItem), 0, reinterpret_cast<quintptr>(parentItem));
+    return QModelIndex();
 }
 
 Qt::ItemFlags BaseObjectModel::flags(const QModelIndex &index) const {
@@ -85,8 +93,8 @@ void BaseObjectModel::addItem(QObject *object) {
 }
 
 QObject *BaseObjectModel::getObject(const QModelIndex &index) const {
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    return item;
+    quintptr id = index.internalId();
+    return m_items.value(id, nullptr);
 }
 
 void BaseObjectModel::clear() {

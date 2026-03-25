@@ -19,13 +19,11 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    virtual QString path(const QModelIndex &index) const { Q_UNUSED(index); return QString(); }
-
     QModelIndex getIndex(QObject *object, const QModelIndex &parent = QModelIndex()) const;
 
     virtual bool removeResource(const QModelIndex &index);
 
-    virtual void addItem(QObject *object);
+    void addItem(QObject *object);
 
     QObject *getObject(const QModelIndex &index) const;
 

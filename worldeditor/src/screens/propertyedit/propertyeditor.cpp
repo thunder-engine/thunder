@@ -93,15 +93,13 @@ PropertyEditor::~PropertyEditor() {
 }
 
 void PropertyEditor::updateAndExpand() {
-    QAbstractItemModel *model = m_filter->sourceModel();
-
     ui->treeView->expandToDepth(-1);
     int i = 0;
-    QModelIndex it = model->index(i, 1);
+    QModelIndex it = m_nextModel->index(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it = model->index(i, 1);
+        it = m_nextModel->index(i, 1);
     }
     ui->treeView->expandToDepth(-1);
 }
@@ -122,10 +120,10 @@ void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
             setTopWidget(m_editor->propertiesWidget());
         }
 
-        m_nextModel->addItem(m_item);
+        m_nextModel->addObject(m_item);
         for(auto it : m_item->getChildren()) {
             if(dynamic_cast<Actor *>(it) == nullptr) {
-                m_nextModel->addItem(it);
+                m_nextModel->addObject(it);
             }
         }
 
@@ -136,7 +134,7 @@ void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
 }
 
 QAbstractItemModel *PropertyEditor::model() {
-     return m_filter->sourceModel();
+    return m_nextModel;
 }
 
 void PropertyEditor::setGroup(const QString &group) {
@@ -161,13 +159,12 @@ void PropertyEditor::setTopWidget(QWidget *widget) {
 }
 
 void PropertyEditor::onUpdated() {
-    QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
-    QModelIndex it = m->index(i, 1);
+    QModelIndex it = m_nextModel->index(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it = m->index(i, 1);
+        it = m_nextModel->index(i, 1);
         emit ui->treeView->itemDelegate()->sizeHintChanged(it);
     }
 }
@@ -193,14 +190,14 @@ void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
-    Property *p = static_cast<Property *>(index.internalPointer());
+    QModelIndex origin = m_filter->mapFromSource(index);
+
+    if(!ui->treeView->isPersistentEditorOpen(origin)) {
+        ui->treeView->openPersistentEditor(origin);
+    }
+
+    Property *p = static_cast<Property *>(m_nextModel->getObject(index));
     if(p) {
-        QModelIndex origin = m_filter->mapFromSource(index);
-
-        if(!ui->treeView->isPersistentEditorOpen(origin)) {
-            ui->treeView->openPersistentEditor(origin);
-        }
-
         QWidget *e = p->editor();
         if(e) {
             ui->treeView->itemDelegate()->setEditorData(e, origin);
@@ -223,13 +220,12 @@ void PropertyEditor::updatePersistent(const QModelIndex &index) {
 void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
     m_filter->setFilterFixedString(arg1);
 
-    QAbstractItemModel *m = m_filter->sourceModel();
     int i = 0;
-    QModelIndex it = m->index(i, 1);
+    QModelIndex it = m_nextModel->index(i, 1);
     while(it.isValid()) {
         updatePersistent(it);
         i++;
-        it = m->index(i, 1);
+        it = m_nextModel->index(i, 1);
     }
     ui->treeView->expandToDepth(-1);
 }

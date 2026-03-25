@@ -16,6 +16,9 @@ ContentTree::ContentTree() :
         m_content(new QObject(m_rootItem)),
         m_newAsset(new QObject) {
 
+    addItem(m_content);
+    addItem(m_newAsset);
+
     m_content->setObjectName("Content");
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
@@ -105,15 +108,15 @@ Qt::ItemFlags ContentTree::flags(const QModelIndex &index) const {
     return flags;
 }
 
-QString ContentTree::path(const QModelIndex &index) const {
+TString ContentTree::path(const QModelIndex &index) const {
     if(index.isValid()) {
         QObject *item = getObject(index);
         if(item && item != m_content) {
-            return item->objectName();
+            return item->objectName().toStdString();
         }
     }
 
-    return QString();
+    return TString();
 }
 
 void ContentTree::onRendered(const TString &uuid) {
@@ -201,10 +204,10 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 }
 
 void ContentTree::update() {
-    QString path(ProjectSettings::instance()->contentPath().data());
-    QDir dir(path);
+    QString contentPath(ProjectSettings::instance()->contentPath().data());
+    QDir dir(contentPath);
 
-    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
+    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(contentPath));
     if(parent == nullptr) {
         parent = m_content;
     }
@@ -212,7 +215,7 @@ void ContentTree::update() {
 
     AssetManager *asset = AssetManager::instance();
 
-    StringList list = File::list(path.toStdString());
+    StringList list = File::list(contentPath.toStdString());
     for(TString &path : list) {
         Url info(path);
         if(info.suffix() == gMetaExt) {
@@ -226,8 +229,10 @@ void ContentTree::update() {
         QString source = path.contains(dir.absolutePath().toStdString()) ?
                              dir.relativeFilePath(path.data()) :
                              (QString(".embedded/") + info.name().data());
-        if(parent->findChild<QObject *>(source) == nullptr) {
-            QObject *item = new QObject(parent);
+
+        QObject *item = parent->findChild<QObject *>(source);
+        if(!item) {
+            item = new QObject(parent);
             item->setObjectName(source);
             if(!File::isDir(path)) {
                 item->setProperty(gType, asset->assetTypeName(path).data());
@@ -235,6 +240,7 @@ void ContentTree::update() {
             } else {
                 item->setProperty(gIcon, m_folder);
             }
+            addItem(item);
         }
     }
 
@@ -244,12 +250,12 @@ void ContentTree::update() {
 
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
-        if(!File::exists(it->objectName().toStdString())) {
+        QString path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + it->objectName();
+        clean(it);
+        if(!File::exists(path.toStdString())) {
             m_items.remove(reinterpret_cast<quintptr>(it));
             it->setParent(nullptr);
             it->deleteLater();
-        } else {
-            clean(it);
         }
     }
 }

@@ -4,6 +4,7 @@
 #include <QSortFilterProxyModel>
 
 #include "property.h"
+#include "nextmodel.h"
 
 PropertyDelegate::PropertyDelegate(QObject *parent) :
         QStyledItemDelegate(parent),
@@ -18,16 +19,21 @@ PropertyDelegate::~PropertyDelegate() {
 QWidget *PropertyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const{
     QWidget *editor = nullptr;
     if(index.isValid()) {
-        QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
-        Property *p = static_cast<Property *>(origin.internalPointer());
-        editor = p->getEditor(parent);
-        if(editor) {
-            if(editor->metaObject()->indexOfSignal("editFinished()") != -1) {
-                connect(editor, SIGNAL(editFinished()), m_finishedMapper, SLOT(map()));
-                m_finishedMapper->setMapping(editor, editor);
+        const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
+        NextModel *nextModel = static_cast<NextModel *>(model->sourceModel());
+        QModelIndex origin = model->mapToSource(index);
+
+        Property *p = static_cast<Property *>(nextModel->getObject(origin));
+        if(p) {
+            editor = p->getEditor(parent);
+            if(editor) {
+                if(editor->metaObject()->indexOfSignal("editFinished()") != -1) {
+                    connect(editor, SIGNAL(editFinished()), m_finishedMapper, SLOT(map()));
+                    m_finishedMapper->setMapping(editor, editor);
+                }
             }
+            parseEditorHints(editor, p->editorHints().data());
         }
-        parseEditorHints(editor, p->editorHints().data());
     }
 
     return editor;
@@ -37,19 +43,28 @@ void PropertyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     m_finishedMapper->blockSignals(true);
     if(index.isValid()) {
         const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
+        NextModel *nextModel = static_cast<NextModel *>(model->sourceModel());
         QModelIndex origin = model->mapToSource(index);
-        Property *p = static_cast<Property *>(origin.internalPointer());
-        p->updateEditor();
+
+        Property *p = static_cast<Property *>(nextModel->getObject(origin));
+        if(p) {
+            p->updateEditor();
+        }
     }
     m_finishedMapper->blockSignals(false);
 }
 
 QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    QModelIndex origin = static_cast<const QSortFilterProxyModel *>(index.model())->mapToSource(index);
+    const QSortFilterProxyModel *model = static_cast<const QSortFilterProxyModel *>(index.model());
+    NextModel *nextModel = static_cast<NextModel *>(model->sourceModel());
+    QModelIndex origin = model->mapToSource(index);
+
     QSize result = QStyledItemDelegate::sizeHint(option, index);
     if(origin.isValid()) {
-        Property *p = static_cast<Property *>(origin.internalPointer());
-        result = p->sizeHint(result);
+        Property *p = static_cast<Property *>(nextModel->getObject(origin));
+        if(p) {
+            result = p->sizeHint(result);
+        }
     }
     return result;
 }

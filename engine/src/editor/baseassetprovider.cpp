@@ -95,9 +95,11 @@ void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force)
 }
 
 void BaseAssetProvider::removeResource(const TString &source) {
-    AssetManager *asset = AssetManager::instance();
-    ProjectSettings *project = ProjectSettings::instance();
+    if(source.isEmpty()) {
+        return;
+    }
 
+    ProjectSettings *project = ProjectSettings::instance();
     TString src(project->contentPath() + "/" + source);
     if(File::isDir(src)) {
         m_dirWatcher->removePath(src.data());
@@ -109,30 +111,31 @@ void BaseAssetProvider::removeResource(const TString &source) {
         }
         QDir().rmdir(src.data());
         return;
-    } else {
-        CodeBuilder *builder = nullptr;
-        BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
-        if(settings) {
-            builder = settings->builder();
-        }
-        m_fileWatcher->removePath(src.data());
-        Engine::unloadResource(source);
+    }
 
-        TString uuid = asset->unregisterAsset(source);
-        if(!uuid.isEmpty()) {
-            File::remove(project->importPath() + "/" + uuid);
-            File::remove(project->iconPath() + "/" + uuid + ".png");
-        }
+    AssetManager *asset = AssetManager::instance();
+    CodeBuilder *builder = nullptr;
+    BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
+    if(settings) {
+        builder = settings->builder();
+    }
+    m_fileWatcher->removePath(src.data());
+    Engine::unloadResource(source);
 
-        File::remove(src + "." + gMetaExt);
-        File::remove(src);
+    TString uuid = asset->unregisterAsset(source);
+    if(!uuid.isEmpty()) {
+        File::remove(project->importPath() + "/" + uuid);
+        File::remove(project->iconPath() + "/" + uuid + ".png");
+    }
 
-        if(builder) {
-            builder->rescanSources(project->contentPath());
-            if(!builder->isEmpty()) {
-                builder->makeOutdated();
-                builder->buildProject();
-            }
+    File::remove(src + "." + gMetaExt);
+    File::remove(src);
+
+    if(builder) {
+        builder->rescanSources(project->contentPath());
+        if(!builder->isEmpty()) {
+            builder->makeOutdated();
+            builder->buildProject();
         }
     }
 

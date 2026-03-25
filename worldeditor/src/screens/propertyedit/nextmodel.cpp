@@ -29,7 +29,7 @@ NextModel::~NextModel() {
     delete m_rootItem;
 }
 
-void NextModel::addItem(Object *propertyObject) {
+void NextModel::addObject(Object *propertyObject) {
     const MetaObject *metaObject = propertyObject->metaObject();
 
     Property *propertyItem = static_cast<Property *>(m_rootItem);
@@ -43,6 +43,7 @@ void NextModel::addItem(Object *propertyObject) {
 
         propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
         propertyItem->setPropertyObject(propertyObject);
+        addItem(propertyItem);
 
         connect(propertyItem, &Property::propertyChanged, this, &NextModel::propertyChanged);
 
@@ -54,6 +55,7 @@ void NextModel::addItem(Object *propertyObject) {
                 if(type < MetaType::QUATERNION || type >= MetaType::OBJECT) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                     p->setPropertyObject(propertyObject);
+                    addItem(p);
 
                     const char *annotation = property.table()->annotation;
                     if(annotation) {
@@ -109,6 +111,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
                 } else {
                     p = new Property(path.toStdString(), it, parent == m_rootItem);
                     p->setPropertyObject(propertyObject);
+                    addItem(p);
 
                     it = p;
                 }
@@ -116,6 +119,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
                 p->setEditorHints(propertyObject->dynamicPropertyInfo(dynProp.data()));
+                addItem(p);
 
                 connect(p, &Property::propertyChanged, this, &NextModel::propertyChanged);
 
@@ -135,40 +139,42 @@ QVariant NextModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    Property *item = static_cast<Property *>(index.internalPointer());
-    switch(role) {
-        case Qt::ToolTipRole:
-        case Qt::DisplayRole:
-        case Qt::EditRole: {
-            if(index.column() == 0) {
-                return fromCamelCase(item->name().replace('_', ' '));
+    Property *item = static_cast<Property *>(getObject(index));
+    if(item) {
+        switch(role) {
+            case Qt::ToolTipRole:
+            case Qt::DisplayRole:
+            case Qt::EditRole: {
+                if(index.column() == 0) {
+                    return fromCamelCase(item->name().replace('_', ' '));
+                }
+            } break;
+            case Qt::BackgroundRole: {
+                if(item->isRoot()) {
+                    return QApplication::palette("QTreeView").brush(QPalette::Normal, QPalette::Button).color();
+                }
+                if(index.column() == 0) {
+                    return QColor(0, 0, 255);
+                }
+            } break;
+            case Qt::FontRole: {
+                if(item->isRoot()) {
+                    QFont font = QApplication::font("QTreeView");
+                    font.setBold(true);
+                    font.setPointSize(font.pointSizeF() + 2);
+                    return font;
+                }
+            } break;
+            case Qt::SizeHintRole: {
+                return QSize(1, 26);
             }
-        } break;
-        case Qt::BackgroundRole: {
-            if(item->isRoot()) {
-                return QApplication::palette("QTreeView").brush(QPalette::Normal, QPalette::Button).color();
-            }
-            if(index.column() == 0) {
-                return QColor(0, 0, 255);
-            }
-        } break;
-        case Qt::FontRole: {
-            if(item->isRoot()) {
-                QFont font = QApplication::font("QTreeView");
-                font.setBold(true);
-                font.setPointSize(font.pointSizeF() + 2);
-                return font;
-            }
-        } break;
-        case Qt::SizeHintRole: {
-            return QSize(1, 26);
+            case Qt::CheckStateRole: {
+                if(index.column() == 0 && item->isCheckable()) {
+                    return item->isChecked() ? Qt::Checked : Qt::Unchecked;
+                }
+            } break;
+            default: break;
         }
-        case Qt::CheckStateRole: {
-            if(index.column() == 0 && item->isCheckable()) {
-                return item->isChecked() ? Qt::Checked : Qt::Unchecked;
-            }
-        } break;
-        default: break;
     }
 
     return QVariant();
@@ -179,7 +185,7 @@ bool NextModel::setData(const QModelIndex &index, const QVariant &value, int rol
     if(!index.isValid()) {
         return false;
     }
-    Property *item = static_cast<Property *>(index.internalPointer());
+    Property *item = static_cast<Property *>(getObject(index));
     if(role == Qt::EditRole) {
         emit dataChanged(index, index);
         return true;
@@ -196,7 +202,7 @@ Qt::ItemFlags NextModel::flags(const QModelIndex &index) const {
     if(!index.isValid()) {
         return Qt::ItemIsEnabled;
     }
-    Property *item = static_cast<Property *>(index.internalPointer());
+    Property *item = static_cast<Property *>(getObject(index));
     // only allow change of value attribute
 
     Qt::ItemFlags result;
@@ -230,8 +236,11 @@ QVariant NextModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 void NextModel::clear() {
+    BaseObjectModel::clear();
+
     delete m_rootItem;
     m_rootItem = new Property("Root", nullptr, true);
+    addItem(m_rootItem);
 
     beginResetModel();
     endResetModel();

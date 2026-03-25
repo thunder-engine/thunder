@@ -15,7 +15,7 @@ public:
     explicit NextModel(QObject* parent = nullptr);
     ~NextModel();
 
-    void addItem(Object *propertyObject);
+    void addObject(Object *propertyObject);
 
     void clear();
 
