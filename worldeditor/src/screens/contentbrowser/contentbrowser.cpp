@@ -113,8 +113,10 @@ protected:
 
         TString target(mgr->contentPath());
         if(index.isValid() && index.parent().isValid()) {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
-            target = mgr->contentPath() + "/" + item->objectName().toStdString();
+            QObject *item = ContentTree::instance()->getObject(index);
+            if(item) {
+                target = mgr->contentPath() + "/" + item->objectName().toStdString();
+            }
         }
 
         bool result = File::isDir(target);
@@ -141,8 +143,10 @@ protected:
         QDir dir(ProjectSettings::instance()->contentPath().data());
         TString target;
         if(index.isValid() && index.parent().isValid()) {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
-            target = dir.relativeFilePath(item->objectName()).toStdString();
+            QObject *item = ContentTree::instance()->getObject(index);
+            if(item) {
+                target = dir.relativeFilePath(item->objectName()).toStdString();
+            }
         }
 
         if(data->hasUrls()) {
@@ -442,7 +446,7 @@ void ContentBrowser::onItemDelete() {
 
         if(msgBox.exec() == QMessageBox::Yes) {
             foreach(auto &it, view->selectionModel()->selectedIndexes()) {
-                QObject *item = static_cast<QObject *>(filter->mapToSource(it).internalPointer());
+                QObject *item = ContentTree::instance()->getObject(it);
                 if(item) {
                     AssetManager::instance()->removeResource(item->objectName().toStdString());
                 }

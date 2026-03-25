@@ -38,21 +38,23 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
-    switch(role) {
-        case Qt::EditRole:
-        case Qt::DisplayRole: {
-            switch(index.column()) {
-                case 1:  return File::isDir(path);
-                case 2:  return item->property(gType);
-                default: return Url(path).baseName().data();
+    QObject *item = getObject(index);
+    if(item) {
+        TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        switch(role) {
+            case Qt::EditRole:
+            case Qt::DisplayRole: {
+                switch(index.column()) {
+                    case 1:  return File::isDir(path);
+                    case 2:  return item->property(gType);
+                    default: return Url(path).baseName().data();
+                }
             }
+            case Qt::DecorationRole: {
+                return item->property(gIcon).value<QImage>();
+            }
+            default: break;
         }
-        case Qt::DecorationRole: {
-            return item->property(gIcon).value<QImage>();
-        }
-        default: break;
     }
 
     return QVariant();
@@ -62,31 +64,32 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
     Q_UNUSED(role)
     switch(index.column()) {
         case 0: {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
+            QObject *item = getObject(index);
+            if(item) {
+                Url url(item->objectName().toStdString());
+                if(item == m_newAsset) {
+                    TString source(m_newAsset->property(gImport).toString().toStdString());
+                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
+                    if(source.isEmpty()) {
+                        QDir dir(path.data());
+                        dir.mkdir(value.toString());
+                    } else {
+                        AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
+                    }
 
-            Url url(item->objectName().toStdString());
-            if(item == m_newAsset) {
-                TString source(m_newAsset->property(gImport).toString().toStdString());
-                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
-                if(source.isEmpty()) {
-                    QDir dir(path.data());
-                    dir.mkdir(value.toString());
+                    m_newAsset->setParent(nullptr);
                 } else {
-                    AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
-                }
+                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
+                    if(path != ".") {
+                        path += "/";
+                    }
+                    TString dest(path + value.toString().toStdString());
+                    if(!url.suffix().isEmpty()) {
+                        dest += TString(".") + url.suffix();
+                    };
 
-                m_newAsset->setParent(nullptr);
-            } else {
-                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
-                if(path != ".") {
-                    path += "/";
+                    AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
                 }
-                TString dest(path + value.toString().toStdString());
-                if(!url.suffix().isEmpty()) {
-                    dest += TString(".") + url.suffix();
-                };
-
-                AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
             }
         } break;
         default: break;
@@ -104,7 +107,7 @@ Qt::ItemFlags ContentTree::flags(const QModelIndex &index) const {
 
 QString ContentTree::path(const QModelIndex &index) const {
     if(index.isValid()) {
-        QObject *item = static_cast<QObject *>(index.internalPointer());
+        QObject *item = getObject(index);
         if(item && item != m_content) {
             return item->objectName();
         }
@@ -144,15 +147,17 @@ void ContentTree::onRendered(const TString &uuid) {
 }
 
 bool ContentTree::reimportResource(const QModelIndex &index) {
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
-    AssetManager::instance()->reimport();
+    QObject *item = getObject(index);
+    if(item) {
+        AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        AssetManager::instance()->reimport();
+    }
     return true;
 }
 
 bool ContentTree::removeResource(const QModelIndex &index) {
     if(index.isValid()) {
-        QObject *item = static_cast<QObject *>(index.internalPointer());
+        QObject *item = getObject(index);
         if(item) {
             AssetManager::instance()->removeResource(item->objectName().toStdString());
             item->setParent(nullptr);
@@ -240,6 +245,7 @@ void ContentTree::update() {
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
         if(!File::exists(it->objectName().toStdString())) {
+            m_items.remove(reinterpret_cast<quintptr>(it));
             it->setParent(nullptr);
             it->deleteLater();
         } else {
@@ -267,7 +273,7 @@ QMimeData *ContentTree::mimeData(const QModelIndexList &indexes) const {
     QStringList list;
     foreach(QModelIndex index, indexes) {
         if(index.isValid()) {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
+            QObject *item = getObject(index);
             QString path = item->objectName();
             if(!path.isEmpty()) {
                 list << path;
