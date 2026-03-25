@@ -11,8 +11,6 @@ class ComponentModel : public BaseObjectModel {
 public:
     static ComponentModel *instance();
 
-    static void destroy();
-
     int columnCount(const QModelIndex &) const;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
@@ -26,7 +24,7 @@ private:
     ComponentModel();
     ~ComponentModel() {}
 
-    static ComponentModel  *m_pInstance;
+    static ComponentModel *m_pInstance;
 
 };
 

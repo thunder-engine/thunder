@@ -97,8 +97,10 @@ void ComponentBrowser::on_findComponent_textChanged(const QString &arg1) {
 
 void ComponentBrowser::on_componentsTree_clicked(const QModelIndex &index) {
     if(m_proxyModel->rowCount(index) == 0) {
-        QObject *object = static_cast<QObject *>(m_proxyModel->mapToSource(index).internalPointer());
-        emit componentSelected(object->objectName());
+        QObject *object = ComponentModel::instance()->getObject(m_proxyModel->mapToSource(index));
+        if(object) {
+            emit componentSelected(object->objectName());
+        }
     }
 }
 
