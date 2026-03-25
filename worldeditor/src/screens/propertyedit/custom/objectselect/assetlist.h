@@ -34,7 +34,7 @@ public slots:
     void update();
 
 private:
-    QRect m_defaultIcon;
+    QSize m_cellSzie;
 
 };
 

@@ -106,7 +106,8 @@ public:
             default: return QVariant();
             }
         }
-        return QSortFilterProxyModel::data(createIndex(index.row(), index.column(), index.internalPointer()), role);
+        //return QSortFilterProxyModel::data(createIndex(index.row(), index.column(), index.internalId()), role);
+        return QSortFilterProxyModel::data(index, role);
     }
 
     Qt::ItemFlags flags(const QModelIndex &index) const {

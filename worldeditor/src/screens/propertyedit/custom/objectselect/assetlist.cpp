@@ -14,7 +14,7 @@ namespace {
 
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
-        m_defaultIcon(QRect(0, 0, 64, 64)) {
+        m_cellSzie(64, 64) {
 
     connect(AssetManager::instance(), &AssetManager::importFinished, this, &AssetList::update);
     connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
@@ -43,25 +43,21 @@ QVariant AssetList::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    switch(role) {
-        case Qt::DisplayRole: {
-            switch(index.column()) {
-                case 1:  return item->objectName();
-                case 2:  return item->property(gType);
-                default: return item->property(gName);
+    QObject *item = getObject(index);
+    if(item) {
+        switch(role) {
+            case Qt::DisplayRole: {
+                switch(index.column()) {
+                    case 1:  return item->objectName();
+                    case 2:  return item->property(gType);
+                    default: return item->property(gName);
+                }
             }
+            case Qt::SizeHintRole: return QSize(m_cellSzie.width() + 16, m_cellSzie.height() + 16);
+            case Qt::DecorationRole: return item->property(gIcon).value<QImage>();
+            case Qt::ToolTipRole: return item->objectName();
+            default: break;
         }
-        case Qt::SizeHintRole: {
-            return QSize(m_defaultIcon.width() + 16, m_defaultIcon.height() + 16);
-        }
-        case Qt::DecorationRole: {
-            return item->property(gIcon).value<QImage>();
-        }
-        case Qt::ToolTipRole: {
-            return item->objectName();
-        }
-        default: break;
     }
     return QVariant();
 }
@@ -81,7 +77,7 @@ void AssetList::onRendered(const TString &uuid) {
 
         QImage img = mgr->icon(path);
         if(!img.isNull()) {
-            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height()));
+            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
         }
 
         emit layoutAboutToBeChanged();
@@ -90,10 +86,7 @@ void AssetList::onRendered(const TString &uuid) {
 }
 
 void AssetList::update() {
-    foreach(QObject *it, m_rootItem->children()) {
-        it->setParent(nullptr);
-        delete it;
-    }
+    clear();
 
     AssetManager *inst = AssetManager::instance();
     for(auto &it : Engine::resourceSystem()->indices()) {
@@ -107,7 +100,7 @@ void AssetList::update() {
 
         QImage img = inst->icon(path);
         if(!img.isNull()) {
-            img = (img.height() < img.width()) ? img.scaledToWidth(m_defaultIcon.width()) : img.scaledToHeight(m_defaultIcon.height());
+            img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
         }
         item->setProperty(qPrintable(gIcon), img);
     }
@@ -117,7 +110,7 @@ void AssetList::update() {
 }
 
 QImage AssetList::icon(const QModelIndex &index) const {
-    QObject *item = static_cast<QObject *>(index.internalPointer());
+    QObject *item = getObject(index);
     if(item) {
         return item->property(qPrintable(gIcon)).value<QImage>();
     }
@@ -125,7 +118,7 @@ QImage AssetList::icon(const QModelIndex &index) const {
 }
 
 QString AssetList::path(const QModelIndex &index) const {
-    QObject *item = static_cast<QObject *>(index.internalPointer());
+    QObject *item = getObject(index);
     if(item) {
         return item->objectName();
     }
@@ -135,7 +128,7 @@ QString AssetList::path(const QModelIndex &index) const {
 QModelIndex AssetList::findResource(const QString &resource) const {
     QObject *item = m_rootItem->findChild<QObject *>(resource);
     if(item) {
-        return createIndex(item->parent()->children().indexOf(item), 0, item);
+        return createIndex(item->parent()->children().indexOf(item), 0, reinterpret_cast<quintptr>(item));
     }
     return QModelIndex();
 }
