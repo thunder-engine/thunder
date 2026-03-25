@@ -20,11 +20,6 @@ ComponentModel *ComponentModel::instance() {
     return m_pInstance;
 }
 
-void ComponentModel::destroy() {
-    delete m_pInstance;
-    m_pInstance = nullptr;
-}
-
 int ComponentModel::columnCount(const QModelIndex &) const {
     return 3;
 }
@@ -42,7 +37,7 @@ QVariant ComponentModel::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
-    QObject *item = static_cast<QObject* >(index.internalPointer());
+    QObject *item = getObject(index);
 
     switch(role) {
         case Qt::ToolTipRole:
@@ -60,10 +55,7 @@ QVariant ComponentModel::data(const QModelIndex &index, int role) const {
 }
 
 void ComponentModel::update() {
-    foreach(QObject *it, m_rootItem->children()) {
-        it->setParent(nullptr);
-        it->deleteLater();
-    }
+    clear();
 
     // Iterate all components
     for(const auto &it : ObjectSystem::factories()) {
@@ -85,6 +77,7 @@ void ComponentModel::update() {
                 item = new QObject(p);
                 item->setObjectName(part);
                 item->setProperty(gURI, it.second.data());
+                addItem(item);
             }
             i++;
         }

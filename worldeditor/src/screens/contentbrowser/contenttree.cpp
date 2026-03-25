@@ -16,6 +16,9 @@ ContentTree::ContentTree() :
         m_content(new QObject(m_rootItem)),
         m_newAsset(new QObject) {
 
+    addItem(m_content);
+    addItem(m_newAsset);
+
     m_content->setObjectName("Content");
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
@@ -38,21 +41,23 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
         return QVariant();
     }
 
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
-    switch(role) {
-        case Qt::EditRole:
-        case Qt::DisplayRole: {
-            switch(index.column()) {
-                case 1:  return File::isDir(path);
-                case 2:  return item->property(gType);
-                default: return Url(path).baseName().data();
+    QObject *item = getObject(index);
+    if(item) {
+        TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        switch(role) {
+            case Qt::EditRole:
+            case Qt::DisplayRole: {
+                switch(index.column()) {
+                    case 1:  return File::isDir(path);
+                    case 2:  return item->property(gType);
+                    default: return Url(path).baseName().data();
+                }
             }
+            case Qt::DecorationRole: {
+                return item->property(gIcon).value<QImage>();
+            }
+            default: break;
         }
-        case Qt::DecorationRole: {
-            return item->property(gIcon).value<QImage>();
-        }
-        default: break;
     }
 
     return QVariant();
@@ -62,31 +67,32 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
     Q_UNUSED(role)
     switch(index.column()) {
         case 0: {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
+            QObject *item = getObject(index);
+            if(item) {
+                Url url(item->objectName().toStdString());
+                if(item == m_newAsset) {
+                    TString source(m_newAsset->property(gImport).toString().toStdString());
+                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
+                    if(source.isEmpty()) {
+                        QDir dir(path.data());
+                        dir.mkdir(value.toString());
+                    } else {
+                        AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
+                    }
 
-            Url url(item->objectName().toStdString());
-            if(item == m_newAsset) {
-                TString source(m_newAsset->property(gImport).toString().toStdString());
-                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
-                if(source.isEmpty()) {
-                    QDir dir(path.data());
-                    dir.mkdir(value.toString());
+                    m_newAsset->setParent(nullptr);
                 } else {
-                    AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
-                }
+                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
+                    if(path != ".") {
+                        path += "/";
+                    }
+                    TString dest(path + value.toString().toStdString());
+                    if(!url.suffix().isEmpty()) {
+                        dest += TString(".") + url.suffix();
+                    };
 
-                m_newAsset->setParent(nullptr);
-            } else {
-                TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
-                if(path != ".") {
-                    path += "/";
+                    AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
                 }
-                TString dest(path + value.toString().toStdString());
-                if(!url.suffix().isEmpty()) {
-                    dest += TString(".") + url.suffix();
-                };
-
-                AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
             }
         } break;
         default: break;
@@ -102,15 +108,15 @@ Qt::ItemFlags ContentTree::flags(const QModelIndex &index) const {
     return flags;
 }
 
-QString ContentTree::path(const QModelIndex &index) const {
+TString ContentTree::path(const QModelIndex &index) const {
     if(index.isValid()) {
-        QObject *item = static_cast<QObject *>(index.internalPointer());
+        QObject *item = getObject(index);
         if(item && item != m_content) {
-            return item->objectName();
+            return item->objectName().toStdString();
         }
     }
 
-    return QString();
+    return TString();
 }
 
 void ContentTree::onRendered(const TString &uuid) {
@@ -144,15 +150,17 @@ void ContentTree::onRendered(const TString &uuid) {
 }
 
 bool ContentTree::reimportResource(const QModelIndex &index) {
-    QObject *item = static_cast<QObject *>(index.internalPointer());
-    AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
-    AssetManager::instance()->reimport();
+    QObject *item = getObject(index);
+    if(item) {
+        AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        AssetManager::instance()->reimport();
+    }
     return true;
 }
 
 bool ContentTree::removeResource(const QModelIndex &index) {
     if(index.isValid()) {
-        QObject *item = static_cast<QObject *>(index.internalPointer());
+        QObject *item = getObject(index);
         if(item) {
             AssetManager::instance()->removeResource(item->objectName().toStdString());
             item->setParent(nullptr);
@@ -196,10 +204,10 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 }
 
 void ContentTree::update() {
-    QString path(ProjectSettings::instance()->contentPath().data());
-    QDir dir(path);
+    QString contentPath(ProjectSettings::instance()->contentPath().data());
+    QDir dir(contentPath);
 
-    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(path));
+    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(contentPath));
     if(parent == nullptr) {
         parent = m_content;
     }
@@ -207,7 +215,7 @@ void ContentTree::update() {
 
     AssetManager *asset = AssetManager::instance();
 
-    StringList list = File::list(path.toStdString());
+    StringList list = File::list(contentPath.toStdString());
     for(TString &path : list) {
         Url info(path);
         if(info.suffix() == gMetaExt) {
@@ -221,8 +229,10 @@ void ContentTree::update() {
         QString source = path.contains(dir.absolutePath().toStdString()) ?
                              dir.relativeFilePath(path.data()) :
                              (QString(".embedded/") + info.name().data());
-        if(parent->findChild<QObject *>(source) == nullptr) {
-            QObject *item = new QObject(parent);
+
+        QObject *item = parent->findChild<QObject *>(source);
+        if(!item) {
+            item = new QObject(parent);
             item->setObjectName(source);
             if(!File::isDir(path)) {
                 item->setProperty(gType, asset->assetTypeName(path).data());
@@ -230,6 +240,7 @@ void ContentTree::update() {
             } else {
                 item->setProperty(gIcon, m_folder);
             }
+            addItem(item);
         }
     }
 
@@ -239,11 +250,12 @@ void ContentTree::update() {
 
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
-        if(!File::exists(it->objectName().toStdString())) {
+        QString path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + it->objectName();
+        clean(it);
+        if(!File::exists(path.toStdString())) {
+            m_items.remove(reinterpret_cast<quintptr>(it));
             it->setParent(nullptr);
             it->deleteLater();
-        } else {
-            clean(it);
         }
     }
 }
@@ -267,7 +279,7 @@ QMimeData *ContentTree::mimeData(const QModelIndexList &indexes) const {
     QStringList list;
     foreach(QModelIndex index, indexes) {
         if(index.isValid()) {
-            QObject *item = static_cast<QObject *>(index.internalPointer());
+            QObject *item = getObject(index);
             QString path = item->objectName();
             if(!path.isEmpty()) {
                 list << path;
