@@ -267,6 +267,8 @@ public:
 
     Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
 
+    bool isRemovable() const override { return false; }
+
 private:
     Material::BlendState m_blendState;
 
