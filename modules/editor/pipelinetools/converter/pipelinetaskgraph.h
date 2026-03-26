@@ -23,8 +23,11 @@ public:
         m_ports.push_back(NodePort(this, false, MetaType::INTEGER, 1, "input", gColor, 0));
     }
 
+private:
     Vector2 defaultSize() const override { return Vector2(150.0f, 30.0f); }
     Vector4 color() const override { return Vector4(0.141f, 0.384f, 0.514f, 1.0f); }
+
+    bool isRemovable() const override { return false; }
 
 };
 
