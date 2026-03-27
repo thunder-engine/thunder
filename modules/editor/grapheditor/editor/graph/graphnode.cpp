@@ -195,6 +195,10 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
         lowType = *std::next(types.begin(), list.size());
     }
 
+    if(!data.isEmpty() && data.front() == '{' && data.back() == '}') { // old type of template
+        lowType = "template";
+    }
+
     if(lowType == "bool") {
         result = (data == "true");
     } else if(lowType == "int") {
@@ -227,7 +231,12 @@ Variant GraphNode::toVariantHelper(const TString &data, const TString &type) {
         }
     } else if(lowType == "template") {
         Resource *object = Engine::loadResource(*std::next(list.begin(), 0));
-        uint32_t metaType = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
+        uint32_t metaType = 0;
+        if(list.size() > 1)  {
+            metaType = MetaType::type((*std::next(list.begin(), 1)).data()) + 1;
+        } else if(object) { // old template type
+            metaType = MetaType::type(object->typeName().data()) + 1;
+        }
         result = Variant(metaType, &object);
     } else if(lowType == "color") {
         if(list.size() == 4) {
@@ -282,7 +291,10 @@ void GraphNode::fromXml(const pugi::xml_node &element) {
         TString type = valueElement.attribute(gType).value();
         TString name = valueElement.attribute(gName).value();
 
-        setProperty(name.data(), toVariantHelper(valueElement.child_value(), type));
+        Variant value = toVariantHelper(valueElement.child_value(), type);
+        if(value.isValid()) {
+            setProperty(name.data(), value);
+        }
 
         valueElement = valueElement.next_sibling();
     }
