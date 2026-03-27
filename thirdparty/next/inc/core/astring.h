@@ -124,6 +124,8 @@ public:
     TString trimmed() const;
     TString trim(const char *t) const;
 
+    TString simplified() const;
+
     char front() const;
 
     static TString number(long long in);

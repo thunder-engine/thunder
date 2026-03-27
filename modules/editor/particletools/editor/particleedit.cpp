@@ -67,7 +67,6 @@ ParticleEdit::ParticleEdit() :
         m_builder(new EffectBuilder),
         m_controller(new CameraController),
         m_light(nullptr),
-        m_effect(nullptr),
         m_render(nullptr),
         m_moduleButton(nullptr),
         m_proxy(new ParticleProxy) {
@@ -90,8 +89,8 @@ ParticleEdit::ParticleEdit() :
     m_light = Engine::composeActor<DirectLight>(gDirectLight, scene);
     m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
-    m_effect = Engine::composeActor<EffectRender>(gEffectRender, scene);
-    m_render = m_effect->getComponent<EffectRender>();
+    Actor *effect = Engine::composeActor<EffectRender>(gEffectRender, scene);
+    m_render = effect->getComponent<EffectRender>();
 
     EffectGraph *graph = &m_builder->graph();
 
@@ -115,10 +114,9 @@ ParticleEdit::ParticleEdit() :
 ParticleEdit::~ParticleEdit() {
     writeSettings();
 
-    delete m_effect->world();
+    delete m_render->world();
 
     m_light = nullptr;
-    m_effect = nullptr;
     m_render = nullptr;
 
     delete ui;

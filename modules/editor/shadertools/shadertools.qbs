@@ -45,7 +45,7 @@ Project {
         bundle.isBundle: false
 
         cpp.defines: {
-            var result  = shadertools.defines
+            var result = shadertools.defines
             result.push("SHARED_DEFINE")
             return result
         }
