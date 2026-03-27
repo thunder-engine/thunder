@@ -20,7 +20,7 @@ enum TransformMode {
     Scale
 };
 
-void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString &path, const Vector3 &value, const Variant &variant) {
+void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString &path, const Vector3 &value, const Variant &data, SpineConverterSettings *settings) {
     AnimationTrack track;
     track.setPath(path);
 
@@ -39,7 +39,9 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
     frame.m_position = 0.0f;
     frame.m_value = { value.x, value.y, value.z };
 
-    for(auto &key : variant.value<VariantList>()) {
+    float customScale = settings->customScale();
+
+    for(auto &key : data.value<VariantList>()) {
         VariantMap fields = key.value<VariantMap>();
 
         auto it = fields.find(gTime);
@@ -64,6 +66,7 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
             if(it != fields.end()) {
                 if(mode == TransformMode::Translate) {
                     v.x = value.x + it->second.toFloat();
+                    v.x *= customScale;
                 } else {
                     v.x = value.x * it->second.toFloat();
                 }
@@ -73,6 +76,7 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
             if(it != fields.end()) {
                 if(mode == TransformMode::Translate) {
                     v.y = value.y + it->second.toFloat();
+                    v.y *= customScale;
                 } else {
                     v.y = value.y * it->second.toFloat();
                 }
@@ -97,13 +101,13 @@ void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConve
 
         for(auto &type : bone.second.value<VariantMap>()) {
             if(type.first == gRotate) {
-                importBoneTransform(TransformMode::Rotate, clip, path, t->rotation(), type.second);
+                importBoneTransform(TransformMode::Rotate, clip, path, t->rotation(), type.second, settings);
 
             } else if(type.first == gTranslate) {
-                importBoneTransform(TransformMode::Translate, clip, path, t->position(), type.second);
+                importBoneTransform(TransformMode::Translate, clip, path, t->position(), type.second, settings);
 
             } else if(type.first == gScale) {
-                importBoneTransform(TransformMode::Scale, clip, path, t->scale(), type.second);
+                importBoneTransform(TransformMode::Scale, clip, path, t->scale(), type.second, settings);
 
             } else if(type.first == "shear") {
                 // Unimplemented
