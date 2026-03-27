@@ -11,6 +11,7 @@ namespace {
     const char *gColor("mainColor");
     const char *gTexture("mainTexture");
     const char *gWeight("weight");
+    const char *gUseSDF("useSdf");
 };
 
 /*!
@@ -246,6 +247,8 @@ MaterialInstance *TextRender::materialInstance(int index) {
                 it->setFloat(gWeight, &m_fontWeight);
                 it->setTransform(transform());
                 it->setPriority(m_priority);
+                int sdf = m_flags & Font::Sdf;
+                it->setInteger(gUseSDF, &sdf);
             }
         }
         m_dirtyMaterial = false;
