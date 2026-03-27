@@ -8,7 +8,9 @@
 #include <QScrollBar>
 #include <QSettings>
 
-#include "animationclipmodel.h"
+#include <components/actor.h>
+
+#include "timelinecontroller.h"
 #include "timelinescene.h"
 #include "ui/treerow.h"
 #include "ui/ruler.h"
@@ -120,10 +122,12 @@ KeyFrameEditor::KeyFrameEditor(QWidget *parent) :
 
     connect(m_scene, &TimelineScene::rowSelectionChanged, this,
             [this]() {
+
         QStringList list;
-        for(auto &it : m_scene->selectedIndexes()) {
-            if(m_model) {
-                list << m_model->targetPath(it);
+        if(m_model) {
+            AnimationTracks &tracks = m_model->clip()->tracks();
+            for(int row : m_scene->selectedRows()) {
+                list << tracks.at(row).path().data();
             }
         }
         emit rowsSelected(list);
@@ -155,10 +159,10 @@ void KeyFrameEditor::writeSettings() {
     settings.setValue("timeline.splitter", m_splitter->saveState());
 }
 
-void KeyFrameEditor::setModel(AnimationClipModel *model) {
+void KeyFrameEditor::setController(TimelineController *model) {
     m_model = model;
     m_scene->setModel(m_model);
-    connect(m_model, &AnimationClipModel::layoutChanged, this, &KeyFrameEditor::onClipUpdated, Qt::UniqueConnection);
+    connect(m_model, &TimelineController::updated, this, &KeyFrameEditor::onClipUpdated, Qt::UniqueConnection);
 }
 
 void KeyFrameEditor::setPosition(uint32_t position) {
@@ -171,7 +175,7 @@ void KeyFrameEditor::onClipUpdated() {
         items.push_back(static_cast<TreeRow *>(m_scene->treeLayout()->itemAt(i)));
     }
 
-    createTree(QModelIndex(), nullptr, items);
+    createTree(items);
     m_scene->updateMaxDuration();
 
     // Delete unused
@@ -182,44 +186,35 @@ void KeyFrameEditor::onClipUpdated() {
     }
 }
 
-void KeyFrameEditor::createTree(const QModelIndex &parentIndex, TreeRow *parent, std::list<TreeRow *> &items) {
+void KeyFrameEditor::createTree(std::list<TreeRow *> &items) {
     if(m_model && m_model->clip()) {
-        AnimationTrackList &tracks = m_model->clip()->tracks();
-        for(int i = 0 ; i < m_model->rowCount(parentIndex); i++) {
-            QModelIndex index = m_model->index(i, 0, parentIndex);
-
-            TreeRow *track = nullptr;
+        AnimationTracks &tracks = m_model->clip()->tracks();
+        for(int i = 0 ; i < tracks.size(); i++) {
+            TreeRow *row = nullptr;
             for(auto it : items) {
-                if(it->index() == index) {
-                    track = it;
-                    items.remove(track);
+                if(it->row() == i) {
+                    row = it;
+                    items.remove(row);
                     break;
                 }
             }
 
-            if(track == nullptr) {
-                QVariant data = m_model->data(index, Qt::DisplayRole);
-                track = new TreeRow(m_scene, parent);
-                track->setName(data.toString());
-                track->insertToLayout(m_scene->treeLayout()->count());
-
-                if(parent) {
-                    parent->addChild(track);
+            if(row == nullptr) {
+                StringList lst(tracks[i].path().split('/'));
+                lst.pop_back();
+                TString actor;
+                if(lst.empty()) {
+                    actor = m_model->root()->name();
+                } else {
+                    actor = lst.back();
                 }
+
+                row = new TreeRow(m_scene, nullptr);
+                row->setName(QString("%1 : %2").arg(actor.data(), QString(tracks[i].property().data()).replace('_', "")));
+                row->insertToLayout(m_scene->treeLayout()->count());
             }
 
-            auto it = tracks.begin();
-            if(parentIndex.isValid()) {
-                advance(it, parentIndex.row());
-            } else {
-                advance(it, index.row());
-            }
-            track->setTrack(&(*it), index);
-
-            int count = m_model->rowCount(parentIndex);
-            if(count > 0) {
-                createTree(index, track, items);
-            }
+            row->setTrack(&tracks[i], i);
         }
     }
 }
@@ -232,7 +227,7 @@ void KeyFrameEditor::resizeEvent(QResizeEvent *event) {
 }
 
 void KeyFrameEditor::onRemoveProperties() {
-    m_model->removeItems(m_scene->selectedIndexes());
+    m_model->removeItems(m_scene->selectedRows());
 }
 
 void KeyFrameEditor::onKeyPositionChanged(float delta) {
@@ -259,13 +254,13 @@ void KeyFrameEditor::onDeleteSelectedKey() {
 }
 
 void UndoKeyPositionChanged::undo() {
-    QSet<float> positions;
-    QSet<TimelineRow *> rows;
+    std::set<float> positions;
+    std::set<TimelineRow *> rows;
     for(auto &it : m_scene->selectedKeyframes()) {
         float pos = it->position() - m_delta;
         it->setPosition(pos);
         positions.insert(pos);
-        rows.insert(it->row()->timelineItem());
+        rows.insert(it->treeRow()->timelineItem());
     }
 
     for(auto &row : rows) {
@@ -286,13 +281,13 @@ void UndoKeyPositionChanged::undo() {
 }
 
 void UndoKeyPositionChanged::redo() {
-    QSet<float> positions;
-    QSet<TimelineRow *> rows;
+    std::set<float> positions;
+    std::set<TimelineRow *> rows;
     for(auto &it : m_scene->selectedKeyframes()) {
         float pos = it->position() + m_delta;
         it->setPosition(pos);
         positions.insert(pos);
-        rows.insert(it->row()->timelineItem());
+        rows.insert(it->treeRow()->timelineItem());
     }
 
     for(auto &row : rows) {
@@ -357,20 +352,20 @@ void UndoDeleteSelectedKey::undo() {
 void UndoDeleteSelectedKey::redo() {
     m_keys.clear();
     for(auto &it : m_scene->selectedKeyframes()) {
-        TimelineRow *row = it->row()->timelineItem();
-        AnimationTrack *track = row->track();
+        TimelineRow *timelineRow = it->treeRow()->timelineItem();
+        AnimationTrack *track = timelineRow->track();
         if(track) {
             AnimationCurve::KeyFrame *k = it->key();
             if(k) {
-                QModelIndex index = it->row()->index();
+                int row = it->treeRow()->row();
                 auto &curve = track->curve();
 
                 auto key = std::find(curve.m_keys.begin(), curve.m_keys.end(), *k);
                 if(key != curve.m_keys.end()) {
                     FrameData data;
                     data.key = *key;
-                    data.index = row->keys().indexOf(*it);
-                    data.row = index.parent().row();
+                    data.index = timelineRow->keys().indexOf(*it);
+                    data.row = row;
                     m_keys.push_back(data);
 
                     curve.m_keys.erase(key);
@@ -378,7 +373,7 @@ void UndoDeleteSelectedKey::redo() {
             }
 
             track->fixCurves();
-            row->updateKeys();
+            timelineRow->updateKeys();
         }
     }
 

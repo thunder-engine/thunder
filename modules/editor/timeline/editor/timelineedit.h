@@ -1,18 +1,19 @@
 #ifndef TIMELINEEDIT_H
 #define TIMELINEEDIT_H
 
+#include "armature.h"
 #include <QMenu>
 
 #include <object.h>
 
-#include <editorgadget.h>
+#include <editor/editorgadget.h>
+#include <editor/asseteditor.h>
 
 #include <animationcurve.h>
-#include <asseteditor.h>
 
 class Animator;
 class NativeBehaviour;
-class AnimationClipModel;
+class TimelineController;
 
 class AnimationClip;
 class UndoCommand;
@@ -46,9 +47,9 @@ private slots:
 protected:
     void saveClip();
 
-    Animator *findController(Object *object);
+    Animator *findAnimator(Object *object);
 
-    void setController(Animator *controller);
+    void setAnimator(Animator *animator);
 
     TString pathTo(Object *src, Object *dst);
 
@@ -97,11 +98,11 @@ private:
 
     Ui::TimelineEdit *ui = nullptr;
 
-    Animator *m_controller = nullptr;
+    Animator *m_animator = nullptr;
 
-    NativeBehaviour *m_armature = nullptr;
+    Armature *m_armature = nullptr;
 
-    AnimationClipModel *m_model = nullptr;
+    TimelineController *m_model = nullptr;
 
     AssetEditor *m_editor = nullptr;
 

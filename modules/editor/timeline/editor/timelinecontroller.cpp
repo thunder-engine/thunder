@@ -1,9 +1,9 @@
-#include "animationclipmodel.h"
+#include "timelinecontroller.h"
 
 #include <resources/animationclip.h>
 #include <components/actor.h>
 
-#include "assetmanager.h"
+#include <editor/assetmanager.h>
 
 bool compareTracks(const AnimationTrack &first, const AnimationTrack &second) {
     if(first.path() == second.path()) {
@@ -12,8 +12,7 @@ bool compareTracks(const AnimationTrack &first, const AnimationTrack &second) {
     return first.path() < second.path();
 }
 
-AnimationClipModel::AnimationClipModel(TimelineEdit *editor) :
-        QAbstractItemModel(editor),
+TimelineController::TimelineController(TimelineEdit *editor) :
         m_clip(nullptr),
         m_rootActor(nullptr),
         m_clipSettings(nullptr),
@@ -21,7 +20,7 @@ AnimationClipModel::AnimationClipModel(TimelineEdit *editor) :
 
 }
 
-uint32_t AnimationClipModel::findNear(uint32_t current, bool backward) {
+uint32_t TimelineController::findNear(uint32_t current, bool backward) {
     uint32_t result = 0;
     if(m_clip) {
         if(backward) {
@@ -59,140 +58,31 @@ uint32_t AnimationClipModel::findNear(uint32_t current, bool backward) {
     return result;
 }
 
-void AnimationClipModel::setClip(AnimationClip *clip, Actor *root) {
+void TimelineController::setClip(AnimationClip *clip) {
     m_clip = clip;
-    m_rootActor = root;
+
     if(m_clip) {
         TString uuid = Engine::reference(m_clip);
         TString path = AssetManager::instance()->uuidToPath(uuid);
         m_clipSettings = AssetManager::instance()->fetchSettings(path);
     }
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
+    emit updated();
 }
 
-QVariant AnimationClipModel::data(const QModelIndex &index, int role) const {
-    if(!index.isValid() || m_clip == nullptr) {
-        return QVariant();
-    }
-
-    switch(role) {
-        case Qt::EditRole:
-        case Qt::ToolTipRole:
-        case Qt::DisplayRole: {
-            auto it = m_clip->tracks().begin();
-            if(index.internalPointer() == &m_clip->tracks()) {
-                advance(it, index.row());
-                if(it != m_clip->tracks().end()) {
-                    StringList lst = it->path().split('/');
-                    lst.pop_back();
-                    TString actor;
-                    if(lst.empty()) {
-                        actor = m_rootActor->name().data();
-                    } else {
-                        actor = lst.back();
-                    }
-
-                    return QString("%1 : %2").arg(actor.data(), QString(it->property().data()).replace('_', ""));
-                }
-            } else {
-                advance(it, index.parent().row());
-                static const QStringList components = {"x", "y", "z", "w"};
-                return QString("%1.%2").arg(it->property().data(), components.at(index.row()));
-            }
-        } break;
-        default: break;
-    }
-
-    return QVariant();
+void TimelineController::setRoot(Actor *root) {
+    m_rootActor = root;
 }
 
-QVariant AnimationClipModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch (section) {
-            case 0: return "";
-        }
-    }
-    return QVariant();
-}
-
-int AnimationClipModel::columnCount(const QModelIndex &) const {
-    return 1;
-}
-
-QModelIndex AnimationClipModel::index(int row, int column, const QModelIndex &parent) const {
-    if(m_clip) {
-        AnimationTrackList *list = &m_clip->tracks();
-        if(!parent.isValid()) {
-            return createIndex(row, column, list);
-        } else {
-            if(parent.internalPointer() == list) {
-                if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                    void *ptr = &(std::next(list->begin(), parent.row())->curve());
-                    return createIndex(row, column, ptr);
-                }
-            }
-        }
-    }
-    return QModelIndex();
-}
-
-QModelIndex AnimationClipModel::parent(const QModelIndex &index) const {
-    if(index.isValid() && m_clip) {
-        AnimationTrackList *list  = &m_clip->tracks();
-        if(index.internalPointer() != list) {
-            int row = 0;
-            for(auto &it : m_clip->tracks()) {
-                if(index.internalPointer() == &(it.curve())) {
-                    break;
-                }
-                row++;
-            }
-            return createIndex(row, 0, list);
-        }
-
-    }
-    return QModelIndex();
-}
-
-int AnimationClipModel::rowCount(const QModelIndex &parent) const {
-    if(m_clip) {
-        AnimationTrackList *list = &m_clip->tracks();
-        if(!list->empty()) {
-            if(!parent.isValid()) {
-                return static_cast<int32_t>(list->size());
-            } else {
-                if(parent.internalPointer() == list) {
-                    if(static_cast<uint32_t>(parent.row()) < list->size()) {
-                        int result = 0;
-
-                        //AnimationCurve &curve = std::next(list->begin(), parent.row())->curve();
-
-                        return result;
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-void AnimationClipModel::removeItems(const QModelIndexList &list) {
+void TimelineController::removeItems(const std::list<int> &rows) {
     if(!isReadOnly()) {
-        std::list<int> rows;
-        foreach(const QModelIndex &index, list) {
-            if(!index.parent().isValid()) { // Not sub component
-                rows.push_back(index.row());
-            }
-        }
         undoRedo()->push(new UndoRemoveItems(rows, this, tr("Remove Properties").toStdString()));
     }
 }
 
-AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t index) {
+AnimationCurve::KeyFrame *TimelineController::key(int32_t track, int32_t index) {
     if(track >= 0) {
         if(m_clip->tracks().size() > size_t(track)) {
-            AnimationTrack &t = *std::next(m_clip->tracks().begin(), track);
+            AnimationTrack &t = m_clip->tracks().at(track);
             if(t.curve().m_keys.size() > index) {
                 return &t.curve().m_keys[index];
             }
@@ -201,35 +91,18 @@ AnimationCurve::KeyFrame *AnimationClipModel::key(int32_t track, int32_t index) 
     return nullptr;
 }
 
-AnimationTrack &AnimationClipModel::track(int32_t track) {
-    return *std::next(m_clip->tracks().begin(), track);
-}
-
-QString AnimationClipModel::targetPath(QModelIndex &index) const {
-    if(m_clip) {
-        auto it = m_clip->tracks().begin();
-        if(index.internalPointer() == &m_clip->tracks()) {
-            advance(it, index.row());
-            if(it != m_clip->tracks().end()) {
-                return QString::fromStdString(it->path().data());
-            }
-        }
-    }
-    return QString();
-}
-
-void AnimationClipModel::commitKey(int row, int index, float value, float left, float right, uint32_t position) {
+void TimelineController::commitKey(int row, int index, float value, float left, float right, uint32_t position) {
     AnimationCurve::KeyFrame *k = key(row, index);
     if(!isReadOnly() && k) {
         undoRedo()->push(new UndoUpdateKey(row, index, {value}, {left}, {right}, position, this, tr("Update Keyframe").toStdString()));
     }
 }
 
-bool AnimationClipModel::isReadOnly() const {
+bool TimelineController::isReadOnly() const {
     return (m_clipSettings) ? m_clipSettings->isReadOnly() : false;
 }
 
-void AnimationClipModel::propertyUpdated(Object *object, const QString &path, const QString &property, uint32_t position) {
+void TimelineController::propertyUpdated(Object *object, const QString &path, const QString &property, uint32_t position) {
     const MetaObject *meta = object->metaObject();
     int32_t index = meta->indexOfProperty(qPrintable(property));
     if(index >= 0) {
@@ -255,7 +128,7 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
             } break;
         }
 
-        AnimationTrackList tracks = m_clip->tracks();
+        AnimationTracks tracks = m_clip->tracks(); // we are working with copy
 
         bool createTrack = true;
 
@@ -312,29 +185,24 @@ void AnimationClipModel::propertyUpdated(Object *object, const QString &path, co
             curve.m_keys.push_back(key);
 
             tracks.push_back(track);
-            tracks.sort(compareTracks);
+            std::sort(tracks.begin(), tracks.end(), compareTracks);
         }
 
         undoRedo()->push(new UndoUpdateItems(tracks, this, tr("Update Properties").toStdString()));
     }
 }
 
-void AnimationClipModel::updateController() {
-    emit layoutAboutToBeChanged();
-    emit layoutChanged();
-}
-
 void UndoUpdateKey::undo() {
-    AnimationCurve::KeyFrame *k = m_model->key(m_row, m_index);
+    AnimationCurve::KeyFrame *k = m_controller->key(m_row, m_index);
     if(k) {
         *k = m_key;
 
-        m_model->updateController();
+        m_controller->updated();
     }
 }
 
 void UndoUpdateKey::redo() {
-    AnimationTrack &track = *std::next(m_model->clip()->tracks().begin(), m_row);
+    AnimationTrack &track = m_controller->clip()->tracks().at(m_row);
 
     AnimationCurve::KeyFrame *k = &track.curve().m_keys[m_index];
 
@@ -345,30 +213,34 @@ void UndoUpdateKey::redo() {
     k->m_rightTangent = m_right;
     k->m_position = (float)m_position / (float)track.duration();
 
-    m_model->updateController();
+    m_controller->updated();
 }
 
 void UndoRemoveItems::undo() {
     int i = 0;
+
+    AnimationTracks &tracks = m_controller->clip()->tracks();
     for(auto &track : m_tracks) {
-        auto it = std::next(m_model->clip()->tracks().begin(), *std::next(m_rows.begin(), i));
-        m_model->clip()->tracks().insert(it, track);
+        auto it = std::next(tracks.begin(), *std::next(m_rows.begin(), i));
+        tracks.insert(it, track);
         i++;
     }
-    m_model->updateController();
+    m_controller->updated();
 }
 
 void UndoRemoveItems::redo() {
     m_tracks.clear();
+
+    AnimationTracks &tracks = m_controller->clip()->tracks();
     for(int row : m_rows) {
-        auto it = m_model->clip()->tracks().begin();
+        auto it = tracks.begin();
         advance(it, row);
 
         m_tracks.push_back(*it);
 
-        m_model->clip()->tracks().erase(it);
+        tracks.erase(it);
     }
-    m_model->updateController();
+    m_controller->updated();
 }
 
 void UndoUpdateItems::undo() {
@@ -376,18 +248,19 @@ void UndoUpdateItems::undo() {
 }
 
 void UndoUpdateItems::redo() {
-    AnimationClip *clip = m_model->clip();
+    AnimationClip *clip = m_controller->clip();
     if(clip) {
-        AnimationTrackList save = clip->tracks();
+        AnimationTracks save = clip->tracks();
         clip->tracks() = m_tracks;
         m_tracks = save;
-        m_model->updateController();
-        emit m_model->rebind();
+
+        m_controller->updated();
+        m_controller->rebind();
     }
 }
 
 void UndoInsertKey::undo() {
-    AnimationCurve &curve = (*std::next(m_model->clip()->tracks().begin(), m_row)).curve();
+    AnimationCurve &curve = (*std::next(m_controller->clip()->tracks().begin(), m_row)).curve();
 
     for(auto index : m_indices) {
         auto it = std::next(curve.m_keys.begin(), index);
@@ -395,17 +268,17 @@ void UndoInsertKey::undo() {
         curve.m_keys.erase(it);
     }
 
-    m_model->updateController();
+    m_controller->updated();
 }
 
 void UndoInsertKey::redo() {
     m_indices.clear();
 
-    AnimationTrack &track = (*std::next(m_model->clip()->tracks().begin(), m_row));
+    AnimationTrack &track = (*std::next(m_controller->clip()->tracks().begin(), m_row));
 
     insertKey(track.curve());
 
-    m_model->updateController();
+    m_controller->updated();
 }
 
 void UndoInsertKey::insertKey(AnimationCurve &curve) {

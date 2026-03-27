@@ -14,7 +14,7 @@
 #include "ui/ruler.h"
 #include "ui/playhead.h"
 
-#include "animationclipmodel.h"
+#include "timelinecontroller.h"
 
 #define DRAG_SENSITIVITY 2
 
@@ -85,7 +85,7 @@ PlayHead *TimelineScene::playHead() const {
     return m_playHead;
 }
 
-QModelIndexList TimelineScene::selectedIndexes() const {
+std::list<int> TimelineScene::selectedRows() const {
     return m_selectedRows;
 }
 
@@ -138,7 +138,7 @@ void TimelineScene::updateMaxDuration() {
     m_rulerItem->setMaxDuration(duration);
 }
 
-void TimelineScene::setModel(AnimationClipModel *model) {
+void TimelineScene::setModel(TimelineController *model) {
     m_model = model;
 }
 
@@ -172,13 +172,13 @@ void TimelineScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             switch(item->type()) {
                 case QGraphicsTextItem::Type:
                 case RowItem::TreeItem: {
-                    TreeRow *row = static_cast<TreeRow *>(item);
+                    TreeRow *treeRow = static_cast<TreeRow *>(item);
                     if(item->type() == QGraphicsTextItem::Type) {
-                        row = static_cast<TreeRow *>(item->parentItem());
+                        treeRow = static_cast<TreeRow *>(item->parentItem());
                     }
-                    row->onRowPressed(event->scenePos());
-                    row->setSelected(true);
-                    m_selectedRows.push_back(row->index());
+                    treeRow->onRowPressed(event->scenePos());
+                    treeRow->setSelected(true);
+                    m_selectedRows.push_back(treeRow->row());
                     emit rowSelectionChanged();
                 } break;
                 case RowItem::TimelineItem: {
@@ -187,30 +187,16 @@ void TimelineScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                     auto list = r->onRowPressed(event->scenePos());
                     if(!list.isEmpty()) {
                         m_pressedKeyframe = list.at(0);
-                        if(m_pressedKeyframe) {
-                            if(!m_pressedKeyframe->isSelected()) {
-                                if((event->modifiers() & Qt::ControlModifier) == false) {
-                                    clearSelection();
-                                }
-
-                                for(auto &it : list) {
-                                    it->setSelected(true);
-                                }
-
-                                int idx = r->keys().indexOf(*m_pressedKeyframe);
-                                int row = -1;
-                                int col = -1;
-
-                                QModelIndex index = r->treeRow()->index();
-                                if(index.parent().isValid()) {
-                                    row = index.parent().row();
-                                    col = index.row();
-                                } else {
-                                    row = index.row();
-                                }
-
-                                emit keySelectionChanged(row, col, idx);
+                        if(m_pressedKeyframe && !m_pressedKeyframe->isSelected()) {
+                            if((event->modifiers() & Qt::ControlModifier) == false) {
+                                clearSelection();
                             }
+
+                            for(auto &it : list) {
+                                it->setSelected(true);
+                            }
+
+                            emit keySelectionChanged(r->treeRow()->row(), r->keys().indexOf(*m_pressedKeyframe));
                         }
                     } else {
                         clearSelection();
@@ -296,7 +282,7 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         if(m_pressedKeyframe && !m_model->isReadOnly()) {
             m_pressKeyPosition = m_pressedKeyframe->position();
 
-            TreeRow *parent = m_pressedKeyframe->row()->parentRow();
+            TreeRow *parent = m_pressedKeyframe->treeRow()->parentRow();
             if(parent) {
                 int count = 0;
                 for(auto &it : parent->children()) {
@@ -320,7 +306,7 @@ void TimelineScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
                 x = m_rulerItem->screenToTime(x, !(event->modifiers() & Qt::AltModifier));
 
                 for(auto &it : selKeyframes) {
-                    TimelineRow *row = it->row()->timelineItem();
+                    TimelineRow *row = it->treeRow()->timelineItem();
                     AnimationTrack *track = row->track();
 
                     float delta = (x * 1000.0f / track->duration()) - m_pressKeyPosition;
@@ -345,20 +331,7 @@ void TimelineScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
                 TimelineRow *r = static_cast<TimelineRow *>(item);
                 TreeRow *tree = r->treeRow();
                 if(tree) {
-                    QModelIndex index = tree->index();
-
-                    float pos = r->onRowDoubleClicked(event->scenePos());
-
-                    int row = -1;
-                    int col = -1;
-                    if(index.parent().isValid()) {
-                        row = index.parent().row();
-                        col = index.row();
-                    } else {
-                        row = index.row();
-                    }
-
-                    emit insertKeyframe(row, col, pos);
+                    emit insertKeyframe(tree->row(), r->onRowDoubleClicked(event->scenePos()));
                 }
             }
         }
@@ -407,7 +380,7 @@ void TimelineScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
                     row = static_cast<TreeRow *>(item->parentItem());
                 }
                 row->setSelected(true);
-                m_selectedRows.push_back(row->index());
+                m_selectedRows.push_back(row->row());
 
                 menu.addAction(tr("Remove Property"), this, SIGNAL(removeSelectedProperty()));
             } break;

@@ -6,7 +6,7 @@
 #include <editor/undostack.h>
 
 #include "timelinescene.h"
-#include "animationclipmodel.h"
+#include "timelinecontroller.h"
 
 #include <animationcurve.h>
 
@@ -21,13 +21,13 @@ public:
     KeyFrameEditor(QWidget *parent = nullptr);
     ~KeyFrameEditor();
 
-    void setModel(AnimationClipModel *model);
+    void setController(TimelineController *model);
 
     void setReadOnly(bool flag);
     void setPosition(uint32_t position);
 
 signals:
-    void keySelectionChanged(int row, int col, int index);
+    void keySelectionChanged(int row, int index);
 
     void rowsSelected(QStringList list);
 
@@ -46,7 +46,7 @@ private slots:
     void onInsertKeyframe(int row, float position);
 
 private:
-    void createTree(const QModelIndex &parentIndex, TreeRow *parent, std::list<TreeRow *> &items);
+    void createTree(std::list<TreeRow *> &items);
 
     void resizeEvent(QResizeEvent *event);
 
@@ -56,7 +56,7 @@ private:
 private:
     QSplitter *m_splitter;
 
-    AnimationClipModel *m_model;
+    TimelineController *m_model;
 
     TimelineScene *m_scene;
 

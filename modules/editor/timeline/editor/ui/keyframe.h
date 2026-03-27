@@ -12,7 +12,7 @@ public:
     AnimationCurve::KeyFrame *key();
     void setKey(AnimationCurve::KeyFrame *key);
 
-    TreeRow *row();
+    TreeRow *treeRow();
 
     float position() const;
     void setPosition(float pos);

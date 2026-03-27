@@ -17,7 +17,7 @@ void KeyFrame::setKey(AnimationCurve::KeyFrame *key) {
     m_key = key;
 }
 
-TreeRow *KeyFrame::row() {
+TreeRow *KeyFrame::treeRow() {
     return m_row;
 }
 

@@ -353,6 +353,6 @@ void AnimationClip::removeAnimationTrack(int index) {
 /*!
     Returns all tracks associated with current animation clip.
 */
-AnimationTrackList &AnimationClip::tracks() {
+AnimationTracks &AnimationClip::tracks() {
     return m_tracks;
 }

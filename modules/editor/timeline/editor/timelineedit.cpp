@@ -8,16 +8,15 @@
 #include <components/animator.h>
 #include <components/actor.h>
 
-#include "animationclipmodel.h"
+#include <editor/assetmanager.h>
 
+#include "timelinecontroller.h"
 #include "keyframeeditor.h"
-
-#include <assetmanager.h>
 
 TimelineEdit::TimelineEdit(QWidget *parent) :
         EditorGadget(parent),
         ui(new Ui::TimelineEdit),
-        m_model(new AnimationClipModel(this)) {
+        m_model(new TimelineController(this)) {
 
     ui->setupUi(this);
     ui->pause->setVisible(false);
@@ -25,17 +24,17 @@ TimelineEdit::TimelineEdit(QWidget *parent) :
     ui->value->setVisible(false);
     ui->valueEdit->setVisible(false);
 
-    setController(nullptr);
+    setAnimator(nullptr);
 
     ui->record->setProperty("checkred", true);
     ui->play->setProperty("checkgreen", true);
     ui->splineMode->setProperty("checkgreen", true);
 
-    ui->widget->setModel(m_model);
+    ui->widget->setController(m_model);
 
     ui->timeEdit->setValidator(new QIntValidator(0, INT32_MAX, this));
 
-    connect(m_model, &AnimationClipModel::rebind, this, &TimelineEdit::onRebind);
+    connect(m_model, &TimelineController::rebind, this, &TimelineEdit::onRebind);
 
     connect(ui->valueEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
     connect(ui->timeEdit, &QLineEdit::editingFinished, this, &TimelineEdit::onKeyChanged);
@@ -60,8 +59,7 @@ TimelineEdit::~TimelineEdit() {
 void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
-        TString ref = Engine::reference(clip);
-        File file(AssetManager::instance()->uuidToPath(ref));
+        File file(AssetManager::instance()->uuidToPath(Engine::reference(clip)));
         if(file.open(File::WriteOnly)) {
             VariantMap data = clip->saveUserData();
 
@@ -71,12 +69,12 @@ void TimelineEdit::saveClip() {
     }
 }
 
-Animator *TimelineEdit::findController(Object *object) {
+Animator *TimelineEdit::findAnimator(Object *object) {
     Animator *result = object->findChild<Animator *>(false);
     if(!result) {
         Object *parent = object->parent();
         if(parent) {
-            result = findController(parent);
+            result = findAnimator(parent);
         }
     }
     return result;
@@ -94,23 +92,22 @@ void TimelineEdit::onObjectsSelected(const Object::ObjectList &objects) {
 
     Animator *result = nullptr;
     for(auto object : objects) {
-        result = findController(object);
+        result = findAnimator(object);
         if(result) {
             break;
         }
     }
-    setController(result);
+    setAnimator(result);
 }
 
 void TimelineEdit::updateClips() {
     m_clips.clear();
 
-    if(m_controller) {
-        AnimationStateMachine *stateMachine = m_controller->stateMachine();
+    if(m_animator) {
+        AnimationStateMachine *stateMachine = m_animator->stateMachine();
         if(stateMachine) {
             for(auto it : stateMachine->states()) {
-                TString ref = Engine::reference(it->m_clip);
-                Url info(AssetManager::instance()->uuidToPath(ref).data());
+                Url info(AssetManager::instance()->uuidToPath(Engine::reference(it->m_clip)));
                 m_clips[info.baseName()] = it->m_clip;
             }
             if(!m_clips.empty()) {
@@ -118,12 +115,14 @@ void TimelineEdit::updateClips() {
             }
         } else {
             m_currentClip.clear();
-            m_model->setClip(nullptr, nullptr);
-            m_controller->setClip(nullptr);
+            m_model->setClip(nullptr);
+            m_model->setRoot(nullptr);
+            m_animator->setClip(nullptr);
         }
     } else {
         m_currentClip.clear();
-        m_model->setClip(nullptr, nullptr);
+        m_model->setClip(nullptr);
+        m_model->setRoot(nullptr);
     }
 
     ui->clipBox->clear();
@@ -146,10 +145,14 @@ uint32_t TimelineEdit::position() const {
 void TimelineEdit::setPosition(uint32_t position) {
     m_position = position;
 
-    if(m_controller) {
+    if(m_animator) {
         AnimationClip *clip = m_model->clip();
         if(clip) {
-            m_controller->setClip(clip, static_cast<float>(m_position) / static_cast<float>(clip->duration()));
+            int duration = clip->duration();
+            if(duration == 0) {
+                duration = 1;
+            }
+            m_animator->setClip(clip, static_cast<float>(m_position) / static_cast<float>(duration));
         }
     }
 
@@ -163,8 +166,8 @@ void TimelineEdit::setPosition(uint32_t position) {
     emit updated();
 }
 
-void TimelineEdit::setController(Animator *controller) {
-    bool enable = (controller != nullptr);
+void TimelineEdit::setAnimator(Animator *animator) {
+    bool enable = (animator != nullptr);
 
     ui->begin->setEnabled(enable);
     ui->end->setEnabled(enable);
@@ -181,17 +184,17 @@ void TimelineEdit::setController(Animator *controller) {
     ui->deleteKey->setEnabled(false);
     ui->flatKey->setEnabled(false);
 
-    if(m_controller != controller) {
+    if(m_animator != animator) {
         saveClip();
 
-        m_controller = controller;
+        m_animator = animator;
         m_armature = nullptr;
 
-        if(m_controller) {
-            m_armature = static_cast<NativeBehaviour *>(m_controller->actor()->componentInChild("Armature"));
+        if(m_animator) {
+            m_armature = m_animator->actor()->getComponentInChild<Armature>();
         }
 
-        ui->toolBar->setVisible(m_controller != nullptr);
+        ui->toolBar->setVisible(m_animator != nullptr);
 
         updateClips();
     }
@@ -205,15 +208,15 @@ void TimelineEdit::onObjectsChanged(const Object::ObjectList &objects, const TSt
 
 void TimelineEdit::onPropertyUpdated(Object *object, const TString &property) {
     if(object) {
-        if(object == m_controller) {
+        if(object == m_animator) {
             updateClips();
             return;
         }
         if(!m_model->isReadOnly() && !property.isEmpty() && ui->record->isChecked()) {
-            if(m_controller) {
+            if(m_animator) {
                 AnimationClip *clip = m_model->clip();
                 if(clip) {
-                    TString path = pathTo(static_cast<Object *>(m_controller->actor()), object);
+                    TString path = pathTo(m_animator->actor(), object);
                     m_model->propertyUpdated(object, path.data(), property.data(), position());
                 }
             }
@@ -234,7 +237,7 @@ void TimelineEdit::onSelectKey(int row, int index) {
 
     AnimationCurve::KeyFrame *key = m_model->key(row, index);
     if(key) {
-        AnimationTrack &t = m_model->track(row);
+        AnimationTrack &t = m_model->clip()->tracks().at(row);
         ui->timeEdit->setText(QString::number(key->m_position * t.duration()));
     }
     ui->deleteKey->setEnabled(key != nullptr);
@@ -242,10 +245,10 @@ void TimelineEdit::onSelectKey(int row, int index) {
 }
 
 void TimelineEdit::onRowsSelected(QStringList list) {
-    std::list<Object *> result;
-    if(m_controller) {
+    Object::ObjectList result;
+    if(m_animator) {
         for(auto &it : list) {
-            Object *object = m_controller->actor()->find(it.toStdString());
+            Object *object = m_animator->actor()->find(it.toStdString());
             if(object) {
                 Component *component = dynamic_cast<Component *>(object);
                 if(component) {
@@ -262,10 +265,11 @@ void TimelineEdit::onRowsSelected(QStringList list) {
 void TimelineEdit::onClipChanged(const QString &clip) {
     m_currentClip = clip.toStdString();
     m_position = 0;
-    if(m_controller) {
+    if(m_animator) {
         auto it = m_clips.find(m_currentClip);
         if(it != m_clips.end()) {
-            m_model->setClip(it->second, m_controller->actor());
+            m_model->setClip(it->second);
+            m_model->setRoot(m_animator->actor());
             on_begin_clicked();
         }
     }
@@ -302,11 +306,11 @@ void TimelineEdit::on_play_clicked() {
 }
 
 void TimelineEdit::on_begin_clicked() {
-    if(m_controller) {
+    if(m_animator) {
         auto it = m_clips.find(m_currentClip);
         if(it != m_clips.end()) {
             m_position = 0;
-            m_controller->setClip(it->second, 0.0f);
+            m_animator->setClip(it->second, 0.0f);
         }
     }
 }
