@@ -31,7 +31,7 @@ API of Thunder Engine is also allowing to create own modules to use them in your
 ### Getting the Engine
 
 To download the release version use the [Releases page](https://github.com/thunder-engine/thunder/releases).
-For other options please follow a [build instruction](https://doc.thunderengine.org/en/latest/basics/source.html).
+For other options please follow a [build instruction](https://docs.thunderengine.org/basics/install.html#building-engine-from-the-source).
 
 ### Signed Releases for Windows
 
@@ -47,7 +47,7 @@ and a free code signing certificate by the
 - Scripts supported by AngelScript engine
 - Module based architecture
 
-Please find a complete [list of features](https://doc.thunderengine.org/en/latest/basics/features.html).
+Please find a complete [list of features](https://docs.thunderengine.org/basics/features.html).
 
 #### Have a question or an idea?
 
