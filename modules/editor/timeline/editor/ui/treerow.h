@@ -5,10 +5,7 @@
 
 #include "timelinerow.h"
 
-#include <QModelIndex>
-
 class AnimationTrack;
-class KeyFrame;
 class TimelineScene;
 
 class TreeRow : public RowItem {
@@ -16,11 +13,11 @@ class TreeRow : public RowItem {
 public:
     explicit TreeRow(TimelineScene *scene, TreeRow *parent);
 
-    QModelIndex index() const;
+    int row() const;
 
     void setName(const QString &name);
 
-    void setTrack(AnimationTrack *track, const QModelIndex &index);
+    void setTrack(AnimationTrack *track, int row);
 
     void onRowPressed(const QPointF &point);
 
@@ -50,14 +47,14 @@ private:
 private:
     TimelineScene *m_scene;
     TreeRow *m_parent;
-    QGraphicsTextItem m_label;
     TimelineRow m_timeline;
+    QGraphicsTextItem m_label;
 
     QList<TreeRow *> m_children;
 
     QRect m_arrowRect;
 
-    QModelIndex m_index;
+    int m_row;
 
     bool m_expanded;
     bool m_hover;

@@ -16,13 +16,11 @@ Project {
         "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
-        "../../../engine/includes/editor",
         "../../../develop/managers/assetmanager",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../thirdparty/next/inc/anim",
-        "../../../thirdparty/syntaxhighlighting/src"
+        "../../../thirdparty/next/inc/anim"
     ]
 
     DynamicLibrary {

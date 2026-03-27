@@ -10,7 +10,7 @@ class KeyFrame;
 class PlayHead;
 class TreeRow;
 
-class AnimationClipModel;
+class TimelineController;
 
 class TimelineScene : public QGraphicsScene {
     Q_OBJECT
@@ -26,7 +26,7 @@ public:
 
     PlayHead *playHead() const;
 
-    QModelIndexList selectedIndexes() const;
+    std::list<int> selectedRows() const;
 
     QList<KeyFrame *> selectedKeyframes();
 
@@ -36,15 +36,15 @@ public:
 
     void updateMaxDuration();
 
-    AnimationClipModel *model() const { return m_model; }
-    void setModel(AnimationClipModel *model);
+    TimelineController *model() const { return m_model; }
+    void setModel(TimelineController *model);
 
 signals:
     void headPositionChanged(uint32_t value);
     void rowSelectionChanged();
-    void keySelectionChanged(int row, int col, int index);
+    void keySelectionChanged(int row, int index);
     void keyPositionChanged(float delta);
-    void insertKeyframe(int row, int col, float position);
+    void insertKeyframe(int row, float position);
     void deleteSelectedKey();
     void removeSelectedProperty();
 
@@ -66,7 +66,7 @@ private:
     QGraphicsLinearLayout *m_layoutTree;
     QGraphicsLinearLayout *m_layoutTimeline;
 
-    AnimationClipModel *m_model;
+    TimelineController *m_model;
 
     QGraphicsWidget *m_widgetRoot;
     Ruler *m_rulerItem;
@@ -74,7 +74,7 @@ private:
 
     KeyFrame *m_pressedKeyframe;
 
-    QModelIndexList m_selectedRows;
+    std::list<int> m_selectedRows;
 
     QPointF m_pressPos;
     float m_pressKeyPosition;

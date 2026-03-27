@@ -13,6 +13,7 @@ TreeRow::TreeRow(TimelineScene *scene, TreeRow *parent) :
         m_parent(parent),
         m_timeline(this),
         m_arrowRect(QRect(OFFSET, 0, ICON_SIZE, ICON_SIZE)),
+        m_row(-1),
         m_expanded(false),
         m_hover(false) {
 
@@ -30,21 +31,17 @@ TreeRow::TreeRow(TimelineScene *scene, TreeRow *parent) :
     setFlags(QGraphicsItem::ItemIsSelectable);
 }
 
-QModelIndex TreeRow::index() const {
-    return m_index;
+int TreeRow::row() const {
+    return m_row;
 }
 
 void TreeRow::setName(const QString &name) {
     m_label.setPlainText(name);
 }
 
-void TreeRow::setTrack(AnimationTrack *track, const QModelIndex &index) {
-    m_index = index;
-    if(m_index.parent().isValid()) {
-        m_timeline.setTrack(track, m_index.row());
-    } else {
-        m_timeline.setTrack(track, -1);
-    }
+void TreeRow::setTrack(AnimationTrack *track, int row) {
+    m_row = row;
+    m_timeline.setTrack(track, -1);
 }
 
 void TreeRow::insertToLayout(int position) {

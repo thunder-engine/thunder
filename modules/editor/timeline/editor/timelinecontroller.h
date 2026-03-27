@@ -1,51 +1,32 @@
-#ifndef ANIMATIONCLIPMODEL_H
-#define ANIMATIONCLIPMODEL_H
-
-#include <QAbstractItemModel>
+#ifndef TIMELINECONTROLLER_H
+#define TIMELINECONTROLLER_H
 
 #include <animationcurve.h>
-#include <animationclip.h>
+#include <resources/animationclip.h>
 
 #include <editor/undostack.h>
 
 #include "timelineedit.h"
 
-class AnimatormationStateMachine;
-
 class AssetConverterSettings;
 
-class AnimationClipModel : public QAbstractItemModel {
+class TimelineController : public QObject {
     Q_OBJECT
 
 public:
-    AnimationClipModel(TimelineEdit *editor);
+    TimelineController(TimelineEdit *editor);
 
     uint32_t findNear(uint32_t current, bool backward = false);
 
-    QVariant data(const QModelIndex &index, int) const override;
-
-    QVariant headerData(int, Qt::Orientation, int) const override;
-
-    int columnCount(const QModelIndex &) const override;
-
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-
-    QModelIndex parent(const QModelIndex &) const override;
-
-    int rowCount(const QModelIndex &) const override;
-
-    void removeItems(const QModelIndexList &list);
+    void removeItems(const std::list<int> &rows);
 
     AnimationCurve::KeyFrame *key(int32_t track, int32_t index);
 
-    AnimationTrack &track(int32_t track);
-
-    QString targetPath(QModelIndex &index) const;
-
-    void updateController();
-
     AnimationClip *clip() const { return m_clip; }
-    void setClip(AnimationClip *clip, Actor *root);
+    void setClip(AnimationClip *clip);
+
+    Actor *root() const { return m_rootActor; }
+    void setRoot(Actor *root);
 
     void commitKey(int row, int index, float value, float left, float right, uint32_t position);
 
@@ -57,6 +38,7 @@ public:
 
 signals:
     void rebind();
+    void updated();
 
 protected:
     Actor *m_rootActor;
@@ -71,20 +53,20 @@ protected:
 
 class UndoAnimationClip : public UndoCommand {
 public:
-    explicit UndoAnimationClip(AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
+    explicit UndoAnimationClip(TimelineController *controller, const TString &text, UndoCommand *parent = nullptr) :
             UndoCommand(text, parent),
-            m_model(model) {
+            m_controller(controller) {
 
     }
 
 protected:
-    AnimationClipModel *m_model;
+    TimelineController *m_controller;
 };
 
 class UndoUpdateKey : public UndoAnimationClip {
 public:
-    UndoUpdateKey(int row, int index, const std::vector<float> &value, const std::vector<float> &left, const std::vector<float> &right, uint32_t position, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
-            UndoAnimationClip(model, text, parent),
+    UndoUpdateKey(int row, int index, const std::vector<float> &value, const std::vector<float> &left, const std::vector<float> &right, uint32_t position, TimelineController *controller, const TString &text, UndoCommand *parent = nullptr) :
+            UndoAnimationClip(controller, text, parent),
             m_row(row),
             m_index(index),
             m_value(value),
@@ -110,8 +92,8 @@ protected:
 
 class UndoRemoveItems : public UndoAnimationClip {
 public:
-    UndoRemoveItems(std::list<int> rows, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
-            UndoAnimationClip(model, text, parent),
+    UndoRemoveItems(std::list<int> rows, TimelineController *controller, const TString &text, UndoCommand *parent = nullptr) :
+            UndoAnimationClip(controller, text, parent),
             m_rows(rows) {
 
     }
@@ -120,13 +102,13 @@ public:
 
 protected:
     std::list<int> m_rows;
-    AnimationTrackList m_tracks;
+    AnimationTracks m_tracks;
 };
 
 class UndoUpdateItems : public UndoAnimationClip {
 public:
-    UndoUpdateItems(AnimationTrackList &tracks, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
-            UndoAnimationClip(model, text, parent),
+    UndoUpdateItems(AnimationTracks &tracks, TimelineController *controller, const TString &text, UndoCommand *parent = nullptr) :
+            UndoAnimationClip(controller, text, parent),
             m_tracks(tracks) {
 
     }
@@ -134,14 +116,14 @@ public:
     void redo() override;
 
 protected:
-    AnimationTrackList m_tracks;
+    AnimationTracks m_tracks;
 
 };
 
 class UndoInsertKey : public UndoAnimationClip {
 public:
-    explicit UndoInsertKey(int row, float pos, AnimationClipModel *model, const TString &text, UndoCommand *parent = nullptr) :
-            UndoAnimationClip(model, text, parent),
+    explicit UndoInsertKey(int row, float pos, TimelineController *controller, const TString &text, UndoCommand *parent = nullptr) :
+            UndoAnimationClip(controller, text, parent),
             m_row(row),
             m_position(pos) {
 
@@ -159,4 +141,4 @@ protected:
 
 };
 
-#endif // ANIMATIONCLIPMODEL_H
+#endif // TIMELINECONTROLLER_H
