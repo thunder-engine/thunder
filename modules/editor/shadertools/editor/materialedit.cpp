@@ -123,10 +123,25 @@ MaterialEdit::MaterialEdit() :
 MaterialEdit::~MaterialEdit() {
     writeSettings();
 
-    delete ui;
+    delete m_graph;
+    m_graph = nullptr;
 
-    delete m_mesh;
-    delete m_light;
+    delete m_builder;
+    m_builder = nullptr;
+
+    delete m_controller;
+    m_controller = nullptr;
+
+    delete m_proxy;
+    m_proxy = nullptr;
+
+    delete m_light->world();
+    m_light = nullptr;
+
+    delete m_material;
+    m_material = nullptr;
+
+    delete ui;
 }
 
 void MaterialEdit::readSettings() {

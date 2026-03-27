@@ -73,7 +73,6 @@ private:
 
     Actor *m_light;
 
-    Actor *m_effect;
     EffectRender *m_render;
 
     QToolButton *m_moduleButton;
