@@ -2,12 +2,17 @@
 #include "ui_animationedit.h"
 
 #include <components/world.h>
+#include <components/actor.h>
 #include <components/animator.h>
+#include <components/armature.h>
+#include <components/transform.h>
+#include <components/directlight.h>
 #include <resources/animationstatemachine.h>
 
-#include <editor/undostack.h>
+#include <editor/viewport/cameracontroller.h>
 
 #include <QToolButton>
+#include <QSettings>
 
 #include "renamedialog.h"
 #include "actions/addvariable.h"
@@ -16,9 +21,11 @@
 #include "../converter/animationbuilder.h"
 
 #include "statelink.h"
+#include "basestate.h"
 
 namespace {
     const char *gProperty("property");
+    const char *gDirectLight("DirectLight");
 };
 
 class AnimationProxy : public Object {
@@ -34,7 +41,7 @@ public:
     }
 
     void onGraphUpdated() {
-        m_editor->updated();
+        m_editor->onGraphUpdated();
     }
 
     void onVariableChanged() {
@@ -49,14 +56,33 @@ private:
 AnimationEdit::AnimationEdit() :
         ui(new Ui::AnimationEdit),
         m_graph(new AnimationControllerGraph),
-        m_assetConverter(new AnimationControllerBuilder),
-        m_stateMachine(nullptr),
+        m_builder(new AnimationControllerBuilder),
+        m_controller(new CameraController),
+        m_light(nullptr),
+        m_animator(nullptr),
+        m_armature(nullptr),
+        m_stateMachine(Engine::objectCreate<AnimationStateMachine>()),
         m_proxy(new AnimationProxy),
         m_variableButton(nullptr) {
 
     ui->setupUi(this);
 
     m_proxy->setEditor(this);
+
+    m_controller->blockMovement(true);
+    m_controller->setFree(false);
+
+    World *world = Engine::objectCreate<World>("World");
+    Scene *scene = Engine::objectCreate<Scene>("Scene", world);
+
+    ui->preview->setController(m_controller);
+    ui->preview->setWorld(world);
+    ui->preview->init(); // must be called after all options set
+    //ui->preview->showGizmos(false);
+
+    m_light = Engine::composeActor<DirectLight>(gDirectLight, scene);
+    m_light->transform()->setPosition(Vector3(0.0f, 5.0f, 0.0f));
+    m_light->transform()->setRotation(Vector3(-45.0f, 45.0f, 0.0f));
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(m_graph, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
@@ -73,15 +99,66 @@ AnimationEdit::AnimationEdit() :
 
     QAction *delAction = m_variablesMenu.addAction(tr("Delete Variable"));
     connect(delAction, &QAction::triggered, this, &AnimationEdit::onDeleteVariable);
+
+    readSettings();
+
+    startTimer(16);
 }
 
 AnimationEdit::~AnimationEdit() {
+    writeSettings();
+
+    delete m_graph;
+    m_graph = nullptr;
+
+    delete m_builder;
+    m_builder = nullptr;
+
+    delete m_controller;
+    m_controller = nullptr;
+
+    delete m_light->world();
+    m_light = nullptr;
+    m_animator = nullptr;
+    m_armature = nullptr;
+
+    delete m_stateMachine;
+    m_stateMachine = nullptr;
+
+    delete m_proxy;
+    m_proxy = nullptr;
+
     delete ui;
+}
+
+void AnimationEdit::readSettings() {
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    QVariant value = settings.value("animation.geometry");
+    if(value.isValid()) {
+        ui->splitter->restoreState(value.toByteArray());
+    }
+}
+
+void AnimationEdit::writeSettings() {
+    QSettings settings(COMPANY_NAME, EDITOR_NAME);
+    settings.setValue("animation.geometry", ui->splitter->saveState());
+}
+
+void AnimationEdit::timerEvent(QTimerEvent *) {
+    if(ui->preview->isVisible()) {
+        if(m_animator) {
+            m_animator->update();
+        }
+
+        if(m_armature) {
+            m_armature->update();
+        }
+    }
 }
 
 StringList AnimationEdit::suffixes() const {
     StringList result;
-    for(auto &it : m_assetConverter->suffixes()) {
+    for(auto &it : m_builder->suffixes()) {
         result.push_back(it);
     }
     return result;
@@ -164,9 +241,14 @@ void AnimationEdit::onSelectionChanged() {
             m_variableButton->setVisible(objects.front() == m_graph);
         }
 
-        StateLink *state = dynamic_cast<StateLink *>(objects.front());
-        if(state) {
-            Object::connect(state, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
+        StateLink *link = dynamic_cast<StateLink *>(objects.front());
+        if(link) {
+            Object::connect(link, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
+        }
+
+        BaseState *state = dynamic_cast<BaseState *>(objects.front());
+        if(state && m_animator) {
+            m_animator->setState(state->name());
         }
     }
 
@@ -199,7 +281,38 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
-        m_stateMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
+        if(m_animator) {
+            delete m_animator->actor();
+            m_animator = nullptr;
+        }
+        m_armature = nullptr;
+
+        AnimationBuilderSettings *builderSettings = static_cast<AnimationBuilderSettings *>(settings);
+
+        Prefab *prefab = Engine::loadResource<Prefab>(builderSettings->previewAsset());
+        if(prefab) {
+            Actor *prefabActor = prefab->actor();
+            if(prefabActor) {
+                Actor *actor = static_cast<Actor *>(prefabActor->clone(m_light->scene()));
+
+                m_armature = actor->getComponent<Armature>();
+                if(m_armature == nullptr) {
+                    m_armature = actor->getComponentInChild<Armature>();
+                }
+
+                m_animator = actor->getComponent<Animator>();
+                if(m_animator == nullptr) {
+                    m_animator = static_cast<Animator *>(actor->addComponent("Animator"));
+                }
+
+                if(m_animator) {
+                    m_animator->setStateMachine(m_stateMachine);
+                } else {
+                    delete actor;
+                    m_armature = nullptr;
+                }
+            }
+        }
 
         m_graph->load(settings->source());
     }
@@ -209,6 +322,14 @@ void AnimationEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
     }
+}
+
+void AnimationEdit::onGraphUpdated() {
+    if(m_builder) {
+        m_stateMachine->loadUserData(m_graph->data());
+    }
+
+    emit updated();
 }
 
 void AnimationEdit::changeEvent(QEvent *event) {

@@ -6,10 +6,23 @@
 #include "animationcontrollergraph.h"
 
 class AnimationBuilderSettings : public AssetConverterSettings {
+    A_OBJECT(AnimationBuilderSettings, AssetConverterSettings, Editor)
+
+    A_PROPERTIES(
+        A_PROPERTYEX(TString, previewAsset, AnimationBuilderSettings::previewAsset, AnimationBuilderSettings::setPreviewAsset, "editor=Asset,type=Prefab")
+    )
+
 public:
     AnimationBuilderSettings();
+
+    TString previewAsset() const;
+    void setPreviewAsset(TString &asset);
+
 private:
     StringList typeNames() const override;
+
+private:
+    TString m_previewAsset;
 
 };
 
@@ -17,10 +30,10 @@ class AnimationControllerBuilder : public AssetConverter {
 public:
     static int version();
 
+    StringList suffixes() const override { return {"actl"}; }
+
 private:
     void init() override;
-
-    StringList suffixes() const override { return {"actl"}; }
 
     ReturnCode convertFile(AssetConverterSettings *s) override;
     AssetConverterSettings *createSettings() override;
