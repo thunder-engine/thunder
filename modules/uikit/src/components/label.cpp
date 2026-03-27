@@ -82,11 +82,13 @@ void Label::draw(CommandBuffer &buffer) {
             m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
 
             m_material->setTexture(gTexture, m_font->page());
-            bool sdf = m_flags & Font::Sdf;
-            m_material->setBool(gUseSDF, &sdf);
+
 
             m_dirty = false;
         }
+
+        int sdf = m_flags & Font::Sdf;
+        m_material->setInteger(gUseSDF, &sdf);
 
         buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }

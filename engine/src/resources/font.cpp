@@ -136,7 +136,7 @@ float Font::textWidth(const TString &text, int size, int flags) {
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
-            Mathf::hashCombine(ch, size);
+            Mathf::hashCombine(ch, adjustedSize);
             switch(ch) {
                 case ' ': {
                     pos += spaceWidth;
@@ -176,18 +176,11 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
         FT_Face face = reinterpret_cast<FT_Face>(m_face);
 
         float spaceWidth = 0;
-        float spaceLine = 0;
+        float spaceLine = size * 1.2f;
 
         FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
         if(!error) {
-            spaceWidth = (adjustedSize == DF_GLYPH_SIZE) ? (DF_GLYPH_SIZE * 64.0f * size) : 64.0f;
-            spaceWidth = face->glyph->advance.x / spaceWidth;
-        }
-
-        error = FT_Load_Glyph( face, FT_Get_Char_Index( face, '\n' ), FT_LOAD_BITMAP_METRICS_ONLY );
-        if(!error) {
-            spaceLine = (adjustedSize == DF_GLYPH_SIZE) ? (adjustedSize + size) : size;
-            spaceLine = face->glyph->metrics.height / spaceLine / 2;
+            spaceWidth = face->glyph->advance.x / 64.0f;
         }
 
         IndexVector &indices = mesh->indices();
@@ -209,7 +202,6 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
-            Mathf::hashCombine(ch, size);
             switch(ch) {
                 case ' ': {
                     pos += Vector3(spaceWidth, 0.0f, 0.0f);
@@ -229,8 +221,10 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                 default: {
                     if(flags & Kerning) {
                         pos.x += requestKerning(ch, previous);
+                        previous = ch;
                     }
 
+                    Mathf::hashCombine(ch, adjustedSize);
                     GlyphData *data = glyph(ch);
                     if(data == nullptr) {
                         continue;
@@ -277,7 +271,7 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                     it++;
                 } break;
             }
-            previous = ch;
+
         }
 
         width.push_back(pos.x);
@@ -392,12 +386,6 @@ void Font::packSheets(int padding) {
     uint32_t atlasWidth = 1024;
     uint32_t atlasHeight = 1024;
 
-    if(m_page == nullptr) {
-        m_page = Engine::objectCreate<Texture>();
-        m_page->incRef();
-        m_page->setFiltering(Texture::None);
-    }
-
     while(true) {
         m_root->w = atlasWidth;
         m_root->h = atlasHeight;
@@ -435,13 +423,14 @@ void Font::packSheets(int padding) {
         }
     }
 
-    if(m_page) {
-        m_page->resize(atlasWidth, atlasHeight);
+    Texture *page = Font::page();
+    if(page) {
+        page->resize(atlasWidth, atlasHeight);
         for(auto &it : m_shapes) {
             if(!it.second.copied) {
                 AtlasNode *node = it.second.node;
                 uint8_t *src = it.second.data.data();
-                uint8_t *dst = m_page->surface(0).front().data();
+                uint8_t *dst = page->surface(0).front().data();
                 for(int32_t y = 0; y < it.second.height; y++) {
                     uint32_t index = (node->y + y + padding) * atlasWidth + node->x + padding;
                     memcpy(&dst[index], &src[y * it.second.width], it.second.width);
@@ -462,7 +451,7 @@ void Font::packSheets(int padding) {
             }
         }
 
-        m_page->setDirty();
+        page->setDirty();
     }
 }
 /*!
@@ -470,6 +459,12 @@ void Font::packSheets(int padding) {
 */
 Texture *Font::page() {
     PROFILE_FUNCTION();
+
+    if(m_page == nullptr) {
+        m_page = Engine::objectCreate<Texture>();
+        m_page->incRef();
+        m_page->setFiltering(Texture::None);
+    }
 
     return m_page;
 }
