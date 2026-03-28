@@ -7,7 +7,6 @@
 #include "components/actor.h"
 #include "components/scene.h"
 #include "components/world.h"
-#include "resources/prefab.h"
 
 ObjectHierarchyModel::ObjectHierarchyModel(QObject *parent) :
         QAbstractItemModel(parent),
@@ -176,9 +175,7 @@ QModelIndex ObjectHierarchyModel::index(int row, int column, const QModelIndex &
                 ptr = *std::next(children.begin(), row-1);
             }
         }
-        if(ptr) {
-            return createIndex(row, column, ptr->uuid());
-        }
+        return createIndex(row, column, ptr ? ptr->uuid() : 0);
     }
     return QModelIndex();
 }

@@ -102,7 +102,8 @@ void AssetList::update() {
         if(!img.isNull()) {
             img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
         }
-        item->setProperty(qPrintable(gIcon), img);
+        item->setProperty(gIcon, img);
+        addItem(item);
     }
 
     emit layoutAboutToBeChanged();
@@ -112,7 +113,7 @@ void AssetList::update() {
 QImage AssetList::icon(const QModelIndex &index) const {
     QObject *item = getObject(index);
     if(item) {
-        return item->property(qPrintable(gIcon)).value<QImage>();
+        return item->property(gIcon).value<QImage>();
     }
     return QImage();
 }
