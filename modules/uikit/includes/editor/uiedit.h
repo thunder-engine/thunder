@@ -53,8 +53,6 @@ private:
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;
 
-    bool isModified() const override;
-
     StringList suffixes() const override;
     StringList componentGroups() const override;
 

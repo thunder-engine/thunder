@@ -143,10 +143,6 @@ void ParticleEdit::writeSettings() {
     settings.setValue("effects.geometry", ui->splitter->saveState());
 }
 
-bool ParticleEdit::isModified() const {
-    return !m_undoRedo->isClean();
-}
-
 StringList ParticleEdit::suffixes() const {
     StringList result;
     for(auto &it : static_cast<AssetConverter *>(m_builder)->suffixes()) {

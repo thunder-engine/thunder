@@ -102,10 +102,6 @@ void PipelineEdit::writeSettings() {
     settings.setValue("pipeline.geometry", ui->splitter->saveState());
 }
 
-bool PipelineEdit::isModified() const {
-    return !m_undoRedo->isClean();
-}
-
 StringList PipelineEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_builder)->suffixes();
 }

@@ -32,8 +32,8 @@ bool TextEdit::isModified() const {
     return ui->editor->document()->isModified();
 }
 
-void TextEdit::setModified(bool flag) {
-    ui->editor->document()->setModified(flag);
+void TextEdit::cleanModified() const {
+    ui->editor->document()->setModified(false);
 }
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {

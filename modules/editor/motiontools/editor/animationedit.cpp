@@ -79,10 +79,6 @@ AnimationEdit::~AnimationEdit() {
     delete ui;
 }
 
-bool AnimationEdit::isModified() const {
-    return !m_undoRedo->isClean();
-}
-
 StringList AnimationEdit::suffixes() const {
     StringList result;
     for(auto &it : m_assetConverter->suffixes()) {
