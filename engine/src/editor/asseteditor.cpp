@@ -18,10 +18,12 @@ AssetEditor::~AssetEditor() {
 
 void AssetEditor::onNewAsset() {
     m_settings.clear();
+    m_undoRedo->clear();
 }
 
 void AssetEditor::loadAsset(AssetConverterSettings *settings) {
     m_settings = { settings };
+    m_undoRedo->clear();
 }
 
 void AssetEditor::loadData(const Variant &data, const TString &suffix) {
@@ -35,6 +37,8 @@ bool AssetEditor::allowSaveAs() const {
 
 void AssetEditor::saveAsset(const TString &path) {
     Q_UNUSED(path)
+
+    cleanModified();
 }
 
 bool AssetEditor::isSingleInstance() const {
@@ -61,8 +65,12 @@ StringList AssetEditor::componentGroups() const {
     return StringList();
 }
 
-void AssetEditor::setModified(bool flag) {
-    Q_UNUSED(flag)
+void AssetEditor::cleanModified() const {
+    m_undoRedo->setClean();
+}
+
+bool AssetEditor::isModified() const {
+    return !m_undoRedo->isClean();
 }
 
 void AssetEditor::onActivated() {
@@ -100,7 +108,7 @@ bool AssetEditor::checkSave() {
         } else if(result == QMessageBox::Yes) {
             onSave();
         } else {
-            setModified(false);
+            cleanModified();
         }
     }
     return true;
@@ -138,8 +146,7 @@ void AssetEditor::onSaveAs() {
         filter.push_back(item);
     }
 
-    QString path(QFileDialog::getSaveFileName(nullptr,
-                                              QString("Save ") + assetType.data(),
+    QString path(QFileDialog::getSaveFileName(nullptr, QString("Save ") + assetType.data(),
                                               ProjectSettings::instance()->contentPath().data(), TString::join(filter, ";;").data()));
     if(!path.isEmpty()) {
         Url info(path.toStdString());

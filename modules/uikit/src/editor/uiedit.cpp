@@ -90,10 +90,6 @@ UiEdit::~UiEdit() {
     delete ui;
 }
 
-bool UiEdit::isModified() const {
-    return !m_undoRedo->isClean();
-}
-
 StringList UiEdit::suffixes() const {
     return { "ui" };
 }

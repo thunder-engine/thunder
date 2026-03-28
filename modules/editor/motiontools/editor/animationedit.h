@@ -53,8 +53,6 @@ private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &path) override;
 
-    bool isModified() const override;
-
     StringList suffixes() const override;
 
     void changeEvent(QEvent *event) override;

@@ -11,8 +11,6 @@ class ShaderBuilder;
 class ShaderGraph;
 class CameraController;
 
-class UndoCommand;
-
 class MaterialProxy;
 
 namespace Ui {
@@ -55,8 +53,6 @@ private:
 
     void changeMesh(Mesh *mesh);
     void changeEvent(QEvent *event) override;
-
-    bool isModified() const override;
 
     StringList suffixes() const override;
 

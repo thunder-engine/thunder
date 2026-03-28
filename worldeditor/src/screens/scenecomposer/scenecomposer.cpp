@@ -480,15 +480,15 @@ bool SceneComposer::isModified() const {
     return result;
 }
 
-void SceneComposer::setModified(bool flag) {
+void SceneComposer::cleanModified() const {
     Prefab *prefab = m_controller->isolatedPrefab();
     if(prefab) {
-        prefab->setModified(flag);
+        prefab->setModified(false);
     } else {
         for(auto it : Engine::world()->getChildren()) {
             Scene *scene = dynamic_cast<Scene *>(it);
             if(scene) {
-                scene->setModified(flag);
+                scene->setModified(false);
             }
         }
     }
@@ -586,8 +586,6 @@ void SceneComposer::onNewAsset() {
 
     quitFromIsolation();
 
-    m_undoRedo->clear();
-
     Engine::unloadAllScenes();
 
     m_settings.clear();
@@ -602,12 +600,11 @@ void SceneComposer::onNewAsset() {
 }
 
 void SceneComposer::loadAsset(AssetConverterSettings *settings) {
-    AssetEditor::loadAsset(settings);
+    m_settings = { settings };
 
     if(settings->typeName() == MetaType::name<Map>()) {
-        if(loadScene(settings->source(), false)) {
-            m_undoRedo->clear();
-        }
+        loadScene(settings->source(), false);
+        m_undoRedo->clear();
     } else {
         if(m_isolationSettings) {
             quitFromIsolation();

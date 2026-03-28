@@ -157,10 +157,6 @@ void MaterialEdit::writeSettings() {
     settings.setValue("material.geometry", ui->splitter->saveState());
 }
 
-bool MaterialEdit::isModified() const {
-    return !m_undoRedo->isClean();
-}
-
 StringList MaterialEdit::suffixes() const {
     return {"mtl"}; // Only mtl format represented as node graph to edit
 }

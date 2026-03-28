@@ -44,8 +44,6 @@ private:
 
     void changeEvent(QEvent *event) override;
 
-    bool isModified() const override;
-
     StringList suffixes() const override;
 
 private:

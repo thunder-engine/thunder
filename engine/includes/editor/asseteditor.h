@@ -89,9 +89,9 @@ public slots:
     virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
 
 protected:
-    virtual void setModified(bool flag);
+    virtual void cleanModified() const;
 
-    virtual bool isModified() const = 0;
+    virtual bool isModified() const;
 
     virtual void saveAsset(const TString &path = TString());
 
