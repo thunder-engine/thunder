@@ -49,12 +49,12 @@ LONG WINAPI exceptionHandler(EXCEPTION_POINTERS *exceptionInfo) {
 #else
 void signalHandler(int sig) {
     const char *signalName;
-    switch (sig) {
-    case SIGSEGV: signalName = "SIGSEGV (Segmentation Fault)"; break;
-    case SIGABRT: signalName = "SIGABRT (Abort)"; break;
-    case SIGFPE:  signalName = "SIGFPE (Floating Point Exception)"; break;
-    case SIGILL:  signalName = "SIGILL (Illegal Instruction)"; break;
-    default:      signalName = "Unknown Signal"; break;
+    switch(sig) {
+        case SIGSEGV: signalName = "SIGSEGV (Segmentation Fault)"; break;
+        case SIGABRT: signalName = "SIGABRT (Abort)"; break;
+        case SIGFPE:  signalName = "SIGFPE (Floating Point Exception)"; break;
+        case SIGILL:  signalName = "SIGILL (Illegal Instruction)"; break;
+        default:      signalName = "Unknown Signal"; break;
     }
 
     aCritical() << "====================================";

@@ -138,8 +138,6 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
         return false;
     }
 
-    ProjectSettings *mgr = ProjectSettings::instance();
-
     StringList args;
 
     TString profile = (arch == "arm64") ? "aarch64" : arch;
