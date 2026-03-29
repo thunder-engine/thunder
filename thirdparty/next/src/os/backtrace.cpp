@@ -47,7 +47,7 @@ LONG WINAPI exceptionHandler(EXCEPTION_POINTERS *exceptionInfo) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #else
-void signal_handler(int sig) {
+void signalHandler(int sig) {
     const char *signalName;
     switch (sig) {
     case SIGSEGV: signalName = "SIGSEGV (Segmentation Fault)"; break;
