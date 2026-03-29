@@ -70,6 +70,10 @@ bool LinuxBuilder::buildProject() {
             args.push_back(TString("-l") + it);
         }
 
+        for(auto &it : m_defines) {
+            args.push_back(TString("-D") + it);
+        }
+
         args.push_back("-std=c++20");
 #ifdef NDEBUG
         args.push_back("-O3");

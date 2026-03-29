@@ -12,8 +12,8 @@
 #include "commandbuffer.h"
 
 namespace {
-    const char *environmentMap("deferredIndirect/environmentMap");
-    const char *iblMap("iblMap");
+    const char *gEnvironmentMap("deferredIndirect/environmentMap");
+    const char *gIblMap("iblMap");
 };
 
 DeferredIndirect::DeferredIndirect() :
@@ -33,7 +33,7 @@ DeferredIndirect::DeferredIndirect() :
 
     m_outputs.push_back(std::make_pair("Result", nullptr));
 
-    PostProcessSettings::registerSetting(environmentMap, Variant::fromValue(m_iblTexture));
+    PostProcessSettings::registerSetting(gEnvironmentMap, Variant::fromValue(m_iblTexture));
 
     // Building camera background color texture cubemap
     m_cameraTexture->setFormat(Texture::RGBA8);
@@ -52,7 +52,7 @@ DeferredIndirect::DeferredIndirect() :
     Material *mtl = Engine::loadResource<Material>(".embedded/IblReflections.shader");
     if(mtl) {
         m_iblMaterial = mtl->createInstance();
-        m_iblMaterial->setTexture(iblMap, m_cameraTexture);
+        m_iblMaterial->setTexture(gIblMap, m_cameraTexture);
     }
 
 }
@@ -80,11 +80,11 @@ void DeferredIndirect::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
     for(auto it : m_context->culledPostEffectSettings()) {
-        Texture *texture = it.first->readValue(environmentMap).value<Texture *>();
+        Texture *texture = it.first->readValue(gEnvironmentMap).value<Texture *>();
         if(texture != m_iblTexture) {
             m_iblTexture = texture;
             if(m_iblMaterial) {
-                m_iblMaterial->setTexture(iblMap, m_iblTexture ? m_iblTexture : m_cameraTexture);
+                m_iblMaterial->setTexture(gIblMap, m_iblTexture ? m_iblTexture : m_cameraTexture);
             }
         }
     }

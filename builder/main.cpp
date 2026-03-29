@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
-    QCoreApplication::setApplicationName(PRODUCT_NAME);
+    QCoreApplication::setApplicationName(BUILDER_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QCommandLineParser parser;
@@ -75,12 +75,16 @@ int main(int argc, char *argv[]) {
         parser.showHelp(1);
     }
 
-    Log::setHandler(new ConsoleLog());
+    Log::addHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
 
     aInfo() << "Starting builder...";
 
-    Engine engine(argv[0]);
+    Engine::setOrganizationName(COMPANY_NAME);
+    Engine::setApplicationName(BUILDER_NAME);
+    Engine::setApplicationVersion(TString(SDK_VERSION) + " rev " + REVISION);
+
+    Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
     ProjectSettings::instance()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());

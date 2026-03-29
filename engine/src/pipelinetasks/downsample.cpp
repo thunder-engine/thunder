@@ -8,13 +8,8 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#include "components/private/postprocessorsettings.h"
-
-#include <cmath>
-#include <cstring>
-
 namespace {
-    const char *rgbMap("rgbMap");
+    const char *gRgbMap("rgbMap");
 };
 
 Downsample::Downsample() {
@@ -35,7 +30,7 @@ Downsample::Downsample() {
         if(downSample) {
             m_downPasses[i].downMaterial = downSample->createInstance();
             if(i > 0) {
-                m_downPasses[i].downMaterial->setTexture(rgbMap, m_downPasses[i - 1].downTexture);
+                m_downPasses[i].downMaterial->setTexture(gRgbMap, m_downPasses[i - 1].downTexture);
             }
         }
     }
@@ -88,5 +83,5 @@ void Downsample::resize(int32_t width, int32_t height) {
 }
 
 void Downsample::setInput(int index, Texture *source) {
-    m_downPasses[0].downMaterial->setTexture(rgbMap, source);
+    m_downPasses[0].downMaterial->setTexture(gRgbMap, source);
 }

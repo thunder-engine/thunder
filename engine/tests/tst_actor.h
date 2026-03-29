@@ -105,7 +105,7 @@ namespace EngineSuite {
     }
 
     TEST_F(ActorTest, Prefab_serialization) {
-        Engine system("");
+        Engine system;
         SkinnedMeshRender::registerClassFactory(&system);
         MeshRender::registerClassFactory(&system);
         RenderSystem render;
@@ -182,7 +182,7 @@ namespace EngineSuite {
     }
 
     TEST_F(ActorTest, Cross_reference_prefab) {
-        Engine system("");
+        Engine system;
         TestComponent::registerClassFactory(&system);
 
         Actor* prefab = Engine::objectCreate<Actor>("Prefab");
@@ -238,7 +238,7 @@ namespace EngineSuite {
     }
 
     TEST_F(ActorTest, Remove_component_from_prefab_instance) {
-        Engine system("");
+        Engine system;
         TestComponent::registerClassFactory(&system);
 
         // Create a root boject
@@ -286,7 +286,7 @@ namespace EngineSuite {
     }
 
     TEST_F(ActorTest, Update_prefab_instance) {
-        Engine system("");
+        Engine system;
         TestComponent::registerClassFactory(&system);
 
         Actor* root = Engine::objectCreate<Actor>("Root");

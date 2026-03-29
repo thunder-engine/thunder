@@ -1,6 +1,6 @@
 #include "core/log.h"
 
-static LogHandler *s_handler = nullptr;
+static std::vector<LogHandler *> s_handlers;
 static Log::LogTypes s_logLevel = Log::ERR;
 
 /*!
@@ -36,25 +36,21 @@ Log::Log(LogTypes type) :
     Flushes any pending data to be written and destroys the log stream.
 */
 Log::~Log() {
-    if(s_handler && m_type <= s_logLevel) {
-        s_handler->setRecord(m_type, m_stream.str().c_str());
+    if(m_type <= s_logLevel) {
+        for(auto it : s_handlers) {
+            it->setRecord(m_type, m_stream.str().c_str());
+        }
     }
 }
 /*!
-    Set a new Log \a handler.
+    Adds a new Log \a handler.
     This method can be used in case if a developer would need to move logging stream to someplace.
     For example to the console.
 */
-void Log::setHandler(LogHandler *handler) {
+void Log::addHandler(LogHandler *handler) {
     if(handler) {
-        s_handler = handler;
+        s_handlers.push_back(handler);
     }
-}
-/*!
-    Returns LogHandler object if present; otherwise returns nullptr.
-*/
-LogHandler *Log::handler() {
-    return s_handler;
 }
 /*!
     Set current log \a level output.

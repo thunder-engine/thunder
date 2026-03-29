@@ -39,6 +39,10 @@ VsBuilder::VsBuilder() {
     }
 
     m_filePref = "    <ClCompile Include=\""; m_fileSuff = "\" />"; m_fileSep = "";
+    m_incPathSep = ";";
+    m_libPathPref = ";";
+    m_libsPref = ""; m_libsSuff = ".lib"; m_libsSep = ";";
+    m_defSep = ";";
 }
 
 bool VsBuilder::buildProject() {

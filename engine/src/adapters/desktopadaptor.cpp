@@ -1,4 +1,5 @@
 #include "adapters/desktopadaptor.h"
+#include <filesystem>
 
 #ifdef _WIN32
     #include <Windows.h>
@@ -16,7 +17,6 @@
 #include <cstring>
 
 #include "handlers/physfsfilehandler.h"
-#include "handlers/fileloghandler.h"
 
 #define CONFIG_NAME "config.json"
 
@@ -26,14 +26,12 @@
 #define REPEAT 2
 
 namespace {
-    const char *gScreenWidth("screen.width");
-    const char *gScreenHeight("screen.height");
-    const char *gScreenWindowed("screen.windowed");
-    const char *gScreenVsync("screen.vsync");
+    const char *gScreenWidth("s.width");
+    const char *gScreenHeight("s.height");
+    const char *gScreenWindowed("s.windowed");
+    const char *gScreenVsync("s.vsync");
 
     const char *gRhi(".rhi");
-    const char *gCompany(".company");
-    const char *gProject(".project");
 };
 
 Vector4 DesktopAdaptor::s_mousePosition = Vector4();
@@ -47,7 +45,6 @@ bool DesktopAdaptor::s_windowed = false;
 bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_appActive = true;
 
-TString DesktopAdaptor::s_appConfig;
 TString DesktopAdaptor::s_inputString;
 
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_keys;
@@ -58,8 +55,6 @@ DesktopAdaptor::DesktopAdaptor() :
         m_window(nullptr),
         m_monitor(nullptr),
         m_noOpenGL(false) {
-
-    Log::setHandler(new DesktopLogHandler());
 }
 
 bool DesktopAdaptor::init() {
@@ -121,15 +116,13 @@ bool DesktopAdaptor::start() {
         return false;
     }
 
-    s_appConfig = Engine::locationAppConfig();
-    static_cast<DesktopLogHandler *>(Log::handler())->setPath(s_appConfig);
-
+    TString appConfig = locationLocalDir();
 #if _WIN32
-    int32_t size = MultiByteToWideChar(CP_UTF8, 0, s_appConfig.data(), s_appConfig.size(), nullptr, 0);
+    int32_t size = MultiByteToWideChar(CP_UTF8, 0, appConfig.data(), appConfig.size(), nullptr, 0);
     if(size) {
         std::wstring path;
         path.resize(size);
-        MultiByteToWideChar(CP_UTF8, 0, s_appConfig.data(), s_appConfig.size(), path.data(), size);
+        MultiByteToWideChar(CP_UTF8, 0, appConfig.data(), appConfig.size(), path.data(), size);
 
         uint32_t start = 0;
         for(int32_t slash = 0; slash != -1; start = slash) {
@@ -145,16 +138,16 @@ bool DesktopAdaptor::start() {
         }
     }
 #else
-    for(size_t i = 1; i < s_appConfig.size(); i++) {
-        if(s_appConfig[i] == '/' || i == s_appConfig.size()) {
-            int result = ::mkdir(s_appConfig.mid(0, i).data(), 0777);
+    for(size_t i = 1; i < appConfig.size(); i++) {
+        if(appConfig[i] == '/' || i == appConfig.size()) {
+            int result = ::mkdir(appConfig.mid(0, i).data(), 0777);
             if(result != 0 && (errno == EEXIST || errno == EACCES)) {
                 continue;
             }
         }
     }
 #endif
-    fileHandler->searchPathAdd(s_appConfig.data(), true);
+    fileHandler->searchPathAdd(appConfig.data(), true);
 
     s_width = Engine::value(gScreenWidth, s_width).toInt();
     s_height = Engine::value(gScreenHeight, s_height).toInt();
@@ -200,10 +193,10 @@ bool DesktopAdaptor::start() {
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    s_windowed = true;Engine::value(gScreenWindowed, s_windowed).toBool();
+    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
     s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
 
-    m_window = glfwCreateWindow(s_width, s_height, Engine::value(gProject).toString().data(), (s_windowed) ? nullptr : m_monitor, nullptr);
+    m_window = glfwCreateWindow(s_width, s_height, Engine::applicationName().data(), (s_windowed) ? nullptr : m_monitor, nullptr);
     if(!m_window) {
         glfwTerminate();
         return false;
@@ -421,14 +414,18 @@ TString DesktopAdaptor::locationLocalDir() const {
     result += "/.config";
 #endif
 
-    TString organization(Engine::value(gCompany).toString());
+    TString organization(Engine::organizationName());
     if(!organization.isEmpty()) {
         result += TString("/") + organization;
     }
 
-    TString project(Engine::value(gProject).toString());
+    TString project(Engine::applicationName());
     if(!project.isEmpty()) {
         result += TString("/") + project;
+    }
+
+    if(!std::filesystem::exists(result.toStdString())) {
+        std::filesystem::create_directories(result.toStdString());
     }
 
     return result;

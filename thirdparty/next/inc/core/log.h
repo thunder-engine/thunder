@@ -23,9 +23,7 @@ public:
 
     ~Log();
 
-    static void setHandler(LogHandler *handler);
-
-    static LogHandler *handler();
+    static void addHandler(LogHandler *handler);
 
     static void setLogLevel(LogTypes level);
 

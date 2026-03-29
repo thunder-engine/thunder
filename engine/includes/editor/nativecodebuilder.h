@@ -60,14 +60,15 @@ protected:
     StringList m_incPath;
     StringList m_libPath;
     StringList m_libs;
+    StringList m_defines;
 
-    TString m_incPref;
-    TString m_incSuff;
-    TString m_incSep;
+    TString m_incPathPref;
+    TString m_incPathSuff;
+    TString m_incPathSep;
 
-    TString m_libPref;
-    TString m_libSuff;
-    TString m_libSep;
+    TString m_libPathPref;
+    TString m_libPathSuff;
+    TString m_libPathSep;
 
     TString m_libsPref;
     TString m_libsSuff;
@@ -76,6 +77,10 @@ protected:
     TString m_filePref;
     TString m_fileSuff;
     TString m_fileSep;
+
+    TString m_defPref;
+    TString m_defSuff;
+    TString m_defSep;
 
     Process m_process;
 

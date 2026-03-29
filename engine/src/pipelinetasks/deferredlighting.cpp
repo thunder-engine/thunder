@@ -2,7 +2,6 @@
 
 #include "components/actor.h"
 #include "components/transform.h"
-#include "components/camera.h"
 #include "components/arealight.h"
 #include "components/pointlight.h"
 #include "components/spotlight.h"

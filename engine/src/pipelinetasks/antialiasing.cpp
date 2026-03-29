@@ -9,7 +9,7 @@
 #include "resources/rendertarget.h"
 
 namespace {
-    const char *antialiasing("graphics.antialiasing");
+    const char *gAntialiasing("g.antialiasing");
 };
 
 AntiAliasing::AntiAliasing() :
@@ -21,7 +21,7 @@ AntiAliasing::AntiAliasing() :
 
     m_inputs.push_back("In");
 
-    Engine::setValue(antialiasing, 1);
+    Engine::setValue(gAntialiasing, 1);
 
     Material *material = Engine::loadResource<Material>(".embedded/FXAA.shader");
     if(material) {

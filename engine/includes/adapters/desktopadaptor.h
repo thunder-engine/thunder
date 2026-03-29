@@ -76,7 +76,6 @@ protected:
 
     bool m_noOpenGL;
 
-    static TString s_appConfig;
     static TString s_inputString;
 
     static std::unordered_map<int32_t, int32_t> s_keys;

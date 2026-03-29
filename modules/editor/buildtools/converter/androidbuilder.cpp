@@ -138,6 +138,8 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
         return false;
     }
 
+    ProjectSettings *mgr = ProjectSettings::instance();
+
     StringList args;
 
     TString profile = (arch == "arm64") ? "aarch64" : arch;
@@ -149,6 +151,10 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
     args.push_back("-shared");
     args.push_back("-std=c++17");
     args.push_back("-O2");
+
+    for(auto &it : m_defines) {
+        args.push_back(TString("-D") + it);
+    }
 
     args.push_back("-DTHUNDER_MOBILE");
     args.push_back("-DANDROID");

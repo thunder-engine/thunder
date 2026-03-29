@@ -13,7 +13,7 @@ namespace UikitSuite {
     };
 
     TEST_F(RectTransformTest, AddRemoveChild) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* parent = Engine::composeActor<Frame>("Parent");
@@ -49,7 +49,7 @@ namespace UikitSuite {
     }
 
     TEST_F(RectTransformTest, CreateLayoutAndAddChilds) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* parent = Engine::composeActor<Frame>("Parent");
@@ -83,7 +83,7 @@ namespace UikitSuite {
     }
 
     TEST_F(RectTransformTest, AddChildsAndCreateLayout) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* parent = Engine::composeActor<Frame>("Parent");
@@ -115,7 +115,7 @@ namespace UikitSuite {
     }
 
     TEST_F(RectTransformTest, CreateLayoutAndInsertChild) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* parent = Engine::composeActor<Frame>("Parent");

@@ -25,6 +25,8 @@ XcodeBuilder::XcodeBuilder() {
     setName("[XcodeBuilder]");
 
     connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
+
+    m_defPref = TString(5, '\t'); m_defSep = ",\n";
 }
 
 bool XcodeBuilder::buildProject() {

@@ -5,11 +5,9 @@ import qbs.TextFile
 Project {
     id: thunder
 
-    property string COMPANY_NAME: "FrostSpear"
-    property string PRODUCT_NAME: "ThunderEngine"
+    property string COMPANY_NAME: "ThunderEngine"
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
-    property string COPYRIGHT_AUTHOR: "Evgeniy Prikazchikov"
 
     property string bundle: {
         if(qbs.targetOS.contains("darwin")) {
@@ -82,13 +80,11 @@ Project {
     property stringList defines: {
         var result  = [
             "COMPANY_NAME=\"" + COMPANY_NAME + "\"",
-            "PRODUCT_NAME=\"" + PRODUCT_NAME + "\"",
             "EDITOR_NAME=\"" + EDITOR_NAME + "\"",
             "BUILDER_NAME=\"" + BUILDER_NAME + "\"",
             "SDK_VERSION=\"" + probe.SDK_VERSION + "\"",
-            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR,
-            "COPYRIGHT_AUTHOR=\"" + COPYRIGHT_AUTHOR + "\"",
             "REVISION=\"" + probe.REVISION + "\"",
+            "COPYRIGHT_YEAR=" + COPYRIGHT_YEAR,
             "LEGAL=\"" + probe.LEGAL + "\""
         ];
         return result

@@ -1,7 +1,5 @@
 #include "pipelinetasks/gbuffer.h"
 
-#include "components/camera.h"
-
 #include "resources/rendertarget.h"
 
 #include "pipelinecontext.h"

@@ -266,7 +266,10 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-                                GCC_PREPROCESSOR_DEFINITIONS = "THUNDER_MOBILE";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+				        THUNDER_MOBILE,
+					${defines}
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -330,7 +333,10 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
-                                GCC_PREPROCESSOR_DEFINITIONS = "THUNDER_MOBILE";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+				        THUNDER_MOBILE,
+					${defines}
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -444,8 +450,9 @@
                                 GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
                                 GCC_OPTIMIZATION_LEVEL = 3;
                                 GCC_PREPROCESSOR_DEFINITIONS = (
-                                        SHARED_DEFINE,
-                                        "$(inherited)",
+				        "$(inherited)",
+					SHARED_DEFINE,
+					${defines}
                                 );
                                 GCC_SYMBOLS_PRIVATE_EXTERN = NO;
                                 HEADER_SEARCH_PATHS = (
@@ -456,7 +463,7 @@
                                         "${sdkPath}/include/next/core",
                                 );
                                 INSTALL_PATH = "@rpath";
-                                LD_RUNPATH_SEARCH_PATHS = (
+				LD_RUNPATH_SEARCH_PATHS = (
                                         "$(inherited)",
                                         "@executable_path/plugins",
                                 );
@@ -511,8 +518,9 @@
                                 GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
                                 GCC_OPTIMIZATION_LEVEL = 0;
                                 GCC_PREPROCESSOR_DEFINITIONS = (
+				        "$(inherited)",
                                         SHARED_DEFINE,
-                                        "$(inherited)",
+					${defines}
                                 );
                                 GCC_SYMBOLS_PRIVATE_EXTERN = NO;
                                 HEADER_SEARCH_PATHS = (

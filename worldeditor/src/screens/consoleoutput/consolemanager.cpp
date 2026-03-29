@@ -13,19 +13,20 @@
 ConsoleManager::ConsoleManager(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::ConsoleManager),
-        m_pItems(new LogModel()) {
+        m_model(new LogModel),
+        m_menu(new QMenu(this)),
+        m_handler(new QLog) {
 
     ui->setupUi(this);
-    ui->consoleOutput->setModel(m_pItems);
+    ui->consoleOutput->setModel(m_model);
     ui->toolButton->hide();
 
     ui->consoleOutput->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    m_pMenu = new QMenu(this);
-    QAction *action = m_pMenu->addAction(tr("Copy"));
-    connect(action, SIGNAL(triggered()), this, SLOT(onCopy()));
+    QAction *action = m_menu->addAction(tr("Copy"));
 
-    connect(static_cast<QLog *>(Log::handler()), SIGNAL(postRecord(uint8_t,QString)), this, SLOT(onLogRecord(uint8_t,QString)));
+    connect(action, &QAction::triggered, this, &ConsoleManager::onCopy);
+    connect(m_handler, &QLog::postRecord, this, &ConsoleManager::onLogRecord);
 }
 
 ConsoleManager::~ConsoleManager() {
@@ -33,22 +34,22 @@ ConsoleManager::~ConsoleManager() {
 }
 
 void ConsoleManager::onLogRecord(uint8_t type, const QString &str) {
-    m_pItems->addRecord(type, str);
+    m_model->addRecord(type, str);
     ui->consoleOutput->scrollToBottom();
 }
 
 void ConsoleManager::on_clearButton_clicked() {
-    m_pItems->clear();
+    m_model->clear();
 }
 
 void ConsoleManager::on_consoleOutput_customContextMenuRequested(const QPoint &pos) {
-    m_pMenu->exec(mapToGlobal(pos));
+    m_menu->exec(mapToGlobal(pos));
 }
 
 void ConsoleManager::onCopy() {
     QStringList list;
     foreach(const QModelIndex &index, ui->consoleOutput->selectionModel()->selectedIndexes()) {
-        list.push_back(m_pItems->data(index, Qt::DisplayRole).toString());
+        list.push_back(m_model->data(index, Qt::DisplayRole).toString());
     }
     if(!list.isEmpty()) {
         QApplication::clipboard()->setText(list.join("\n"));
@@ -62,7 +63,8 @@ void ConsoleManager::changeEvent(QEvent *event) {
 }
 
 void ConsoleManager::parseLogs(const QString &log) {
-    QStringList list = log.split(QRegularExpression("[\r\n]"), Qt::SkipEmptyParts);
+    static const QRegularExpression expr("[\r\n]");
+    QStringList list = log.split(expr, Qt::SkipEmptyParts);
 
     foreach(QString it, list) {
         if(it.contains(" critical ") || it.contains(" critical:", Qt::CaseInsensitive)) {

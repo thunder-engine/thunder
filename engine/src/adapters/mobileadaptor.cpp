@@ -184,10 +184,10 @@ void onCreate(GLFMDisplay *display, int width, int height) {
 
     const char *path = "";
 #ifdef __ANDROID__
-    Log::setHandler(new AndroidHandler());
+    Log::addHandler(new AndroidHandler());
 	File::setHandler(new AndroidFileHandler());
 #else
-    Log::setHandler(new DefaultHandler());
+    Log::addHandler(new DefaultHandler());
     #ifdef __EMSCRIPTEN__
         File::setHandler(new DefaultFileHandler());
     #else
@@ -203,8 +203,7 @@ void onCreate(GLFMDisplay *display, int width, int height) {
         RenderSystem::setWindowHandle(glfmGetMetalView(display));
     }
 #endif
-
-    thunderMain(new Engine(path));
+    thunderMain();
 }
 
 void onResize(GLFMDisplay *, int width, int height) {

@@ -20,8 +20,8 @@
       <widget class="QLabel" name="logo">
        <property name="maximumSize">
         <size>
-         <width>96</width>
-         <height>96</height>
+         <width>64</width>
+         <height>64</height>
         </size>
        </property>
        <property name="text">
@@ -42,7 +42,6 @@
          <property name="font">
           <font>
            <pointsize>16</pointsize>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -55,13 +54,6 @@
         <widget class="QLabel" name="version">
          <property name="text">
           <string notr="true">Version</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="revision">
-         <property name="text">
-          <string notr="true">Revision</string>
          </property>
         </widget>
        </item>

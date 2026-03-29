@@ -90,6 +90,10 @@ bool EmscriptenBuilder::buildProject() {
         args.push_back("-sALLOW_MEMORY_GROWTH");
         args.push_back("-DTHUNDER_MOBILE");
 
+        for(auto &it : m_defines) {
+            args.push_back(TString("-D") + it);
+        }
+
         args.push_back("-O3");
 
         args.push_back("application.cpp");

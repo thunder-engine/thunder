@@ -14,9 +14,9 @@
 #include <editor/editorplatform.h>
 
 #include <engine.h>
+#include <log.h>
 
 #include <global.h>
-#include "qlog.h"
 
 int main(int argc, char *argv[]) {
     QSurfaceFormat format;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName(COMPANY_NAME);
-    QCoreApplication::setApplicationName(PRODUCT_NAME);
+    QCoreApplication::setApplicationName(EDITOR_NAME);
     QCoreApplication::setApplicationVersion(SDK_VERSION);
 
     QFile qss(":/Style/styles/dark/style.qss");
@@ -38,10 +38,14 @@ int main(int argc, char *argv[]) {
         qss.close();
     }
 
-    Log::setLogLevel(Log::DBG);
-    Log::setHandler(new QLog());
+    // Need to set platform adaptor first
+    Engine::setOrganizationName(COMPANY_NAME);
+    Engine::setApplicationName(EDITOR_NAME);
+    Engine::setApplicationVersion(TString(SDK_VERSION) + " rev " + REVISION);
 
-    Engine engine(argv[0]);
+    Log::setLogLevel(Log::DBG);
+
+    Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
     QString project;
