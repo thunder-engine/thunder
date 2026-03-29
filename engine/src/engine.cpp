@@ -212,7 +212,7 @@ Engine::~Engine() {
 bool Engine::init() {
     PROFILE_FUNCTION();
 
-    return setPlatformAdaptor(new DesktopAdaptor);
+    return setPlatformAdaptor(m_platform);
 }
 /*!
     Starts the main game cycle.
