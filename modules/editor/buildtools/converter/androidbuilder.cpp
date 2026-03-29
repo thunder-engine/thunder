@@ -150,6 +150,10 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
     args.push_back("-std=c++17");
     args.push_back("-O2");
 
+    for(auto &it : m_defines) {
+        args.push_back(TString("-D") + it);
+    }
+
     args.push_back("-DTHUNDER_MOBILE");
     args.push_back("-DANDROID");
     args.push_back("-D_FORTIFY_SOURCE=2");

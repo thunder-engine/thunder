@@ -7,7 +7,7 @@
 
 #include "input.h"
 
-extern int thunderMain(Engine *engine);
+extern int thunderMain();
 
 class ENGINE_EXPORT PlatformAdaptor {
 public:

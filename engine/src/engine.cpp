@@ -11,6 +11,7 @@
 #include <metatype.h>
 #include <url.h>
 #include <threadpool.h>
+#include <os/backtrace.h>
 
 #include "module.h"
 #include "system.h"
@@ -34,6 +35,7 @@
     #include "adapters/mobileadaptor.h"
 #else
     #include "adapters/desktopadaptor.h"
+    #include "handlers/fileloghandler.h"
 #endif
 
 #include "resources/translator.h"
@@ -53,6 +55,9 @@ namespace {
     static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
+    static const char *gCompany(".company");
+    static const char *gProjectName(".project");
+    static const char *gProjectVersion(".version");
 
     static const char *gTransform("Transform");
 }
@@ -124,14 +129,24 @@ static Engine *m_instance = nullptr;
 */
 /*!
     Constructs Engine.
-    Using application \a path parameters creates necessary platform adapters, register basic component types and resource types.
 */
-Engine::Engine(const char *) {
+Engine::Engine() {
     PROFILE_FUNCTION();
 
     std::locale::global(std::locale("C"));
 
     m_instance = this;
+
+    Backtrace::installCrashHandler();
+
+#ifndef THUNDER_MOBILE
+    Log::addHandler(new DesktopLogHandler);
+#endif
+
+    aInfo() << "Organization Name:" << organizationName();
+    aInfo() << "Application Name:" << applicationName();
+    aInfo() << "Application Version:" << applicationVersion();
+    aInfo() << "====================================";
 
     addSystem(new ResourceSystem);
 
@@ -354,6 +369,44 @@ void Engine::syncValues() {
     }
 
     m_platform->syncConfiguration(filtered);
+}
+/*!
+    Returns the name of the organization that wrote this application.
+    This name is used to create the path to the settings and logs for this application.
+*/
+TString Engine::organizationName() {
+    return value(gCompany).toString();
+}
+/*!
+    Sets the \a name of the organization that wrote this application.
+*/
+void Engine::setOrganizationName(const TString &name) {
+    setValue(gCompany, name);
+}
+/*!
+    Returns the name of this application.
+    This name is used to create the path to the settings and logs for this application.
+*/
+TString Engine::applicationName() {
+    return value(gProjectName).toString();
+}
+/*!
+    Sets the \a name of this application.
+*/
+void Engine::setApplicationName(const TString &name) {
+    setValue(gProjectName, name);
+}
+/*!
+    Returns the version of this application.
+*/
+TString Engine::applicationVersion() {
+    return value(gProjectVersion).toString();
+}
+/*!
+    Sets the \a version of this application.
+*/
+void Engine::setApplicationVersion(const TString &version) {
+    setValue(gProjectVersion, version);
 }
 /*!
     Returns an instance for loading resource by the provided \a path.

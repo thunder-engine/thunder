@@ -2,10 +2,9 @@
 #define QTLOG_H
 
 #include <QObject>
+#include <QDebug>
 
 #include <log.h>
-
-#include <QDebug>
 
 class QLog : public QObject, public LogHandler {
     Q_OBJECT

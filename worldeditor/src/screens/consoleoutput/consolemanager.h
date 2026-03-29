@@ -10,6 +10,7 @@ namespace Ui {
 
 class LogModel;
 class QMenu;
+class QLog;
 
 class ConsoleManager : public QWidget {
     Q_OBJECT
@@ -34,9 +35,11 @@ private:
 
     Ui::ConsoleManager *ui;
 
-    LogModel *m_pItems;
+    LogModel *m_model;
 
-    QMenu *m_pMenu;
+    QMenu *m_menu;
+
+    QLog *m_handler;
 };
 
 #endif // CONSOLEMANAGER_H

@@ -144,6 +144,7 @@ AssetEditor *MainWindow::openEditor(const QString &path) {
     if(m_documentModel == nullptr) {
         return nullptr;
     }
+
     AssetEditor *editor = m_documentModel->openFile(path);
     if(editor) {
         if(ui->toolWidget->areaFor(editor) == nullptr) {

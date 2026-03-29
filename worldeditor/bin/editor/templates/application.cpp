@@ -9,9 +9,13 @@
 
 #include "plugin.cpp"
 
-int thunderMain(Engine *engine) {
-    Log::setLogLevel(Log::DBG);
+int thunderMain() {
+    Engine::setOrganizationName(COMPANY_NAME);
+    Engine::setApplicationName(PRODUCT_NAME);
+    Engine::setApplicationVersion(PRODUCT_VERSION);
+    Log::setLogLevel(Log::INF);
 
+    Engine *engine = new Engine;
     if(engine->init()) {
         //+{RegisterModules}
         //-{RegisterModules}
@@ -19,6 +23,8 @@ int thunderMain(Engine *engine) {
 
         engine->start();
     }
+
+    delete engine;
 
     return 0;
 }

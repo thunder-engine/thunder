@@ -15,12 +15,10 @@ AboutDialog::AboutDialog(QWidget *parent) :
 
     setWindowTitle(tr("About %1...").arg(EDITOR_NAME));
     ui->name->setText(EDITOR_NAME);
-    ui->revision->setText(tr("From revision %1").arg(REVISION));
-    ui->version->setText(tr("Based on %1 %2").arg(PRODUCT_NAME, SDK_VERSION));
-    ui->copyright->setText(tr("Copyright 2007-%1 by %2. All rights reserved.").arg(COPYRIGHT_YEAR).arg(COPYRIGHT_AUTHOR));
+    ui->version->setText(tr("Based on %2 rev %3").arg(SDK_VERSION, REVISION));
+    ui->copyright->setText(tr("Copyright 2007-%1 by %2. All rights reserved.").arg(COPYRIGHT_YEAR).arg(COMPANY_NAME));
     ui->legal->setText(LEGAL);
 
-    ui->revision->setTextInteractionFlags(Qt::TextSelectableByMouse);
     ui->version->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     QFile file(":/Sponsors/sponsors.md");

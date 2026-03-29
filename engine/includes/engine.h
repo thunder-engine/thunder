@@ -28,7 +28,7 @@ class NativeBehaviour;
 
 class ENGINE_EXPORT Engine : public ObjectSystem {
 public:
-    Engine(const char *path);
+    Engine();
     ~Engine();
 
 /*
@@ -48,6 +48,21 @@ public:
     static void setValue(const TString &key, const Variant &value);
 
     static void syncValues();
+
+/*
+    Product info
+*/
+    static TString organizationName();
+
+    static void setOrganizationName(const TString &name);
+
+    static TString applicationName();
+
+    static void setApplicationName(const TString &name);
+
+    static TString applicationVersion();
+
+    static void setApplicationVersion(const TString &version);
 
 /*
     Resource management

@@ -14,6 +14,7 @@ namespace {
     const char *gIncludePaths("${includePaths}");
     const char *gLibraryPaths("${libraryPaths}");
     const char *gLibraries("${libraries}");
+    const char *gDefines("${defines}");
 
     const char *gFilesList("${FilesList}");
 
@@ -39,31 +40,36 @@ NativeCodeBuilder::NativeCodeBuilder() {
     idName.remove('_');
     m_values["${idName}"] = idName;
 
-    m_incPref = TString(12, ' ') + "\""; m_incSuff = "\""; m_incSep = ",";
-    m_libPref = TString(12, ' ') + "\""; m_libSuff = "\""; m_libSep = ",";
-    m_libsPref = TString(12, ' ') + "\""; m_libsSuff = "\""; m_libsSep = ",";
-    m_filePref = TString(12, ' ') + "\""; m_fileSuff = "\""; m_fileSep = ",";
-
     TString sdk(project->sdkPath());
 
-    m_incPath.push_back(sdk + "/include/engine");
-    m_incPath.push_back(sdk + "/include/modules");
-    m_incPath.push_back(sdk + "/include/next");
-    m_incPath.push_back(sdk + "/include/next/math");
-    m_incPath.push_back(sdk + "/include/next/core");
+    m_incPath = {
+        sdk + "/include/engine",
+        sdk + "/include/modules",
+        sdk + "/include/next",
+        sdk + "/include/next/math",
+        sdk + "/include/next/core"
+    };
 
-    m_libs.push_back("engine");
-    m_libs.push_back("next");
-    m_libs.push_back("physfs");
-    m_libs.push_back("glfm");
-    m_libs.push_back("bullet");
-    m_libs.push_back("bullet3");
-    m_libs.push_back("rendergl");
-    m_libs.push_back("freetype");
-    m_libs.push_back("uikit");
-    m_libs.push_back("media");
-    m_libs.push_back("angel");
-    m_libs.push_back("angelscript");
+    m_libs = {
+        "engine",
+        "next",
+        "physfs",
+        "glfm",
+        "bullet",
+        "bullet3",
+        "rendergl",
+        "freetype",
+        "uikit",
+        "media",
+        "angel",
+        "angelscript"
+    };
+
+    m_defines = {
+        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
+        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
+        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+    };
 }
 
 bool NativeCodeBuilder::buildProject() {
@@ -100,10 +106,11 @@ void NativeCodeBuilder::generateProject() {
 
     m_values[gSdkPath] = mgr->sdkPath();
 
-    m_values[gIncludePaths] = formatList(m_incPath, m_incPref, m_incSuff, m_incSep);
-    m_values[gLibraryPaths] = formatList(m_libPath, m_libPref, m_libSuff, m_libSep);
+    m_values[gIncludePaths] = formatList(m_incPath, m_incPathPref, m_incPathSuff, m_incPathSep);
+    m_values[gLibraryPaths] = formatList(m_libPath, m_libPathPref, m_libPathSuff, m_libPathSep);
     m_values[gLibraries] = formatList(m_libs, m_libsPref, m_libsSuff, m_libsSep);
     m_values[gFilesList] = formatList(StringList(m_sources.begin(), m_sources.end()), m_filePref, m_fileSuff, m_fileSep);
+    m_values[gDefines] = formatList(m_defines, m_defPref, m_defSuff, m_defSep);
 
     const MetaObject *meta = mgr->metaObject();
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -203,7 +210,6 @@ TString NativeCodeBuilder::formatList(const StringList &list, const TString &pre
         if(i < (list.size() - 1)) {
             result += sep;
         }
-        result += "\n";
     }
     return result;
 }

@@ -13,7 +13,7 @@
 #include "components/camera.h"
 
 namespace {
-    const char *gDepthOfField("graphics.depthOfField");
+    const char *gDepthOfField("g.depthOfField");
 
     const char *gFocusDistance("focusDistance");
     const char *gFocusScale("focusScale");

@@ -36,7 +36,8 @@ namespace {
 
     const char *gEntry(".entry");
     const char *gCompany(".company");
-    const char *gProject(".project");
+    const char *gProjectName(".project");
+    const char *gProjectVersion(".version");
 
     const char *gPersistent("Persistent");
 };
@@ -467,7 +468,8 @@ void AssetManager::dumpBundle() {
 
     values[gEntry] = m_projectManager->firstMap();
     values[gCompany] = m_projectManager->projectCompany();
-    values[gProject] = m_projectManager->projectName();
+    values[gProjectName] = m_projectManager->projectName();
+    values[gProjectVersion] = m_projectManager->projectVersion();
 
     root[gSettings] = values;
 

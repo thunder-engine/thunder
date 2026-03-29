@@ -25,7 +25,7 @@
 #define SPLIT_WEIGHT 0.95f // 0.75f
 
 namespace {
-    const char *shadowmap("graphics.shadowmap");
+    const char *gShadowmap("g.shadowmap");
 
     const char *shadowMap("shadowMap");
 
@@ -43,7 +43,7 @@ ShadowMap::ShadowMap() :
 
     setName("ShadowMap");
 
-    Engine::setValue(shadowmap, true);
+    Engine::setValue(gShadowmap, true);
 
     m_scale[0]  = 0.5f;
     m_scale[5]  = 0.5f;

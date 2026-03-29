@@ -6,10 +6,8 @@
 #include "pipelinecontext.h"
 #include "commandbuffer.h"
 
-#include "amath.h"
-
 namespace {
-    const char *gReflections("graphics.reflections");
+    const char *gReflections("g.reflections");
 };
 
 Reflections::Reflections() :

@@ -16,7 +16,7 @@
 #define MAX_SAMPLES 32
 
 namespace {
-    const char *gBloom("graphics.bloom");
+    const char *gBloom("g.bloom");
     const char *gBloomThreshold("bloom/Threshold");
 
     const char *gRgbMap("rgbMap");

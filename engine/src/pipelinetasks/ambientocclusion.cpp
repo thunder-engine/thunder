@@ -11,11 +11,11 @@
 #define KERNEL_SIZE 16
 
 namespace {
-    const char *ambientOcclusion("graphics.ambientocclusion");
+    const char *gAmbientOcclusion("g.ambientocclusion");
 
-    const char *ambientRadius("ambientOcclusion/radius");
-    const char *ambientBias("ambientOcclusion/bias");
-    const char *ambientPower("ambientOcclusion/power");
+    const char *gAmbientRadius("ambientOcclusion/radius");
+    const char *gAmbientBias("ambientOcclusion/bias");
+    const char *gAmbientPower("ambientOcclusion/power");
 };
 
 AmbientOcclusion::AmbientOcclusion() :
@@ -32,11 +32,11 @@ AmbientOcclusion::AmbientOcclusion() :
 
     setName("AmbientOcclusion");
 
-    Engine::setValue(ambientOcclusion, true);
+    Engine::setValue(gAmbientOcclusion, true);
 
-    PostProcessSettings::registerSetting(ambientRadius, m_radius);
-    PostProcessSettings::registerSetting(ambientBias, m_bias);
-    PostProcessSettings::registerSetting(ambientPower, m_power);
+    PostProcessSettings::registerSetting(gAmbientRadius, m_radius);
+    PostProcessSettings::registerSetting(gAmbientBias, m_bias);
+    PostProcessSettings::registerSetting(gAmbientPower, m_power);
 
     m_noiseTexture->setFormat(Texture::RGBA32Float);
     m_noiseTexture->setWrap(Texture::Repeat);
@@ -114,10 +114,10 @@ AmbientOcclusion::~AmbientOcclusion() {
 void AmbientOcclusion::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
-    float radius = PostProcessSettings::defaultValue(ambientRadius).toFloat();
+    float radius = PostProcessSettings::defaultValue(gAmbientRadius).toFloat();
     for(auto pool : m_context->culledPostEffectSettings()) {
         const PostProcessSettings *settings = pool.first;
-        Variant value = settings->readValue(ambientRadius);
+        Variant value = settings->readValue(gAmbientRadius);
         if(value.isValid()) {
             radius = MIX(m_radius, value.toFloat(), pool.second);
         }
@@ -129,9 +129,9 @@ void AmbientOcclusion::exec() {
         }
     }
 
-    float bias = PostProcessSettings::defaultValue(ambientBias).toFloat();
+    float bias = PostProcessSettings::defaultValue(gAmbientBias).toFloat();
     for(auto pool : m_context->culledPostEffectSettings()) {
-        Variant value = pool.first->readValue(ambientBias);
+        Variant value = pool.first->readValue(gAmbientBias);
         if(value.isValid()) {
             bias = MIX(bias, value.toFloat(), pool.second);
         }
@@ -143,9 +143,9 @@ void AmbientOcclusion::exec() {
         }
     }
 
-    float power = PostProcessSettings::defaultValue(ambientPower).toFloat();
+    float power = PostProcessSettings::defaultValue(gAmbientPower).toFloat();
     for(auto pool : m_context->culledPostEffectSettings()) {
-        Variant value = pool.first->readValue(ambientPower);
+        Variant value = pool.first->readValue(gAmbientPower);
         if(value.isValid()) {
             power = MIX(power, value.toFloat(), pool.second);
         }
