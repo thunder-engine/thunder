@@ -139,10 +139,7 @@ Engine::Engine() {
 
     Backtrace::installCrashHandler();
 
-#ifdef THUNDER_MOBILE
-    m_platform = new MobileAdaptor;
-#else
-    m_platform = new DesktopAdaptor;
+#ifndef THUNDER_MOBILE
     Log::addHandler(new DesktopLogHandler);
 #endif
 
@@ -212,7 +209,11 @@ Engine::~Engine() {
 bool Engine::init() {
     PROFILE_FUNCTION();
 
-    return setPlatformAdaptor(m_platform);
+#ifdef THUNDER_MOBILE
+    return setPlatformAdaptor(new MobileAdaptor);
+#else
+    return setPlatformAdaptor(new DesktopAdaptor);
+#endif
 }
 /*!
     Starts the main game cycle.
