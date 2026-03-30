@@ -90,6 +90,13 @@ Project {
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
         Properties {
+            condition: next.desktop
+            files: outer.concat([
+                "src/os/*.cpp"
+            ])
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: next.ANDROID_STL
             Android.ndk.platform: next.ANDROID
