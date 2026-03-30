@@ -140,6 +140,7 @@ Engine::Engine() {
     Backtrace::installCrashHandler();
 
 #ifndef THUNDER_MOBILE
+    m_platform = new DesktopAdaptor;
     Log::addHandler(new DesktopLogHandler);
 #endif
 
@@ -212,7 +213,7 @@ bool Engine::init() {
 #ifdef THUNDER_MOBILE
     return setPlatformAdaptor(new MobileAdaptor);
 #else
-    return setPlatformAdaptor(new DesktopAdaptor);
+    return setPlatformAdaptor(m_platform);
 #endif
 }
 /*!
