@@ -16,7 +16,7 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#include "core/bson.h"
+#include "bson.h"
 
 #include <cstring>
 

@@ -75,8 +75,6 @@ bool ObjectSystem::s_blockCache = false;
 
     Returns new instance of type T and \a name as child of \a parent object.
     \note Class T should be registered first via factoryAdd()
-
-    \sa factoryAdd(), factoryRemove()
 */
 /*!
     Constructs ObjectSystem.
@@ -141,8 +139,8 @@ bool ObjectSystem::compareTreads(ObjectSystem *system) const {
 /*!
     Returns new instance of type represented in \a url and \a name as child of \a parent object.
     \note Class represented as url should be registered first via factoryAdd()
-
-    \sa factoryAdd(), factoryRemove()
+    \note Optional \a id parameter can be used to set custom object identifier. If set to 0, a new UUID
+    is automatically generated for the instance.
 */
 Object *ObjectSystem::objectCreate(const TString &url, const TString &name, Object *parent, uint32_t id) {
     PROFILE_FUNCTION();

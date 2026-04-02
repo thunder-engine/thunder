@@ -11,25 +11,39 @@ outputformats = HTML
 headerdirs += \
     ../ \
     ../engine/includes \
-	../engine/includes/components \
-	../thirdparty/next/inc \
-	../thirdparty/next/inc/math \
-	../thirdparty/next/inc/core \
-	../thirdparty/next/inc/anim \
-	../modules/uikit/includes \
-	../modules/uikit/includes/components \
-	../modules/uikit/includes/resources \
+    ../engine/includes/components \
+    ../thirdparty/next/inc \
+    ../thirdparty/next/inc/math \
+    ../thirdparty/next/inc/core \
+    ../thirdparty/next/inc/anim \
+    ../thirdparty/next/inc/os \
+    ../modules/media/includes \
+    ../modules/media/includes/components \
+    ../modules/media/includes/resources \
+    ../modules/physics/bullet/includes \
+    ../modules/physics/bullet/includes/components \
+    ../modules/physics/bullet/includes/resources \
+    ../modules/uikit/includes \
+    ../modules/uikit/includes/components \
+    ../modules/uikit/includes/resources \
 	
 includepaths +=	\
-	../engine/includes \
-	../engine/includes/components \
-	../thirdparty/next/inc \
-	../thirdparty/next/inc/math \
-	../thirdparty/next/inc/core \
-	../thirdparty/next/inc/anim \
-	../modules/uikit/includes \
-	../modules/uikit/includes/components \
-	../modules/uikit/includes/resources \
+    ../engine/includes \
+    ../engine/includes/components \
+    ../thirdparty/next/inc \
+    ../thirdparty/next/inc/math \
+    ../thirdparty/next/inc/core \
+    ../thirdparty/next/inc/anim \
+    ../thirdparty/next/inc/os \
+    ../modules/media/includes \
+    ../modules/media/includes/components \
+    ../modules/media/includes/resources \
+    ../modules/physics/bullet/includes \
+    ../modules/physics/bullet/includes/components \
+    ../modules/physics/bullet/includes/resources \
+    ../modules/uikit/includes \
+    ../modules/uikit/includes/components \
+    ../modules/uikit/includes/resources \
 
 sourcedirs += \
     ../engine/src \

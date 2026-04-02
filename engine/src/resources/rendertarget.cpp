@@ -71,7 +71,14 @@ void RenderTarget::setClearFlags(int flags) {
     m_clearFlags = flags;
 }
 /*!
-    Returns an area available for rendering.
+/*!
+    Retrieves the renderable area rectangle within this render target.
+
+    This method returns the viewport or scissor rectangle that defines the
+    actual rendering area available for drawing operations. The area is typically
+    used for setting up the viewport, scissor test, or clearing operations.
+
+    This method accepts several output parameters \a x \a y \a width and \a height.
 */
 void RenderTarget::renderArea(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const {
     x = m_clearX;

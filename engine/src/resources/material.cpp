@@ -52,6 +52,8 @@ Material *MaterialInstance::material() const {
 }
 /*!
     Getter for the overridden texture associated with a specific parameter \a binding point.
+
+    The command \a buffer used for texture resolution and resource access.
 */
 Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
     auto it = m_textureOverride.find(binding);
@@ -73,7 +75,9 @@ Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
     }
     return nullptr;
 }
-
+/*!
+    Overrides the \a texture for the specified shader \a binding point.
+*/
 void MaterialInstance::overrideTexture(int32_t binding, Texture *texture) {
     m_textureOverride[binding] = texture;
 }
@@ -388,18 +392,20 @@ int Material::layers() const {
     return m_layers;
 }
 /*!
-    Returns a rendering priority for the material.
+    \fn int Material::priority() const
+
+    Returns rendering priority for the material.
     This parameter is used alpha rendering sorting
 */
-int Material::proprity() const {
+int Material::priority() const {
     return m_priority;
 }
 /*!
-    Sets a \a rendering priority for the material.
+    Sets a rendering \a priority for the material.
     This parameter is used alpha rendering sorting
 */
-void Material::setPriority(int proprity) {
-    m_priority = proprity;
+void Material::setPriority(int priority) {
+    m_priority = priority;
 }
 /*!
     \internal

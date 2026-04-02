@@ -47,12 +47,12 @@ public:
 
     bool operator< (const TString &other) const;
 
-    char &operator[] (int i);
+    char &operator[] (int position);
 
     TString operator+ (const TString &other) const;
-    TString operator+ (const std::string &str) const;
-    TString operator+ (const char *str) const;
-    TString operator+ (char ch) const;
+    TString operator+ (const std::string &other) const;
+    TString operator+ (const char *other) const;
+    TString operator+ (char character) const;
 
     TString &operator+= (const TString &other);
     TString &operator+= (const std::string &str);
@@ -95,7 +95,7 @@ public:
     TString &remove(const TString &str);
     TString &remove(const char ch);
 
-    TString &replace(const TString &findStr, const TString &replaceStr);
+    TString &replace(const TString &before, const TString &after);
     TString &replace(const char before, const char after);
 
     TString &removeFirst();
@@ -132,7 +132,7 @@ public:
     static TString number(int in);
     static TString number(float in);
 
-    static TString fromWc32(uint32_t wc32);
+    static TString fromWc32(uint32_t unicode);
     static TString fromWString(const std::wstring &in);
     static TString fromUtf32(const std::u32string &in);
 

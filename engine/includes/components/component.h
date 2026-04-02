@@ -50,6 +50,11 @@ public:
         return static_cast<T *>(component(T::metaClass()->name()));
     }
 
+    template<typename T>
+    T *addCompoenent() {
+        return actor()->addComponent(T::metaClass()->name());
+    }
+
     Actor *instantiate(Prefab *prefab, Vector3 position, Quaternion rotation);
 
     TString tr(const TString &source);

@@ -70,7 +70,7 @@ Mesh *Sprite::mesh() const {
     return m_mesh;
 }
 /*!
-    Returns \a pixels per unit to create sprite meshes.
+    Returns pixels per unit to create sprite meshes.
 */
 float Sprite::pixelsPerUnit() const {
     return m_pixelsPerUnit;
@@ -131,7 +131,7 @@ Texture *Sprite::texture() const {
     return m_texture;
 }
 /*!
-    Sets a new sprite texture.
+    Sets a new sprite \a texture.
 */
 void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();

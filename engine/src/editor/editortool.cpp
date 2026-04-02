@@ -34,6 +34,7 @@
 
             // ... other overrides as needed
         };
+    \endcode
 */
 
 EditorTool::EditorTool() {

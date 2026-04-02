@@ -6,7 +6,7 @@ import htmlparser
 from string import Template
 from texttable import Texttable
 
-defaultTypes = ["void", "int", "bool", "float", "areal", "char", "size_t", "_size_t", "_file", "int32_t", "std::string", "T"]
+defaultTypes = ["void", "int", "bool", "float", "areal", "char", "size_t", "_size_t", "_file", "int32_t", "uint32_t", "std::string", "T"]
 
 def composeTable(classDef, static):
     table = Texttable(512)
@@ -27,8 +27,7 @@ def composeTable(classDef, static):
                 reference = " {}".format(method.reference)
             if method.returnType is not None:
                 if method.returnType not in defaultTypes:
-                    refType = "ref"
-                    typeName = "{0}:{3}:`{1}<api_{1}>`{2}".format(returnMod, method.returnType, reference, refType)
+                    typeName = "{0}:ref:`{1}<api_{2}>`{3}".format(returnMod, method.returnType, method.returnType.replace("::", "_"), reference)
                 else:
                     typeName = returnMod + method.returnType
 
@@ -49,7 +48,7 @@ def composeTable(classDef, static):
                         default = " = {}".format(argument.default)
 
                     args.append("{0}{1} {2} {3}{4}".format(argMod, argument.type, argument.reference, argument.name, default))
-            body = ":ref:`{0}<api_{3}_{0}>` ({1}){2}".format(method.name, ", ".join(args), methodMod, classDef.name)
+            body = ":ref:`{0}<api_{3}_{4}>` ({1}){2}".format(method.name, ", ".join(args), methodMod, classDef.name, method.uuid)
 
             table.add_row([typeName, body])
 
@@ -60,15 +59,14 @@ def composeMethods(classDef):
     if classDef.methods is not None:
         for index, methods in enumerate(classDef.methods.values()):
             for method in methods:
-                result += ".. _api_{0}_{1}:\n\n".format(classDef.name, method.name)
+                result += ".. _api_{0}_{1}:\n\n".format(classDef.name, method.uuid)
 
                 returnMod = ""
                 if method.returnModificators is not None:
                     returnMod = "{} ".format(" ".join(method.returnModificators))
                 if method.returnType is not None:
                     if method.returnType not in defaultTypes:
-                        refType = "ref"
-                        result += "{0}:{3}:`{1}<api_{1}>` {2} ".format(returnMod, method.returnType, method.reference, refType)
+                        result += "{0}:ref:`{1}<api_{1}>` {2} ".format(returnMod, method.returnType, method.reference)
                     else:
                         result += "{0}{1} ".format(returnMod, method.returnType)
 
@@ -83,8 +81,7 @@ def composeMethods(classDef):
                         if argument.default is not None:
                             default = " = {}".format(argument.default)
                         if argument.type not in defaultTypes:
-                            refType = "ref"
-                            args.append(":{4}:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default, refType))
+                            args.append(":ref:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
                         else:
                             args.append("{0} {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
 

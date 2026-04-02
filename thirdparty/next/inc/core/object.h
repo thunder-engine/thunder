@@ -139,8 +139,8 @@ public:
     virtual Variant property(const char *name) const;
     virtual void setProperty(const char *name, const Variant &value);
 
-    void setDynamicPropertyInfo(const char *name, const char *info);
-    TString dynamicPropertyInfo(const char *name);
+    void setDynamicPropertyInfo(const char *property, const char *info);
+    TString dynamicPropertyInfo(const char *property);
 
     const StringList &dynamicPropertyNames() const;
 

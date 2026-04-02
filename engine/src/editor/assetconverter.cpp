@@ -316,7 +316,11 @@ void AssetConverterSettings::setSubItemsDirty() {
     }
 }
 /*!
-    Returns UUID of a sub-item by \a key.
+    Returns the resource information for a sub-item identified by \a key.
+
+    This method retrieves the ResourceInfo associated with the given sub-item key.
+    If the sub-item doesn't exist and \a create is true, a new sub-item is created
+    with a generated UUID and the parent's MD5 hash.
 */
 ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, bool create) const {
     auto it = m_subItems.find(key);
@@ -332,7 +336,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     return ResourceSystem::ResourceInfo();
 }
 /*!
-    Sets a sub-item with \a name, \a info, and \a type.
+    Sets a sub-item with \a name, \a info.
 */
 void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info) {
     if(!name.isEmpty() && !info.uuid.isEmpty()) {
@@ -373,8 +377,13 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
     return AssetConverter::InternalError;
 }
 /*!
-    Loads settings from metadata file ([source].set)
-    Each asset in the Conent directory has [source].set file wich contains all meta information and import setting for the asset.
+    Loads asset settings from the metadata file.
+
+    This method reads the settings from a metadata file located at "[source].[ext]",
+    where [ext] is defined by gMetaExt (typically "set"). The metadata file contains
+    all meta-information and import settings for an asset in the Content directory.
+
+    Returns true if settings was successfully loaded; otherwise returns false.
 */
 bool AssetConverterSettings::loadSettings() {
     File meta(source() + "." + gMetaExt);
@@ -561,6 +570,8 @@ QImage AssetConverterSettings::documentIcon(const TString &type) {
     return result;
 }
 /*!
+    \fn void AssetConverterSettings::updated()
+
     Emmits signal when asset settings has been changed.
 */
 void AssetConverterSettings::updated() {
@@ -601,7 +612,6 @@ void AssetConverterSettings::updated() {
     \value InternalError \c An unexpected error occurred during conversion
     \value Unsupported \c The asset type is not supported by this converter
     \value Skipped \c Conversion was intentionally skipped
-    \value CopyAsIs \c Asset was copied without conversion
 */
 
 /*!
@@ -610,7 +620,7 @@ void AssetConverterSettings::updated() {
 */
 /*!
     \fn ReturnCode AssetConverter::convertFile(AssetConverterSettings *settings)
-    Converts a file using the provided settings.
+    Converts a file using the provided \a settings.
 */
 
 /*!

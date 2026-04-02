@@ -111,7 +111,7 @@ public:
     static QImage documentIcon(const TString &type);
     static void setDefaultIconPath(const TString &type, const TString &path);
 
-signals:
+    // signals
     void updated();
 
 protected:

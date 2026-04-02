@@ -203,8 +203,8 @@ public:
     bool wireframe() const;
     void setWireframe(bool wireframe);
 
-    int proprity() const;
-    void setPriority(int proprity);
+    int priority() const;
+    void setPriority(int priority);
 
     int uniformSize() const;
 

@@ -18,8 +18,6 @@
 
 #include "core/metaproperty.h"
 
-#include <cstring>
-
 /*!
     \class MetaProperty
     \brief The MetaProperty provides an interface to retrieve information about object property at runtime.
