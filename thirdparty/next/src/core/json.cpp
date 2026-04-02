@@ -16,12 +16,10 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#include "core/json.h"
+#include "json.h"
 
 #include <map>
 #include <stack>
-
-#include "core/variant.h"
 
 #define J_TRUE  "true"
 #define J_FALSE "false"

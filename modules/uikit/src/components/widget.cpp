@@ -164,7 +164,7 @@ RectTransform *Widget::rectTransform() {
     return m_transform;
 }
 /*!
-    Returns true if provided \a widget is a part of complex widget; otherwise returns false.
+    Returns true if widget is a part of complex widget; otherwise returns false.
 */
 bool Widget::isSubWidget() const {
     return m_subWidget;

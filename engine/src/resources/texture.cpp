@@ -36,8 +36,9 @@ uint32_t Texture::s_maxCubemapSize = 512;
     \value RGB8 \c Color texture format. 8 bit integer per channel. 24-bits in total.
     \value RGBA8 \c Color texture format with alpha channel. 8-bit integer per channel. 32-bits in total.
     \value RGB10A2 \c 10 bits each for RGB, 2 for Alpha.
-    \value RGBA32Float \c Color texture and alpha with floating-point values. It uses 32-bit floating-point values per channel.
     \value R11G11B10Float \c This uses special 11 and 10-bit floating-point values. This is very economical for floating-point values (using only 32-bits per value).
+    \value RGBA32Float \c Color texture and alpha with floating-point values. It uses 32-bit floating-point values per channel.
+    \value RGBA16Float \c Color texture and alpha with floating-point values. It uses 16-bit floating-point values per channel.
     \value Depth \c Depth buffer texture format. Number bits per pixel depend on graphical settings and hardware. Can be 16, 24 or 32-bit per pixel.
 */
 
@@ -332,6 +333,8 @@ void Texture::setFlags(int flags) {
     }
 }
 /*!
+    \fn int Texture::compress() const
+
     Returns compression method.
 */
 int Texture::compress() const {

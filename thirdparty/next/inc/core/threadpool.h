@@ -21,22 +21,10 @@
 
 #include <stdint.h>
 
-#include "object.h"
+#include <object.h>
 
 class ThreadPoolPrivate;
-
-class NEXT_LIBRARY_EXPORT Runable {
-public:
-    virtual ~Runable();
-
-    bool autoDelete() const;
-    void setAutoDelete(bool autoDelete);
-
-    virtual void run() = 0;
-private:
-    bool m_autoDelete = true;
-
-};
+class Runable;
 
 class NEXT_LIBRARY_EXPORT ThreadPool : public Object {
 public:
@@ -58,6 +46,19 @@ private:
     friend class ThreadPoolTest;
 
     ThreadPoolPrivate *p_ptr;
+
+};
+
+class NEXT_LIBRARY_EXPORT Runable {
+public:
+    virtual ~Runable();
+
+    bool autoDelete() const;
+    void setAutoDelete(bool autoDelete);
+
+    virtual void run() = 0;
+private:
+    bool m_autoDelete = true;
 
 };
 

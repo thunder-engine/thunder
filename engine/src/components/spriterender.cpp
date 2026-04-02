@@ -118,7 +118,7 @@ Sprite *SpriteRender::sprite() const {
     return m_sprite;
 }
 /*!
-    Replaces current sprite \a sheet with a new one.
+    Replaces current \a sprite with a new one.
 */
 void SpriteRender::setSprite(Sprite *sprite) {
     if(m_sprite != sprite) {

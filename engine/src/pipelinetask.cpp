@@ -39,7 +39,7 @@ void PipelineTask::analyze(World *world) {
 
 }
 /*!
-    The task will be executed for the provided \a context.
+    Executes the rendering commands associated with this pipeline task.
 */
 void PipelineTask::exec() {
 

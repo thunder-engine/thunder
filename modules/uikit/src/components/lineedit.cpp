@@ -23,11 +23,11 @@ namespace {
 }
 
 /*!
-    \class TextInput
-    \brief The TextInput class is a UI component that allows users to input text.
+    \class LineEdit
+    \brief The LineEdit class is a UI component that allows users to input text.
     \inmodule Gui
 
-    The TextInput class provides a user interface for text input, supporting text editing, cursor positioning, and input handling.
+    The LineEdit class provides a user interface for text input, supporting text editing, cursor positioning, and input handling.
     It inherits functionality from the Widget class and extends it to handle text-related features and animations.
 */
 

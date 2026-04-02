@@ -417,7 +417,7 @@ Camera *PipelineContext::currentCamera() const {
     return m_camera;
 }
 /*!
-    Filters out an incoming \a list which are not in the \a frustum.
+    Filters \a out an incoming \a in list which are not in the \a frustum.
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
 void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox *box) {

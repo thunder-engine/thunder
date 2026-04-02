@@ -50,10 +50,11 @@ static Component *componentInChildHelper(const TString &type, Object *parent) {
 */
 
 /*!
-    \enum Actor::HideFlags
+    \enum Actor::Flags
 
-    \value ENABLE \c This Actor can be visible on the screen and can be updated in the game cycle.
-    \value SELECTABLE \c This Actor can be selected in the Editor.
+    \value Enable \c This Actor can be visible on the screen and can be updated in the game cycle.
+    \value Selectable \c This Actor can be selected in the Editor.
+    \value Static \c This Actor is not supposed to be moved.
 */
 
 Actor::Actor() :

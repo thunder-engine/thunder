@@ -701,8 +701,6 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 }
 /*!
     Set object name by provided \a name.
-
-    \sa metaObject()
 */
 void Object::setName(const TString &name) {
     PROFILE_FUNCTION();
@@ -908,7 +906,7 @@ bool Object::isSerializable() const {
     If property not found returns invalid Variant.
     Information of all properties which provided by this object can be found in MetaObject.
 
-    \sa setProperty(), metaObject(), Variant::isValid()
+    \sa setProperty(), Variant::isValid()
 */
 Variant Object::property(const char *name) const {
     PROFILE_FUNCTION();
@@ -934,7 +932,7 @@ Variant Object::property(const char *name) const {
     Information of all properties which provided by this object can be found in MetaObject.
     An invalid \a value will bring to deletion of dynamic property.
 
-    \sa property(), metaObject(), Variant::isValid(), dynamicPropertyNames()
+    \sa property(), Variant::isValid(), dynamicPropertyNames()
 */
 void Object::setProperty(const char *name, const Variant &value) {
     PROFILE_FUNCTION();
@@ -972,14 +970,14 @@ void Object::setProperty(const char *name, const Variant &value) {
     meta->property(index).write(this, value);
 }
 /*!
-    Adds additional \a info for the dynamic property with \a name.
+    Adds additional \a info for the dynamic \a property.
 
     Can be used to store meta information mostly used for the editor.
 */
-void Object::setDynamicPropertyInfo(const char *name, const char *info) {
+void Object::setDynamicPropertyInfo(const char *property, const char *info) {
     int index = -1;
 
-    TString localName(name);
+    TString localName(property);
     auto nameIterator = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), localName);
     if(nameIterator != m_dynamicPropertyNames.end()) {
         index = std::distance(m_dynamicPropertyNames.begin(), nameIterator);
@@ -990,10 +988,10 @@ void Object::setDynamicPropertyInfo(const char *name, const char *info) {
     }
 }
 /*!
-    Returns an additional information for the dynamic property.
+    Returns an additional information for the dynamic \a property.
 */
-TString Object::dynamicPropertyInfo(const char *name) {
-    auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), name);
+TString Object::dynamicPropertyInfo(const char *property) {
+    auto it = std::find(m_dynamicPropertyNames.begin(), m_dynamicPropertyNames.end(), property);
     if(it == m_dynamicPropertyNames.end()) {
         return TString();
     }

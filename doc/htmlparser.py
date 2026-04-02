@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import random
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
@@ -20,6 +21,7 @@ class ArgumentDef:
 class MethodDef:
     def __init__(self, name):
         self.name = name
+        self.uuid = ''.join(random.sample("0123456789abcdef", 8))
         self.returnType = None  # type: Optional[str]
         self.returnModificators = None  # type: Optional[list]
         self.reference = None  # type: Optional[str]

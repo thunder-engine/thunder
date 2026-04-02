@@ -16,7 +16,7 @@
     Copyright: 2008-2025 Evgeniy Prikazchikov
 */
 
-#include "core/threadpool.h"
+#include "threadpool.h"
 
 #include <thread>
 #include <condition_variable>

@@ -75,7 +75,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version ${QT_VERSION} qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
   
     - name: Setup Qbs
@@ -158,7 +158,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version 6.7.2 qtbase qt5compat qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version 6.7.2 qtbase qt5compat qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Install OpenSSL
@@ -283,7 +283,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 qtbase qtmultimedia qtscript qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |

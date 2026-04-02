@@ -32,9 +32,11 @@ class ENGINE_EXPORT Texture : public Resource {
                A_VALUE(R8),
                A_VALUE(RGB8),
                A_VALUE(RGBA8),
+               A_VALUE(RGB10A2),
                A_VALUE(R11G11B10Float),
-               A_VALUE(Depth),
-               A_VALUE(RGBA32Float)),
+               A_VALUE(RGBA32Float),
+               A_VALUE(RGBA16Float),
+               A_VALUE(Depth)),
 
         A_ENUM(FilteringType,
                A_VALUE(None),
