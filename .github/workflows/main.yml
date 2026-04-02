@@ -521,12 +521,6 @@ jobs:
         with:
           name: ThunderEngine-android.7z
 
-      - name: Download FreeBSD binaries
-        id: download-freebsd
-        uses: actions/download-artifact@v4
-        with:
-          name: ThunderEngine-freebsd-x64.7z
-          
       - name: Download WebGL binaries
         id: download-webgl
         uses: actions/download-artifact@v4
@@ -581,15 +575,6 @@ jobs:
           asset_name: ThunderEngine-android.7z
           asset_content_type: application/x-7z-compressed
 
-      - name: Upload FreeBSD
-        uses: actions/upload-release-asset@v1
-        if: false
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ThunderEngine-freebsd-x64.7z
-          asset_name: ThunderEngine-freebsd-x64.7z
-          asset_content_type: application/x-7z-compressed
-          
       - name: Upload WebGL
         uses: actions/upload-release-asset@v1
         with:
