@@ -468,7 +468,7 @@ jobs:
   github:
     name: Upload to GitHub releases
     runs-on: ubuntu-latest
-    needs: [version, linux, windows, android, osx, ios, tvos, freebsd, emscripten]
+    needs: [version, linux, windows, android, osx, ios, tvos, emscripten]
 
     if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
 
