@@ -373,7 +373,11 @@ RectTransform *RectTransform::hoveredTransform(float x, float y) {
     Subscribes a \a widget to changes in the RectTransform.
 */
 void RectTransform::subscribe(Widget *widget) {
-    m_subscribers.push_back(widget);
+    if(widget) {
+        m_subscribers.push_back(widget);
+
+        widget->boundChanged(m_size);
+    }
 }
 /*!
     Unsubscribes a \a widget from changes in the RectTransform.
