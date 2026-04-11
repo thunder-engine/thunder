@@ -85,7 +85,7 @@ QModelIndex BaseObjectModel::getIndex(QObject *object, const QModelIndex &parent
 }
 
 bool BaseObjectModel::removeResource(const QModelIndex &index) {
-    return m_items.remove(index.internalId()) > 0;
+    return m_items.remove(index.internalId());
 }
 
 void BaseObjectModel::addItem(QObject *object) {

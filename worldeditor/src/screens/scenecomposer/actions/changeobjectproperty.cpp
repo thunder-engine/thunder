@@ -2,6 +2,7 @@
 
 #include <components/actor.h>
 #include <components/component.h>
+#include <components/world.h>
 
 #include <set>
 
@@ -9,12 +10,17 @@ ChangeObjectProperty::ChangeObjectProperty(const Object::ObjectList &objects, co
         UndoCommand(name, group),
         m_value(value),
         m_property(property),
-        m_controller(ctrl) {
+        m_controller(ctrl),
+        m_prefab(0) {
 
     for(auto it : objects) {
         m_objects.push_back(it->uuid());
     }
 
+    Prefab *fab = m_controller->isolatedPrefab();
+    if(fab) {
+        m_prefab = fab->uuid();
+    }
 }
 
 void ChangeObjectProperty::undo() {
@@ -33,6 +39,16 @@ void ChangeObjectProperty::redo() {
             m_value = object->property(m_property.data());
             object->setProperty(m_property.data(), value);
 
+            if(m_prefab) {
+                Object::ObjectList list;
+                m_controller->getClones(list, object->uuid(), Engine::world());
+                for(auto clone : list) {
+                    if(clone->property(m_property.data()) == m_value) {
+                        clone->setProperty(m_property.data(), value);
+                    }
+                }
+            }
+
             objects.push_back(object);
 
             Actor *actor = dynamic_cast<Actor *>(object);
@@ -41,7 +57,7 @@ void ChangeObjectProperty::redo() {
             } else {
                 Component *component = dynamic_cast<Component *>(object);
                 if(component) {
-                    scenes.insert(component->actor()->scene());
+                    scenes.insert(component->scene());
                 }
             }
         }
@@ -53,5 +69,9 @@ void ChangeObjectProperty::redo() {
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
+    }
+
+    if(m_prefab) {
+        emit m_controller->sceneUpdated(Engine::findObject(m_prefab));
     }
 }

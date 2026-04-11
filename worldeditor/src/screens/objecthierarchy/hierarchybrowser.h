@@ -98,21 +98,4 @@ private:
 
 };
 
-class ParentingObjects : public UndoCommand {
-public:
-    ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const TString &name = QObject::tr("Parenting Objects").toStdString(), UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
-
-protected:
-    typedef QPair<uint32_t, uint32_t> ParentPair;
-    QList<ParentPair> m_dump;
-    uint32_t m_parent;
-    int32_t m_position;
-    std::list<uint32_t> m_objects;
-
-    HierarchyBrowser *m_browser;
-
-};
-
 #endif // HIERARCHYBROWSER_H

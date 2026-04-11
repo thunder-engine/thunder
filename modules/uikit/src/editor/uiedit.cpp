@@ -20,6 +20,7 @@
 #include "actions/pastewidget.h"
 #include "actions/createwidget.h"
 #include "actions/deletewiget.h"
+#include "actions/parentwidget.h"
 #include "actions/changeproperty.h"
 
 #include "widgetcontroller.h"
@@ -96,6 +97,10 @@ StringList UiEdit::suffixes() const {
 
 StringList UiEdit::componentGroups() const {
     return {"Actor", "Components/UI"};
+}
+
+void UiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
+    m_undoRedo->push(new ParentWidget(objects, parent, position, m_controller));
 }
 
 void UiEdit::onActivated() {

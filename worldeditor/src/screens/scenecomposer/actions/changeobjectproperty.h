@@ -18,6 +18,8 @@ protected:
 
     ObjectController *m_controller;
 
+    uint32_t m_prefab;
+
 };
 
 #endif // CHANGEOBJECTPROPERTY_H

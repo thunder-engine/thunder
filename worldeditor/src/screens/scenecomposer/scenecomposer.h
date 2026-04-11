@@ -37,6 +37,8 @@ public:
 
     std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const override;
 
+    void saveIsolated(Prefab *prefab);
+
 private slots:
     void onScreenshot(QImage image);
 
@@ -84,9 +86,6 @@ private slots:
     void onPrefabIsolate();
     void onPrefabUnpack();
     void onPrefabUnpackCompletely();
-    void onReloadPrefab();
-
-    void onSaveIsolated();
 
     void onSaveAll();
 
@@ -109,6 +108,8 @@ private:
 
     StringList componentGroups() const override;
 
+    void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
+
     bool loadScene(const TString &path, bool additive);
     void saveScene(const TString &path, Scene *scene);
     void saveSceneAs(Scene *scene);
@@ -119,6 +120,8 @@ private:
     Prefab *loadPrefab();
 
     QAction *createAction(QMenu &menu, const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);
+
+    Scene *menuScene() const;
 
 private:
     Ui::SceneComposer *ui;

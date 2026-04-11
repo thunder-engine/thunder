@@ -319,7 +319,7 @@ void HierarchyBrowser::onDrop(QDropEvent *e) {
         }
 
         if(!objects.empty()) {
-            m_currentEditor->undoRedo()->push(new ParentingObjects(objects, parent, position, this));
+            m_currentEditor->changeParent(objects, parent, position);
         }
     } else if(e->mimeData()->hasFormat(gMimeContent)) {
         if(m_currentEditor) {
@@ -463,44 +463,4 @@ bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
         return true;
     }
     return QObject::eventFilter(obj, event);
-}
-
-ParentingObjects::ParentingObjects(const Object::ObjectList &objects, Object *origin, int32_t position, HierarchyBrowser *browser, const TString &name, UndoCommand *group) :
-        UndoCommand(name, group),
-        m_parent(origin->uuid()),
-        m_position(position),
-        m_browser(browser) {
-
-    for(auto it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-}
-void ParentingObjects::undo() {
-    auto ref = m_dump.begin();
-    for(auto it : m_objects) {
-        Object *object = Engine::findObject(it);
-        if(object && object->uuid() == ref->first) {
-            object->setParent(Engine::findObject(ref->second));
-        }
-        ++ref;
-    }
-
-    m_browser->onUpdated();
-}
-void ParentingObjects::redo() {
-    m_dump.clear();
-    for(auto it : m_objects) {
-        Object *object = Engine::findObject(it);
-        if(object) {
-            ParentPair pair;
-            pair.first = object->uuid();
-            pair.second = object->parent()->uuid();
-            m_dump.push_back(pair);
-
-            Object *parent = Engine::findObject(m_parent);
-            object->setParent(parent, m_position);
-        }
-    }
-
-    m_browser->onUpdated();
 }

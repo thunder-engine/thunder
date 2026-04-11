@@ -116,7 +116,7 @@ struct Invoker<Return(*)(Args...)> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -177,7 +177,7 @@ struct Invoker<Return(*)()> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -226,7 +226,7 @@ struct Invoker<void(*)(Args...)> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -289,7 +289,7 @@ struct Invoker<void(*)()> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -340,7 +340,7 @@ struct Invoker<Return(Class::*)(Args...)> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -402,7 +402,7 @@ struct Invoker<Return(Class::*)()> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -451,7 +451,7 @@ struct Invoker<void(Class::*)(Args...)> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -514,7 +514,7 @@ struct Invoker<void(Class::*)()> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -567,7 +567,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }
@@ -629,7 +629,7 @@ struct Invoker<Return(Class::*)()const> {
 
     inline static int signature(const char *methodName) {
         std::string sig(methodName);
-        int pos = sig.rfind(':');
+        size_t pos = sig.rfind(':');
         if(pos != -1) {
             sig = sig.substr(pos + 1, sig.size() - pos);
         }

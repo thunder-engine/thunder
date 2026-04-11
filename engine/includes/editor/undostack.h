@@ -13,7 +13,7 @@ public:
     virtual void undo();
     virtual void redo();
 
-    int childCount() const;
+    size_t childCount() const;
 
 protected:
     std::vector<UndoCommand *> m_childs;
@@ -32,7 +32,7 @@ public:
     void undo();
     void redo();
 
-    bool isClean();
+    bool isClean() const;
     void setClean();
 
     TString undoText() const;

@@ -108,8 +108,6 @@ private:
 
     void setScene(Scene *scene);
 
-    static void prefabUpdated(int state, void *ptr);
-
 private:
     friend class EngineSuite::ActorTest;
 
@@ -124,8 +122,6 @@ private:
     int m_flags;
 
     bool m_hierarchyEnable;
-
-    bool m_muteUpdates;
 
 };
 

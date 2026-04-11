@@ -10,6 +10,7 @@
 #include <QToolButton>
 #include <QMouseEvent>
 
+#include <log.h>
 #include <json.h>
 #include <bson.h>
 #include <engine.h>
@@ -28,15 +29,12 @@
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
 
-#include <log.h>
-
 #include "actions/createobject.h"
 #include "actions/deleteobjects.h"
+#include "actions/parentobjects.h"
 #include "actions/pasteobjects.h"
 #include "actions/selectscene.h"
-#include "actions/duplicateobjects.h"
 #include "actions/changeobjectproperty.h"
-#include "actions/removecomponent.h"
 
 #include "objectcontroller.h"
 
@@ -111,7 +109,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     ui->setupUi(this);
 
     ui->renderMode->setMenu(new QMenu);
-    ui->isolationPanel->setVisible(false);
+    ui->isolationBack->setVisible(false);
 
     Actor *actor = Engine::composeActor<DirectLight>("SceneLight", m_isolationScene);
     if(actor) {
@@ -119,7 +117,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     }
 
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
-    connect(ui->isolationSave, &QPushButton::clicked, this, &SceneComposer::onSaveIsolated);
 
     connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
     connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
@@ -143,7 +140,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     QFormLayout *formLayout = new QFormLayout(snapWidget);
     snapWidget->setLayout(formLayout);
 
-    int index = 0;
+    int index = 1;
     for(auto &it : m_controller->tools()) {
         QPushButton *btn = new QPushButton();
         btn->setProperty("blue", true);
@@ -208,7 +205,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &SceneComposer::onReloadPrefab);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 
@@ -321,10 +317,14 @@ void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
 }
 
 void SceneComposer::onObjectCreate(TString type) {
-    Scene *scene = m_controller->isolatedPrefab() ? m_isolationScene : Engine::world()->activeScene();
+    Prefab *prefab = m_controller->isolatedPrefab();
+    Object *parent = Engine::world()->activeScene();
+    if(prefab) {
+        parent = prefab->actor();
+    }
 
-    if(scene) {
-        m_undoRedo->push(new CreateObject(type, scene, m_controller));
+    if(parent) {
+        m_undoRedo->push(new CreateObject(type, parent, Vector3(), m_controller));
     }
 }
 
@@ -361,7 +361,7 @@ void SceneComposer::onCopyAction() {
 }
 
 void SceneComposer::onPasteAction() {
-    m_undoRedo->push(new PasteObjects(m_controller));
+    m_undoRedo->push(new PasteObjects(m_controller->copyData(), nullptr, m_controller));
 }
 
 void SceneComposer::onChangeSnap() {
@@ -392,16 +392,7 @@ void SceneComposer::onShowToolPanel(QWidget *widget) {
 }
 
 void SceneComposer::onSetActiveScene() {
-    Scene *scene = nullptr;
-
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
-        if(menu) {
-            scene = menu->property(gObject).value<Scene *>();
-        }
-    }
-
+    Scene *scene = menuScene();
     if(scene) {
         m_undoRedo->push(new SelectScene(scene, m_controller));
     }
@@ -495,11 +486,15 @@ void SceneComposer::cleanModified() const {
 }
 
 StringList SceneComposer::suffixes() const {
-    return {"map", "fab", "fbx"};
+    return {"map", "fab"};
 }
 
 StringList SceneComposer::componentGroups() const {
     return {"Actor", "Components"};
+}
+
+void SceneComposer::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
+    m_undoRedo->push(new ParentObjects(objects, parent, position, m_controller));
 }
 
 void SceneComposer::onScreenshot(QImage image) {
@@ -516,16 +511,7 @@ void SceneComposer::onActivated() {
 }
 
 void SceneComposer::onRemoveScene() {
-    Scene *scene = nullptr;
-
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
-        if(menu) {
-            scene = menu->property(gObject).value<Scene *>();
-        }
-    }
-
+    Scene *scene = menuScene();
     if(scene) {
         if(scene->isModified()) {
             onSave();
@@ -547,16 +533,7 @@ void SceneComposer::onRemoveScene() {
 }
 
 void SceneComposer::onDiscardChanges() {
-    Scene *scene = nullptr;
-
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
-        if(menu) {
-            scene = menu->property(gObject).value<Scene *>();
-        }
-    }
-
+    Scene *scene = menuScene();
     if(scene) {
         QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
                 .arg(scene->name().data());
@@ -647,7 +624,7 @@ void SceneComposer::onActorDelete() {
 }
 
 void SceneComposer::onActorDuplicate() {
-    m_undoRedo->push(new DuplicateObjects(m_controller));
+    m_undoRedo->push(new PasteObjects(m_controller->dumpSelected(), nullptr, m_controller, "Duplicate Selected"));
 }
 
 void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
@@ -657,7 +634,7 @@ void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
 void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     TString capital = property;
     capital[0] = std::toupper(capital.at(0));
-    TString name(QObject::tr("Change %1").arg(capital.data()).toStdString());
+    TString name = TString("Change %1").arg(capital);
 
     m_undoRedo->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
 }
@@ -755,7 +732,20 @@ std::list<QWidget *> SceneComposer::propertiesActionWidgets(Object *object, QWid
 }
 
 void SceneComposer::onDeleteComponent() {
-    m_undoRedo->push(new RemoveComponent(sender()->property(gComponent).toString().toStdString(), m_controller));
+    Object::ObjectList list;
+    TString component(sender()->property(gComponent).toString().toStdString());
+
+    for(auto it : m_controller->selected()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            Component *comp = actor->component(component);
+            if(comp) {
+                list.push_back(comp);
+            }
+        }
+    }
+
+    m_undoRedo->push(new DeleteObjects(list, m_controller, "Remove Component"));
 }
 
 void SceneComposer::onPrefabIsolate() {
@@ -886,14 +876,7 @@ void SceneComposer::onSave() {
         return;
     }
 
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
-        if(menu) {
-            scene = menu->property(gObject).value<Scene *>();
-        }
-    }
-
+    scene = menuScene();
     if(scene) {
         auto it = m_sceneSettings.find(scene->uuid());
         if(it != m_sceneSettings.end()) {
@@ -906,14 +889,9 @@ void SceneComposer::onSave() {
 }
 
 void SceneComposer::onSaveAs() {
-    Scene *scene = Engine::world()->activeScene();
-
-    QAction *action = dynamic_cast<QAction *>(sender());
-    if(action) {
-        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
-        if(menu) {
-            scene = menu->property(gObject).value<Scene *>();
-        }
+    Scene *scene = menuScene();
+    if(scene == nullptr) {
+        scene = Engine::world()->activeScene();
     }
 
     saveSceneAs(scene);
@@ -933,38 +911,28 @@ void SceneComposer::onSaveAll() {
     }
 }
 
-void SceneComposer::onReloadPrefab() {
-    if(m_isolationSettings) {
-        loadPrefab();
-    }
-}
+void SceneComposer::saveIsolated(Prefab *prefab) {
+    if(prefab) {
+        Actor *actor = prefab->actor();
+        if(actor) {
+            actor->setParent(prefab);
+            TString data = Json::save(Engine::toVariant(prefab), 0);
+            if(!data.isEmpty()) {
+                File file(AssetManager::instance()->uuidToPath(Engine::reference(prefab)));
+                if(file.open(File::WriteOnly)) {
+                    file.write(data);
+                    file.close();
 
-void SceneComposer::onSaveIsolated() {
-    if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
-        Prefab *prefab = m_controller->isolatedPrefab();
-        if(prefab) {
-            Actor *actor = prefab->actor();
-            if(actor) {
-                actor->setParent(prefab);
-                TString data = Json::save(Engine::toVariant(prefab), 0);
-                if(!data.isEmpty()) {
-                    File file(m_isolationSettings->source());
-                    if(file.open(File::WriteOnly)) {
-                        file.write(data);
-                        file.close();
-
-                        prefab->setModified(false);
-                    }
+                    prefab->setModified(false);
                 }
-                actor->setParent(m_isolationScene);
             }
+            actor->setParent(m_isolationScene);
         }
     }
 }
 
 Prefab *SceneComposer::loadPrefab() {
     Prefab *prefab = Engine::loadResource<Prefab>(m_isolationSettings->destination());
-
     if(prefab) {
         Actor *actor = prefab->actor();
         if(actor) {
@@ -986,7 +954,7 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
 
         m_isolationBackState = m_controller->saveState();
         if(m_controller->setIsolatedPrefab(prefab)) {
-            ui->isolationPanel->setVisible(true);
+            ui->isolationBack->setVisible(true);
         } else {
             aWarning() << "Prefab is broken";
             quitFromIsolation();
@@ -996,11 +964,8 @@ void SceneComposer::enterToIsolation(AssetConverterSettings *settings) {
 
 void SceneComposer::quitFromIsolation() {
     if(isModified()) {
-        int result = closeAssetDialog();
-        if(result == QMessageBox::Cancel) {
-            return;
-        } else if(result == QMessageBox::Yes) {
-            onSaveIsolated();
+        if(m_isolationSettings && !m_isolationSettings->isReadOnly()) {
+            saveIsolated(m_controller->isolatedPrefab());
         }
     }
 
@@ -1012,7 +977,7 @@ void SceneComposer::quitFromIsolation() {
     if(!m_isolationBackState.empty()) {
         m_controller->restoreState(m_isolationBackState);
     }
-    ui->isolationPanel->setVisible(false);
+    ui->isolationBack->setVisible(false);
 
     m_settings.clear();
     for(auto it : m_sceneSettings) {
@@ -1031,4 +996,18 @@ QAction *SceneComposer::createAction(QMenu &menu, const QString &name, const cha
     }
 
     return a;
+}
+
+Scene *SceneComposer::menuScene() const {
+    Scene *scene = nullptr;
+
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if(action) {
+        QMenu *menu = dynamic_cast<QMenu *>(action->parentWidget());
+        if(menu) {
+            scene = menu->property(gObject).value<Scene *>();
+        }
+    }
+
+    return scene;
 }
