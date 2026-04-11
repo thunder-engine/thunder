@@ -62,16 +62,11 @@ Actor::Actor() :
         m_prefab(nullptr),
         m_scene(nullptr),
         m_flags(Actor::Enable | Actor::Selectable),
-        m_hierarchyEnable(m_flags & Actor::Enable),
-        m_muteUpdates(false) {
+        m_hierarchyEnable(m_flags & Actor::Enable) {
 
 }
 
 Actor::~Actor() {
-    if(m_prefab) {
-        m_prefab->unsubscribe(this);
-    }
-
     if(m_scene && m_scene->world()) {
         m_scene->world()->makeDirty();
     }
@@ -370,11 +365,7 @@ void Actor::setPrefab(Prefab *prefab) {
         }
 
         m_prefab = prefab;
-        if(m_prefab) {
-            m_muteUpdates = true;
-            m_prefab->subscribe(&Actor::prefabUpdated, this);
-            m_muteUpdates = false;
-        } else {
+        if(!m_prefab) {
             clearCloneRef();
         }
     }
@@ -653,71 +644,4 @@ Variant Actor::saveObject(const Variant &lv, const Variant &rv) const {
     }
 
     return Variant();
-}
-
-void Actor::prefabUpdated(int state, void *ptr) {
-    Actor *p = static_cast<Actor *>(ptr);
-
-    if(p->m_muteUpdates) {
-        return;
-    }
-
-    switch(state) {
-        case Resource::Loading: {
-            p->m_data = p->saveUserData();
-        } break;
-        case Resource::Ready: {
-            p->m_transform = nullptr; // What the reason?
-
-            ObjectList objects;
-            Engine::enumObjects(p, objects);
-
-            ObjectPairs pairs;
-
-            Prefab::ConstObjectList objectsList;
-            Prefab::ConstObjectList objectsToDelete;
-            for(auto &it : objects) {
-                uint32_t originID = it->clonedFrom();
-                if(originID != 0) {
-                    Object *protoObject = p->m_prefab->protoObject(originID);
-                    if(it == p) {
-                        protoObject = p->prefab()->actor();
-                        Engine::replaceClonedUUID(p, protoObject->uuid());
-                    }
-
-                    if(protoObject) {
-                        pairs.push_back(std::make_pair(protoObject, it));
-                        objectsList.push_back(it);
-                    } else {
-                        objectsToDelete.push_back(it);
-                    }
-                }
-            }
-
-            // New objects
-            objects = p->m_prefab->absentInCloned(objectsList);
-            for(auto it : objects) {
-                static_cast<Actor *>(it)->cloneStructure(pairs);
-            }
-
-            Actor::syncProperties(p, pairs);
-
-            objectsToDelete.reverse();
-            for(auto it : objectsToDelete) {
-                delete it;
-            }
-
-            p->loadUserData(p->m_data);
-        } break;
-        case Resource::ToBeDeleted: {
-            for(auto &it : p->getChildren()) {
-                if(p->m_prefab->contains(it->clonedFrom())) {
-                    it->deleteLater();
-                }
-            }
-            p->m_data = p->saveUserData();
-            p->m_prefab = nullptr;
-        } break;
-        default: break;
-    }
 }

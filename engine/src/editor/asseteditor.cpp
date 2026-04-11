@@ -199,6 +199,12 @@ QMenu *AssetEditor::hierarchyContextMenu(Object *object) {
     return nullptr;
 }
 
+void AssetEditor::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
+    A_UNUSED(objects);
+    A_UNUSED(parent);
+    A_UNUSED(position);
+}
+
 QWidget *AssetEditor::propertiesWidget() {
     return nullptr;
 }

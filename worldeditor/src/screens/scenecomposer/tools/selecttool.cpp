@@ -8,7 +8,7 @@
 
 #include <input.h>
 
-#include "../actions/duplicateobjects.h"
+#include "../actions/pasteobjects.h"
 #include "../actions/changeobjectproperty.h"
 
 #include "../objectcontroller.h"
@@ -31,7 +31,7 @@ void SelectTool::beginControl() {
     EditorTool::beginControl();
 
     if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
-        m_controller->undoRedo()->push(new DuplicateObjects(m_controller));
+        m_controller->undoRedo()->push(new PasteObjects(m_controller->dumpSelected(), nullptr, m_controller, "Duplicate Selected"));
     }
 
     m_propertiesCache.clear();

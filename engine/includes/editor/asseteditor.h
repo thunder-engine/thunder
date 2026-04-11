@@ -36,6 +36,8 @@ public:
 
     virtual QMenu *hierarchyContextMenu(Object *object);
 
+    virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
+
     virtual QWidget *propertiesWidget();
 
     virtual std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const;

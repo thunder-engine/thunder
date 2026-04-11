@@ -30,7 +30,7 @@ void UndoCommand::redo() {
     }
 }
 
-int UndoCommand::childCount() const {
+size_t UndoCommand::childCount() const {
     return m_childs.size();
 }
 
@@ -45,7 +45,18 @@ UndoStack::~UndoStack() {
 }
 
 void UndoStack::push(UndoCommand *cmd) {
+    if(!cmd) {
+        return;
+    }
+
     cmd->redo();
+
+    if(m_currentIndex + 1 < m_commands.size()) {
+        for(int i = m_currentIndex + 1; i < m_commands.size(); ++i) {
+            delete m_commands[i];
+        }
+        m_commands.resize(m_currentIndex + 1);
+    }
 
     m_commands.push_back(cmd);
     m_currentIndex++;
@@ -65,7 +76,7 @@ void UndoStack::redo() {
     }
 }
 
-bool UndoStack::isClean() {
+bool UndoStack::isClean() const {
     return m_cleanIndex == m_currentIndex;
 }
 

@@ -34,8 +34,7 @@
 
 #include "actions/selectobjects.h"
 #include "actions/deleteobjects.h"
-#include "actions/createcomponent.h"
-#include "actions/createobjectserial.h"
+#include "actions/createobject.h"
 
 #include "config.h"
 
@@ -347,6 +346,15 @@ void ObjectController::setDrag(bool drag) {
 }
 
 void ObjectController::copySelected() {
+    VariantList list(dumpSelected());
+
+    if(!list.empty()) {
+        m_copyData = list;
+        emit copied();
+    }
+}
+
+VariantList ObjectController::dumpSelected() const {
     VariantList list;
     for(auto &it : m_selected) {
         if(it.object) {
@@ -354,10 +362,7 @@ void ObjectController::copySelected() {
         }
     }
 
-    if(!list.empty()) {
-        m_copyData = list;
-        emit copied();
-    }
+    return list;
 }
 
 void ObjectController::onApplySettings() {
@@ -512,22 +517,19 @@ void ObjectController::onChangeTool() {
     }
 }
 
-void ObjectController::onUpdated(Scene *scene) {
-    if(m_isolatedPrefab) {
-        m_isolatedPrefab->setModified(true);
+void ObjectController::onUpdated(Object *object) {
+    Scene *scene = dynamic_cast<Scene *>(object);
+    if(scene) {
+        scene->setModified(true);
     } else {
-        if(scene) {
-            scene->setModified(true);
+        Prefab *prefab = dynamic_cast<Prefab *>(object);
+        if(prefab) {
+            prefab->setModified(true);
+            if(prefab != m_isolatedPrefab) {
+                m_editor->saveIsolated(prefab);
+            }
         }
     }
-}
-
-void ObjectController::onLocal(bool flag) {
-    m_local = flag;
-}
-
-void ObjectController::onPivot(bool flag) {
-
 }
 
 void ObjectController::onCreateComponent(QString type) {
@@ -535,7 +537,7 @@ void ObjectController::onCreateComponent(QString type) {
     if(actor) {
         std::string typeName(qPrintable(type));
         if(actor->component(typeName) == nullptr) {
-            undoRedo()->push(new CreateComponent(typeName, actor, this));
+            undoRedo()->push(new CreateObject(TString("c.") + typeName, actor, Vector3(), this));
         } else {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
@@ -570,8 +572,9 @@ void ObjectController::onDrop(QDropEvent *event) {
         }
 
         Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(Engine::world()->activeScene());
+        TString ref = Engine::reference(m_dragActor->prefab());
 
-        undoRedo()->push(new CreateObjectSerial(Engine::reference(m_dragActor->prefab()), m_dragActor->transform()->position(), parent->uuid(), this));
+        undoRedo()->push(new CreateObject(ref, parent, m_dragActor->transform()->position(), this));
 
         delete m_dragActor;
         m_dragActor = nullptr;
@@ -626,7 +629,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectController::onDragMove(QDragMoveEvent *e) {
-    m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
+    m_mousePosition = Vector2(e->position().x(), m_screenSize.y - e->position().y());
 
     if(m_dragActor) {
         m_dragActor->transform()->setPosition(m_mouseWorld);
@@ -662,4 +665,28 @@ TString ObjectController::findFreeObjectName(const TString &name, Object *parent
         return newName;
     }
     return "Object";
+}
+
+void ObjectController::getClones(Object::ObjectList &list, uint32_t uuid, const Object *parent) {
+    for(auto it : parent->getChildren()) {
+        if(it->clonedFrom() == uuid) {
+            list.push_back(it);
+        } else {
+            getClones(list, uuid, it);
+        }
+    }
+}
+
+TString ObjectController::pathTo(Object *object, Object *root) {
+    TString result;
+    Object *parent = object;
+    while(parent != nullptr) {
+        result = parent->name() + (result.isEmpty() ? "" : (TString("/") + result));
+        if(parent == root) {
+            break;
+        }
+        parent = parent->parent();
+    }
+
+    return result;
 }

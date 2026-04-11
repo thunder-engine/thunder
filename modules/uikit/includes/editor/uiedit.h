@@ -56,6 +56,8 @@ private:
     StringList suffixes() const override;
     StringList componentGroups() const override;
 
+    void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
+
     void saveElementHelper(pugi::xml_node &parent, Widget *widget);
 
     QAction *createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut = 0);

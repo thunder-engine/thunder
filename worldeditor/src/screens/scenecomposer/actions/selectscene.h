@@ -5,7 +5,7 @@
 
 class SelectScene : public UndoCommand {
 public:
-    SelectScene(Scene *scene, ObjectController *ctrl, const TString &name = QObject::tr("Select Scene").toStdString(), UndoCommand *group = nullptr);
+    SelectScene(Scene *scene, ObjectController *ctrl, const TString &name = "Select Scene", UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

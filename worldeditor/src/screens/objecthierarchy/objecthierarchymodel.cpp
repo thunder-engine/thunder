@@ -87,8 +87,8 @@ QVariant ObjectHierarchyModel::data(const QModelIndex &index, int role) const {
             }
         } break;
         case Qt::ForegroundRole: {
-            if(actor && actor->isInstance()) {
-                if(Engine::reference(actor->prefab()).isEmpty()) {
+            if(actor && actor->clonedFrom() != 0) {
+                if(actor->isInstance() && Engine::reference(actor->prefab()).isEmpty()) {
                     return QBrush(QColor(255, 95, 82));
                 }
                 return QBrush(QColor(88, 165, 240));

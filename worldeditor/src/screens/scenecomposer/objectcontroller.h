@@ -53,9 +53,15 @@ public:
     Vector2 mousePosition() const { return m_mousePosition; }
 
     void copySelected();
+    VariantList dumpSelected() const;
+
     VariantList copyData() const { return m_copyData; }
 
     static TString findFreeObjectName(const TString &name, Object *parent);
+
+    void getClones(Object::ObjectList &list, uint32_t uuid, const Object *parent);
+
+    static TString pathTo(Object *object, Object *root);
 
     UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
@@ -73,10 +79,10 @@ public slots:
 
     void onChangeTool();
 
-    void onUpdated(Scene *scene = nullptr);
+    void onUpdated(Object *object = nullptr);
 
-    void onLocal(bool flag);
-    void onPivot(bool flag);
+    void onLocal(bool flag) { m_local = flag; }
+    void onPivot(bool flag) {}
 
     void onCreateComponent(QString type);
 
@@ -84,7 +90,7 @@ public slots:
 
 signals:
     void copied();
-    void sceneUpdated(Scene *scene);
+    void sceneUpdated(Object *object);
     void objectsSelected(Object::ObjectList objects);
     void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
 

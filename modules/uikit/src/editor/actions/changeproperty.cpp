@@ -33,4 +33,6 @@ void ChangeProperty::redo() {
     if(!objects.empty()) {
         emit m_controller->propertyChanged(objects, m_property, value);
     }
+
+    emit m_controller->sceneUpdated();
 }
