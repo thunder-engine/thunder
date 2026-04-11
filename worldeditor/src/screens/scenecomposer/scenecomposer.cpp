@@ -876,7 +876,11 @@ void SceneComposer::onSave() {
         return;
     }
 
-    scene = menuScene();
+    Scene *menuScene = SceneComposer::menuScene();
+    if(menuScene) {
+        scene = menuScene;
+    }
+
     if(scene) {
         auto it = m_sceneSettings.find(scene->uuid());
         if(it != m_sceneSettings.end()) {

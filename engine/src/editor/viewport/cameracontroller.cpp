@@ -292,6 +292,7 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
             radius /= sinf(m_activeCamera->fov() * DEG2RAD);
         }
         radius = CLAMP(radius, FLT_EPSILON, FLT_MAX);
+        m_activeCamera->setFar(radius * radius);
 
         Transform *camera = m_activeCamera->transform();
         CameraData &data = m_cameras[m_currentCamera];
