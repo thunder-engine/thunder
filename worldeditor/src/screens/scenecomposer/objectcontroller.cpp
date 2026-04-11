@@ -629,7 +629,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 }
 
 void ObjectController::onDragMove(QDragMoveEvent *e) {
-    m_mousePosition = Vector2(e->position().x(), m_screenSize.y - e->position().y());
+    m_mousePosition = Vector2(e->pos().x(), m_screenSize.y - e->pos().y());
 
     if(m_dragActor) {
         m_dragActor->transform()->setPosition(m_mouseWorld);
