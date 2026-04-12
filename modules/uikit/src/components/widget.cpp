@@ -198,6 +198,10 @@ Widget *Widget::subWidget(const TString &name) const {
     Marks \a widget as a part of more complex widget.
 */
 void Widget::setSubWidget(Widget *widget) {
+    if(m_childWidgets.empty()) {
+        onHierarchyUpdated();
+    }
+
     Widget *current = subWidget(widget->actor()->name());
     if(current != widget) {
         widget->m_subWidget = true;

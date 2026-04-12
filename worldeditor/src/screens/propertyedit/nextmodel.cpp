@@ -32,19 +32,17 @@ NextModel::~NextModel() {
 void NextModel::addObject(Object *propertyObject) {
     const MetaObject *metaObject = propertyObject->metaObject();
 
-    Property *propertyItem = static_cast<Property *>(m_rootItem);
+    TString name = propertyObject->typeName();
+    if(name.isEmpty()) {
+        name = metaObject->name();
+    }
+
+    Property *propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
+    propertyItem->setPropertyObject(propertyObject);
+    addItem(propertyItem);
 
     int count = metaObject->propertyCount();
     if(count) {
-        TString name = propertyObject->typeName();
-        if(name.isEmpty()) {
-            name = metaObject->name();
-        }
-
-        propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
-        propertyItem->setPropertyObject(propertyObject);
-        addItem(propertyItem);
-
         connect(propertyItem, &Property::propertyChanged, this, &NextModel::propertyChanged);
 
         for(int i = 0; i < count; i++) {
@@ -68,9 +66,7 @@ void NextModel::addObject(Object *propertyObject) {
         }
     }
 
-    if(propertyItem) {
-        updateDynamicProperties(propertyItem, propertyObject);
-    }
+    updateDynamicProperties(propertyItem, propertyObject);
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();

@@ -3,6 +3,7 @@
 #include <log.h>
 #include <bson.h>
 #include <file.h>
+#include <invalid.h>
 
 #include <angelscript.h>
 
@@ -77,7 +78,7 @@ StringList AngelScriptImportSettings::typeNames() const {
 AngelBuilder::AngelBuilder(AngelSystem *system) :
         m_system(system),
         m_scriptEngine(asCreateScriptEngine()),
-        m_classModel(new AngelClassMapModel(m_scriptEngine)) {
+        m_classModel(new AngelClassMapModel) {
 
     m_scriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
 }
@@ -88,7 +89,7 @@ AngelBuilder::~AngelBuilder() {
 
 void AngelBuilder::init() {
     m_system->registerClasses(m_scriptEngine);
-    m_classModel->update();
+    m_classModel->update(m_scriptEngine);
 
     for(auto &it : suffixes()) {
         AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/code.svg");
@@ -120,19 +121,37 @@ bool AngelBuilder::buildProject() {
 
             File dst(destination.data());
             if(dst.open(File::WriteOnly)) {
-                AngelScript *serial = Engine::objectCreate<AngelScript>(persistentUUID());
+                AngelScript *serial = Engine::loadResource<AngelScript>(persistentUUID());
+                if(serial == nullptr) {
+                    serial = Engine::objectCreate<AngelScript>(persistentUUID());
+                }
+
+                serial->m_array.clear();
                 CBytecodeStream stream(serial->m_array);
                 mod->SaveByteCode(&stream);
 
                 dst.write(Bson::save( Engine::toVariant(serial) ));
                 dst.close();
             }
+
+            m_classModel->update(m_scriptEngine);
+
             // Do the hot reload
             if(m_system->init()) {
                 m_system->reload();
-            }
 
-            m_classModel->update();
+                // We need to copy list
+                Object::ObjectList list = AngelSystem::invalidObjects();
+                for(auto it : list) {
+                    TString type(it->typeName());
+                    const MetaObject *meta = m_system->getMetaObject(type);
+                    if(meta) {
+                        Variant v = Engine::toVariant(it);
+                        delete it;
+                        Engine::toObject(v);
+                    }
+                }
+            }
         }
 
         buildSuccessful(code >= 0);
@@ -165,19 +184,18 @@ void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
 }
 
 
-AngelClassMapModel::AngelClassMapModel(asIScriptEngine *engine) :
-        m_pEngine(engine),
+AngelClassMapModel::AngelClassMapModel() :
         m_pRootItem(new AngelClassItem({})) {
 
 }
 
-void AngelClassMapModel::update() {
+void AngelClassMapModel::update(asIScriptEngine *engine) {
     delete m_pRootItem;
     m_pRootItem = new AngelClassItem({});
 
     QHash<QString, AngelClassItem *> nameSpace;
-    for(uint32_t g = 0; g < m_pEngine->GetGlobalFunctionCount(); g++) {
-        asIScriptFunction *function = m_pEngine->GetGlobalFunctionByIndex(g);
+    for(uint32_t g = 0; g < engine->GetGlobalFunctionCount(); g++) {
+        asIScriptFunction *function = engine->GetGlobalFunctionByIndex(g);
         if(function) {
             QString name(function->GetNamespace());
             if(!name.isEmpty()) {
@@ -195,22 +213,22 @@ void AngelClassMapModel::update() {
         }
     }
 
-    for(uint32_t i = 0; i < m_pEngine->GetObjectTypeCount(); i++) {
-        asITypeInfo *info = m_pEngine->GetObjectTypeByIndex(i);
+    for(uint32_t i = 0; i < engine->GetObjectTypeCount(); i++) {
+        asITypeInfo *info = engine->GetObjectTypeByIndex(i);
         if(info) {
             exportType(info);
         }
     }
 
-    for(uint32_t e = 0; e < m_pEngine->GetEnumCount(); e++) {
-        asITypeInfo *info = m_pEngine->GetEnumByIndex(e);
+    for(uint32_t e = 0; e < engine->GetEnumCount(); e++) {
+        asITypeInfo *info = engine->GetEnumByIndex(e);
         if(info) {
             exportType(info, AngelItem::Enum);
         }
     }
 
-    for(uint32_t m = 0; m < m_pEngine->GetModuleCount(); m++) {
-        asIScriptModule *module = m_pEngine->GetModuleByIndex(m);
+    for(uint32_t m = 0; m < engine->GetModuleCount(); m++) {
+        asIScriptModule *module = engine->GetModuleByIndex(m);
         if(module) {
             for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
                 asITypeInfo *info = module->GetObjectTypeByIndex(i);
@@ -226,6 +244,8 @@ void AngelClassMapModel::update() {
 }
 
 void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
+
+
     static QStringList dropList = {"opCast", "opImplCast", "set_"};
     static QHash<QString, QString> replaceMap = { {"opAssign",    "operator ="},
                                                   {"opAddAssign", "operator +="},
@@ -279,7 +299,7 @@ void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
             if(name.contains(GET)) {
                 drop = true;
                 int32_t typeId = method->GetReturnTypeId();
-                asITypeInfo *type = m_pEngine->GetTypeInfoById(typeId);
+                asITypeInfo *type = info->GetEngine()->GetTypeInfoById(typeId);
                 QPair<QString, QString> pair;
                 pair.first = name.replace(GET, "");
                 if(type) {
@@ -305,7 +325,7 @@ void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
         info->GetProperty(p, &name, &typeId, &isPrivate);
 
         QString type;
-        asITypeInfo *param = m_pEngine->GetTypeInfoById(typeId);
+        asITypeInfo *param = info->GetEngine()->GetTypeInfoById(typeId);
         if(param) {
             type = param->GetName();
         } else {
@@ -334,7 +354,7 @@ QStringList AngelClassMapModel::exportParams(asIScriptFunction *method) {
         asDWORD flags;
         method->GetParam(p, &typeId, &flags);
 
-        asITypeInfo *param = m_pEngine->GetTypeInfoById(typeId);
+        asITypeInfo *param = method->GetEngine()->GetTypeInfoById(typeId);
         if(param) {
             params.push_back(param->GetName());
         } else {

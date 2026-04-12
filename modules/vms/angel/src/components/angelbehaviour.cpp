@@ -19,55 +19,63 @@ namespace {
 AngelBehaviour::AngelBehaviour() :
         m_object(nullptr),
         m_start(nullptr),
-        m_update(nullptr) {
-    PROFILE_FUNCTION();
+        m_update(nullptr),
+        m_started(false) {
+
 }
 
 AngelBehaviour::~AngelBehaviour() {
     PROFILE_FUNCTION();
-    if(m_object) {
-        m_object->Release();
-        m_object = nullptr;
-    }
+    destroyObject();
     notifyObservers();
 }
 
-TString AngelBehaviour::script() const {
-    PROFILE_FUNCTION();
-    return m_script;
+bool AngelBehaviour::isStarted() const {
+    return m_started;
 }
 
-void AngelBehaviour::setScript(const TString value) {
-    PROFILE_FUNCTION();
-    if(value != m_script && value != "AngelBehaviour") {
-        m_script = value;
+void AngelBehaviour::start() {
+    if(m_start) {
+        AngelSystem *ptr = static_cast<AngelSystem *>(system());
+        ptr->execute(m_object, m_start);
+        m_started = true;
+    }
+}
 
-        createObject();
+void AngelBehaviour::update() const {
+    if(m_update) {
+        AngelSystem *ptr = static_cast<AngelSystem *>(system());
+        ptr->execute(m_object, m_update);
+    } else {
+        aDebug() << "";
+    }
+}
+
+void AngelBehaviour::destroyObject() {
+    if(m_object) {
+        m_object->Release();
+        m_object = nullptr;
     }
 }
 
 void AngelBehaviour::createObject() {
     PROFILE_FUNCTION();
-    if(m_object) {
-        m_object->Release();
-        m_object = nullptr;
-    }
 
     AngelSystem *ptr = static_cast<AngelSystem *>(system());
-    asIScriptModule *module = ptr->module();
-    if(module) {
-        asITypeInfo *type = module->GetTypeInfoByDecl(m_script.data());
-        if(type) {
-            asIScriptObject *object = static_cast<asIScriptObject *>(ptr->module()->GetEngine()->CreateScriptObject(type));
-            if(object) {
-                setScriptObject(object);
-            } else {
-                aError() << __FUNCTION__ << "Systen returned NULL during execution" << m_script;
-            }
-        }
-    } else {
-        aError() << __FUNCTION__ << "The Script Module is NULL" << m_script;
+    asIScriptObject *object = ptr->createScriptObject(m_script);
+    if(object) {
+        setScriptObject(object);
     }
+}
+
+void AngelBehaviour::hibernateObject() {
+    m_data = saveUserData();
+    destroyObject();
+}
+
+void AngelBehaviour::awakeObject() {
+    createObject();
+    loadUserData(m_data);
 }
 
 asIScriptObject *AngelBehaviour::scriptObject() const {
@@ -84,58 +92,62 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     if(m_object) {
         m_object->AddRef();
         m_object->SetUserData(this);
-        asITypeInfo *info = m_object->GetObjectType();
-        if(info) {
-            if(object->GetPropertyCount() > 0) {
-                void *ptr = this;
-                memcpy(object->GetAddressOfProperty(0), &ptr, sizeof(void *));
-            }
 
-            if(m_script.isEmpty()) {
-                m_script = info->GetName();
-            }
-            m_start = info->GetMethodByDecl("void start()");
-            m_update = info->GetMethodByDecl("void update()");
+        if(object->GetPropertyCount() > 0) {
+            void *ptr = this;
+            memcpy(object->GetAddressOfProperty(0), &ptr, sizeof(void *));
+        }
 
-            m_propertyFields.clear();
+        asITypeInfo *info = object->GetObjectType();
 
-            asIScriptEngine *engine = m_object->GetEngine();
-            uint32_t count = info->GetPropertyCount();
-            for(uint32_t i = 0; i < count; i++) {
-                const char *name;
-                int typeId;
-                bool isPrivate;
-                bool isProtected;
-                info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
-                if(!isPrivate && !isProtected) {
-                    PropertyFields propertyFields;
-                    propertyFields.address = object->GetAddressOfProperty(i);
-                    if(typeId > asTYPEID_DOUBLE) {
-                        asITypeInfo *type = engine->GetTypeInfoById(typeId);
-                        if(type) {
-                            TString typeName(type->GetName());
+        if(m_script.isEmpty()) {
+            m_script = info->GetName();
+        }
+        m_start = info->GetMethodByDecl("void start()");
+        m_update = info->GetMethodByDecl("void update()");
 
-                            if(typeName == "array") {
-                                type = type->GetSubType();
-                                if(type) {
-                                    typeName = type->GetName();
-                                }
-                                propertyFields.isArray = true;
+        if(m_update == nullptr) {
+            m_update = nullptr;
+        }
+
+        m_propertyFields.clear();
+
+        asIScriptEngine *engine = m_object->GetEngine();
+        uint32_t count = info->GetPropertyCount();
+        for(uint32_t i = 0; i < count; i++) {
+            const char *name;
+            int typeId;
+            bool isPrivate;
+            bool isProtected;
+            info->GetProperty(i, &name, &typeId, &isPrivate, &isProtected);
+            if(!isPrivate && !isProtected) {
+                PropertyFields propertyFields;
+                propertyFields.address = object->GetAddressOfProperty(i);
+                if(typeId > asTYPEID_DOUBLE) {
+                    asITypeInfo *type = engine->GetTypeInfoById(typeId);
+                    if(type) {
+                        TString typeName(type->GetName());
+
+                        if(typeName == "array") {
+                            type = type->GetSubType();
+                            if(type) {
+                                typeName = type->GetName();
                             }
+                            propertyFields.isArray = true;
+                        }
 
-                            auto factory = System::metaFactory(typeName);
-                            if(factory) {
-                                propertyFields.isObject = true;
-                            }
+                        auto factory = System::metaFactory(typeName);
+                        if(factory) {
+                            propertyFields.isObject = true;
+                        }
 
-                            if(type && type->GetFlags() & asOBJ_SCRIPT_OBJECT) {
-                                propertyFields.isScript = true;
-                            }
+                        if(type && type->GetFlags() & asOBJ_SCRIPT_OBJECT) {
+                            propertyFields.isScript = true;
                         }
                     }
-
-                    m_propertyFields[name] = propertyFields;
                 }
+
+                m_propertyFields[name] = propertyFields;
             }
         }
 
@@ -143,22 +155,22 @@ void AngelBehaviour::setScriptObject(asIScriptObject *object) {
     }
 }
 
-asIScriptFunction *AngelBehaviour::scriptStart() const {
-    PROFILE_FUNCTION();
-    return m_start;
-}
-
-asIScriptFunction *AngelBehaviour::scriptUpdate() const {
-    PROFILE_FUNCTION();
-    return m_update;
-}
-
 const MetaObject *AngelBehaviour::metaObject() const {
     PROFILE_FUNCTION();
     if(m_object) {
-        return static_cast<AngelSystem *>(system())->getMetaObject(m_object);
+        AngelSystem *ptr = static_cast<AngelSystem *>(system());
+        return ptr->getMetaObject(m_object->GetObjectType());
     }
     return AngelBehaviour::metaClass();
+}
+
+Object *AngelBehaviour::cloneStructure(Object::ObjectPairs &pairs) {
+    Object *result = Component::cloneStructure(pairs);
+    if(result) {
+        AngelBehaviour *behaviour = static_cast<AngelBehaviour *>(result);
+        behaviour->setType(m_script);
+    }
+    return result;
 }
 
 void AngelBehaviour::registerClassFactory(ObjectSystem *system) {
@@ -183,15 +195,15 @@ void AngelBehaviour::loadData(const VariantList &data) {
 
 void AngelBehaviour::setType(const TString &type) {
     PROFILE_FUNCTION();
-    setScript(type);
-}
+    if(type != m_script && type != "AngelBehaviour") {
+        m_script = type;
 
-void AngelBehaviour::setSystem(ObjectSystem *system) {
-    Object::setSystem(system);
+        createObject();
+    }
 }
 
 void AngelBehaviour::scriptSlot() {
-    // Placeholder method  for the all incoming signals
+    // Placeholder method for the all incoming signals
 }
 
 void AngelBehaviour::onReferenceDestroyed() {

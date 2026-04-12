@@ -1,31 +1,32 @@
 #ifndef ANGELBEHAVIOUR_H
 #define ANGELBEHAVIOUR_H
 
-#include "components/nativebehaviour.h"
+#include "components/component.h"
 
+class asITypeInfo;
 class asIScriptObject;
 class asIScriptFunction;
 
-class AngelBehaviour : public NativeBehaviour {
-    A_PROPERTIES(
-        A_PROPERTYEX(TString, script, AngelBehaviour::script, AngelBehaviour::setScript, "ReadOnly")
-    )
-
+class AngelBehaviour : public Component {
+    A_NOPROPERTIES()
     A_NOMETHODS()
+
 public:
     AngelBehaviour();
     ~AngelBehaviour();
 
-    TString script() const;
-    void setScript(const TString value);
+    bool isStarted() const;
+    void start();
+    void update() const;
 
     asIScriptObject *scriptObject() const;
     void setScriptObject(asIScriptObject *object);
 
-    asIScriptFunction *scriptStart() const;
-    asIScriptFunction *scriptUpdate() const;
-
+    void destroyObject();
     void createObject();
+
+    void hibernateObject();
+    void awakeObject();
 
 public:
     static void registerClassFactory(ObjectSystem *system);
@@ -41,11 +42,12 @@ private:
 
     const MetaObject *metaObject() const override;
 
+    Object *cloneStructure(Object::ObjectPairs &pairs) override;
+
     VariantList saveData() const override;
     void loadData(const VariantList &data) override;
 
     void setType(const TString &type) override;
-    void setSystem(ObjectSystem *system) override;
 
     void scriptSlot();
 
@@ -65,7 +67,7 @@ public:
         OBJECT_CHECK(AngelBehaviour)
         static const MetaObject staticMetaData(
             "AngelBehaviour",
-            NativeBehaviour::metaClass(),
+            Component::metaClass(),
             &AngelBehaviour::construct,
             reinterpret_cast<const MetaMethod::Table *>(expose_method<AngelBehaviour>::exec()),
             reinterpret_cast<const MetaProperty::Table *>(expose_props_method<AngelBehaviour>::exec()),
@@ -89,10 +91,14 @@ protected:
 
     std::list<std::pair<AngelBehaviour *, void *>> m_obsevers;
 
+    VariantMap m_data;
+
     asIScriptObject *m_object;
 
     asIScriptFunction *m_start;
     asIScriptFunction *m_update;
+
+    bool m_started;
 
 };
 

@@ -23,7 +23,7 @@ struct ComponentData {
     Object *parent;
     int32_t position;
 };
-typedef QList<ComponentData> ComponentBackup;
+typedef std::list<ComponentData> ComponentBackup;
 
 class ENGINE_EXPORT PluginManager : public QAbstractItemModel {
     Q_OBJECT

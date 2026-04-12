@@ -282,7 +282,6 @@ void Engine::update() {
                         if(world == m_world) {
                             if(!it->isStarted()) {
                                 it->start();
-                                it->setStarted(true);
                             }
                             it->update();
                         }

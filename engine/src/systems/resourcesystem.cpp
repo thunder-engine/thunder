@@ -126,8 +126,9 @@ Resource *ResourceSystem::loadResource(const TString &path) {
                 }
                 if(var.isValid()) {
                     Resource *resource = static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
-
-                    resource->switchState(Resource::ToBeUpdated);
+                    if(resource) {
+                        resource->switchState(Resource::ToBeUpdated);
+                    }
 
                     return resource;
                 }

@@ -28,8 +28,7 @@ namespace {
 */
 
 Component::Component() :
-        m_enable(true),
-        m_started(false) {
+        m_enable(true) {
 
 }
 /*!
@@ -76,24 +75,6 @@ bool Component::isEnabledInHierarchy() const {
         return actor->isEnabledInHierarchy() && m_enable;
     }
     return m_enable;
-}
-/*!
-    Returns true if the component is flagged as started; otherwise returns false.
-    \note This method is used for internal purposes and shouldn't be called manually.
-
-    \internal
-*/
-bool Component::isStarted() const {
-    return m_started;
-}
-/*!
-    Marks component as \a started.
-    \note This method is used for internal purposes and shouldn't be called manually.
-
-    \internal
-*/
-void Component::setStarted(bool started) {
-    m_started = started;
 }
 /*!
     Returns a transform attached to this Actor.

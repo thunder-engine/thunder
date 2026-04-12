@@ -26,6 +26,7 @@
 #include <object.h>
 
 class MetaObject;
+class Invalid;
 
 class NEXT_LIBRARY_EXPORT ObjectSystem : public Object {
 public:
@@ -83,6 +84,10 @@ public:
     static Object *findObject(uint32_t uuid);
 
     static void unregisterObject(Object *object);
+
+    static Object::ObjectList &invalidObjects();
+
+    static void removeInvalid(Invalid *invalid);
 
 protected:
     void factoryAdd(const TString &name, const TString &url, const MetaObject *meta);
