@@ -24,6 +24,7 @@
 class NEXT_LIBRARY_EXPORT Invalid : public Object {
 public:
     Invalid();
+    ~Invalid();
 
     void loadData(const VariantList &data);
 

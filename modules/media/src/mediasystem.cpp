@@ -73,7 +73,6 @@ void MediaSystem::update(World *world) {
                 if(comp && comp->isEnabled() && comp->world() == world) {
                     if(!comp->isStarted()) {
                         comp->start();
-                        comp->setStarted(true);
                     }
                     comp->update();
                 }

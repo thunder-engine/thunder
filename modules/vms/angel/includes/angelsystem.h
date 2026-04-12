@@ -6,7 +6,6 @@
 #include "components/angelbehaviour.h"
 
 class asIScriptEngine;
-class asIScriptModule;
 class asIScriptContext;
 class asIScriptFunction;
 class asIScriptObject;
@@ -36,18 +35,20 @@ public:
 
     void registerClasses(asIScriptEngine *engine);
 
-    void *execute(asIScriptObject *object, asIScriptFunction *func);
+    asIScriptObject *createScriptObject(const TString &name);
 
-    asIScriptModule *module() const;
+    void *execute(asIScriptObject *object, asIScriptFunction *func);
 
     asIScriptContext *context() const;
 
-    MetaObject *getMetaObject(asIScriptObject *object);
+    MetaObject *getMetaObject(const TString &typeName);
+
+    MetaObject *getMetaObject(asITypeInfo *info);
 
 protected:
     bool isBehaviour(asITypeInfo *info) const;
 
-    void unload();
+    void unloadAll(bool reload);
 
     void bindMetaType(asIScriptEngine *engine, const MetaType::Table &table);
     void bindMetaObject(asIScriptEngine *engine, const TString &name, const MetaObject *meta);
@@ -61,8 +62,6 @@ private:
     std::unordered_map<TString, MetaType::Table *> m_metaTypes;
 
     asIScriptEngine *m_scriptEngine;
-
-    asIScriptModule *m_scriptModule;
 
     asIScriptContext *m_context;
 

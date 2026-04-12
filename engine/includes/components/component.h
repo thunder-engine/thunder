@@ -38,9 +38,6 @@ public:
 
     bool isEnabledInHierarchy() const;
 
-    bool isStarted() const;
-    void setStarted(bool started);
-
     Transform *transform() const;
 
     Component *component(const TString &type);
@@ -72,8 +69,6 @@ protected:
 
 private:
     bool m_enable;
-
-    bool m_started;
 
 };
 

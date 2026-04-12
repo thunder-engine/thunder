@@ -28,6 +28,7 @@
 static ObjectSystem::FactoryMap s_Factories;
 static ObjectSystem::GroupMap   s_Groups;
 static ObjectSystem::ObjectMap  s_Objects;
+static Object::ObjectList       s_Invalids;
 
 bool ObjectSystem::s_blockCache = false;
 
@@ -327,6 +328,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
                 // Create a dummy object to keep all fields
                 Invalid *invalid = new Invalid();
                 invalid->loadData(o);
+                s_Invalids.push_back(invalid);
+
                 object = invalid;
                 if(parentObject) {
                     object->setSystem(parentObject->system());
@@ -539,6 +542,21 @@ void ObjectSystem::unregisterObject(Object *object) {
         s_Objects.erase(it);
     }
 }
+/*!
+    \internal
+    Returns a list of objects that can't been resolved.
+*/
+Object::ObjectList &ObjectSystem::invalidObjects() {
+    return s_Invalids;
+}
+/*!
+    \internal
+    Removes an \a invalid placeholder from registry.
+*/
+void ObjectSystem::removeInvalid(Invalid *invalid) {
+    s_Invalids.remove(invalid);
+}
+
 /*!
     Returns a list of objects with specified \a type.
     \warning This is very small function!

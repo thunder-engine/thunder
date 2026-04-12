@@ -27,7 +27,8 @@
     \endcode
 */
 
-NativeBehaviour::NativeBehaviour() {
+NativeBehaviour::NativeBehaviour() :
+        m_started(false) {
     Engine::addNativeBehaviour(this);
 }
 
@@ -39,11 +40,20 @@ NativeBehaviour::~NativeBehaviour() {
     Start is called on the same frame when a script is enabled just before the update method will be called the first time.
 */
 void NativeBehaviour::start() {
-
+    m_started = true;
 }
 /*!
     Update is called every frame, if the NativeBehaviour is enabled.
 */
 void NativeBehaviour::update() {
 
+}
+/*!
+    Returns true if the component is flagged as started; otherwise returns false.
+    \note This method is used for internal purposes and shouldn't be called manually.
+
+    \internal
+*/
+bool NativeBehaviour::isStarted() const {
+    return m_started;
 }

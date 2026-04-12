@@ -74,7 +74,6 @@ protected:
 AngelSystem::AngelSystem(Engine *engine) :
         System(),
         m_scriptEngine(nullptr),
-        m_scriptModule(nullptr),
         m_context(nullptr),
         m_script(nullptr),
         m_inited(false),
@@ -95,7 +94,7 @@ AngelSystem::~AngelSystem() {
 
     deleteAllObjects();
 
-    unload();
+    unloadAll(false);
 
     if(m_scriptEngine) {
         m_scriptEngine->ShutDownAndRelease();
@@ -121,12 +120,15 @@ bool AngelSystem::init() {
 }
 
 void AngelSystem::reset() {
-    if(Engine::isGameMode()) {
-        if(m_scriptModule) {
-            m_scriptModule->ResetGlobalVars(m_context);
-        }
-    } else {
-        if(m_scriptEngine) {
+    if(m_scriptEngine) {
+        if(Engine::isGameMode()) {
+            for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+                asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
+                if(module) {
+                    module->ResetGlobalVars(m_context);
+                }
+            }
+        } else {
             m_scriptEngine->GarbageCollect();
         }
     }
@@ -138,20 +140,13 @@ void AngelSystem::update(World *world) {
     if(Engine::isGameMode()) {
         for(auto it : m_objectList) {
             AngelBehaviour *component = static_cast<AngelBehaviour *>(it);
-            asIScriptObject *object = component->scriptObject();
-            if(object) {
-                object->AddRef();
-                if(component->isEnabled()) {
-                    Scene *scene = component->scene();
-                    if(scene && scene->parent() == world) {
-                        if(!component->isStarted()) {
-                            execute(object, component->scriptStart());
-                            component->setStarted(true);
-                        }
-                        execute(object, component->scriptUpdate());
+            if(component->isEnabled()) {
+                if(component->world() == world) {
+                    if(!component->isStarted()) {
+                        component->start();
                     }
+                    component->update();
                 }
-                object->Release();
             }
         }
     }
@@ -164,8 +159,8 @@ int AngelSystem::threadPolicy() const {
 void AngelSystem::reload() {
     PROFILE_FUNCTION();
 
-    unload();
-    m_scriptModule = m_scriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
+    unloadAll(true);
+    asIScriptModule *module = m_scriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
 
     if(Engine::isResourceExist(gTemplate)) {
         if(m_script) {
@@ -184,10 +179,10 @@ void AngelSystem::reload() {
 
     if(m_script) {
         AngelStream stream(m_script->m_array);
-        m_scriptModule->LoadByteCode(&stream);
+        module->LoadByteCode(&stream);
 
-        for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
+        for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = module->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
                 {
                     MetaType::Table staticTable = {
@@ -243,14 +238,22 @@ void AngelSystem::reload() {
         processEvents();
 
         for(auto it : m_objectList) {
-            AngelBehaviour *behaviour = static_cast<AngelBehaviour *>(it);
-            VariantMap data = behaviour->saveUserData();
-            behaviour->createObject();
-            behaviour->loadUserData(data);
+            static_cast<AngelBehaviour *>(it)->awakeObject();
         }
     } else {
         aError() << __FUNCTION__ << "Filed to load a script";
     }
+}
+
+asIScriptObject *AngelSystem::createScriptObject(const TString &name) {
+    for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+        asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
+        asITypeInfo *type = module->GetTypeInfoByDecl(name.data());
+        if(type) {
+            return static_cast<asIScriptObject *>(m_scriptEngine->CreateScriptObject(type));
+        }
+    }
+    return nullptr;
 }
 
 void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
@@ -275,21 +278,25 @@ void *AngelSystem::execute(asIScriptObject *object, asIScriptFunction *func) {
     return m_context->GetAddressOfReturnValue();
 }
 
-asIScriptModule *AngelSystem::module() const {
-    PROFILE_FUNCTION();
-
-    return m_scriptModule;
-}
-
 asIScriptContext *AngelSystem::context() const {
     PROFILE_FUNCTION();
 
     return m_context;
 }
 
-MetaObject *AngelSystem::getMetaObject(asIScriptObject *object) {
-    asITypeInfo *info = object->GetObjectType();
+MetaObject *AngelSystem::getMetaObject(const TString &typeName) {
+    for(asUINT m = 0; m < m_scriptEngine->GetModuleCount(); ++m) {
+        asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
+        asITypeInfo *info = module->GetTypeInfoByName(typeName.data());
+        if(info) {
+            return getMetaObject(info);
+        }
+    }
 
+    return nullptr;
+}
+
+MetaObject *AngelSystem::getMetaObject(asITypeInfo *info) {
     auto it = m_metaObjects.find(info);
     if(it != m_metaObjects.end()) {
         return it->second;
@@ -419,16 +426,12 @@ bool AngelSystem::isBehaviour(asITypeInfo *info) const {
     return false;
 }
 
-void AngelSystem::unload() {
-    if(m_scriptModule) {
-        for(uint32_t i = 0; i < m_scriptModule->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = m_scriptModule->GetObjectTypeByIndex(i);
-            if(info && isBehaviour(info)) {
-                factoryRemove(info->GetName(), TString(gUri) + info->GetName());
-            }
+void AngelSystem::unloadAll(bool reload) {
+    if(reload) {
+        ObjectSystem::processEvents();
+        for(auto it : m_objectList) {
+            static_cast<AngelBehaviour *>(it)->hibernateObject();
         }
-        m_scriptModule->Discard();
-        m_scriptModule = nullptr;
     }
 
     if(m_context) {
@@ -437,6 +440,19 @@ void AngelSystem::unload() {
         }
         m_context->Release();
         m_context = nullptr;
+    }
+
+    for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+        asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
+        if(module) {
+            for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
+                asITypeInfo *info = module->GetObjectTypeByIndex(i);
+                if(info && isBehaviour(info)) {
+                    factoryRemove(info->GetName(), TString(gUri) + info->GetName());
+                }
+            }
+            module->Discard();
+        }
     }
 
     for(auto it : m_metaObjects) {

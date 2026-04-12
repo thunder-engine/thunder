@@ -46,9 +46,9 @@ public:
     };
 
 public:
-    AngelClassMapModel(asIScriptEngine *engine);
+    AngelClassMapModel();
 
-    void update();
+    void update(asIScriptEngine *engine);
 
 private:
     void exportType(asITypeInfo *info, AngelItem type = Class);
@@ -59,8 +59,6 @@ private:
     QModelIndex index(int row, int column, const QModelIndex &parent) const;
     QModelIndex parent(const QModelIndex &index) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
-    asIScriptEngine *m_pEngine;
 
     AngelClassItem *m_pRootItem;
 };

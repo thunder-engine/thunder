@@ -17,9 +17,14 @@
 */
 
 #include "invalid.h"
+#include "objectsystem.h"
 
 Invalid::Invalid() {
 
+}
+
+Invalid::~Invalid() {
+    ObjectSystem::removeInvalid(this);
 }
 
 void Invalid::loadData(const VariantList &data) {

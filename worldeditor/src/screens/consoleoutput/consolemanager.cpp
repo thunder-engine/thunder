@@ -27,6 +27,8 @@ ConsoleManager::ConsoleManager(QWidget *parent) :
 
     connect(action, &QAction::triggered, this, &ConsoleManager::onCopy);
     connect(m_handler, &QLog::postRecord, this, &ConsoleManager::onLogRecord);
+
+    Log::addHandler(m_handler);
 }
 
 ConsoleManager::~ConsoleManager() {

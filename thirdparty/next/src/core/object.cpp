@@ -375,8 +375,9 @@ Object *Object::cloneStructure(Object::ObjectPairs &pairs) {
 
     Object *clonedObject = originMeta->createInstance();
     if(clonedObject) {
-        ObjectSystem::replaceUUID(clonedObject, ObjectSystem::generateUUID());
+        clonedObject->setSystem(system());
 
+        ObjectSystem::replaceUUID(clonedObject, ObjectSystem::generateUUID());
         pairs.push_back(std::make_pair(this, clonedObject));
 
         for(auto it : getChildren()) {

@@ -18,6 +18,11 @@ public:
 
     virtual void update();
 
+    bool isStarted() const;
+
+protected:
+    bool m_started;
+
 };
 
 #endif // NATIVEBEHAVIOUR_H
