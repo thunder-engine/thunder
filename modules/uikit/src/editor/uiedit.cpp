@@ -71,7 +71,7 @@ UiEdit::UiEdit() :
     m_widgetMenu.addAction(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
     m_widgetMenu.addAction(createAction(tr("Duplicate"), SLOT(onWidgetDuplicate()), false));
     m_widgetMenu.addAction(createAction(tr("Delete"), SLOT(onWidgetDelete()), false, QKeySequence(Qt::Key_Delete)));
-/*
+
     auto groups = componentGroups();
     TString group = groups.back().toStdString();
     for(auto &it : Engine::factories()) {
@@ -85,7 +85,6 @@ UiEdit::UiEdit() :
             }
         }
     }
-*/
 }
 
 UiEdit::~UiEdit() {

@@ -70,6 +70,10 @@ Product {
                 var libPostfix = ((qbs.targetOS.contains("windows") && qbs.debugInformation) ? "d": "") + cpp.dynamicLibrarySuffix
                 var libs = ["Core", "Gui", "Svg", "Widgets"]
 
+                if(Qt.core.versionMajor >= 6) {
+                    libs.push("OpenGL")
+                }
+
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
