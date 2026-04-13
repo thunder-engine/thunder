@@ -63,6 +63,8 @@ static std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
 #include "ray.h"
 
+#include "frustum.h"
+
 #include <astring.h>
 
 #include <vector>
