@@ -17,7 +17,7 @@ private:
     void analyze(World *world) override;
 
 private:
-    GroupList m_opaque;
+    Renderable::GroupList m_opaque;
 
     RenderTarget *m_gbuffer;
 

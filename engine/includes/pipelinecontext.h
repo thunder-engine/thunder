@@ -2,11 +2,9 @@
 #define PIPELINECONTEXT
 
 #include <cstdint>
-#include <unordered_map>
 
 #include <amath.h>
-
-#include "resource.h"
+#include <engine.h>
 
 class CommandBuffer;
 
@@ -72,8 +70,6 @@ public:
 
     const std::list<PipelineTask *> &renderTasks() const;
 
-    AABBox worldBound() const;
-
     void setCurrentCamera(Camera *camera);
     Camera *currentCamera() const;
 
@@ -100,8 +96,6 @@ protected:
     typedef std::list<std::pair<PipelineContext::RenderCallback, void *>> Callbacks;
 
     Callbacks m_postObservers;
-
-    AABBox m_worldBound;
 
     RenderList m_sceneRenderables;
     RenderList m_culledRenderables;

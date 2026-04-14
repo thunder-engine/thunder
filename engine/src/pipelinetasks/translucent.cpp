@@ -49,9 +49,9 @@ void Translucent::setInput(int index, Texture *texture) {
 }
 
 void Translucent::analyze(World *world) {
-    GroupList list;
-    filterByLayer(m_context->culledRenderables(), list, Material::Translucent);
+    Renderable::GroupList list;
+    Renderable::filterByLayer(m_context->culledRenderables(), list, Material::Translucent);
 
     m_translucent.clear();
-    group(list, m_translucent);
+    Renderable::group(list, m_translucent);
 }

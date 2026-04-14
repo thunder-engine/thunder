@@ -73,9 +73,9 @@ void GBuffer::exec() {
 }
 
 void GBuffer::analyze(World *world) {
-    GroupList list;
-    filterByLayer(m_context->culledRenderables(), list, Material::Opaque);
+    Renderable::GroupList list;
+    Renderable::filterByLayer(m_context->culledRenderables(), list, Material::Opaque);
 
     m_opaque.clear();
-    group(list, m_opaque);
+    Renderable::group(list, m_opaque);
 }

@@ -208,7 +208,13 @@ void PipelineContext::analizeGraph() {
     }
     // Renderables frustum culling
     if(m_frustumCulling) {
-        frustumCulling(camera->frustum(), m_sceneRenderables, m_culledRenderables, &m_worldBound);
+        m_culledRenderables.clear();
+        Frustum frustum(camera->frustum());
+        for(auto it : m_sceneRenderables) {
+            if(!it->isCulled(frustum)) {
+                m_culledRenderables.push_back(it);
+            }
+        }
     }
 
     // Add lights
@@ -421,24 +427,11 @@ Camera *PipelineContext::currentCamera() const {
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
 void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox *box) {
-    if(box) {
-        box->extent = Vector3(-1.0f);
-    }
-
     out.clear();
     for(auto it : in) {
         AABBox bb = it->bound();
         if(bb.extent.x < 0.0f || frustum.contains(bb)) {
             out.push_back(it);
-            if(box) {
-                box->encapsulate(bb);
-            }
         }
     }
-}
-/*!
-    Returns the bounding box representing the world-bound.
-*/
-AABBox PipelineContext::worldBound() const {
-    return m_worldBound;
 }

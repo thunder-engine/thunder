@@ -47,6 +47,14 @@ AABBox Renderable::bound() {
     return m_worldBox;
 }
 /*!
+    Returns true if current renderable fails \a frustum culling test; otherwise returns true;
+*/
+bool Renderable::isCulled(const Frustum &frustum) {
+    AABBox bb(bound());
+
+    return !(bb.extent.x < 0.0f || frustum.contains(bb));
+}
+/*!
     Returns a mesh which will be drawn for the particular material \a instance.
 */
 Mesh *Renderable::meshToDraw(int instance) {
@@ -130,4 +138,58 @@ void Renderable::setSystem(ObjectSystem *system) {
 
     RenderSystem *render = static_cast<RenderSystem *>(system);
     render->addRenderable(this);
+}
+/*!
+    Filters \a out an \a in renderable components by it's material \a layer.
+*/
+void Renderable::filterByLayer(const RenderList &in, GroupList &out, int layer) {
+    for(auto it : in) {
+        for(int i = 0; i < it->materialsCount(); i++) {
+            MaterialInstance *instance = it->materialInstance(i);
+            if(instance && instance->material()->layers() & layer) {
+                Mesh *mesh = it->meshToDraw(i);
+                if(mesh) {
+                    uint32_t hash = instance->hash();
+                    Mathf::hashCombine(hash, mesh->uuid());
+
+                    out.push_back({instance, mesh, it->subMesh(i), hash});
+                }
+            }
+        }
+    }
+
+    out.sort([](const Group &left, const Group &right) {
+        int p1 = left.instance->finalPriority();
+        int p2 = right.instance->finalPriority();
+        if(p1 == p2) {
+            return left.hash < right.hash;
+        }
+        return p1 < p2;
+    });
+}
+/*!
+    Groups elements from \a in list into \a out rendering instances.
+*/
+void Renderable::group(const GroupList &in, GroupList &out) {
+    Group last;
+
+    for(auto &it : in) {
+        if(last.hash != it.hash || (last.instance != nullptr && last.instance->material() != it.instance->material())) {
+            if(last.instance != nullptr) {
+                out.push_back(last);
+            }
+
+            last = it;
+            auto &buffer = it.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+        } else {
+            auto &buffer = it.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+        }
+    }
+
+    // do the last insert
+    if(last.instance != nullptr) {
+        out.push_back(last);
+    }
 }

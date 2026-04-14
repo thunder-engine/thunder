@@ -129,10 +129,10 @@ void ShadowMap::areaLightUpdate(AreaLight *light, const RenderList &components) 
         RenderList culled;
         m_context->frustumCulling(frustum, components, culled);
 
-        GroupList list;
-        filterByLayer(culled, list, Material::Shadowcast);
-        GroupList groups;
-        group(list, groups);
+        Renderable::GroupList list;
+        Renderable::filterByLayer(culled, list, Material::Shadowcast);
+        Renderable::GroupList groups;
+        Renderable::group(list, groups);
 
         if(!groups.empty()) {
             buffer->setViewProjection(mat, crop);
@@ -232,10 +232,10 @@ void ShadowMap::directLightUpdate(DirectLight *light, const RenderList &componen
                              static_cast<float>(w[lod]) / pageSize,
                              static_cast<float>(h[lod]) / pageSize);
 
-        GroupList list;
-        filterByLayer(culled, list, Material::Shadowcast);
-        GroupList groups;
-        group(list, groups);
+        Renderable::GroupList list;
+        Renderable::filterByLayer(culled, list, Material::Shadowcast);
+        Renderable::GroupList groups;
+        Renderable::group(list, groups);
 
         if(!groups.empty()) {
             buffer->setViewProjection(view, crop);
@@ -302,10 +302,10 @@ void ShadowMap::pointLightUpdate(PointLight *light, const RenderList &components
         RenderList culled;
         m_context->frustumCulling(Camera::frustum(false, 90.0f, 1.0f, position, m_directions[i], zNear, zFar), components, culled);
 
-        GroupList list;
-        filterByLayer(culled, list, Material::Shadowcast);
-        GroupList groups;
-        group(list, groups);
+        Renderable::GroupList list;
+        Renderable::filterByLayer(culled, list, Material::Shadowcast);
+        Renderable::GroupList groups;
+        Renderable::group(list, groups);
 
         if(!groups.empty()) {
             buffer->setViewProjection(mat, crop);
@@ -354,10 +354,10 @@ void ShadowMap::spotLightUpdate(SpotLight *light, const RenderList &components) 
     RenderList culled;
     m_context->frustumCulling(Camera::frustum(false, light->outerAngle() * 2.0f, 1.0f, position, q, zNear, zFar), components, culled);
 
-    GroupList list;
-    filterByLayer(culled, list, Material::Shadowcast);
-    GroupList groups;
-    group(list, groups);
+    Renderable::GroupList list;
+    Renderable::filterByLayer(culled, list, Material::Shadowcast);
+    Renderable::GroupList groups;
+    Renderable::group(list, groups);
 
     if(!groups.empty()) {
         buffer->setRenderTarget(shadowTarget);
