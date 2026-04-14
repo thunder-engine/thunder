@@ -288,18 +288,20 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
             center = bb.center;
         }
 
-        if(m_activeCamera->orthographic()) {
-            radius /= sinf(m_activeCamera->fov() * DEG2RAD);
-        }
-        radius = CLAMP(radius, FLT_EPSILON, FLT_MAX);
-        m_activeCamera->setFar(radius * radius);
-
         Transform *camera = m_activeCamera->transform();
         CameraData &data = m_cameras[m_currentCamera];
-        data.position = center + camera->quaternion() * Vector3(0.0f, 0.0f, radius);
         data.rotation = camera->rotation();
-        data.focalDistance = radius;
-        data.orthoSize = radius;
+
+        if(m_activeCamera->orthographic()) {
+            data.orthoSize = radius;
+            data.position = center + camera->quaternion() * Vector3(0.0f, 0.0f, 1.0f);
+        } else {
+            radius /= sinf(m_activeCamera->fov() * DEG2RAD);
+            radius = CLAMP(radius, FLT_EPSILON, FLT_MAX);
+            data.focalDistance = radius;
+            data.position = center + camera->quaternion() * Vector3(0.0f, 0.0f, radius);
+            m_activeCamera->setFar(MAX(radius * radius, m_activeCamera->farPlane()));
+        }
 
         m_transferProgress = 0.0f;
     }
