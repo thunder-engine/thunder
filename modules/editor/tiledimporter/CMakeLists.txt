@@ -47,8 +47,8 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
-        Qt5::Core
-        Qt5::Gui
+        Qt::Core
+        Qt::Gui
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

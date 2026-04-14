@@ -34,6 +34,7 @@ add_definitions (
     -DBUILDER_NAME="${BUILDER_NAME}"
     -DPRODUCT_NAME="${PRODUCT_NAME}"
     -DSDK_VERSION="${SDK_VERSION}"
+    -DREVISION="${REVISION}"
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
@@ -43,7 +44,7 @@ if(desktop)
         "*.h"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_executable(${BUILDER_NAME} ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS})
 
@@ -52,9 +53,9 @@ if(desktop)
         next-editor
         engine-editor
         minizip
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
 
     target_compile_definitions(${BUILDER_NAME} PRIVATE

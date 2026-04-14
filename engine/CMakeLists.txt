@@ -67,7 +67,7 @@ if(desktop)
         "src/editor/*.cpp"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS
+    QT_WRAP_CPP(MOC_SRCS
         "includes/editor/asseteditor.h"
         "includes/editor/assetmanager.h"
         "includes/editor/baseassetprovider.h"
@@ -88,10 +88,10 @@ if(desktop)
         zlib-editor
         physfs-editor
         freetype-editor
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::Svg
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+        Qt::Svg
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE

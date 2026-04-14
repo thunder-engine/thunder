@@ -43,8 +43,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
 if(desktop)
-    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
@@ -57,8 +57,8 @@ if(desktop)
         next-editor
         engine-editor
         bullet3
-        Qt5::Core
-        Qt5::Gui
+        Qt::Core
+        Qt::Gui
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE

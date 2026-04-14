@@ -44,8 +44,8 @@ file(GLOB MOC_HEADERS
     "editor/property/*.h"
 )
 
-QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
+QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
 
@@ -57,9 +57,9 @@ if (desktop)
         next-editor
         engine-editor
         graph-editor
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

@@ -27,8 +27,8 @@ set(RESOURCES
     themes/theme-data.qrc
 )
 
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 # Static Library
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
@@ -48,6 +48,6 @@ endif()
 
 # Qt Dependencies
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt5::Core
-    Qt5::Gui
+    Qt::Core
+    Qt::Gui
 )

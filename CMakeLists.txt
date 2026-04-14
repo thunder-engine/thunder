@@ -4,7 +4,7 @@ project(thunder)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install-root)
 
-set(COMPANY_NAME "FrostSpear")
+set(COMPANY_NAME "ThunderEngine")
 set(PRODUCT_NAME "Thunder Engine")
 set(EDITOR_NAME "WorldEditor")
 set(BUILDER_NAME "Builder")
@@ -76,17 +76,13 @@ set(TOOLS_PATH "${SDK_PATH}/tools")
 set(PLUGINS_PATH "${BIN_PATH}/plugins")
 
 if(desktop)
-    find_package(Qt5 COMPONENTS
+    find_package(Qt6 REQUIRED COMPONENTS
         Core
         Gui
         Widgets
         Svg
+        OpenGL
     )
-
-    file(TO_CMAKE_PATH $ENV{QT5_DIR} QT5_DIR)
-
-    set(QT_BIN_DIR "${QT5_DIR}/bin")
-    set(QT_PLUGINS_DIR "${QT5_DIR}/plugins")
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

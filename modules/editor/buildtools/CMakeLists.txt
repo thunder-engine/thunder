@@ -39,8 +39,8 @@ set( RESOURCES
     templates.qrc
 )
 
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 if (desktop)
     add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
@@ -50,7 +50,7 @@ if (desktop)
         engine-editor
         zlib-editor
         minizip
-        Qt5::Gui
+        Qt::Gui
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

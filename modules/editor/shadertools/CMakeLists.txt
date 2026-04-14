@@ -47,9 +47,9 @@ set( RESOURCES
     shadertools.qrc
 )
 
-QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
+QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 add_definitions (
     -DCOMPANY_NAME="${COMPANY_NAME}"
@@ -67,9 +67,9 @@ if (desktop)
         uikit-editor
         glsl
         spirvcross
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE
