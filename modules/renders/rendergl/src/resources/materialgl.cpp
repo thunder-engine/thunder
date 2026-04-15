@@ -377,7 +377,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, m_globalBuffer);
     }
 
-    ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
+    const ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
 #ifdef THUNDER_MOBILE
     if(instanceLocation > -1) {

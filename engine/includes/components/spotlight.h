@@ -24,9 +24,13 @@ public:
     void setOuterAngle(float value);
 
 private:
+    void cleanDirty() override;
+
     int lightType() const override;
 
-    AABBox bound() const override;
+    bool isCulled(const Frustum &frustum, const Matrix4 &viewProjection) override;
+
+    int tilesCount() const override;
 
     void drawGizmos() override;
     void drawGizmosSelected() override;

@@ -63,7 +63,7 @@ Matrix4 Camera::projectionMatrix() const {
     Transforms position from \a worldSpace into screen space.
     Returns result of transformation.
 */
-Vector3 Camera::project(const Vector3 &worldSpace) {
+Vector3 Camera::project(const Vector3 &worldSpace) const {
     Vector4 in(worldSpace.x, worldSpace.y, worldSpace.z, 1.0f);
     Vector4 out(viewMatrix() * in);
     in = projectionMatrix() * out;
@@ -82,7 +82,7 @@ Vector3 Camera::project(const Vector3 &worldSpace) {
     Transforms position from \a screenSpace into world space.
     Returns result of transformation.
 */
-Vector3 Camera::unproject(const Vector3 &screenSpace) {
+Vector3 Camera::unproject(const Vector3 &screenSpace) const {
     Matrix4 final((projectionMatrix() * viewMatrix()).inverse());
 
     Vector4 in(2.0f * screenSpace.x - 1.0f,

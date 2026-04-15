@@ -9,6 +9,8 @@
 
 #include "systems/rendersystem.h"
 
+#include "pipelinecontext.h"
+
 /*!
     \class Renderable
     \brief Base class for every object which can be drawn on the screen.
@@ -18,8 +20,10 @@
 */
 
 Renderable::Renderable() :
-        m_transformHash(0),
-        m_surfaceType(Material::Static) {
+        m_surfaceType(Material::Static),
+        m_lod(0),
+        m_useLod(false),
+        m_transformHash(0) {
 
 }
 
@@ -49,10 +53,26 @@ AABBox Renderable::bound() {
 /*!
     Returns true if current renderable fails \a frustum culling test; otherwise returns true;
 */
-bool Renderable::isCulled(const Frustum &frustum) {
+bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection) {
     AABBox bb(bound());
 
-    return !(bb.extent.x < 0.0f || frustum.contains(bb));
+    if(bb.extent.x < 0.0f || frustum.contains(bb)) {
+        if(m_useLod) {
+            Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
+            Vector2 l0(v0.x / v0.w, v0.y / v0.w);
+
+            bb.center += frustum.m_top.normal * bb.radius;
+            Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
+            Vector2 l1(v1.x / v1.w, v1.y / v1.w);
+
+            float size = (l1 - l0).length();
+            m_lod = PipelineContext::lod(size);
+        }
+
+        return false;
+    }
+
+    return true;
 }
 /*!
     Returns a mesh which will be drawn for the particular material \a instance.

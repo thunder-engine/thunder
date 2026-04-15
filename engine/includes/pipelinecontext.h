@@ -86,6 +86,8 @@ public:
 
     static Texture *whiteTexture();
 
+    static int32_t lod(float size);
+
 private:
     void analizeGraph();
 

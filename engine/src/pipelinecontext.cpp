@@ -207,11 +207,12 @@ void PipelineContext::analizeGraph() {
         }
     }
     // Renderables frustum culling
+    Frustum frustum(camera->frustum());
+    Matrix4 viewProjection(camera->projectionMatrix() * camera->viewMatrix());
     if(m_frustumCulling) {
         m_culledRenderables.clear();
-        Frustum frustum(camera->frustum());
         for(auto it : m_sceneRenderables) {
-            if(!it->isCulled(frustum)) {
+            if(!it->isCulled(frustum, viewProjection)) {
                 m_culledRenderables.push_back(it);
             }
         }
@@ -221,7 +222,9 @@ void PipelineContext::analizeGraph() {
     m_sceneLights.clear();
     for(auto it : RenderSystem::lights()) {
         if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            m_sceneLights.push_back(it);
+            if(!m_frustumCulling || !it->isCulled(frustum, viewProjection)) {
+                m_sceneLights.push_back(it);
+            }
         }
     }
 
@@ -333,6 +336,20 @@ Texture *PipelineContext::whiteTexture() {
     }
     return white;
 }
+/*!
+    Returns LOD level based on normalized percentage screen \a size of object.
+*/
+int32_t PipelineContext::lod(float size) {
+    if(size < 0.1f) {
+        return 3;
+    } else if(size < 0.3f) {
+        return 2;
+    } else if(size < 0.6f) {
+        return 1;
+    }
+    return 0;
+}
+
 /*!
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */

@@ -38,8 +38,8 @@ public:
     Renderable();
     ~Renderable();
 
-    virtual AABBox bound();
-    virtual bool isCulled(const Frustum &frustum);
+    AABBox bound();
+    bool isCulled(const Frustum &frustum, const Matrix4 &viewProjection);
 
     Material *material() const;
     virtual void setMaterial(Material *material);
@@ -70,6 +70,10 @@ protected:
     std::vector<MaterialInstance *> m_materials;
 
     uint32_t m_surfaceType;
+
+    uint32_t m_lod;
+
+    bool m_useLod;
 
 private:
     mutable AABBox m_localBox;

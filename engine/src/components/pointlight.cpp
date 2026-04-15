@@ -1,10 +1,12 @@
 #include "components/pointlight.h"
 
+#include "camera.h"
 #include "components/actor.h"
 #include "components/transform.h"
 
 #include "resources/material.h"
 
+#include "pipelinecontext.h"
 #include "gizmos.h"
 
 /*!
@@ -40,8 +42,6 @@ void PointLight::setAttenuationRadius(float radius) {
     Vector4 p = params();
     p.w = radius;
     setParams(p);
-
-    m_box = AABBox(Vector3(), Vector3(radius * 2));
 }
 /*!
     Returns the source radius of the light.
@@ -80,18 +80,32 @@ int PointLight::lightType() const {
 /*!
     \internal
 */
-AABBox PointLight::bound() const {
-    AABBox result(m_box);
-    result.center += transform()->worldPosition();
-    return result;
+bool PointLight::isCulled(const Frustum &frustum, const Matrix4 &viewProjection) {
+    AABBox bb;
+    bb.center = transform()->worldPosition();
+    bb.radius = attenuationRadius();
+    if(frustum.contains(bb)) {
+        if(m_shadows) {
+            Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
+            Vector2 l0(v0.x / v0.w, v0.y / v0.w);
+
+            bb.center += frustum.m_top.normal * bb.radius;
+            Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
+            Vector2 l1(v1.x / v1.w, v1.y / v1.w);
+
+            m_lod = PipelineContext::lod((l1 - l0).sqrLength());
+        }
+
+        return false;
+    }
+
+    return true;
 }
 /*!
     \internal
 */
 void PointLight::drawGizmos() {
-    Transform *t = transform();
-
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/pointlight.png", color());
+    Gizmos::drawIcon(transform()->worldPosition(), Vector2(0.5f), ".embedded/pointlight.png", color());
 }
 /*!
     \internal

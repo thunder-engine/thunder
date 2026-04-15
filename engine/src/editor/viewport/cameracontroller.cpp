@@ -12,6 +12,7 @@
 #include <components/camera.h>
 #include <components/actor.h>
 #include <components/transform.h>
+#include <components/renderable.h>
 
 namespace {
     const char *gCamera("Camera");

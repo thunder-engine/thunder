@@ -312,7 +312,7 @@ public:
 
     ByteArray &rawUniformBuffer();
 
-    void setInstanceBuffer(ByteArray *buffer);
+    void setInstanceBuffer(const ByteArray *buffer);
 
     uint32_t hash() const;
 
@@ -330,7 +330,7 @@ protected:
 
     ByteArray m_uniformBuffer;
 
-    ByteArray *m_batchBuffer;
+    const ByteArray *m_batchBuffer;
 
     Material *m_material;
 
