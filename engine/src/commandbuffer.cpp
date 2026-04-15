@@ -78,12 +78,18 @@ void CommandBuffer::setInited() {
     s_Inited = true;
 }
 /*!
-     Sets the \a view and \a projection matrices.
+    Sets the \a view and \a projection matrices.
 */
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     m_global.view = view;
     m_global.projection = projection;
     m_global.cameraWorldToScreen = projection * view;
+}
+/*!
+    Sets the \a viewProjection matrix.
+*/
+void CommandBuffer::setViewProjection(const Matrix4 &viewProjection) {
+    m_global.cameraWorldToScreen = viewProjection;
 }
 /*!
      Sets a global \a texture based on its \a name.

@@ -88,8 +88,8 @@ public:
                 }
             }
 
-            GroupList groups;
-            filterByLayer(filtered, groups, Material::Visibility);
+            Renderable::GroupList groups;
+            Renderable::filterByLayer(filtered, groups, Material::Visibility);
 
             for(auto &it : groups) {
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);

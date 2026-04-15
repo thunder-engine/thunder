@@ -119,13 +119,13 @@ private:
         }
 
         m_outline.clear();
-        filterByLayer(outline, m_outline, Material::Visibility);
+        Renderable::filterByLayer(outline, m_outline, Material::Visibility);
     }
 
 protected:
     Vector4 m_color;
 
-    GroupList m_outline;
+    Renderable::GroupList m_outline;
 
     Texture *m_outlineMap;
     Texture *m_outlineDepth;

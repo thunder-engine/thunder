@@ -207,15 +207,24 @@ void PipelineContext::analizeGraph() {
         }
     }
     // Renderables frustum culling
+    Frustum frustum(camera->frustum());
+    Matrix4 viewProjection(camera->projectionMatrix() * camera->viewMatrix());
     if(m_frustumCulling) {
-        frustumCulling(camera->frustum(), m_sceneRenderables, m_culledRenderables, &m_worldBound);
+        m_culledRenderables.clear();
+        for(auto it : m_sceneRenderables) {
+            if(!it->isCulled(frustum, viewProjection)) {
+                m_culledRenderables.push_back(it);
+            }
+        }
     }
 
     // Add lights
     m_sceneLights.clear();
     for(auto it : RenderSystem::lights()) {
         if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            m_sceneLights.push_back(it);
+            if(!m_frustumCulling || !it->isCulled(frustum, viewProjection)) {
+                m_sceneLights.push_back(it);
+            }
         }
     }
 
@@ -328,6 +337,20 @@ Texture *PipelineContext::whiteTexture() {
     return white;
 }
 /*!
+    Returns LOD level based on normalized percentage screen \a size of object.
+*/
+int32_t PipelineContext::lod(float size) {
+    if(size < 0.1f) {
+        return 3;
+    } else if(size < 0.3f) {
+        return 2;
+    } else if(size < 0.6f) {
+        return 1;
+    }
+    return 0;
+}
+
+/*!
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */
 void PipelineContext::setPipeline(Pipeline *pipeline) {
@@ -421,24 +444,11 @@ Camera *PipelineContext::currentCamera() const {
     Returns filtered list. The output parameter returns a bounding \a box for filtered objects.
 */
 void PipelineContext::frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox *box) {
-    if(box) {
-        box->extent = Vector3(-1.0f);
-    }
-
     out.clear();
     for(auto it : in) {
         AABBox bb = it->bound();
         if(bb.extent.x < 0.0f || frustum.contains(bb)) {
             out.push_back(it);
-            if(box) {
-                box->encapsulate(bb);
-            }
         }
     }
-}
-/*!
-    Returns the bounding box representing the world-bound.
-*/
-AABBox PipelineContext::worldBound() const {
-    return m_worldBound;
 }

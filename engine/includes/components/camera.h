@@ -3,8 +3,7 @@
 
 #include <array>
 
-#include "renderable.h"
-#include "frustum.h"
+#include <component.h>
 
 class ENGINE_EXPORT Camera : public Component {
     A_OBJECT(Camera, Component, Components)
@@ -67,8 +66,8 @@ public:
     static Camera *current();
     static void setCurrent(Camera *current);
 
-    Vector3 project(const Vector3 &worldSpace);
-    Vector3 unproject(const Vector3 &screenSpace);
+    Vector3 project(const Vector3 &worldSpace) const;
+    Vector3 unproject(const Vector3 &screenSpace) const;
 
     Frustum frustum() const;
 

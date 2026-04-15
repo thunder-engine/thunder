@@ -1,8 +1,7 @@
 #ifndef PIPELINETASK_H
 #define PIPELINETASK_H
 
-#include <stdint.h>
-
+#include <renderable.h>
 #include <pipelinecontext.h>
 #include <engine.h>
 
@@ -32,24 +31,6 @@ public:
 
     void setEnabled(bool enable);
     bool isEnabled() const;
-
-protected:
-    struct Group {
-        MaterialInstance *instance = nullptr;
-
-        Mesh *mesh = nullptr;
-
-        uint32_t subMesh = 0;
-
-        uint32_t hash = 0;
-
-        ByteArray buffer;
-    };
-    typedef std::list<Group> GroupList;
-
-    void filterByLayer(const RenderList &in, GroupList &out, int layer) const;
-
-    void group(const GroupList &in, GroupList &out) const;
 
 protected:
     std::vector<TString> m_inputs;

@@ -46,8 +46,6 @@ void AngelBehaviour::update() const {
     if(m_update) {
         AngelSystem *ptr = static_cast<AngelSystem *>(system());
         ptr->execute(m_object, m_update);
-    } else {
-        aDebug() << "";
     }
 }
 

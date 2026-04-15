@@ -43,6 +43,8 @@ public:
 
     virtual void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
 
+    virtual void setViewProjection(const Matrix4 &viewProjection);
+
     virtual void setGlobalTexture(const TString &name, Texture *texture);
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);

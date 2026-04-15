@@ -28,13 +28,10 @@ public:
 private:
     int lightType() const override;
 
-    AABBox bound() const override;
+    bool isCulled(const Frustum &frustum, const Matrix4 &viewProjection) override;
 
     void drawGizmos() override;
     void drawGizmosSelected() override;
-
-private:
-    AABBox m_box;
 
 };
 

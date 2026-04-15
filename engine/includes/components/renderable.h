@@ -19,16 +19,37 @@ class ENGINE_EXPORT Renderable : public NativeBehaviour {
     A_NOMETHODS()
 
 public:
+    struct Group {
+        MaterialInstance *instance = nullptr;
+
+        Mesh *mesh = nullptr;
+
+        uint32_t subMesh = 0;
+
+        uint32_t hash = 0;
+
+        ByteArray buffer;
+    };
+    typedef std::list<Group> GroupList;
+
+    typedef std::list<Renderable *> RenderList;
+
+public:
     Renderable();
     ~Renderable();
 
-    virtual AABBox bound();
+    AABBox bound();
+    bool isCulled(const Frustum &frustum, const Matrix4 &viewProjection);
 
     Material *material() const;
     virtual void setMaterial(Material *material);
 
     int32_t materialsCount() const;
     virtual MaterialInstance *materialInstance(int index);
+
+    static void filterByLayer(const RenderList &in, GroupList &out, int layer);
+
+    static void group(const GroupList &in, GroupList &out);
 
 protected:
     virtual Mesh *meshToDraw(int instance);
@@ -49,6 +70,10 @@ protected:
     std::vector<MaterialInstance *> m_materials;
 
     uint32_t m_surfaceType;
+
+    uint32_t m_lod;
+
+    bool m_useLod;
 
 private:
     mutable AABBox m_localBox;
