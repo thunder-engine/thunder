@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import glob
 import htmlparser
 
 from string import Template
 from texttable import Texttable
 
-defaultTypes = ["void", "int", "bool", "float", "areal", "char", "size_t", "_size_t", "_file", "int32_t", "uint32_t", "std::string", "T"]
-
-def composeTable(classDef, static):
+def composeTable(classDef, static, defaultTypes):
     table = Texttable(512)
     table.set_cols_align(["r", "l"])
 
@@ -48,13 +47,13 @@ def composeTable(classDef, static):
                         default = " = {}".format(argument.default)
 
                     args.append("{0}{1} {2} {3}{4}".format(argMod, argument.type, argument.reference, argument.name, default))
-            body = ":ref:`{0}<api_{3}_{4}>` ({1}){2}".format(method.name, ", ".join(args), methodMod, classDef.name, method.uuid)
+            body = ":ref:`{0}<api_{3}_{4}>` ({1}){2}".format(method.name.replace("<", "\<"), ", ".join(args), methodMod, classDef.name, method.uuid)
 
             table.add_row([typeName, body])
 
     return table.draw()
 
-def composeMethods(classDef):
+def composeMethods(classDef, defaultTypes):
     result = ""
     if classDef.methods is not None:
         for index, methods in enumerate(classDef.methods.values()):
@@ -81,7 +80,7 @@ def composeMethods(classDef):
                         if argument.default is not None:
                             default = " = {}".format(argument.default)
                         if argument.type not in defaultTypes:
-                            args.append(":ref:`{0}<api_{0}>` {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
+                            args.append(":ref:`{0}<api_{1}>` {2} *{3}*{4}".format(argument.type, argument.type.replace("::", "_"), argument.reference, argument.name, default))
                         else:
                             args.append("{0} {1} *{2}*{3}".format(argument.type, argument.reference, argument.name, default))
 
@@ -99,7 +98,7 @@ def composeMethods(classDef):
                         if method.arguments is not None:
                             for argument in method.arguments.values():
                                 if len(argument.name) > 0:
-                                    text = text.replace(" {}".format(argument.name), " *{}*".format(argument.name))
+                                    text = text.replace(" {} ".format(argument.name), " *{}* ".format(argument.name))
 
                         text = text.replace("Note: ", "**Note:** ")
 
@@ -132,7 +131,17 @@ def composeEnums(classDef):
     return result;
 
 def main():
-    os.mkdir("reference")
+    path = "reference"
+    
+    if os.path.isdir(path):
+        files = glob.glob(path + "/*")
+        for filename in files:
+            os.remove(filename)
+    else:
+        os.mkdir(path)
+
+    with open("embedded.txt", 'r') as f:
+        defaultTypes = f.read().splitlines()
 
     f = open("page.rst", "r")
     s = Template(f.read())
@@ -168,9 +177,9 @@ def main():
                     inherits = ":ref:`{0}<api_{0}>`".format(inherits)
 
                 d["inheritance"] = inherits
-                d["public"] = composeTable(classDef, False)
-                d["static"] = composeTable(classDef, True)
-                d["methods"] = composeMethods(classDef)
+                d["public"] = composeTable(classDef, False, defaultTypes)
+                d["static"] = composeTable(classDef, True, defaultTypes)
+                d["methods"] = composeMethods(classDef, defaultTypes)
                 d["enums"] = composeEnums(classDef)
                 f.write(s.substitute(d))
                 f.close()
