@@ -3,17 +3,7 @@ import qbs
 Project {
     id: physfs
     property stringList srcFiles: {
-        var result = [
-            "src/*.c",
-            "src/archivers/*.c"
-        ];
-        if(qbs.targetOS.contains("windows")) {
-            result.push("src/platform/win32.c")
-        } else {
-            result.push("src/platform/unix.c"),
-            result.push("src/platform/posix.c")
-        }
-        return result;
+        "src/*.c"
     }
 
     property stringList incPaths: [
@@ -30,13 +20,13 @@ Project {
         Depends { name: "zlib-editor" }
         bundle.isBundle: false
 
-        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]
+        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
         cpp.libraryPaths: [ ]
 
         Properties {
             condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: [ "Advapi32" ]
+            cpp.dynamicLibraries: [ "Advapi32", "Shell32" ]
         }
 
         Properties {
@@ -66,7 +56,7 @@ Project {
         Depends { name: "bundle" }
         bundle.isBundle: false
 
-        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]
+        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
 
         Properties {

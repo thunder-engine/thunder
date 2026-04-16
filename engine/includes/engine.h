@@ -89,8 +89,6 @@ public:
 
     static TString reference(Object *object);
 
-    static bool reloadBundle();
-
     static ResourceSystem *resourceSystem();
 
     static RenderSystem *renderSystem();
