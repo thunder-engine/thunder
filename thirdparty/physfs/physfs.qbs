@@ -2,10 +2,15 @@ import qbs
 
 Project {
     id: physfs
-    property stringList srcFiles: [
-        "src/*.c",
-        "src/*.m"
-    ]
+    property stringList srcFiles: {
+        var result = [
+            "src/*.c",
+        ];
+        if(qbs.targetOS.contains("darwin")) {
+            result.push("src/*.m")
+        }
+        return result;
+    }
 
     property stringList incPaths: [
         "src",
@@ -39,6 +44,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
+            cpp.weakFrameworks: ["Foundation"]
             cpp.sonamePrefix: "@executable_path"
         }
 
