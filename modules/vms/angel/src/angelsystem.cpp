@@ -868,5 +868,5 @@ void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
 }
 
 void AngelSystem::bundleUpdated(const TString &path, bool unload, void *ptr) {
-    AngelSystem *system = reinterpret_cast<AngelSystem *>(ptr);
+    //AngelSystem *system = reinterpret_cast<AngelSystem *>(ptr);
 }

@@ -4,19 +4,7 @@ project(physfs)
 
 file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.c"
-    "src/archivers/*.c"
 )
-
-if (WIN32)
-    set(${PROJECT_NAME}_platform
-        "src/platform/win32.c"
-    ) 
-else ()
-    set(${PROJECT_NAME}_platform
-        "src/platform/unix.c"
-        "src/platform/posix.c"
-    )
-endif()
 
 set(${PROJECT_NAME}_incPaths
     "src"
@@ -36,7 +24,9 @@ if(desktop)
     add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${${PROJECT_NAME}_platform})
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         PHYSFS_SUPPORTS_ZIP
-        PHYSFS_NO_CDROM_SUPPORT)
+        PHYSFS_SUPPORTS_DEFAULT=0
+        PHYSFS_NO_CDROM_SUPPORT
+    )
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE zlib-editor)
 
