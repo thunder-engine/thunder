@@ -119,12 +119,14 @@ void AssetManager::rescan() {
 
     TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
+
         bool update = m_projectManager->projectSdk() != SDK_VERSION;
         if(update) {
             getChangedUUIDs();
         }
 
-        m_force |= !Engine::reloadBundle();
+        Engine::resourceSystem()->unloadBundle(TString());
+        m_force |= !Engine::resourceSystem()->loadBundle(TString());
         m_force |= update;
 
         m_assetProvider->init();
@@ -556,7 +558,9 @@ void AssetManager::dumpBundle() {
     if(file.open(File::Write)) {
         file.write(Json::save(root, 0));
         file.close();
-        Engine::reloadBundle();
+
+        Engine::resourceSystem()->unloadBundle(TString());
+        Engine::resourceSystem()->loadBundle(TString());
     }
 }
 

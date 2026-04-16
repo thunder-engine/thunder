@@ -56,6 +56,8 @@ private:
 
     void recalcMesh() const;
 
+    static void textureUpdated(int state, void *ptr);
+
 private:
     Vector4 m_bounds;
 

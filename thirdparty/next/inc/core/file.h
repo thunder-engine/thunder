@@ -49,6 +49,10 @@ public:
 
     static FileHandler *handler();
 
+    static void mount(const TString &path, bool writable = false);
+
+    static void unmount(const TString &path);
+
     static bool exists(const TString &file);
 
     static bool remove(const TString &file);
@@ -80,6 +84,10 @@ protected:
 
 class NEXT_LIBRARY_EXPORT FileHandler {
 public:
+    virtual void mount(const char *path, bool writable = false) = 0;
+
+    virtual void unmount(const char *path) = 0;
+
     virtual StringList list(const char *path) = 0;
 
     virtual bool mkDir(const char *path) = 0;
