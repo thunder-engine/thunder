@@ -1,5 +1,6 @@
 #include "adapters/mobileadaptor.h"
 
+#include "systems/resourcesystem.h"
 #ifdef __APPLE__
     #include "systems/rendersystem.h"
 #endif
