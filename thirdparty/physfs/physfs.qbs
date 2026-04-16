@@ -3,7 +3,8 @@ import qbs
 Project {
     id: physfs
     property stringList srcFiles: [
-        "src/*.c"
+        "src/*.c",
+        "src/*.m"
     ]
 
     property stringList incPaths: [
