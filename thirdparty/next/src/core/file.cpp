@@ -83,6 +83,14 @@ FileHandler *File::handler() {
     return s_handler;
 }
 
+void File::mount(const TString &path, bool writable) {
+    s_handler->mount(path.data(), writable);
+}
+
+void File::unmount(const TString &path) {
+    s_handler->unmount(path.data());
+}
+
 bool File::exists(const TString &file) {
     return s_handler->exists(file.data());
 }

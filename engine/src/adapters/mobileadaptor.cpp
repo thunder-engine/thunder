@@ -1,5 +1,9 @@
 #include "adapters/mobileadaptor.h"
-#include "systems/rendersystem.h"
+
+#include "systems/resourcesystem.h"
+#ifdef __APPLE__
+    #include "systems/rendersystem.h"
+#endif
 
 #include <glfm.h>
 
@@ -8,15 +12,25 @@
 
 #include "engine.h"
 #include "input.h"
-#include "timer.h"
 
 #ifdef __ANDROID__
-#include "handlers/androidfilehandler.h"
-#include <android/log.h>
+    #include "handlers/androidfilehandler.h"
+    #include <android/log.h>
+#else
+    #ifdef __EMSCRIPTEN__
+        #include "handlers/defaultfilehandler.h"
+    #else
+        #include "handlers/physfsfilehandler.h"
+    #endif
+#endif
 
-class AndroidHandler : public LogHandler {
+const char *configLocation();
+const char *assetsLocation();
+
+class DefaultHandler : public LogHandler {
 protected:
-    void setRecord (Log::LogTypes type, const char *record) {
+    void setRecord(Log::LogTypes type, const char *record) {
+#ifdef __ANDROID__
         int32_t lvl;
         switch(type) {
             case Log::ERR: lvl = ANDROID_LOG_ERROR; break;
@@ -26,22 +40,7 @@ protected:
             default: break;
         }
         __android_log_write(lvl, "ThunderEngine", record);
-    }
-};
 #else
-
-#ifdef __EMSCRIPTEN__
-#include "handlers/defaultfilehandler.h"
-#else
-#include "handlers/physfsfilehandler.h"
-#endif
-
-const char *configLocation();
-const char *assetsLocation();
-
-class DefaultHandler : public LogHandler {
-protected:
-    void setRecord(Log::LogTypes type, const char *record) {
         const char *lvl;
         switch(type) {
             case Log::ERR: lvl = "ERROR"; break;
@@ -51,9 +50,10 @@ protected:
             default: break;
         }
         printf("[%s] %s\n", lvl, record);
+#endif
     }
 };
-#endif
+
 
 #define NONE -1
 #define RELEASE 0
@@ -182,23 +182,22 @@ void onCreate(GLFMDisplay *display, int width, int height) {
     MobileAdaptor::s_width = width;
     MobileAdaptor::s_height = height;
 
-    const char *path = "";
+    Log::addHandler(new DefaultHandler());
+
 #ifdef __ANDROID__
-    Log::addHandler(new AndroidHandler());
 	File::setHandler(new AndroidFileHandler());
 #else
-    Log::addHandler(new DefaultHandler());
     #ifdef __EMSCRIPTEN__
         File::setHandler(new DefaultFileHandler());
     #else
-		PhysfsFileHandler *handler = new PhysfsFileHandler();
-        handler->init(path);
-        handler->searchPathAdd(assetsLocation());
+        PhysfsFileHandler *handler = new PhysfsFileHandler;
+        handler->init("");
+        handler->mount(assetsLocation());
 		File::setHandler(handler);
     #endif
 #endif
 
-#if defined(__APPLE__)
+#ifdef __APPLE__
     if(glfmIsMetalSupported(display)) {
         RenderSystem::setWindowHandle(glfmGetMetalView(display));
     }
@@ -272,8 +271,10 @@ bool onKey(GLFMDisplay *, GLFMKeyCode keyCode, GLFMKeyAction action, int) {
 bool onMouseWeel(GLFMDisplay *, double x, double y, GLFMMouseWheelDeltaType deltaType,
                  double, double deltaY, double) {
 
-    MobileAdaptor::s_mousePosition = Vector4(x, MobileAdaptor::s_height - y,
-                                             x / (float)MobileAdaptor::s_width, (MobileAdaptor::s_height - y) / (float)MobileAdaptor::s_width);
+    MobileAdaptor::s_mousePosition = Vector4(x,
+                                             MobileAdaptor::s_height - y,
+                                             x / (float)MobileAdaptor::s_width,
+                                             (MobileAdaptor::s_height - y) / (float)MobileAdaptor::s_width);
 
     MobileAdaptor::s_mouseScrollDelta = deltaY;
 
@@ -350,7 +351,7 @@ void MobileAdaptor::update() {
 }
 
 bool MobileAdaptor::start() {
-    Engine::reloadBundle();
+    Engine::resourceSystem()->loadBundle(assetsLocation());
 
     return true;
 }

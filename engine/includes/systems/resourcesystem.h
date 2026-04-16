@@ -7,6 +7,8 @@
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
     struct ResourceInfo {
+        TString bundle;
+
         TString type;
 
         TString uuid;
@@ -18,11 +20,14 @@ public:
 
     typedef std::unordered_map<TString, ResourceInfo> Dictionary;
 
+    typedef void (*BundleUpdatedCallback)(const TString &path, bool unload, void *object);
+
 public:
     ResourceSystem();
     ~ResourceSystem();
 
-    void setResource(Resource *object, const TString &uuid);
+    bool loadBundle(const TString &path);
+    bool unloadBundle(const TString &path);
 
     Resource *loadResource(const TString &path);
 
@@ -40,12 +45,16 @@ public:
     TString reference(Resource *resource) const;
 
     Resource *resource(TString &path) const;
+    void setResource(Resource *object, const TString &uuid);
 
     Dictionary &indices();
 
     void deleteFromCahe(Resource *resource);
 
     void setCleanImport(bool flag);
+
+    void subscribe(BundleUpdatedCallback callback, void *object);
+    void unsubscribe(void *object);
 
 private:
     void update(World *) override;
@@ -59,6 +68,8 @@ private:
     void removeObject(Object *object) override;
 
 private:
+    std::list<std::pair<ResourceSystem::BundleUpdatedCallback, void *>> m_observers;
+
     ResourceSystem::Dictionary m_indexMap;
 
     std::unordered_map<TString, Resource *> m_resourceCache;
