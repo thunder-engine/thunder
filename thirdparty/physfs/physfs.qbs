@@ -2,9 +2,9 @@ import qbs
 
 Project {
     id: physfs
-    property stringList srcFiles: {
+    property stringList srcFiles: [
         "src/*.c"
-    }
+    ]
 
     property stringList incPaths: [
         "src",
@@ -23,6 +23,7 @@ Project {
         cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
         cpp.libraryPaths: [ ]
+        cpp.minimumMacosVersion: physfs.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -58,6 +59,9 @@ Project {
 
         cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
+        cpp.minimumMacosVersion: physfs.osxVersion
+        cpp.minimumIosVersion: physfs.iosVersion
+        cpp.minimumTvosVersion: physfs.tvosVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
