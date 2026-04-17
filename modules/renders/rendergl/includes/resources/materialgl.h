@@ -21,7 +21,7 @@ public:
     bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, uint32_t globalBuffer);
 
 private:
-    void copyLocalData(int32_t instanceLocation);
+    void copyLocalData(uint32_t index, int32_t instanceLocation);
 
     static void setBlendState(const Material::BlendState &state);
 
