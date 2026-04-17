@@ -199,9 +199,11 @@ void Renderable::group(const GroupList &in, GroupList &out) {
             last = it;
             auto &buffer = it.instance->rawUniformBuffer();
             last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+            last.count++;
         } else {
             auto &buffer = it.instance->rawUniformBuffer();
             last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+            last.count++;
         }
     }
 

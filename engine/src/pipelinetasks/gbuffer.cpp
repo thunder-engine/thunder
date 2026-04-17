@@ -64,7 +64,9 @@ void GBuffer::exec() {
     buffer->setRenderTarget(m_gbuffer);
 
     for(auto &it : m_opaque) {
-        it.instance->setInstanceBuffer(&it.buffer);
+        if(it.count > 1) {
+            it.instance->setInstanceBuffer(&it.buffer);
+        }
         buffer->drawMesh(it.mesh, it.subMesh, Material::Opaque, *it.instance);
         it.instance->setInstanceBuffer(nullptr);
     }

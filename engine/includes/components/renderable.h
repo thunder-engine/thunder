@@ -28,6 +28,8 @@ public:
 
         uint32_t hash = 0;
 
+        uint32_t count = 0;
+
         ByteArray buffer;
     };
     typedef std::list<Group> GroupList;

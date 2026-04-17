@@ -63,6 +63,8 @@ private:
     static std::list<PostProcessVolume *> m_postProcessVolumes;
 
     PipelineContext *m_pipelineContext;
+
+    bool m_frameDirty;
 };
 
 #endif // RENDERSYSTEM_H

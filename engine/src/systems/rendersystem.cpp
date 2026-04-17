@@ -42,7 +42,8 @@ std::list<Renderable *> RenderSystem::m_renderableComponents;
 std::list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
 
 RenderSystem::RenderSystem() :
-        m_pipelineContext(nullptr) {
+        m_pipelineContext(nullptr),
+        m_frameDirty(true) {
 
     if(m_registered == 0) {
         // Core

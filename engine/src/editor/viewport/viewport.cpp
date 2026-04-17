@@ -167,9 +167,7 @@ void Viewport::onDraw() {
     m_frameInProgress = true; // Recursive call protection
 
     if(m_world) {
-        if(m_liveUpdate) {
-            m_world->setToBeUpdated(true);
-        }
+        m_world->setActive(m_liveUpdate);
 
         auto &instance = EditorPlatform::instance();
 

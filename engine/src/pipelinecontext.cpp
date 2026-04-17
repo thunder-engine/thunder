@@ -194,7 +194,7 @@ void PipelineContext::analizeGraph() {
     Camera *camera = Camera::current();
     Vector3 cameraWorldPosition(camera->transform()->worldPosition());
 
-    bool update = m_world->isToBeUpdated();
+    bool update = m_world->isActive();
 
     // Add renderables
     m_sceneRenderables.clear();

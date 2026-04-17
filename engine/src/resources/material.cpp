@@ -278,13 +278,15 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
     Sets instances \a buffer.
 */
 void MaterialInstance::setInstanceBuffer(const ByteArray *buffer) {
-    m_batchBuffer = buffer;
-    if(m_batchBuffer) {
-        m_batchesCount = m_batchBuffer->size() / (m_material->m_uniformSize + m_skinSize);
-    } else {
-        m_batchesCount = 0;
+    if(m_batchBuffer != buffer) {
+        m_batchBuffer = buffer;
+        if(m_batchBuffer) {
+            m_batchesCount = m_batchBuffer->size() / (m_material->m_uniformSize + m_skinSize);
+        } else {
+            m_batchesCount = 0;
+        }
+        m_localDirty = true;
     }
-    m_localDirty = true;
 }
 /*!
     \internal

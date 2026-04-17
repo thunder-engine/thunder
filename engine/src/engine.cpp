@@ -289,7 +289,7 @@ void Engine::update() {
                 }
             }
 
-            m_world->setToBeUpdated(true);
+            m_world->setActive(true);
 
             for(auto it : m_pool) {
                 it->m_system->setActiveWorld(m_world);
@@ -305,7 +305,7 @@ void Engine::update() {
             }
             m_threadPool->waitForDone();
 
-            m_world->setToBeUpdated(false);
+            m_world->setActive(false);
         }
 
         m_platform->update();

@@ -68,7 +68,7 @@ Actor::Actor() :
 
 Actor::~Actor() {
     if(m_scene && m_scene->world()) {
-        m_scene->world()->makeDirty();
+        m_scene->world()->graphUpdated();
     }
 }
 /*!
@@ -146,7 +146,7 @@ void Actor::setScene(Scene *scene) {
     if(m_scene != scene) {
         m_scene = scene;
         if(m_scene && m_scene->world()) {
-            m_scene->world()->makeDirty();
+            m_scene->world()->graphUpdated();
         }
         for(auto it : getChildren()) {
             Actor *child = dynamic_cast<Actor *>(it);
