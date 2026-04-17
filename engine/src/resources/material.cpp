@@ -34,7 +34,8 @@ MaterialInstance::MaterialInstance(Material *material) :
         m_transformHash(0),
         m_priority(0),
         m_skinSize(0),
-        m_surfaceType(0) {
+        m_surfaceType(0),
+        m_localDirty(true) {
 
     m_material->addInstance(this);
 
@@ -280,6 +281,7 @@ void MaterialInstance::setInstanceBuffer(const ByteArray *buffer) {
     } else {
         m_batchesCount = 0;
     }
+    m_localDirty = true;
 }
 /*!
     \internal

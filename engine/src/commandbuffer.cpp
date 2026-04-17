@@ -83,7 +83,8 @@ void CommandBuffer::setInited() {
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
     m_global.view = view;
     m_global.projection = projection;
-    m_global.cameraWorldToScreen = projection * view;
+
+    setViewProjection(projection * view);
 }
 /*!
     Sets the \a viewProjection matrix.
@@ -149,13 +150,13 @@ void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t hei
     This function sets up view, projection and clipping planes global shader variables.
 */
 void CommandBuffer::setCameraProperties(Camera *camera) {
-    setViewProjection(camera->viewMatrix(), camera->projectionMatrix());
-
     Transform *t = camera->transform();
 
     m_global.cameraPosition = t->worldPosition();
     m_global.cameraParams.x = camera->nearPlane();
     m_global.cameraParams.y = camera->farPlane();
+
+    setViewProjection(camera->viewMatrix(), camera->projectionMatrix());
 }
 /*!
     Enables scissor testing with the specified parameters.

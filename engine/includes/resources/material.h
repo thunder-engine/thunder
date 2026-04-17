@@ -347,6 +347,8 @@ protected:
 
     uint16_t m_surfaceType;
 
+    bool m_localDirty;
+
 };
 
 #endif // MATERIAL_H

@@ -22,7 +22,6 @@
 Renderable::Renderable() :
         m_surfaceType(Material::Static),
         m_lod(0),
-        m_useLod(false),
         m_transformHash(0) {
 
 }
@@ -57,19 +56,17 @@ bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection)
     AABBox bb(bound());
 
     if(bb.extent.x < 0.0f || frustum.contains(bb)) {
-        if(m_useLod) {
-            Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
-            Vector2 l0(v0.x / v0.w, v0.y / v0.w);
+        Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
+        Vector2 l0(v0.x / v0.w, v0.y / v0.w);
 
-            bb.center += frustum.m_top.normal * bb.radius;
-            Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
-            Vector2 l1(v1.x / v1.w, v1.y / v1.w);
+        bb.center += frustum.m_top.normal * bb.radius;
+        Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
+        Vector2 l1(v1.x / v1.w, v1.y / v1.w);
 
-            float size = (l1 - l0).length();
-            m_lod = PipelineContext::lod(size);
-        }
+        float size = (l1 - l0).length();
+        m_lod = PipelineContext::lod(size);
 
-        return false;
+        return !(m_lod < 3);
     }
 
     return true;

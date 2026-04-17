@@ -288,8 +288,7 @@ inline int32_t convertBlendFactor(int32_t factor) {
 
 MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         MaterialInstance(material),
-        m_instanceBuffer(0),
-        m_globalBuffer(0) {
+        m_instanceBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
     m_glBlendState = m->m_blendState;
@@ -337,7 +336,7 @@ uint32_t MaterialInstanceGL::drawsCount() const {
     return (uint32_t)ceil((float)gpuBuffer.size() / (float)gMaxUBO);
 }
 
-bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global) {
+bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, uint32_t globalBuffer) {
     uint16_t type = MaterialGL::FragmentDefault;
     if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
         type = MaterialGL::FragmentVisibility;
@@ -352,31 +351,84 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         return false;
     }
 
-    glUseProgram(program);
+    static uint32_t currentProgram = 0;
+    if(program != currentProgram) {
+        glUseProgram(program);
+        currentProgram = program;
+    }
 
     uint32_t materialType = material->materialType();
 
     if(globalLocation > -1 && index == 0) {
-        if(m_globalBuffer == 0) {
-            glGenBuffers(1, &m_globalBuffer);
-
-            int blockSize = -1;
-            glGetActiveUniformBlockiv(program, globalLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-
-            glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
-            glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, m_globalBuffer);
+        if(globalBuffer == 0) {
+            glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, globalBuffer);
             glUniformBlockBinding(program, globalLocation, globalLocation);
         }
-
-        glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &global);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, m_globalBuffer);
+        static uint32_t currentGlobal = 0;
+        if(globalBuffer != currentGlobal) {
+            glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, globalBuffer);
+            currentGlobal = globalBuffer;
+        }
     }
 
+    //if(m_localDirty) {
+        copyLocalData(instanceLocation);
+    //  m_localDirty = false;
+    //}
+
+    uint8_t i = 0;
+
+    static uint32_t textures[32];
+    for(auto &it : material->textures()) {
+        Texture *tex = texture(*buffer, it.binding);
+        if(tex) {
+            uint32_t handle = static_cast<TextureGL *>(tex)->nativeHandle();
+            if(handle != textures[i]) {
+                uint32_t textureType = (tex->depth() > 1) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+                if(tex->isCubemap()) {
+                    textureType = GL_TEXTURE_CUBE_MAP;
+                }
+
+                glActiveTexture(GL_TEXTURE0 + i);
+                glBindTexture(textureType, handle);
+                textures[i] = handle;
+            }
+        }
+        i++;
+    }
+
+    Material::RasterState rasterState;
+    rasterState.cullingMode = GL_BACK;
+
+    if(layer & Material::Shadowcast || materialType == Material::LightFunction) {
+        rasterState.cullingMode = GL_FRONT;
+    }
+
+    if(material->doubleSided() || (layer & Material::Visibility)) {
+        rasterState.enabled = false;
+    }
+
+    setRasterState(rasterState);
+
+    Material::BlendState blendState = m_glBlendState;
+    if(layer & Material::Visibility) {
+        blendState.sourceColorBlendMode = GL_ONE;
+        blendState.sourceAlphaBlendMode = GL_ONE;
+
+        blendState.destinationColorBlendMode = GL_ZERO;
+        blendState.destinationAlphaBlendMode = GL_ZERO;
+    }
+
+    setBlendState(blendState);
+
+    setDepthState(m_glDepthState);
+
+    setStencilState(m_glStencilState);
+
+    return true;
+}
+
+void MaterialInstanceGL::copyLocalData(int32_t instanceLocation) {
     const ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
 #ifdef THUNDER_MOBILE
@@ -413,92 +465,98 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
 #endif
-
-    uint8_t i = 0;
-
-    for(auto &it : material->textures()) {
-        Texture *tex = texture(*buffer, it.binding);
-
-        if(tex) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            uint32_t texture = (tex->depth() > 1) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
-            if(tex->isCubemap()) {
-                texture = GL_TEXTURE_CUBE_MAP;
-            }
-
-            glBindTexture(texture, static_cast<TextureGL *>(tex)->nativeHandle());
-        }
-        i++;
-    }
-
-    Material::RasterState rasterState;
-    rasterState.cullingMode = GL_BACK;
-
-    if(layer & Material::Shadowcast || materialType == Material::LightFunction) {
-        rasterState.cullingMode = GL_FRONT;
-    }
-
-    if(material->doubleSided() || (layer & Material::Visibility)) {
-        rasterState.enabled = false;
-    }
-
-    setRasterState(rasterState);
-
-    Material::BlendState blendState = m_glBlendState;
-    if(layer & Material::Visibility) {
-        blendState.sourceColorBlendMode = GL_ONE;
-        blendState.sourceAlphaBlendMode = GL_ONE;
-
-        blendState.destinationColorBlendMode = GL_ZERO;
-        blendState.destinationAlphaBlendMode = GL_ZERO;
-    }
-
-    setBlendState(blendState);
-
-    setDepthState(m_glDepthState);
-
-    setStencilState(m_glStencilState);
-
-    return true;
 }
 
 void MaterialInstanceGL::setBlendState(const Material::BlendState &state) {
+    static bool enabled = false;
     if(state.enabled) {
-        glEnable(GL_BLEND);
+        if(!enabled) {
+            glEnable(GL_BLEND);
+            enabled = true;
+        }
 
-        glBlendFuncSeparate(state.sourceColorBlendMode, state.destinationColorBlendMode, state.sourceAlphaBlendMode, state.destinationAlphaBlendMode);
+        static int sourceColorBlendMode = 0;
+        static int destinationColorBlendMode = 0;
+        static int sourceAlphaBlendMode = 0;
+        static int destinationAlphaBlendMode = 0;
+        if(sourceColorBlendMode != state.sourceColorBlendMode ||
+           destinationColorBlendMode != state.destinationColorBlendMode ||
+           sourceAlphaBlendMode != state.sourceAlphaBlendMode ||
+           destinationAlphaBlendMode != state.destinationAlphaBlendMode) {
 
-        glBlendEquationSeparate(state.colorOperation, state.alphaOperation);
+            glBlendFuncSeparate(state.sourceColorBlendMode, state.destinationColorBlendMode, state.sourceAlphaBlendMode, state.destinationAlphaBlendMode);
+        }
+
+        static int colorOperation = 0;
+        static int alphaOperation = 0;
+        if(colorOperation != state.colorOperation || alphaOperation != state.alphaOperation) {
+            glBlendEquationSeparate(state.colorOperation, state.alphaOperation);
+            colorOperation = state.colorOperation;
+            alphaOperation = state.alphaOperation;
+        }
     } else {
-        glDisable(GL_BLEND);
+        if(enabled) {
+            glDisable(GL_BLEND);
+            enabled = false;
+        }
     }
+
 }
 
 void MaterialInstanceGL::setRasterState(const Material::RasterState &state) {
+    static bool enabled = false;
     if(state.enabled) {
-        glEnable(GL_CULL_FACE);
+        if(!enabled) {
+            glEnable(GL_CULL_FACE);
+            enabled = true;
+        }
 
-        glCullFace(state.cullingMode);
+        static int32_t cullingMode = Material::CullingMode::Back;
+        if(cullingMode != state.cullingMode) {
+            glCullFace(state.cullingMode);
+            cullingMode = state.cullingMode;
+        }
     } else {
-        glDisable(GL_CULL_FACE);
+        if(enabled) {
+            glDisable(GL_CULL_FACE);
+            enabled = false;
+        }
     }
 }
 
 void MaterialInstanceGL::setDepthState(const Material::DepthState &state) {
+    static bool enabled = false;
     if(state.enabled) {
-        glEnable(GL_DEPTH_TEST);
+        if(!enabled) {
+            glEnable(GL_DEPTH_TEST);
+            enabled = true;
+        }
+        static bool writeEnabled = false;
+        if(writeEnabled != state.writeEnabled) {
+            glDepthMask(state.writeEnabled);
+            writeEnabled = state.writeEnabled;
+        }
 
-        glDepthMask(state.writeEnabled);
-
-        glDepthFunc(state.compareFunction);
+        static int32_t compareFunction = 0;
+        if(compareFunction != state.compareFunction) {
+            glDepthFunc(state.compareFunction);
+            compareFunction = state.compareFunction;
+        }
     } else {
-        glDisable(GL_DEPTH_TEST);
+        if(enabled) {
+            glDisable(GL_DEPTH_TEST);
+            enabled = false;
+        }
     }
 }
 
 void MaterialInstanceGL::setStencilState(const Material::StencilState &state) {
+    static bool enabled = false;
     if(state.enabled) {
-        glEnable(GL_STENCIL_TEST);
+        if(!enabled) {
+            glEnable(GL_STENCIL_TEST);
+            enabled = true;
+        }
 
         glStencilMask(state.writeMask);
 
@@ -508,6 +566,9 @@ void MaterialInstanceGL::setStencilState(const Material::StencilState &state) {
         glStencilOpSeparate(GL_BACK, state.failOperationBack, state.zFailOperationBack, state.passOperationBack);
         glStencilOpSeparate(GL_FRONT, state.failOperationFront, state.zFailOperationFront, state.passOperationFront);
     } else {
-        glDisable(GL_STENCIL_TEST);
+        if(enabled) {
+            glDisable(GL_STENCIL_TEST);
+            enabled = false;
+        }
     }
 }

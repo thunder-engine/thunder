@@ -41,7 +41,7 @@ public:
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 
-    virtual void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
+    void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
 
     virtual void setViewProjection(const Matrix4 &viewProjection);
 
@@ -49,7 +49,7 @@ public:
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
-    virtual void setCameraProperties(Camera *camera);
+    void setCameraProperties(Camera *camera);
 
     virtual void enableScissor(int32_t x, int32_t y, int32_t width, int32_t height);
 

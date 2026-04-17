@@ -73,8 +73,6 @@ protected:
 
     uint32_t m_lod;
 
-    bool m_useLod;
-
 private:
     mutable AABBox m_localBox;
     mutable AABBox m_worldBox;

@@ -7,7 +7,8 @@
 #include "resources/rendertargetgl.h"
 #include "resources/computeshadergl.h"
 
-CommandBufferGL::CommandBufferGL() {
+CommandBufferGL::CommandBufferGL():
+        m_globalBuffer(0)  {
     PROFILE_FUNCTION();
 }
 
@@ -32,7 +33,7 @@ void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
 
         MaterialInstanceGL &instanceGL = static_cast<MaterialInstanceGL &>(instance);
         for(uint32_t index = 0; index < instanceGL.drawsCount(); index++) {
-            if(instanceGL.bind(this, layer, index, m_global)) {
+            if(instanceGL.bind(this, layer, index, m_globalBuffer)) {
                 meshGL->bindVao(this);
 
                 if(meshGL->indices().empty()) {
@@ -98,6 +99,8 @@ void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
     CommandBuffer::setViewport(x, y, width, height);
 
     glViewport(x, y, width, height);
+
+    updateGlobal();
 }
 
 void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -125,4 +128,23 @@ void CommandBufferGL::setObjectName(int32_t type, int32_t id, const TString &nam
 #ifndef THUNDER_MOBILE
     glObjectLabel(type, id, name.size(), name.data());
 #endif
+}
+
+void CommandBufferGL::setViewProjection(const Matrix4 &viewProjection) {
+    CommandBuffer::setViewProjection(viewProjection);
+
+    updateGlobal();
+}
+
+void CommandBufferGL::updateGlobal() {
+    if(m_globalBuffer == 0) {
+        glGenBuffers(1, &m_globalBuffer);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(Global), nullptr, GL_DYNAMIC_DRAW);
+    }
+
+    glBindBuffer(GL_UNIFORM_BUFFER, m_globalBuffer);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Global), &m_global);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
