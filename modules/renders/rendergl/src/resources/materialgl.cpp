@@ -372,7 +372,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     }
 
     //if(m_localDirty) {
-        copyLocalData(index, instanceLocation);
+        copyLocalData(index, program, instanceLocation);
     //  m_localDirty = false;
     //}
 
@@ -428,7 +428,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     return true;
 }
 
-void MaterialInstanceGL::copyLocalData(uint32_t index, int32_t instanceLocation) {
+void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t instanceLocation) {
     const ByteArray &gpuBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
 #ifdef THUNDER_MOBILE
