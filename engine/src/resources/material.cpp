@@ -118,6 +118,7 @@ void MaterialInstance::setSkinSize(uint32_t size) {
 
     uint8_t *data = m_uniformBuffer.data();
     memcpy(&data[m_material->m_uniformSize], &skinSize, sizeof(skinSize));
+    m_localDirty = true;
 }
 /*!
     Sets a boolean parameter with optional array support.
@@ -194,6 +195,7 @@ void MaterialInstance::setTransform(Transform *transform) {
 void MaterialInstance::setTransform(const Matrix4 &transform) {
     if(m_transform == nullptr) {
         memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
+        m_localDirty = true;
     }
 }
 /*!
@@ -203,7 +205,7 @@ void MaterialInstance::setBufferValue(const TString &name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
             memcpy(&m_uniformBuffer[it.offset], value, it.size);
-
+            m_localDirty = true;
             break;
         }
     }
@@ -266,6 +268,7 @@ ByteArray &MaterialInstance::rawUniformBuffer() {
             memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
 
             m_transformHash = static_cast<uint32_t>(hash);
+            m_localDirty = true;
         }
     }
 

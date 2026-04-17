@@ -357,8 +357,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         currentProgram = program;
     }
 
-    uint32_t materialType = material->materialType();
-
     if(globalLocation > -1 && index == 0) {
         if(globalBuffer == 0) {
             glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, globalBuffer);
@@ -371,10 +369,20 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         }
     }
 
-    //if(m_localDirty) {
+    if(m_localDirty) {
         copyLocalData(index, program, instanceLocation);
-    //  m_localDirty = false;
-    //}
+        m_localDirty = false;
+    }
+
+    static uint32_t instanceBuffer = 0;
+    if(instanceBuffer != m_instanceBuffer) {
+#ifdef THUNDER_MOBILE
+        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
+#else
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
+#endif
+        instanceBuffer = m_instanceBuffer;
+    }
 
     uint8_t i = 0;
 
@@ -400,6 +408,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     Material::RasterState rasterState;
     rasterState.cullingMode = GL_BACK;
 
+    uint32_t materialType = material->materialType();
     if(layer & Material::Shadowcast || materialType == Material::LightFunction) {
         rasterState.cullingMode = GL_FRONT;
     }
@@ -420,9 +429,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     }
 
     setBlendState(blendState);
-
     setDepthState(m_glDepthState);
-
     setStencilState(m_glStencilState);
 
     return true;
@@ -451,8 +458,6 @@ void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t
         glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, gpuBufferSize, &gpuBuffer[offset]);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
     }
 #else
     if(m_instanceBuffer == 0) {
@@ -462,8 +467,6 @@ void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_instanceBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
 #endif
 }
 
