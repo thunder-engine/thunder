@@ -9,6 +9,8 @@
 #include <commandbuffer.h>
 #include <pipelinecontext.h>
 
+#include <cstring>
+
 namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
