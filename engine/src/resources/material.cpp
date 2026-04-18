@@ -27,7 +27,6 @@ namespace {
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
         m_batchBuffer(nullptr),
-        m_transform(nullptr),
         m_instanceCount(1),
         m_batchesCount(0),
         m_hash(material->uuid()),
@@ -184,17 +183,22 @@ void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int
     setBufferValue(name, value);
 }
 /*!
-    Sets the \a transform component to track it.
-*/
-void MaterialInstance::setTransform(Transform *transform) {
-    m_transform = transform;
-}
-/*!
     Sets the \a transform matrix.
 */
-void MaterialInstance::setTransform(const Matrix4 &transform) {
-    if(m_transform == nullptr) {
-        memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
+void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uint32_t hash) {
+    if(hash != m_transformHash) {
+        Matrix4 m(transform);
+        if(uuid > 0) {
+            Vector4 color(CommandBuffer::idToColor(uuid));
+            m[3] = color.x;
+            m[7] = color.y;
+            m[11] = color.z;
+            m[15] = color.w;
+        }
+
+        memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
+
+        m_transformHash = hash;
         m_localDirty = true;
     }
 }
@@ -255,23 +259,6 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
     Developer can modify it for their needs.
 */
 ByteArray &MaterialInstance::rawUniformBuffer() {
-    if(m_transform) {
-        uint32_t hash = m_transform->hash();
-        if(hash != m_transformHash) {
-            Matrix4 m(m_transform->worldTransform());
-            Vector4 color(CommandBuffer::idToColor(m_transform->actor()->uuid()));
-            m[3] = color.x;
-            m[7] = color.y;
-            m[11] = color.z;
-            m[15] = color.w;
-
-            memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
-
-            m_transformHash = static_cast<uint32_t>(hash);
-            m_localDirty = true;
-        }
-    }
-
     return m_uniformBuffer;
 }
 /*!
@@ -642,6 +629,6 @@ void Material::initInstance(MaterialInstance *instance) {
             instance->overrideTexture(it.binding, it.texture);
         }
 
-        instance->setTransform(Matrix4());
+        instance->setTransform(Matrix4(), 0, uuid()); // we faking hash to let matrix in
     }
 }

@@ -117,6 +117,12 @@ int32_t Renderable::materialsCount() const {
     Returns a Material instance with \a index assigned to this Renderable.
 */
 MaterialInstance *Renderable::materialInstance(int index) {
+    for(auto it : m_materials) {
+        if(it) {
+            it->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
+        }
+    }
+
     if(m_materials.size() > index) {
         return m_materials[index];
     }
@@ -193,12 +199,14 @@ void Renderable::group(const GroupList &in, GroupList &out) {
     for(auto &it : in) {
         if(last.hash != it.hash || (last.instance != nullptr && last.instance->material() != it.instance->material())) {
             if(last.instance != nullptr) {
+                if(last.count > 1) {
+                    auto &buffer = last.instance->rawUniformBuffer();
+                    last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + last.instance->instanceSize());
+                }
                 out.push_back(last);
             }
 
             last = it;
-            auto &buffer = it.instance->rawUniformBuffer();
-            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
             last.count++;
         } else {
             auto &buffer = it.instance->rawUniformBuffer();
@@ -209,6 +217,10 @@ void Renderable::group(const GroupList &in, GroupList &out) {
 
     // do the last insert
     if(last.instance != nullptr) {
+        if(last.count > 1) {
+            auto &buffer = last.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + last.instance->instanceSize());
+        }
         out.push_back(last);
     }
 }

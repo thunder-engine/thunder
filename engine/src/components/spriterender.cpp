@@ -1,5 +1,7 @@
 #include "components/spriterender.h"
 
+#include "components/transform.h"
+
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/sprite.h"
@@ -92,7 +94,7 @@ MaterialInstance *SpriteRender::materialInstance(int index) {
             if(it) {
                 it->setTexture(gTexture, texture());
                 it->setVector4(gColor, &m_color);
-                it->setTransform(transform());
+                it->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
                 it->setPriority(m_priority);
             }
         }

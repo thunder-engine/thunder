@@ -48,7 +48,8 @@ void DeferredLighting::exec() {
         case BaseLight::AreaLight: {
             auto instance = light->material();
             if(instance) {
-                Matrix4 m(light->transform()->worldTransform());
+                Transform *t = light->transform();
+                Matrix4 m(t->worldTransform());
 
                 Vector3 position(m.position());
 
@@ -58,7 +59,7 @@ void DeferredLighting::exec() {
                 Vector3 right(m.rotation() * Vector3(1.0f, 0.0f, 0.0f));
                 Vector3 up(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
-                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
+                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)), light->actor()->uuid(), t->hash());
                 instance->setVector3(gUniPosition, &position);
                 instance->setVector3(gUniDirection, &direction);
                 instance->setVector3(gUniRight, &right);
@@ -68,14 +69,15 @@ void DeferredLighting::exec() {
         case BaseLight::PointLight: {
             auto instance = light->material();
             if(instance) {
-                Matrix4 m(light->transform()->worldTransform());
+                Transform *t = light->transform();
+                Matrix4 m(t->worldTransform());
 
                 float d = static_cast<PointLight *>(light)->attenuationRadius() * 2.0f;
 
                 Vector3 position(m.position());
                 Vector3 direction(m.rotation() * Vector3(0.0f, 1.0f, 0.0f));
 
-                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)));
+                instance->setTransform(Matrix4(position, Quaternion(), Vector3(d)), light->actor()->uuid(), t->hash());
                 instance->setVector3(gUniPosition, &position);
                 instance->setVector3(gUniDirection, &direction);
             }
@@ -84,7 +86,6 @@ void DeferredLighting::exec() {
             auto instance = light->material();
             if(instance) {
                 Transform *t = light->transform();
-
                 Quaternion q(t->worldQuaternion());
 
                 Vector3 position(t->worldPosition());
@@ -97,7 +98,7 @@ void DeferredLighting::exec() {
                             q,
                             Vector3(radius * 2.0f, radius * 2.0f, distance));
 
-                instance->setTransform(mat);
+                instance->setTransform(mat, light->actor()->uuid(), t->hash());
                 instance->setVector3(gUniPosition, &position);
                 instance->setVector3(gUniDirection, &direction);
             }

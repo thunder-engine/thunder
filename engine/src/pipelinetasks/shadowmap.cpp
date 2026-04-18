@@ -42,7 +42,6 @@ void ShadowMap::exec() {
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    RenderList &components = m_context->sceneRenderables();
     for(auto &it : m_context->sceneLights()) {
         auto instance = it->material();
         if(instance) {
