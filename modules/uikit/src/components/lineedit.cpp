@@ -15,6 +15,7 @@
 #include <pipelinecontext.h>
 
 #include <algorithm>
+#include <cstring>
 
 #define HOLD_TIME 0.1f
 

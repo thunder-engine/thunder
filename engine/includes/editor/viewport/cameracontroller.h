@@ -119,6 +119,7 @@ protected:
     bool m_blockMoveOnTransfer;
     bool m_blockRotation;
     bool m_blockPicking;
+    bool m_blockPickingBack;
     bool m_overlapPicking;
 
     bool m_cameraFree;
