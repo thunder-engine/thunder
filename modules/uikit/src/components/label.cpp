@@ -71,7 +71,8 @@ Label::~Label() {
 */
 void Label::draw(CommandBuffer &buffer) {
     if(m_material && !m_text.isEmpty()) {
-        m_material->setTransform(transform());
+        Transform *t = transform();
+        m_material->setTransform(t->worldTransform(), 0, t->hash());
 
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());

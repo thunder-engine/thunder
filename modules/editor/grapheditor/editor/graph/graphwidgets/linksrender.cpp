@@ -36,7 +36,8 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
     \internal
 */
 void LinksRender::draw(CommandBuffer &buffer) {
-    m_material->setTransform(rectTransform());
+    Transform *t = rectTransform();
+    m_material->setTransform(t->worldTransform(), 0, t->hash());
 
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
         buffer.drawMesh(m_linksMesh, 0, Material::Translucent, *m_material);

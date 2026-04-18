@@ -65,8 +65,11 @@ void LineEdit::drawSub(CommandBuffer &buffer) {
 
     Widget::drawSub(buffer);
 
+    uint32_t hash;
+    std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
+
     if(m_cursorVisible && m_cursorMaterial) {
-        m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform);
+        m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform, 0, hash);
         buffer.drawMesh(m_cursor, 0, Material::Translucent, *m_cursorMaterial);
     }
 
