@@ -83,16 +83,23 @@ public:
         if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
             RenderList filtered;
             for(auto it : m_context->culledRenderables()) {
-                if(it && it->actor()->flags() & Actor::Selectable) {
+                if(it->actor()->flags() & Actor::Selectable) {
                     filtered.push_back(it);
                 }
             }
 
+            Renderable::GroupList list;
+            Renderable::filterByLayer(filtered, list, Material::Visibility);
+
             Renderable::GroupList groups;
-            Renderable::filterByLayer(filtered, groups, Material::Visibility);
+            Renderable::group(list, groups);
 
             for(auto &it : groups) {
+                if(it.count > 1) {
+                    it.instance->setInstanceBuffer(&it.buffer);
+                }
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);
+                it.instance->setInstanceBuffer(nullptr);
             }
 
             Camera *activeCamera = m_controller->activeCamera();

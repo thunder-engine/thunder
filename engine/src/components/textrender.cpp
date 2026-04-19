@@ -245,7 +245,6 @@ MaterialInstance *TextRender::materialInstance(int index) {
                 }
                 it->setVector4(gColor, &m_color);
                 it->setFloat(gWeight, &m_fontWeight);
-                it->setTransform(transform());
                 it->setPriority(m_priority);
                 int sdf = m_flags & Font::Sdf;
                 it->setInteger(gUseSDF, &sdf);

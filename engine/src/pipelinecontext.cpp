@@ -194,7 +194,7 @@ void PipelineContext::analizeGraph() {
     Camera *camera = Camera::current();
     Vector3 cameraWorldPosition(camera->transform()->worldPosition());
 
-    bool update = m_world->isToBeUpdated();
+    bool update = m_world->isActive();
 
     // Add renderables
     m_sceneRenderables.clear();
@@ -340,7 +340,7 @@ Texture *PipelineContext::whiteTexture() {
     Returns LOD level based on normalized percentage screen \a size of object.
 */
 int32_t PipelineContext::lod(float size) {
-    if(size < 0.1f) {
+    if(size < 0.01f) {
         return 3;
     } else if(size < 0.3f) {
         return 2;

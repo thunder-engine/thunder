@@ -28,6 +28,8 @@ public:
 
         uint32_t hash = 0;
 
+        uint32_t count = 0;
+
         ByteArray buffer;
     };
     typedef std::list<Group> GroupList;
@@ -72,8 +74,6 @@ protected:
     uint32_t m_surfaceType;
 
     uint32_t m_lod;
-
-    bool m_useLod;
 
 private:
     mutable AABBox m_localBox;

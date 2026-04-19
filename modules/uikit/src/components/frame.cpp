@@ -81,7 +81,7 @@ void Frame::draw(CommandBuffer &buffer) {
         s[12] = size.x * 0.5f;
         s[13] = size.y * 0.5f;
 
-        m_material->setTransform(m * s);
+        m_material->setTransform(m * s, 0, rect->hash());
 
         buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }

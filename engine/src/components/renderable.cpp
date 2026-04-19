@@ -22,7 +22,6 @@
 Renderable::Renderable() :
         m_surfaceType(Material::Static),
         m_lod(0),
-        m_useLod(false),
         m_transformHash(0) {
 
 }
@@ -57,19 +56,17 @@ bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection)
     AABBox bb(bound());
 
     if(bb.extent.x < 0.0f || frustum.contains(bb)) {
-        if(m_useLod) {
-            Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
-            Vector2 l0(v0.x / v0.w, v0.y / v0.w);
+        Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
+        Vector2 l0(v0.x / v0.w, v0.y / v0.w);
 
-            bb.center += frustum.m_top.normal * bb.radius;
-            Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
-            Vector2 l1(v1.x / v1.w, v1.y / v1.w);
+        bb.center += frustum.m_top.normal * bb.radius;
+        Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
+        Vector2 l1(v1.x / v1.w, v1.y / v1.w);
 
-            float size = (l1 - l0).length();
-            m_lod = PipelineContext::lod(size);
-        }
+        float size = (l1 - l0).length();
+        m_lod = PipelineContext::lod(size);
 
-        return false;
+        return !(m_lod < 3);
     }
 
     return true;
@@ -120,6 +117,12 @@ int32_t Renderable::materialsCount() const {
     Returns a Material instance with \a index assigned to this Renderable.
 */
 MaterialInstance *Renderable::materialInstance(int index) {
+    for(auto it : m_materials) {
+        if(it) {
+            it->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
+        }
+    }
+
     if(m_materials.size() > index) {
         return m_materials[index];
     }
@@ -196,20 +199,28 @@ void Renderable::group(const GroupList &in, GroupList &out) {
     for(auto &it : in) {
         if(last.hash != it.hash || (last.instance != nullptr && last.instance->material() != it.instance->material())) {
             if(last.instance != nullptr) {
+                if(last.count > 1) {
+                    auto &buffer = last.instance->rawUniformBuffer();
+                    last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + last.instance->instanceSize());
+                }
                 out.push_back(last);
             }
 
             last = it;
-            auto &buffer = it.instance->rawUniformBuffer();
-            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+            last.count++;
         } else {
             auto &buffer = it.instance->rawUniformBuffer();
             last.buffer.insert(last.buffer.end(), buffer.begin(), buffer.begin() + it.instance->instanceSize());
+            last.count++;
         }
     }
 
     // do the last insert
     if(last.instance != nullptr) {
+        if(last.count > 1) {
+            auto &buffer = last.instance->rawUniformBuffer();
+            last.buffer.insert(last.buffer.begin(), buffer.begin(), buffer.begin() + last.instance->instanceSize());
+        }
         out.push_back(last);
     }
 }

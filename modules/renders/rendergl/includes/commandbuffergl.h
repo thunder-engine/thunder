@@ -26,6 +26,14 @@ public:
 
     static void setObjectName(int32_t type, int32_t id, const TString &name);
 
+protected:
+    void setViewProjection(const Matrix4 &viewProjection) override;
+
+    void updateGlobal();
+
+protected:
+    uint32_t m_globalBuffer;
+
 };
 
 #endif // COMMANDBUFFERGL_H

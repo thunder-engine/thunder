@@ -29,10 +29,8 @@ class ENGINE_EXPORT World : public Object {
 public:
     World();
 
-    bool isToBeUpdated();
-    void setToBeUpdated(bool flag);
-
-    void makeDirty();
+    bool isActive();
+    void setActive(bool flag);
 
     Scene *createScene(const TString &name);
 
@@ -68,7 +66,6 @@ private:
     Scene *m_activeScene;
     Object *m_gameController;
 
-    bool m_dirty;
     bool m_update;
 
 };

@@ -541,13 +541,13 @@ void ContentBrowser::changeEvent(QEvent *event) {
 void ContentBrowser::showInGraphicalShell() {
     QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();
 
-    QModelIndex index = ui->contentList->rootIndex();
-    if(!list.empty()) {
-        index = list.first();
+    TString path;
+    if(!list.isEmpty()) {
+        QModelIndex origin = m_listProxy->mapToSource(list.first());
+        path = TString("/") + ContentTree::instance()->path(origin);
     }
 
-    QModelIndex origin = m_listProxy->mapToSource(list.first());
-    TString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+    path = ProjectSettings::instance()->contentPath() + path;
 
 #if defined(Q_OS_WIN)
     QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(path.data()));

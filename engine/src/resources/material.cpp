@@ -27,14 +27,14 @@ namespace {
 MaterialInstance::MaterialInstance(Material *material) :
         m_material(material),
         m_batchBuffer(nullptr),
-        m_transform(nullptr),
         m_instanceCount(1),
         m_batchesCount(0),
         m_hash(material->uuid()),
         m_transformHash(0),
         m_priority(0),
         m_skinSize(0),
-        m_surfaceType(0) {
+        m_surfaceType(0),
+        m_localDirty(true) {
 
     m_material->addInstance(this);
 
@@ -117,6 +117,7 @@ void MaterialInstance::setSkinSize(uint32_t size) {
 
     uint8_t *data = m_uniformBuffer.data();
     memcpy(&data[m_material->m_uniformSize], &skinSize, sizeof(skinSize));
+    m_localDirty = true;
 }
 /*!
     Sets a boolean parameter with optional array support.
@@ -182,17 +183,23 @@ void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int
     setBufferValue(name, value);
 }
 /*!
-    Sets the \a transform component to track it.
-*/
-void MaterialInstance::setTransform(Transform *transform) {
-    m_transform = transform;
-}
-/*!
     Sets the \a transform matrix.
 */
-void MaterialInstance::setTransform(const Matrix4 &transform) {
-    if(m_transform == nullptr) {
-        memcpy(m_uniformBuffer.data(), &transform, sizeof(Matrix4));
+void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uint32_t hash) {
+    if(hash != m_transformHash) {
+        Matrix4 m(transform);
+        if(uuid > 0) {
+            Vector4 color(CommandBuffer::idToColor(uuid));
+            m[3] = color.x;
+            m[7] = color.y;
+            m[11] = color.z;
+            m[15] = color.w;
+        }
+
+        memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
+
+        m_transformHash = hash;
+        m_localDirty = true;
     }
 }
 /*!
@@ -202,7 +209,7 @@ void MaterialInstance::setBufferValue(const TString &name, const void *value) {
     for(auto &it : m_material->m_uniforms) {
         if(it.name == name) {
             memcpy(&m_uniformBuffer[it.offset], value, it.size);
-
+            m_localDirty = true;
             break;
         }
     }
@@ -252,33 +259,20 @@ void MaterialInstance::setSurfaceType(uint16_t type) {
     Developer can modify it for their needs.
 */
 ByteArray &MaterialInstance::rawUniformBuffer() {
-    if(m_transform) {
-        uint32_t hash = m_transform->hash();
-        if(hash != m_transformHash) {
-            Matrix4 m(m_transform->worldTransform());
-            Vector4 color(CommandBuffer::idToColor(m_transform->actor()->uuid()));
-            m[3] = color.x;
-            m[7] = color.y;
-            m[11] = color.z;
-            m[15] = color.w;
-
-            memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
-
-            m_transformHash = static_cast<uint32_t>(hash);
-        }
-    }
-
     return m_uniformBuffer;
 }
 /*!
     Sets instances \a buffer.
 */
 void MaterialInstance::setInstanceBuffer(const ByteArray *buffer) {
-    m_batchBuffer = buffer;
-    if(m_batchBuffer) {
-        m_batchesCount = m_batchBuffer->size() / (m_material->m_uniformSize + m_skinSize);
-    } else {
-        m_batchesCount = 0;
+    if(m_batchBuffer != buffer) {
+        m_batchBuffer = buffer;
+        if(m_batchBuffer) {
+            m_batchesCount = m_batchBuffer->size() / (m_material->m_uniformSize + m_skinSize);
+        } else {
+            m_batchesCount = 0;
+        }
+        m_localDirty = true;
     }
 }
 /*!
@@ -635,6 +629,6 @@ void Material::initInstance(MaterialInstance *instance) {
             instance->overrideTexture(it.binding, it.texture);
         }
 
-        instance->setTransform(Matrix4());
+        instance->setTransform(Matrix4(), 0, uuid()); // we faking hash to let matrix in
     }
 }

@@ -9,6 +9,8 @@
 #include <commandbuffer.h>
 #include <pipelinecontext.h>
 
+#include <cstring>
+
 namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
@@ -95,18 +97,26 @@ void Image::draw(CommandBuffer &buffer) {
     mat[12] -= verts[0].x * scl.x;
     mat[13] -= verts[0].y * scl.y;
 
-    m_material->setTransform(mat);
+    if(m_material) {
+        uint32_t coords[2];
+        memcpy(coords, &mat[12], sizeof(float) * 2);
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, coords[0]);
+        Mathf::hashCombine(hash, coords[1]);
 
-    if(m_dirtyMaterial && m_material) {
-        m_material->setVector4(gColor, &m_color);
-        if(m_sprite) {
-            m_material->setTexture(gOverride, m_sprite->texture());
-        } else {
-            m_material->setTexture(gOverride, m_texture);
+        m_material->setTransform(mat, 0, hash);
+
+        if(m_dirtyMaterial) {
+            m_material->setVector4(gColor, &m_color);
+            if(m_sprite) {
+                m_material->setTexture(gOverride, m_sprite->texture());
+            } else {
+                m_material->setTexture(gOverride, m_texture);
+            }
         }
-    }
 
-    buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+    }
 
     Widget::draw(buffer);
 }

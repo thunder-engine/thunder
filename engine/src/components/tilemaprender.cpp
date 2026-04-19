@@ -2,7 +2,6 @@
 
 #include "resources/tilemap.h"
 #include "resources/tileset.h"
-#include "resources/sprite.h"
 #include "resources/mesh.h"
 
 namespace {
@@ -94,7 +93,6 @@ void TileMapRender::setMaterial(Material *material) {
             for(auto it : m_materials) {
                 it->setTexture(gTexture, texture);
                 it->setVector4(gColor, &color);
-                it->setTransform(transform());
             }
         }
     }
@@ -125,7 +123,6 @@ void TileMapRender::setMaterialsList(const std::list<Material *> &materials) {
     Vector4 color(1.0f);
     for(auto it : m_materials) {
         it->setVector4(gColor, &color);
-        it->setTransform(transform());
     }
 }
 /*!

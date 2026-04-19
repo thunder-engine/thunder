@@ -299,8 +299,7 @@ public:
 
     void setTexture(const TString &name, Texture *texture);
 
-    void setTransform(Transform *transform);
-    void setTransform(const Matrix4 &transform);
+    void setTransform(const Matrix4 &transform, uint32_t uuid, uint32_t hash);
 
     int32_t finalPriority() const;
 
@@ -334,8 +333,6 @@ protected:
 
     Material *m_material;
 
-    Transform *m_transform;
-
     uint32_t m_instanceCount;
     uint32_t m_batchesCount;
 
@@ -346,6 +343,8 @@ protected:
     uint32_t m_skinSize;
 
     uint16_t m_surfaceType;
+
+    bool m_localDirty;
 
 };
 

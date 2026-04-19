@@ -42,7 +42,6 @@ void ShadowMap::exec() {
     buffer->beginDebugMarker("ShadowMap");
     cleanShadowCache();
 
-    RenderList &components = m_context->sceneRenderables();
     for(auto &it : m_context->sceneLights()) {
         auto instance = it->material();
         if(instance) {
@@ -88,7 +87,9 @@ void ShadowMap::lightUpdate(BaseLight *light, int count) {
 
             // Draw in the depth buffer from position of the light source
             for(auto &it : groups) {
-                it.instance->setInstanceBuffer(&it.buffer);
+                if(it.count > 1) {
+                    it.instance->setInstanceBuffer(&it.buffer);
+                }
                 buffer->drawMesh(it.mesh, it.subMesh, Material::Shadowcast, *it.instance);
                 it.instance->setInstanceBuffer(nullptr);
             }

@@ -22,8 +22,7 @@ GuiLayer::GuiLayer() {
 void GuiLayer::analyze(World *world) {
     m_uiComponents.clear();
 
-    bool update = world->isToBeUpdated();
-
+    bool update = world->isActive();
     for(auto it : UiSystem::widgets()) {
         if(it->isEnabled()) {
             Actor *actor = it->actor();

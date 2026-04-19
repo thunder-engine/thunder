@@ -57,7 +57,7 @@ private:
                     m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
                     m.mat[13] = 1.0f - height * 0.5f;
                 }
-                it.second->setTransform(m);
+                it.second->setTransform(m, 0, i);
 
                 buffer->drawMesh(m_mesh, 0, Material::Opaque, *it.second);
                 i++;

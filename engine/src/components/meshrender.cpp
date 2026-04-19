@@ -1,5 +1,7 @@
 #include "components/meshrender.h"
 
+#include "components/transform.h"
+
 #include "resources/material.h"
 
 #include "pipelinecontext.h"
@@ -14,8 +16,7 @@
 */
 
 MeshRender::MeshRender() :
-        m_mesh(nullptr),
-        m_dirtyMaterial(true) {
+        m_mesh(nullptr) {
 
 }
 MeshRender::~MeshRender() {
@@ -29,29 +30,6 @@ MeshRender::~MeshRender() {
 Mesh *MeshRender::meshToDraw(int instance) {
     A_UNUSED(instance);
     return m_mesh;
-}
-/*!
-    \internal
-*/
-MaterialInstance *MeshRender::materialInstance(int index) {
-    if(m_dirtyMaterial) {
-        for(auto it : m_materials) {
-            if(it) {
-                it->setTransform(transform());
-            }
-        }
-        m_dirtyMaterial = false;
-    }
-
-    return Renderable::materialInstance(index);
-}
-/*!
-    \internal
-*/
-void MeshRender::setMaterialsList(const std::list<Material *> &materials) {
-    Renderable::setMaterialsList(materials);
-
-    m_dirtyMaterial = true;
 }
 /*!
     \internal

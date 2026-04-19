@@ -161,7 +161,7 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, planeScale));
+        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, t->hash());
         m_grid->setBool("ortho", &ortho);
         m_grid->setInteger("scale", &m_scale);
         m_grid->setFloat("width", &zoom);

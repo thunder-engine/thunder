@@ -26,7 +26,9 @@ void Translucent::exec() {
         buffer->setRenderTarget(m_translucentPass);
 
         for(auto &it : m_translucent) {
-            it.instance->setInstanceBuffer(&it.buffer);
+            if(it.count > 1) {
+                it.instance->setInstanceBuffer(&it.buffer);
+            }
             buffer->drawMesh(it.mesh, it.subMesh, Material::Translucent, *it.instance);
             it.instance->setInstanceBuffer(nullptr);
         }

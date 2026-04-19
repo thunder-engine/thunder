@@ -27,11 +27,7 @@ public:
     VariantList materials() const;
     void setMaterials(VariantList list);
 
-    MaterialInstance *materialInstance(int index) override;
-
 protected:
-    void setMaterialsList(const std::list<Material *> &materials) override;
-
     AABBox localBound() override;
 
     Mesh *meshToDraw(int instance) override;
@@ -42,8 +38,6 @@ protected:
 
 protected:
     Mesh *m_mesh;
-
-    bool m_dirtyMaterial;
 
 };
 

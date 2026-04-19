@@ -18,9 +18,11 @@ public:
 
     uint32_t drawsCount() const;
 
-    bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, const Global &global);
+    bool bind(CommandBufferGL *buffer, uint32_t layer, uint32_t index, uint32_t globalBuffer);
 
 private:
+    void copyLocalData(uint32_t index, uint32_t program, int32_t instanceLocation);
+
     static void setBlendState(const Material::BlendState &state);
 
     static void setRasterState(const Material::RasterState &state);
@@ -37,8 +39,6 @@ private:
     Material::StencilState m_glStencilState;
 
     uint32_t m_instanceBuffer;
-    uint32_t m_globalBuffer;
-
 };
 
 class MaterialGL : public Material {

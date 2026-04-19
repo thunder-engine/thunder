@@ -40,6 +40,7 @@ CameraController::CameraController() :
         m_blockMoveOnTransfer(false),
         m_blockRotation(false),
         m_blockPicking(false),
+        m_blockPickingBack(false),
         m_overlapPicking(false),
         m_cameraFree(true),
         m_cameraInMove(false) {
@@ -112,6 +113,7 @@ void CameraController::update() {
 
     if(Input::isMouseButtonUp(Input::MOUSE_RIGHT) || Input::isMouseButtonUp(Input::MOUSE_MIDDLE)) {
         m_cameraInMove = false;
+        m_blockPicking = m_blockPickingBack;
     }
 
     // Mouse control
@@ -132,6 +134,8 @@ void CameraController::update() {
 
                 if(m_mouseSaved != p) {
                     m_cameraInMove = true;
+                    m_blockPickingBack = m_blockPicking;
+                    m_blockPicking = true;
                 }
                 m_mouseSaved = p;
             }

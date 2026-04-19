@@ -20,31 +20,21 @@ World::World() :
         m_rayCastSystem(nullptr),
         m_activeScene(nullptr),
         m_gameController(nullptr),
-        m_dirty(true),
         m_update(false) {
 
 }
 /*!
-    Returns in case of scene must be updated in the current frame; otherwise returns false.
+    Returns in case of world is active and must be updated in the current frame; otherwise returns false.
 */
-bool World::isToBeUpdated() {
+bool World::isActive() {
     return m_update;
 }
 /*!
-    Sets an update \a flag.
+    Sets an active \a flag.
+    For active worlds engine launches the simulation.
 */
-void World::setToBeUpdated(bool flag) {
+void World::setActive(bool flag) {
     m_update = flag;
-    if(!m_update && m_dirty) {
-        graphUpdated();
-        m_dirty = false;
-    }
-}
-/*!
-    Marks World as dirty. Mainly used to detect scene graph configuration changes.
-*/
-void World::makeDirty() {
-    m_dirty = true;
 }
 /*!
     Create an empty new Scene at runtime with the given \a name.
