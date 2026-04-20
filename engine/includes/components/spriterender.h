@@ -63,7 +63,7 @@ public:
     MaterialInstance *materialInstance(int index) override;
 
 private:
-    Mesh *meshToDraw(int instance) override;
+    Mesh *meshToDraw() override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;
 

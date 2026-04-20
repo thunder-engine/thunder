@@ -33,8 +33,7 @@ TileMapRender::~TileMapRender() {
     }
 }
 
-Mesh *TileMapRender::meshToDraw(int instance) {
-    A_UNUSED(instance);
+Mesh *TileMapRender::meshToDraw() {
     return m_tileMap ? m_tileMap->tileMesh() : nullptr;
 }
 /*!

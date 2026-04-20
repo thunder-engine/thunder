@@ -1,7 +1,5 @@
 #include "components/spriterender.h"
 
-#include "components/transform.h"
-
 #include "resources/material.h"
 #include "resources/mesh.h"
 #include "resources/sprite.h"
@@ -58,7 +56,7 @@ SpriteRender::~SpriteRender() {
 /*!
     \internal
 */
-Mesh *SpriteRender::meshToDraw(int instance) {
+Mesh *SpriteRender::meshToDraw() {
     if(m_dirtyMesh) {
         m_useCustom = false;
         if(m_sprite) {
@@ -94,7 +92,6 @@ MaterialInstance *SpriteRender::materialInstance(int index) {
             if(it) {
                 it->setTexture(gTexture, texture());
                 it->setVector4(gColor, &m_color);
-                it->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
                 it->setPriority(m_priority);
             }
         }
@@ -107,7 +104,7 @@ MaterialInstance *SpriteRender::materialInstance(int index) {
     \internal
 */
 AABBox SpriteRender::localBound() {
-    Mesh *mesh = meshToDraw(0);
+    Mesh *mesh = meshToDraw();
     if(mesh) {
         return mesh->bound();
     }

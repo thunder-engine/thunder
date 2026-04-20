@@ -72,16 +72,10 @@ bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection)
     return true;
 }
 /*!
-    Returns a mesh which will be drawn for the particular material \a instance.
+    Returns a mesh which will be drawn.
 */
-Mesh *Renderable::meshToDraw(int instance) {
+Mesh *Renderable::meshToDraw() {
     return nullptr;
-}
-/*!
-    Returns a sub mesh index which will be drawn for the particular material \a instance.
-*/
-uint32_t Renderable::subMesh(int instance) const {
-    return instance;
 }
 /*!
     Returns a first instantiated Material assigned to this Renderable.
@@ -117,14 +111,12 @@ int32_t Renderable::materialsCount() const {
     Returns a Material instance with \a index assigned to this Renderable.
 */
 MaterialInstance *Renderable::materialInstance(int index) {
-    for(auto it : m_materials) {
-        if(it) {
-            it->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
-        }
-    }
-
     if(m_materials.size() > index) {
-        return m_materials[index];
+        MaterialInstance *instance = m_materials[index];
+        if(instance) {
+            instance->setTransform(transform()->worldTransform(), actor()->uuid(), transform()->hash());
+        }
+        return instance;
     }
     return nullptr;
 }
@@ -167,15 +159,15 @@ void Renderable::setSystem(ObjectSystem *system) {
 */
 void Renderable::filterByLayer(const RenderList &in, GroupList &out, int layer) {
     for(auto it : in) {
-        for(int i = 0; i < it->materialsCount(); i++) {
-            MaterialInstance *instance = it->materialInstance(i);
-            if(instance && instance->material()->layers() & layer) {
-                Mesh *mesh = it->meshToDraw(i);
-                if(mesh) {
+        Mesh *mesh = it->meshToDraw();
+        if(mesh) {
+            for(uint32_t i = 0; i < mesh->subMeshCount(); i++) {
+                MaterialInstance *instance = it->materialInstance(i);
+                if(instance && instance->material()->layers() & layer) {
                     uint32_t hash = instance->hash();
                     Mathf::hashCombine(hash, mesh->uuid());
 
-                    out.push_back({instance, mesh, it->subMesh(i), hash});
+                    out.push_back({instance, mesh, i, hash});
                 }
             }
         }

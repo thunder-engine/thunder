@@ -60,8 +60,8 @@ void EffectRender::deltaUpdate(float dt) {
 /*!
     \internal
 */
-Mesh *EffectRender::meshToDraw(int instance) {
-    return m_effect ? m_effect->renderable(instance)->mesh : nullptr;
+Mesh *EffectRender::meshToDraw() {
+    return m_effect ? m_effect->renderable(0)->mesh : nullptr;
 }
 /*!
     Returns a ParticleEffect assigned to the this component.

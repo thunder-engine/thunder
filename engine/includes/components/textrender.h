@@ -65,7 +65,7 @@ public:
 private:
     MaterialInstance *materialInstance(int index) override;
 
-    Mesh *meshToDraw(int instance) override;
+    Mesh *meshToDraw() override;
 
     AABBox localBound() override;
 
