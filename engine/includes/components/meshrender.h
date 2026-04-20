@@ -30,7 +30,7 @@ public:
 protected:
     AABBox localBound() override;
 
-    Mesh *meshToDraw(int instance) override;
+    Mesh *meshToDraw() override;
 
     void drawGizmosSelected() override;
 
