@@ -13,8 +13,6 @@
 #include <cmath>
 #include <cstring>
 
-#define MAX_SAMPLES 32
-
 namespace {
     const char *gBloom("g.bloom");
     const char *gBloomThreshold("bloom/Threshold");
@@ -25,22 +23,40 @@ namespace {
     const char *gSteps("steps");
     const char *gCurve("curve");
     const char *gSize("size");
+
     const char *gThreshold("threshold");
+    const char *gLod("lod");
 };
 
 Bloom::Bloom() :
         m_resultTarget(Engine::objectCreate<RenderTarget>("bloomResultTarget")),
         m_blurTempTarget(Engine::objectCreate<RenderTarget>("blurTempTarget")),
-        m_blurTempTexture(Engine::objectCreate<Texture>("blurTempTexture")),
-        m_threshold(1.0f) {
+        m_downTarget(Engine::objectCreate<RenderTarget>("downSampleTarget")),
+        m_downTexture(Engine::objectCreate<Texture>("downSampleTexture")),
+        m_blurTempTexture(Engine::objectCreate<Texture>("blurTempTexture")) {
 
     setName("Bloom");
 
-    PostProcessSettings::registerSetting(gBloomThreshold, m_threshold);
+    PostProcessSettings::registerSetting(gBloomThreshold, 1.0f);
 
     Engine::setValue(gBloom, true);
 
-    Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
+    m_downTexture->setFormat(Texture::RGB10A2);
+    m_downTexture->setFiltering(Texture::Bilinear);
+    m_downTexture->setFlags(Texture::Render);
+
+    m_downTarget->setColorAttachment(0, m_downTexture);
+
+    Material *bloomThreshold = Engine::loadResource<Material>(".embedded/BloomThreshold.shader");
+    if(bloomThreshold) {
+        m_thresholdMaterial = bloomThreshold->createInstance();
+    }
+
+    Material *downSample = Engine::loadResource<Material>(".embedded/Downsample.shader");
+    if(downSample) {
+        m_downMaterial = downSample->createInstance();
+        m_downMaterial->setTexture(gRgbMap, m_downTexture);
+    }
 
     m_blurTempTexture->setFormat(Texture::RGB10A2);
     m_blurTempTexture->setFiltering(Texture::Bilinear);
@@ -49,55 +65,34 @@ Bloom::Bloom() :
     m_blurTempTarget->setColorAttachment(0, m_blurTempTexture);
     m_blurTempTarget->setClearFlags(RenderTarget::ClearColor);
 
+    Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
     if(blur) {
-        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            Vector2 direction;
-
-            m_bloomPasses[i].blurMaterialH = blur->createInstance();
-
-            direction.x = 1.0f;
-            direction.y = 0.0f;
-            m_bloomPasses[i].blurMaterialH->setVector2(gDirection, &direction);
-            m_bloomPasses[i].blurMaterialH->setFloat(gThreshold, &m_threshold);
-
-            m_bloomPasses[i].blurMaterialV = blur->createInstance();
-
-            direction.x = 0.0f;
-            direction.y = 1.0f;
-            m_bloomPasses[i].blurMaterialV->setVector2(gDirection, &direction);
-            m_bloomPasses[i].blurMaterialV->setTexture(gRgbMap, m_blurTempTexture);
-        }
+        m_blurMaterial = blur->createInstance();
     }
 
-    m_bloomPasses[0].blurSize = 1.0f;
-    m_bloomPasses[1].blurSize = 4.0f;
-    m_bloomPasses[2].blurSize = 16.0f;
-    m_bloomPasses[3].blurSize = 32.0f;
-    m_bloomPasses[4].blurSize = 64.0f;
-
     m_inputs.push_back("In");
-    m_inputs.push_back("Downsample 1/2");
-    m_inputs.push_back("Downsample 1/4");
-    m_inputs.push_back("Downsample 1/8");
-    m_inputs.push_back("Downsample 1/16");
-    m_inputs.push_back("Downsample 1/32");
 
     m_outputs.push_back(std::make_pair("Result", nullptr));
 }
 
 Bloom::~Bloom() {
-    for(int i = 0; i < BLOOM_PASSES; i++) {
-        delete m_bloomPasses[i].blurMaterialH;
-        delete m_bloomPasses[i].blurMaterialV;
-    }
+    delete m_thresholdMaterial;
+    delete m_downMaterial;
+    delete m_blurMaterial;
 
     m_resultTarget->deleteLater();
     m_blurTempTarget->deleteLater();
+    m_downTarget->deleteLater();
 
+    m_downTexture->deleteLater();
     m_blurTempTexture->deleteLater();
 }
 
 void Bloom::exec() {
+    if(m_mipLevels == 0) {
+        return;
+    }
+
     CommandBuffer *buffer = m_context->buffer();
 
     float threshold = PostProcessSettings::defaultValue(gBloomThreshold).toFloat();
@@ -107,21 +102,49 @@ void Bloom::exec() {
             threshold = MIX(threshold, value.toFloat(), pool.second);
         }
     }
-    if(threshold != m_threshold) {
-        m_threshold = threshold;
-        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            m_bloomPasses[i].blurMaterialV->setFloat(gThreshold, &m_threshold);
-        }
-    }
 
     buffer->beginDebugMarker("Bloom");
 
-    for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-        buffer->setRenderTarget(m_blurTempTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_bloomPasses[i].blurMaterialH);
+    buffer->setViewport(0, 0, m_width, m_height);
 
+    buffer->setRenderTarget(m_downTarget);
+
+    m_thresholdMaterial->setFloat(gThreshold, &threshold);
+    buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_thresholdMaterial);
+
+    for(uint8_t i = 1; i < m_mipLevels; i++) {
+        buffer->setViewport(0, 0, (m_width >> i), (m_height >> i));
+
+        buffer->setRenderTarget(m_downTarget, i);
+        float lod = i-1;
+        m_downMaterial->setFloat(gLod, &lod);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_downMaterial);
+    }
+
+    Vector2 direction;
+    for(uint8_t i = m_mipLevels-1; i >= 1; i--) {
+        buffer->setViewport(0, 0, (m_width >> i), (m_height >> i));
+        buffer->setRenderTarget(m_blurTempTarget, i);
+
+        float lod = i;
+        m_blurMaterial->setFloat(gLod, &lod);
+        m_blurMaterial->setInteger(gSteps, &m_bloomPasses[i].steps);
+        m_blurMaterial->setFloat(gCurve, m_bloomPasses[i].blurPoints);
+
+        direction.x = 1.0f;
+        direction.y = 0.0f;
+        m_blurMaterial->setVector2(gDirection, &direction);
+        m_blurMaterial->setTexture(gRgbMap, m_downTexture);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blurMaterial);
+
+        buffer->setViewport(0, 0, m_width, m_height);
         buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_bloomPasses[i].blurMaterialV);
+
+        direction.x = 0.0f;
+        direction.y = 1.0f;
+        m_blurMaterial->setVector2(gDirection, &direction);
+        m_blurMaterial->setTexture(gRgbMap, m_blurTempTexture);
+        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blurMaterial);
     }
 
     buffer->endDebugMarker();
@@ -131,22 +154,24 @@ void Bloom::resize(int32_t width, int32_t height) {
     if(m_width != width || m_height != height) {
         Vector2 size(1.0f / (float)width, 1.0f / (float)height);
 
+        m_mipLevels = std::log2(std::min(width, height));
+        m_bloomPasses.resize(m_mipLevels);
+
+        m_blurTempTexture->setMipCount(m_mipLevels);
         m_blurTempTexture->resize(width, height);
 
-        for(uint8_t i = 0; i < BLOOM_PASSES; i++) {
-            float radius = MAX((width >> i), 1) * m_bloomPasses[i].blurSize * 2.0f * 0.01f;
-            int32_t steps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
+        m_downTexture->setMipCount(m_mipLevels);
+        m_downTexture->resize(width, height);
 
-            float blurPoints[MAX_SAMPLES];
-            generateKernel(radius, steps, blurPoints);
+        for(uint8_t i = 0; i < m_mipLevels; i++) {
+            float blurSize = (1<<i);
 
-            m_bloomPasses[i].blurMaterialH->setInteger(gSteps, &steps);
-            m_bloomPasses[i].blurMaterialH->setFloat(gCurve, blurPoints);
-            m_bloomPasses[i].blurMaterialH->setVector2(gSize, &size);
+            float radius = MAX((width >> i), 1) * blurSize * 2.0f * 0.01f;
+            m_bloomPasses[i].steps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
 
-            m_bloomPasses[i].blurMaterialV->setInteger(gSteps, &steps);
-            m_bloomPasses[i].blurMaterialV->setFloat(gCurve, blurPoints);
-            m_bloomPasses[i].blurMaterialV->setVector2(gSize, &size);
+            generateKernel(radius, m_bloomPasses[i].steps, m_bloomPasses[i].blurPoints);
+
+            m_blurMaterial->setVector2(gSize, &size);
         }
     }
 
@@ -155,10 +180,10 @@ void Bloom::resize(int32_t width, int32_t height) {
 
 void Bloom::setInput(int index, Texture *source) {
     if(index == 0) {
+        m_thresholdMaterial->setTexture(gRgbMap, source);
+
         m_outputs.front().second = source;
         m_resultTarget->setColorAttachment(0, source);
-    } else {
-        m_bloomPasses[index - 1].blurMaterialH->setTexture(gRgbMap, source);
     }
 }
 

@@ -75,6 +75,7 @@ Texture::Texture() :
         m_width(1),
         m_height(1),
         m_depth(1),
+        m_mips(1),
         m_depthBits(0),
         m_flags(0) {
 
@@ -98,6 +99,7 @@ void Texture::loadUserData(const VariantMap &data) {
             for(auto &l : s.value<VariantList>()) {
                 surface.push_back(l.toByteArray());
             }
+            m_mips = surface.size();
             addSurface(surface);
         }
     }
@@ -131,7 +133,13 @@ int Texture::sides() const {
     Returns the number of MIP levels.
 */
 int Texture::mipCount() const {
-    return m_sides.empty() ? 1 : m_sides.front().size();
+    return m_mips;
+}
+/*!
+    Sets the number of MIP \a levels.
+*/
+void Texture::setMipCount(int levels) {
+    m_mips = levels;
 }
 /*!
     Returns a surface for the provided \a side.

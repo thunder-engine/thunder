@@ -206,13 +206,6 @@ void NodeWidget::composePort(NodePort &port) {
             portWidget->setNodePort(&port);
 
             if(port.m_call) {
-                if(port.m_out) {
-                    portRect->setMinAnchors(Vector2(0.5f, 1.0f));
-                } else {
-                    portRect->setMaxAnchors(Vector2(0.5f, 1.0f));
-                }
-                portRect->setPivot(Vector2(0.0f, 0.5f));
-
                 if(m_callRect) {
                     Layout *layout = m_callRect->layout();
                     if(port.m_out) {
@@ -221,13 +214,21 @@ void NodeWidget::composePort(NodePort &port) {
                         layout->insertTransform(0, portRect);
                     }
                 } else {
-                    Actor *callPannel = Engine::composeActor<Widget>("CallPannel");
-                    m_callRect = dynamic_cast<RectTransform *>(callPannel->transform());
-                    if(m_callRect) {
-                        Layout *layout = new Layout;
-                        layout->setOrientation(Widget::Horizontal);
-                        layout->addTransform(portRect);
-                        m_callRect->setLayout(layout);
+                    Actor *callPannel = Engine::composeActor<Widget>("CallPannel", actor());
+                    Widget *callWidget = callPannel->getComponent<Widget>();
+                    if(callWidget) {
+                        m_callRect = callWidget->rectTransform();
+                        if(m_callRect) {
+                            m_callRect->setSize(Vector2(0, row));
+                            m_callRect->setHorizontalPolicy(RectTransform::Expanding);
+                            m_callRect->setVerticalPolicy(RectTransform::Fixed);
+
+                            Layout *layout = new Layout;
+                            layout->setOrientation(Widget::Horizontal);
+                            m_callRect->setLayout(layout);
+
+                            layout->addTransform(portRect);
+                        }
                     }
                 }
             }

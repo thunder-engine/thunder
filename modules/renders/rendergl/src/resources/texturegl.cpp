@@ -173,7 +173,8 @@ void TextureGL::destroyTexture() {
 
 bool TextureGL::uploadTexture(uint32_t imageIndex, uint32_t target, uint32_t internal, uint32_t format, uint32_t type) {
     if(isRender()) {
-        glTexImage2D(target, 0, internal, m_width, m_height, 0, format, type, nullptr);
+        glTexStorage2D(target, m_mips, internal, m_width, m_height);
+        //glTexImage2D(target, 0, internal, m_width, m_height, 0, format, type, nullptr);
     } else {
         const Surface &image = surface(imageIndex);
         if(m_compress != Uncompressed) {

@@ -4,8 +4,8 @@
         <property name="direction" type="vec2" />
         <property name="size" type="vec2" />
         <property name="curve" type="vec4" count="8" />
+        <property name="lod" type="float" />
         <property name="steps" type="int" />
-        <property name="threshold" type="float" />
         <property name="rgbMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
@@ -28,15 +28,15 @@ layout(location = 0) out vec4 rgb;
 void main(void) {
 #pragma instance
 
-    vec4 sum = texture(rgbMap, _uv0) * curve[0].x;
+    vec4 sum = textureLod(rgbMap, _uv0, lod) * curve[0].x;
     for(int i = 1; i < steps; i++) {
         vec2 offset = vec2(float(i)) * size * direction;
         int r = i / 4;
-        int b = int(mod(4, i));
-        sum += texture(rgbMap, _uv0 - offset) * curve[r][b];
-        sum += texture(rgbMap, _uv0 + offset) * curve[r][b];
+        int b = i % 4;
+        sum += textureLod(rgbMap, _uv0 - offset, lod) * curve[r][b];
+        sum += textureLod(rgbMap, _uv0 + offset, lod) * curve[r][b];
     }
-    rgb = max(sum - threshold, 0.0);
+    rgb = sum;
 }
 ]]></fragment>
     <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false">

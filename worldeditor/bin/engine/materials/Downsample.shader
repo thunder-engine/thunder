@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <shader version="14">
     <properties>
+        <property name="lod" type="float" />
         <property name="rgbMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
@@ -8,7 +9,7 @@
 
 #pragma flags
 
-#define NO_INSTANCE
+const int _instanceOffset = 0;
 
 #include "ShaderLayout.h"
 
@@ -21,10 +22,13 @@ layout(location = 2) in vec4 _color;
 layout(location = 0) out vec4 color;
 
 void main(void) {
-    color = texture(rgbMap, _uv0 + screenSizeNorm() * vec2( 0.5f, 0.5f)) +
-            texture(rgbMap, _uv0 + screenSizeNorm() * vec2(-0.5f,-0.5f)) +
-            texture(rgbMap, _uv0 + screenSizeNorm() * vec2( 0.5f,-0.5f)) +
-            texture(rgbMap, _uv0 + screenSizeNorm() * vec2(-0.5f, 0.5f));
+#pragma instance
+
+    vec2 texelSize = screenSizeNorm();
+    color = textureLod(rgbMap, _uv0 + texelSize * vec2( 0.5f, 0.5f), lod) +
+            textureLod(rgbMap, _uv0 + texelSize * vec2(-0.5f,-0.5f), lod) +
+            textureLod(rgbMap, _uv0 + texelSize * vec2( 0.5f,-0.5f), lod) +
+            textureLod(rgbMap, _uv0 + texelSize * vec2(-0.5f, 0.5f), lod);
 
     color *= 0.25f;
 }
