@@ -34,6 +34,9 @@ public:
     int clearFlags() const;
     void setClearFlags(int flags);
 
+    const Vector4 &clearColor() const;
+    void setClearColor(const Vector4 &color);
+
     void renderArea(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const;
     void setRenderArea(int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -43,6 +46,8 @@ protected:
 
 private:
     std::vector<Texture *> m_color;
+
+    Vector4 m_clearColor;
 
     Texture *m_depth;
 

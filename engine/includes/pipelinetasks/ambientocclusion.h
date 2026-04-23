@@ -16,19 +16,14 @@ public:
     ~AmbientOcclusion();
 
 private:
+    void analyze(World *world) override;
     void exec() override;
 
     void resize(int32_t width, int32_t height) override;
 
-    void setInput(int index, Texture *texture) override;
-
-    void setContext(PipelineContext *context) override;
+    void setEnabled(bool enable) override;
 
 protected:
-    float m_radius;
-    float m_bias;
-    float m_power;
-
     Texture *m_noiseTexture;
     Texture *m_aoTexture;
     Texture *m_blurTexture;
@@ -39,6 +34,11 @@ protected:
     MaterialInstance *m_occlusion;
     MaterialInstance *m_blur;
 
+    float m_radius;
+    float m_bias;
+    float m_power;
+
+    bool m_toDisable;
 };
 
 #endif // AMBIENTOCCLUSION_H

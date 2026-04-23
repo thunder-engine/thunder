@@ -19,20 +19,21 @@ namespace {
 };
 
 AmbientOcclusion::AmbientOcclusion() :
-        m_radius(0.2f),
-        m_bias(0.025f),
-        m_power(2.0f),
         m_noiseTexture(Engine::objectCreate<Texture>("aoNoiseTexture")),
         m_aoTexture(Engine::objectCreate<Texture>("aoOcclusion")),
         m_blurTexture(Engine::objectCreate<Texture>("aoBlur")),
         m_aoTarget(Engine::objectCreate<RenderTarget>("aoTarget")),
         m_blurTarget(Engine::objectCreate<RenderTarget>("aoBlurTarget")),
         m_occlusion(nullptr),
-        m_blur(nullptr) {
+        m_blur(nullptr),
+        m_radius(0.2f),
+        m_bias(0.025f),
+        m_power(2.0f),
+        m_toDisable(false) {
 
     setName("AmbientOcclusion");
 
-    Engine::setValue(gAmbientOcclusion, true);
+    Engine::setValue(gAmbientOcclusion, m_enabled);
 
     PostProcessSettings::registerSetting(gAmbientRadius, m_radius);
     PostProcessSettings::registerSetting(gAmbientBias, m_bias);
@@ -55,7 +56,7 @@ AmbientOcclusion::AmbientOcclusion() :
         //ptr[i].normalize();
     }
 
-    m_aoTexture->setFormat(Texture::RGBA8);
+    m_aoTexture->setFormat(Texture::R8);
     m_aoTexture->setFlags(Texture::Render);
 
     m_aoTarget->setColorAttachment(0, m_aoTexture);
@@ -64,6 +65,8 @@ AmbientOcclusion::AmbientOcclusion() :
     m_blurTexture->setFlags(Texture::Render);
 
     m_blurTarget->setColorAttachment(0, m_blurTexture);
+    m_blurTarget->setClearFlags(RenderTarget::ClearColor);
+    m_blurTarget->setClearColor(Vector4(1.0f));
 
     {
         Material *material = Engine::loadResource<Material>(".embedded/SSAO.shader");
@@ -111,15 +114,23 @@ AmbientOcclusion::~AmbientOcclusion() {
     m_blurTarget->deleteLater();
 }
 
-void AmbientOcclusion::exec() {
-    CommandBuffer *buffer = m_context->buffer();
-
+void AmbientOcclusion::analyze(World *world) {
     float radius = PostProcessSettings::defaultValue(gAmbientRadius).toFloat();
+    float bias = PostProcessSettings::defaultValue(gAmbientBias).toFloat();
+    float power = PostProcessSettings::defaultValue(gAmbientPower).toFloat();
     for(auto pool : m_context->culledPostEffectSettings()) {
         const PostProcessSettings *settings = pool.first;
-        Variant value = settings->readValue(gAmbientRadius);
-        if(value.isValid()) {
-            radius = MIX(m_radius, value.toFloat(), pool.second);
+        Variant radiusValue = settings->readValue(gAmbientRadius);
+        if(radiusValue.isValid()) {
+            radius = MIX(m_radius, radiusValue.toFloat(), pool.second);
+        }
+        Variant biasValue = settings->readValue(gAmbientBias);
+        if(biasValue.isValid()) {
+            bias = MIX(bias, biasValue.toFloat(), pool.second);
+        }
+        Variant powerValue = settings->readValue(gAmbientPower);
+        if(powerValue.isValid()) {
+            power = MIX(power, powerValue.toFloat(), pool.second);
         }
     }
     if(radius != m_radius) {
@@ -128,26 +139,10 @@ void AmbientOcclusion::exec() {
             m_occlusion->setFloat("radius", &m_radius);
         }
     }
-
-    float bias = PostProcessSettings::defaultValue(gAmbientBias).toFloat();
-    for(auto pool : m_context->culledPostEffectSettings()) {
-        Variant value = pool.first->readValue(gAmbientBias);
-        if(value.isValid()) {
-            bias = MIX(bias, value.toFloat(), pool.second);
-        }
-    }
-    if(bias != m_radius) {
+    if(bias != m_bias) {
         m_bias = bias;
         if(m_occlusion) {
             m_occlusion->setFloat("bias", &m_bias);
-        }
-    }
-
-    float power = PostProcessSettings::defaultValue(gAmbientPower).toFloat();
-    for(auto pool : m_context->culledPostEffectSettings()) {
-        Variant value = pool.first->readValue(gAmbientPower);
-        if(value.isValid()) {
-            power = MIX(power, value.toFloat(), pool.second);
         }
     }
     if(power != m_power) {
@@ -156,21 +151,28 @@ void AmbientOcclusion::exec() {
             m_occlusion->setFloat("power", &m_power);
         }
     }
+}
+
+void AmbientOcclusion::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("AmbientOcclusion");
 
-    if(m_occlusion) {
-        buffer->setViewport(0, 0, m_aoTexture->width(), m_aoTexture->height());
-
-        buffer->setRenderTarget(m_aoTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_occlusion);
-    }
-
-    if(m_blur) {
-        buffer->setViewport(0, 0, m_blurTexture->width(), m_blurTexture->height());
-
+    buffer->setViewport(0, 0, m_aoTexture->width(), m_aoTexture->height());
+    if(m_toDisable) {
         buffer->setRenderTarget(m_blurTarget);
-        buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blur);
+        m_enabled = false;
+        m_toDisable = false;
+    } else {
+        if(m_occlusion) {
+            buffer->setRenderTarget(m_aoTarget);
+            buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_occlusion);
+        }
+
+        if(m_blur) {
+            buffer->setRenderTarget(m_blurTarget);
+            buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blur);
+        }
     }
 
     buffer->endDebugMarker();
@@ -180,14 +182,13 @@ void AmbientOcclusion::resize(int32_t width, int32_t height) {
     PipelineTask::resize(width, height);
 
     m_aoTexture->resize(width, height);
+    m_blurTexture->resize(width, height);
 }
 
-void AmbientOcclusion::setInput(int index, Texture *texture) {
-    m_outputs.front().second = texture;
-}
-
-void AmbientOcclusion::setContext(PipelineContext *context) {
-    PipelineTask::setContext(context);
-
-    m_context->addTextureBuffer(m_aoTexture);
+void AmbientOcclusion::setEnabled(bool enable) {
+    if(!enable) {
+        m_toDisable = true;
+    } else {
+        m_enabled = enable;
+    }
 }

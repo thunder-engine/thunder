@@ -78,7 +78,8 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
             uint32_t flags = 0;
             if(clearFlags & RenderTarget::ClearColor) {
                 flags |= GL_COLOR_BUFFER_BIT;
-                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                const Vector4 &c = t->clearColor();
+                glClearColor(c.x, c.y, c.z, c.w);
             }
             if(clearFlags & RenderTarget::ClearDepth) {
                 glDepthMask(GL_TRUE);

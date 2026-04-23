@@ -29,7 +29,7 @@ layout(location = 0) in vec4 _vertex;
 layout(location = 1) in vec2 _uv0;
 layout(location = 2) flat in mat4 _projectionInv;
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out float color;
 
 void main(void) {
 #pragma instance
@@ -66,11 +66,11 @@ void main(void) {
                 float rangeCheck = smoothstep(0.0f, 1.0f, radius / abs(viewPos.z - sampleDepth));
                 ssao += step(samp.z + bias, sampleDepth) * rangeCheck;
             }
-            color = vec4(vec3(1.0f - ssao / MAX_SAMPLE_COUNT), 1.0f);
+            color = 1.0f - ssao / MAX_SAMPLE_COUNT;
             return;
         }
     }
-    color = vec4(1.0f);
+    color = 1.0f;
 }
 ]]></fragment>
     <vertex><![CDATA[
