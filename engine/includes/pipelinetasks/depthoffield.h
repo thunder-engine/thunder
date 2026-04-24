@@ -14,14 +14,32 @@ public:
     ~DepthOfField();
 
 private:
+    void analyze(World *world) override;
+
     void exec() override;
+
+    void resize(int32_t width, int32_t height) override;
 
     void setInput(int index, Texture *texture) override;
 
-private:
-    Texture *m_resultTexture;
+    void generateKernel(float radius, int32_t steps, float *points);
 
-    RenderTarget *m_resultTarget;
+private:
+    Texture *m_downTexture = nullptr;
+
+    Texture *m_blurTexture = nullptr;
+
+    Texture *m_resultTexture = nullptr;
+
+    RenderTarget *m_downTarget = nullptr;
+
+    RenderTarget *m_blurTarget = nullptr;
+
+    RenderTarget *m_resultTarget = nullptr;
+
+    MaterialInstance *m_downMaterial;
+
+    MaterialInstance *m_blurMaterial;
 
     MaterialInstance *m_dofMaterial;
 

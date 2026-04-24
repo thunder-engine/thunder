@@ -29,7 +29,7 @@ public:
     TString outputName(int index) const;
     virtual Texture *output(int index);
 
-    void setEnabled(bool enable);
+    virtual void setEnabled(bool enable);
     bool isEnabled() const;
 
 protected:

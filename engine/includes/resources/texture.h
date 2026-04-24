@@ -115,6 +115,7 @@ public:
 
     int sides() const;
     int mipCount() const;
+    void setMipCount(int levels);
 
     Surface &surface(int side);
     void addSurface(const Surface &surface);
@@ -176,6 +177,7 @@ protected:
     int32_t m_width;
     int32_t m_height;
     int32_t m_depth;
+    int32_t m_mips;
 
     int32_t m_depthBits;
 

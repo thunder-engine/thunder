@@ -81,13 +81,16 @@ public:
 
 static bool m_game = false;
 
-static VariantMap m_values;
-static std::list<SystemRunner *> m_pool;
-static std::list<System *> m_serial;
+// Settings section
+VariantMap Engine::m_values;
+
+// Systems section
+std::list<SystemRunner *> Engine::m_pool;
+std::list<System *> Engine::m_serial;
+static ThreadPool *m_threadPool = nullptr;
 
 static std::list<NativeBehaviour *> m_behaviours;
 
-static ThreadPool *m_threadPool = nullptr;
 static PlatformAdaptor *m_platform = nullptr;
 static Translator *m_translator = nullptr;
 static World *m_world = nullptr;

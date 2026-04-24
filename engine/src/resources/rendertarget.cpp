@@ -71,6 +71,17 @@ void RenderTarget::setClearFlags(int flags) {
     m_clearFlags = flags;
 }
 /*!
+    Returns color that will be used to clear attached targets.
+*/
+const Vector4 &RenderTarget::clearColor() const {
+    return m_clearColor;
+}
+/*!
+    Sets the \a color that will be used to clear attached targets.
+*/
+void RenderTarget::setClearColor(const Vector4 &color) {
+    m_clearColor = color;
+}
 /*!
     Retrieves the renderable area rectangle within this render target.
 

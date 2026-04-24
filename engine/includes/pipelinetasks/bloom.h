@@ -5,7 +5,7 @@
 
 #include "pipelinetask.h"
 
-#define BLOOM_PASSES 5
+#define MAX_SAMPLES 32
 
 class RenderTarget;
 class MaterialInstance;
@@ -14,12 +14,17 @@ class Bloom : public PipelineTask {
     A_OBJECT(Bloom, PipelineTask, Pipeline)
 
     struct BloomPass {
-        MaterialInstance *blurMaterialH = nullptr;
+        RenderTarget *blurTempTarget = nullptr;
 
-        MaterialInstance *blurMaterialV = nullptr;
+        RenderTarget *downTarget = nullptr;
 
-        float blurSize;
+        Texture *downTexture = nullptr;
 
+        Texture *blurTempTexture = nullptr;
+
+        float blurPoints[MAX_SAMPLES];
+
+        int32_t steps;
     };
 
 public:
@@ -27,6 +32,8 @@ public:
     ~Bloom();
 
 private:
+    void analyze(World *world) override;
+
     void exec() override;
 
     void resize(int32_t width, int32_t height) override;
@@ -36,15 +43,25 @@ private:
     void generateKernel(float radius, int32_t steps, float *points);
 
 private:
-    BloomPass m_bloomPasses[BLOOM_PASSES];
+    std::vector<BloomPass> m_bloomPasses;
 
     RenderTarget *m_resultTarget = nullptr;
 
-    RenderTarget *m_blurTempTarget = nullptr;
+    MaterialInstance *m_thresholdMaterial = nullptr;
 
-    Texture *m_blurTempTexture = nullptr;
+    MaterialInstance *m_downMaterial = nullptr;
+
+    MaterialInstance *m_blurMaterial = nullptr;
+
+    Texture *m_dirtTexture = nullptr;
+
+    uint32_t m_mipLevels;
 
     float m_threshold;
+
+    float m_intensity;
+
+    float m_dirtIntensity;
 
 };
 

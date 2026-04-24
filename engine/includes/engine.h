@@ -13,6 +13,7 @@ class ResourceSystem;
 class RenderSystem;
 class Resource;
 class World;
+class SystemRunner;
 class PlatformAdaptor;
 class NativeBehaviour;
 
@@ -143,6 +144,12 @@ private:
 
     static void addNativeBehaviour(NativeBehaviour *native);
     static void removeNativeBehaviour(NativeBehaviour *native);
+
+private:
+    static VariantMap m_values;
+
+    static std::list<SystemRunner *> m_pool;
+    static std::list<System *> m_serial;
 };
 
 #endif // ENGINE_H

@@ -1,9 +1,13 @@
 {
 	"guid": "{9e7e2e22-61f6-432d-93d3-a92037783a00}",
-	"md5": "{53e5ed9e-25b8-2258-a7ac-6f3878494062}",
+	"id": -912749772,
+	"md5": "{9928a2b7-7b90-b7ea-a4e7-cac6ec1a45c6}",
+	"meta": {
+	},
 	"settings": {
 	},
 	"subitems": {
 	},
+	"type": "Pipeline",
 	"version": 11
 }

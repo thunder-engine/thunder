@@ -74,10 +74,6 @@ void DeferredIndirect::analyze(World *world) {
             m_cameraTexture->setDirty();
         }
     }
-}
-
-void DeferredIndirect::exec() {
-    CommandBuffer *buffer = m_context->buffer();
 
     for(auto it : m_context->culledPostEffectSettings()) {
         Texture *texture = it.first->readValue(gEnvironmentMap).value<Texture *>();
@@ -88,6 +84,10 @@ void DeferredIndirect::exec() {
             }
         }
     }
+}
+
+void DeferredIndirect::exec() {
+    CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("ReflectionIndirect");
     if(m_iblMaterial) {

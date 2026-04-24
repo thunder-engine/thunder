@@ -29,18 +29,6 @@ layout(location = 2) in vec4 _color;
 
 layout(location = 0) out vec4 color;
 
-const vec2 circleOffsets[] = {
-    vec2( 0.7071f, -0.7071f ),
-    vec2(-0.7071f,  0.7071f ),
-    vec2(-1.0000f,  0.0000f ),
-    vec2( 1.0000f,  0.0000f ),
-    vec2( 0.0000f,  0.0000f ),
-    vec2(-0.7071f, -0.7071f ),
-    vec2( 0.7071f,  0.7071f ),
-    vec2( 0.0000f, -1.0000f ),
-    vec2( 0.0000f,  1.0000f )
-};
-
 const float radScale = 0.5f;
 const float goldenAngle = 2.39996323f;
 
@@ -75,7 +63,7 @@ void main(void) {
             color.xyz += mix(color.xyz / t, sampleColor, m);
 
             t += 1.0f;
-            radius += radScale / radius;
+            radius += radScale / max(radius, 0.1f);
         }
         color.xyz /= t;
     }

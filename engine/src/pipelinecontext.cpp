@@ -240,7 +240,9 @@ void PipelineContext::analizeGraph() {
     }
 
     for(auto &it : m_renderTasks) {
-        it->analyze(m_world);
+        if(it && it->isEnabled()) {
+            it->analyze(m_world);
+        }
     }
 }
 /*!

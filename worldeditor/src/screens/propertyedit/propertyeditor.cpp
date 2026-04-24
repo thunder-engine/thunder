@@ -235,9 +235,11 @@ void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
         QModelIndex index = ui->treeView->indexAt(pos);
 
         Property *p = static_cast<Property *>(m_filter->mapToSource(index).internalPointer());
-        QMenu *menu = m_editor->propertyContextMenu(m_item, p->name());
-        if(menu) {
-            menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
+        if(p) {
+            QMenu *menu = m_editor->propertyContextMenu(m_item, p->name());
+            if(menu) {
+                menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
+            }
         }
     }
 }
