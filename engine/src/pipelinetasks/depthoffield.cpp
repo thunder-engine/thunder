@@ -225,8 +225,6 @@ void DepthOfField::resize(int32_t width, int32_t height) {
         m_blurTexture->resize((width >> 1), (height >> 1));
         m_resultTexture->resize(width, height);
 
-        float blurSize = (1 << 1);
-
         float radius = MAX((width >> 1), 1) * 4.0f * 0.01f;
         int steps = CLAMP(static_cast<int32_t>(radius), 0, MAX_SAMPLES);
 
