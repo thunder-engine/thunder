@@ -12,6 +12,8 @@
 
 #include "components/camera.h"
 
+#include <cstring>
+
 #define MAX_SAMPLES 32
 
 namespace {
