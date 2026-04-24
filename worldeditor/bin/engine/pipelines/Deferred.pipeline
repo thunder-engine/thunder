@@ -26,7 +26,7 @@
             <link sender="1" out="3" receiver="5" in="4" />
             <link sender="1" out="6" receiver="5" in="6" />
             <link sender="1" out="5" receiver="5" in="5" />
-            <link sender="1" out="6" receiver="12" in="5" />
+            <link sender="1" out="6" receiver="12" in="4" />
             <link sender="2" out="1" receiver="10" in="0" />
             <link sender="2" out="2" receiver="10" in="7" />
             <link sender="3" out="2" receiver="10" in="3" />

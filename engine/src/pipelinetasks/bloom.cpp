@@ -59,7 +59,7 @@ Bloom::Bloom() :
         m_downMaterial = downSample->createInstance();
     }
 
-    Material *blur = Engine::loadResource<Material>(".embedded/BloomBlur.shader");
+    Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
     if(blur) {
         m_blurMaterial = blur->createInstance();
         m_blurMaterial->setFloat(gIntensity, &m_intensity);
@@ -228,6 +228,8 @@ void Bloom::resize(int32_t width, int32_t height) {
 
 void Bloom::setInput(int index, Texture *source) {
     if(index == 0) {
+        m_downMaterial->setTexture(gRgbMap, source);
+
         m_thresholdMaterial->setTexture(gRgbMap, source);
 
         m_outputs.front().second = source;
