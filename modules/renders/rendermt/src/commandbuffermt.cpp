@@ -135,7 +135,7 @@ void CommandBufferMt::disableScissor() {
                                        (uint32_t)m_viewport.width, (uint32_t)m_viewport.height});
         } else {
             ScissorRect rect = m_scissorStack.top(); // Get previous
-            m_encoder->setScissorRect({(uint32_t)rect.originX, (uint32_t)rect.originY, (uint32_t)rect.width, (uint32_t)rect.height});
+            m_encoder->setScissorRect({(uint32_t)rect.x, (uint32_t)rect.y, (uint32_t)rect.width, (uint32_t)rect.height});
         }
     }
 }
