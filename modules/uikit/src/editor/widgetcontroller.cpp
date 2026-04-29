@@ -119,7 +119,7 @@ Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {
         }
     }
 
-    if(widget->isHovered(pos)) {
+    if(widget->rectTransform()->isHovered(pos.x, pos.y)) {
         return widget;
     }
 
