@@ -164,10 +164,7 @@ void CommandBuffer::setCameraProperties(Camera *camera) {
     \a width and \a height scissor dimensions.
 */
 void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
-    A_UNUSED(x);
-    A_UNUSED(y);
-    A_UNUSED(width);
-    A_UNUSED(height);
+    m_scissorStack.push({x, y, width, height});
 }
 /*!
     Disables scissor testing.

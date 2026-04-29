@@ -14,6 +14,8 @@
 #include "actions/selectwidgets.h"
 #include "actions/deletewiget.h"
 
+#include "uisystem.h"
+
 WidgetController::WidgetController(UiEdit *editor) :
         CameraController(),
         m_rootObject(nullptr),
@@ -25,6 +27,8 @@ WidgetController::WidgetController(UiEdit *editor) :
         m_drag(false) {
 
     m_activeCamera->setOrthographic(true);
+
+    m_uiSystem = dynamic_cast<UiSystem *>(Engine::getSystem("UiSystem"));
 }
 
 void WidgetController::setRoot(Widget *rootObject) {
@@ -105,17 +109,17 @@ void WidgetController::drawHandles() {
     Gizmos::drawRectangle(position, size, Handles::s_yColor);
 }
 
-Widget *widgetHoverHelper(Widget *widget, float x, float y) {
+Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {
     for(auto it : widget->childWidgets()) {
         if(!widget->isSubWidget()) {
-            Widget *result = widgetHoverHelper(it, x, y);
+            Widget *result = widgetHoverHelper(it, pos);
             if(result) {
                 return result;
             }
         }
     }
 
-    if(widget->rectTransform()->isHovered(x, y)) {
+    if(widget->isHovered(pos)) {
         return widget;
     }
 
@@ -124,11 +128,10 @@ Widget *widgetHoverHelper(Widget *widget, float x, float y) {
 
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
-    Vector2 pos(mouse.x, mouse.y);
 
     CameraController::update();
 
-    Widget *focusWidget = widgetHoverHelper(m_rootObject, pos.x, pos.y);
+    Widget *focusWidget = widgetHoverHelper(m_rootObject, Vector2(mouse.x, mouse.y));
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
@@ -173,11 +176,18 @@ void WidgetController::update() {
             }
         }
     }
+
+    if(m_uiSystem) {
+        m_uiSystem->setActiveWorld(m_rootObject->world());
+        m_uiSystem->processEvents();
+    }
 }
 
 void WidgetController::cameraMove(const Vector3 &delta) {
-    Transform *rootTransform = m_rootObject->transform();
-    rootTransform->setPosition(rootTransform->position() + Vector3(m_mouseDelta, 0.0f));
+    RectTransform *rect = m_rootObject->rectTransform();
+    rect->setPosition(rect->position() + Vector3(m_mouseDelta, 0.0f));
+
+    m_widgetTool->setTranslation(rect->position(), rect->scale());
 
     Transform *cameraTransform = m_activeCamera->transform();
     cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());
@@ -210,6 +220,8 @@ void WidgetController::cameraZoom(float delta) {
 
     rect->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
     rect->setScale(Vector3(scale, scale, 1.0f));
+
+    m_widgetTool->setTranslation(rect->position(), rect->scale());
 }
 
 void WidgetController::setDrag(bool drag) {

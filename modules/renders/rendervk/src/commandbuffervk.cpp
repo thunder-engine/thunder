@@ -146,6 +146,8 @@ void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
 void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
     PROFILE_FUNCTION();
 
+    CommandBuffer::enableScissor(x, y, width, height);
+
     VkRect2D scissor = {};
     scissor.offset = { x, y };
     scissor.extent = { (uint32_t)width, (uint32_t)height };
@@ -157,8 +159,16 @@ void CommandBufferVk::disableScissor() {
     PROFILE_FUNCTION();
 
     VkRect2D scissor = {};
-    scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
-    scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};
+
+    m_scissorStack.pop(); // Remove current
+    if(m_scissorStack.empty()) {
+        scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
+        scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};
+    } else {
+        ScissorRect rect = m_scissorStack.top(); // Get previous
+        scissor.offset = {rect.x, rect.y};
+        scissor.extent = {(uint32_t)rect.width, (uint32_t)rect.height};
+    }
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }

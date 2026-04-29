@@ -96,6 +96,8 @@ public:
 
     static RenderSystem *renderSystem();
 
+    static System *getSystem(const TString &name);
+
 /*
     Scene management
 */

@@ -9,6 +9,7 @@
 #include "uiedit.h"
 
 class Widget;
+class UiSystem;
 
 class WidgetController : public CameraController {
     Q_OBJECT
@@ -71,6 +72,8 @@ private:
     WidgetTool *m_widgetTool;
 
     UiEdit *m_editor;
+
+    UiSystem *m_uiSystem;
 
     uint32_t m_selected;
 
