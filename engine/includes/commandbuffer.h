@@ -5,6 +5,8 @@
 
 #include "material.h"
 
+#include <stack>
+
 #define GLOBAL_BIND     0
 #define LOCAL_BIND      1
 #define SKIN_BIND       2
@@ -70,6 +72,18 @@ protected:
     Global m_global;
 
     Material::Textures m_textures;
+
+    struct ScissorRect {
+        int32_t x;
+
+        int32_t y;
+
+        int32_t width;
+
+        int32_t height;
+    };
+
+    std::stack<ScissorRect> m_scissorStack;
 
 };
 

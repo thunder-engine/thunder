@@ -121,6 +121,7 @@ void CommandBufferMt::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
 }
 
 void CommandBufferMt::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+    CommandBuffer::enableScissor(x, y, width, height);
     if(m_encoder) {
         m_encoder->setScissorRect({(uint32_t)x, (uint32_t)y, (uint32_t)width, (uint32_t)height});
     }
@@ -128,6 +129,13 @@ void CommandBufferMt::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 
 void CommandBufferMt::disableScissor() {
     if(m_encoder) {
-        m_encoder->setScissorRect({(uint32_t)m_viewport.originX, (uint32_t)m_viewport.originY, (uint32_t)m_viewport.width, (uint32_t)m_viewport.height});
+        m_scissorStack.pop(); // Remove current
+        if(m_scissorStack.empty()) {
+            m_encoder->setScissorRect({(uint32_t)m_viewport.originX, (uint32_t)m_viewport.originY,
+                                       (uint32_t)m_viewport.width, (uint32_t)m_viewport.height});
+        } else {
+            ScissorRect rect = m_scissorStack.top(); // Get previous
+            m_encoder->setScissorRect({(uint32_t)rect.x, (uint32_t)rect.y, (uint32_t)rect.width, (uint32_t)rect.height});
+        }
     }
 }

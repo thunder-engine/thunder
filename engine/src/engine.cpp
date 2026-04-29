@@ -566,6 +566,24 @@ RenderSystem *Engine::renderSystem() {
     return m_renderSystem;
 }
 /*!
+    Returns a sub system with specific \a name.
+*/
+System *Engine::getSystem(const TString &name) {
+    for(auto it : m_serial) {
+        if(it->name() == name) {
+            return it;
+        }
+    }
+
+    for(auto it : m_pool) {
+        if(it->m_system->name() == name) {
+            return it->m_system;
+        }
+    }
+
+    return nullptr;
+}
+/*!
     Returns true if game started; otherwise returns false.
 */
 bool Engine::isGameMode() {
