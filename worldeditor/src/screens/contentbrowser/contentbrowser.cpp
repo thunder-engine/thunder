@@ -48,7 +48,7 @@ private:
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
         QStyledItemDelegate::initStyleOption(option, index);
         QVariant value = index.data(Qt::DecorationRole);
-        switch(value.typeId()) {
+        switch(value.type()) {
             case QMetaType::QImage: {
                 QImage image = value.value<QImage>();
                 if(!image.isNull()) {
@@ -343,7 +343,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
 
     TString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
     QDir dir(path.data());
-    switch(action->data().typeId()) {
+    switch(action->data().type()) {
         case QMetaType::Bool: {
             TString name("NewFolder");
             AssetManager::findFreeName(name, dir.path().toStdString());
