@@ -424,7 +424,7 @@ void SceneComposer::restoreBackupScenes() {
         emit objectsHierarchyChanged(nullptr);
         emit objectsSelected({});
 
-        Engine::unloadAllScenes();
+        Engine::world()->unloadAll();
         Engine::resourceSystem()->processEvents();
 
         World *world = Engine::world();
@@ -563,7 +563,7 @@ void SceneComposer::onNewAsset() {
 
     quitFromIsolation();
 
-    Engine::unloadAllScenes();
+    Engine::world()->unloadAll();
 
     m_settings.clear();
     m_sceneSettings.clear();
@@ -804,7 +804,7 @@ bool SceneComposer::loadScene(const TString &path, bool additive) {
     quitFromIsolation();
 
     if(!additive) {
-        Engine::unloadAllScenes();
+        Engine::world()->unloadAll();
         m_settings.clear();
         m_sceneSettings.clear();
     }
