@@ -26,6 +26,7 @@
 #include <components/world.h>
 
 #include <pipelinecontext.h>
+#include <timer.h>
 
 Viewport::Viewport(QWidget *parent) :
         QWidget(parent),
@@ -37,10 +38,8 @@ Viewport::Viewport(QWidget *parent) :
         m_gizmoRender(nullptr),
         m_gridRender(nullptr),
         m_debugRender(nullptr),
-        m_renderSystem(nullptr),
+        m_pipelineContext(nullptr),
         m_rhiWindow(nullptr),
-        m_tasksMenu(nullptr),
-        m_bufferMenu(nullptr),
         m_color(nullptr),
         m_focusedView(false),
         m_gameView(false),
@@ -63,32 +62,28 @@ Viewport::Viewport(QWidget *parent) :
 }
 
 void Viewport::init() {
-    m_renderSystem = (m_gameView) ? Engine::renderSystem() : PluginManager::instance()->createRenderer();
-
-    m_rhiWindow = m_renderSystem->createRhiWindow(this);
+    m_pipelineContext = Engine::objectCreate<PipelineContext>("PipelineContext");
+    m_rhiWindow = Engine::renderSystem()->createRhiWindow(this);
 
     if(m_rhiWindow) {
         static bool first = true;
         if(first) {
-            QWindow *testRhi = m_renderSystem->createRhiWindow(this);
+            QWindow *testRhi = Engine::renderSystem()->createRhiWindow(this);
             testRhi->show();
 
-            m_renderSystem->init();
+            Engine::renderSystem()->init();
 
             delete testRhi;
             first = false;
-        } else {
-            m_renderSystem->init();
         }
 
         m_rhiWindow->installEventFilter(this);
         layout()->addWidget(QWidget::createWindowContainer(m_rhiWindow));
 
-        PipelineContext *ctx = m_renderSystem->pipelineContext();
-        if(!ctx->renderTasks().empty()) {
-            m_guiLayer = ctx->renderTasks().back();
+        if(!m_pipelineContext->renderTasks().empty()) {
+            m_guiLayer = m_pipelineContext->renderTasks().back();
 
-            m_color = ctx->resultTexture();
+            m_color = m_pipelineContext->resultTexture();
             m_color->setFlags(m_color->flags() | Texture::Feedback);
 
             m_debugRender = new DebugRender;
@@ -97,7 +92,7 @@ void Viewport::init() {
                 m_gridRender = new GridRender;
                 m_gridRender->setController(m_controller);
                 m_gridRender->setInput(0, m_guiLayer->output(0));
-                m_gridRender->setInput(1, ctx->textureBuffer("depthMap"));
+                m_gridRender->setInput(1, m_pipelineContext->textureBuffer("depthMap"));
 
                 m_outlinePass = new Outline;
                 m_outlinePass->setController(m_controller);
@@ -106,21 +101,21 @@ void Viewport::init() {
                 m_gizmoRender = new GizmoRender;
                 m_gizmoRender->setController(m_controller);
                 m_gizmoRender->setInput(0, m_guiLayer->output(0));
-                m_gizmoRender->setInput(1, ctx->textureBuffer("depthMap"));
+                m_gizmoRender->setInput(1, m_pipelineContext->textureBuffer("depthMap"));
 
                 if(m_controller) {
                     m_controller->init(this);
                 }
 
-                ctx->insertRenderTask(m_gridRender, m_guiLayer);
-                ctx->insertRenderTask(m_outlinePass, m_guiLayer);
-                ctx->insertRenderTask(m_gizmoRender);
+                m_pipelineContext->insertRenderTask(m_gridRender, m_guiLayer);
+                m_pipelineContext->insertRenderTask(m_outlinePass, m_guiLayer);
+                m_pipelineContext->insertRenderTask(m_gizmoRender);
 
                 Handles::init();
             }
 
-            ctx->insertRenderTask(m_debugRender, m_guiLayer);
-            ctx->subscribePost(Viewport::readPixels, this);
+            m_pipelineContext->insertRenderTask(m_debugRender, m_guiLayer);
+            m_pipelineContext->subscribePost(Viewport::readPixels, this);
         }
     }
 }
@@ -170,23 +165,25 @@ void Viewport::onDraw() {
         m_world->setActive(m_liveUpdate);
 
         auto &instance = EditorPlatform::instance();
-
         instance.setScreenSize(size());
 
+        m_pipelineContext->resize(width(), height());
+        Engine::renderSystem()->setPipelineContext(m_pipelineContext);
+
         if(m_gameView) {
-            for(auto it : Engine::world()->findChildren<Camera *>()) {
+            for(auto it : m_world->findChildren<Camera *>()) {
                 if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
                     Camera::setCurrent(it);
                     break;
                 }
             }
 
+            Engine::update(m_world);
+
             if(!m_gamePaused && isFocused()) {
                 QPoint p = mapFromGlobal(QCursor::pos());
                 instance.setMousePosition(p);
                 instance.setMouseDelta(p - m_savedMousePos);
-
-                Engine::update();
 
                 if(instance.isMouseLocked() && Engine::isGameMode()) {
                     m_savedMousePos = QPoint(width() / 2, height() / 2);
@@ -200,18 +197,17 @@ void Viewport::onDraw() {
                 }
             }
         } else {
-            Engine::resourceSystem()->processEvents();
-
             if(m_controller) {
                 Camera::setCurrent(m_controller->camera());
 
                 m_controller->resize(width(), height());
                 m_controller->move();
             }
-        }
 
-        m_renderSystem->pipelineContext()->resize(width(), height());
-        m_renderSystem->update(m_world);
+            Engine::instance().processEvents();
+            Engine::renderSystem()->setActiveWorld(m_world);
+            Engine::renderSystem()->processEvents();
+        }
 
         if(isFocused()) {
             if(!m_gameView && m_controller) {
@@ -234,16 +230,31 @@ void Viewport::onDraw() {
 }
 
 void Viewport::createMenu(QMenu *menu) {
-    m_tasksMenu = menu->addMenu(tr("Render Tasks"));
-    m_bufferMenu = menu->addMenu(tr("Buffer Visualization"));
+    QMenu *tasksMenu = menu->addMenu(tr("Render Tasks"));
+    for(auto &it : m_pipelineContext->renderTasks()) {
+        if(!it->name().isEmpty()) {
+            QAction *action = addAction(tasksMenu, it->name());
+            action->setChecked(it->isEnabled());
 
-    fillTasksMenu(m_tasksMenu);
+            QObject::connect(action, &QAction::triggered, this, &Viewport::onPostEffectChanged);
+        }
+    }
 
-    QObject::connect(m_bufferMenu, &QMenu::aboutToShow, this, &Viewport::onBufferMenu);
+    if(m_debugRender) {
+        QMenu *bufferMenu = menu->addMenu(tr("Buffer Visualization"));
+        for(auto &it : m_pipelineContext->renderTextures()) {
+            if(!it.isEmpty()) {
+                QAction *action = addAction(bufferMenu, it);
+                action->setChecked(m_debugRender->isBufferVisible(it.data()));
+
+                QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
+            }
+        }
+    }
 }
 
 PipelineContext *Viewport::pipelineContext() const {
-    return m_renderSystem->pipelineContext();
+    return m_pipelineContext;
 }
 
 void Viewport::grabScreen() {
@@ -252,6 +263,10 @@ void Viewport::grabScreen() {
 
 int Viewport::gridCell() {
     return m_gridRender->scale();
+}
+
+bool Viewport::isGamePaused() const {
+    return m_gamePaused;
 }
 
 void Viewport::setGamePaused(bool pause) {
@@ -311,8 +326,7 @@ void Viewport::onInProgressFlag(bool flag) {
 }
 
 void Viewport::addRenderTask(PipelineTask *task) {
-    PipelineContext *ctx = m_renderSystem->pipelineContext();
-    ctx->insertRenderTask(task, ctx->renderTasks().empty() ? nullptr : ctx->renderTasks().front());
+    m_pipelineContext->insertRenderTask(task, m_pipelineContext->renderTasks().empty() ? nullptr : m_pipelineContext->renderTasks().front());
 }
 
 void Viewport::readPixels(void *object) {
@@ -337,74 +351,33 @@ bool Viewport::isFocused() {
     return focus;
 }
 
-void Viewport::onBufferMenu() {
-    if(m_bufferMenu && m_debugRender) {
-        m_bufferMenu->clear();
+QAction *Viewport::addAction(QMenu *menu, const TString &name) {
+    static const QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
+    static const QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
-        StringList list = m_renderSystem->pipelineContext()->renderTextures();
+    QString result(name.data());
+    result.replace(regExp1, "\\1 \\2");
+    result.replace(regExp2, "\\1 \\2");
+    result.replace(0, 1, result[0].toUpper());
 
-        for(auto &it : list) {
-            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
+    QAction *action = menu->addAction(result);
+    action->setCheckable(true);
+    action->setData(name.data());
 
-            QString result(it.data());
-            result.replace(regExp1, "\\1 \\2");
-            result.replace(regExp2, "\\1 \\2");
-            result.replace(0, 1, result[0].toUpper());
-
-            QAction *action = m_bufferMenu->addAction(result);
-            action->setData(it.data());
-            action->setCheckable(true);
-            action->setChecked(m_debugRender->isBufferVisible(it.data()));
-
-            QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
-        }
-    }
-}
-
-void Viewport::fillTasksMenu(QMenu *menu) {
-    if(menu) {
-        menu->clear();
-
-        PipelineContext *context = m_renderSystem->pipelineContext();
-        for(auto &it : context->renderTasks()) {
-            static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
-            static QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
-
-            QString result(it->name().data());
-            if(result.isEmpty()) {
-                continue;
-            }
-            result.replace(regExp1, "\\1 \\2");
-            result.replace(regExp2, "\\1 \\2");
-            result.replace(0, 1, result[0].toUpper());
-
-            QAction *action = menu->addAction(result);
-            action->setCheckable(true);
-            action->setChecked(it->isEnabled());
-            action->setData(it->name().data());
-
-            QObject::connect(action, &QAction::toggled, this, &Viewport::onPostEffectChanged);
-        }
-    }
+    return action;
 }
 
 void Viewport::onBufferChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        std::string buffer = action->data().toString().toStdString();
-        if(checked) {
-            m_debugRender->showBuffer(buffer);
-        } else {
-            m_debugRender->hideBuffer(buffer);
-        }
+        m_debugRender->trackBuffer(action->data().toString().toStdString(), checked);
     }
 }
 
 void Viewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
-        for(auto &it : m_renderSystem->pipelineContext()->renderTasks()) {
+        for(auto &it : m_pipelineContext->renderTasks()) {
             if(action->data().toString().toStdString() == it->name().toStdString()) {
                 it->setEnabled(checked);
             }
@@ -438,8 +411,6 @@ bool Viewport::processEvent(QEvent *event) {
     switch(event->type()) {
         case QEvent::DragEnter: {
             QDragEnterEvent *ev = static_cast<QDragEnterEvent *>(event);
-
-            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(ev->pos());
 
             emit dragEnter(ev);
@@ -448,8 +419,6 @@ bool Viewport::processEvent(QEvent *event) {
         case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
         case QEvent::DragMove: {
             QDragMoveEvent *ev = static_cast<QDragMoveEvent *>(event);
-
-            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(ev->pos());
 
             emit dragMove(ev);
@@ -457,8 +426,6 @@ bool Viewport::processEvent(QEvent *event) {
         }
         case QEvent::Drop: {
             QDropEvent *ev = static_cast<QDropEvent *>(event);
-
-            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(ev->pos());
 
             emit drop(ev);
@@ -482,7 +449,6 @@ bool Viewport::processEvent(QEvent *event) {
         }
         case QEvent::MouseButtonPress: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(event);
-            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(ev->pos());
             EditorPlatform::instance().setMouseButtons(ev->button(), PRESS);
             return true;
@@ -495,7 +461,6 @@ bool Viewport::processEvent(QEvent *event) {
         }
         case QEvent::MouseMove: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(event);
-            EditorPlatform::instance().setScreenSize(size());
             EditorPlatform::instance().setMousePosition(ev->pos());
             return true;
         }
@@ -503,8 +468,4 @@ bool Viewport::processEvent(QEvent *event) {
     }
 
     return false;
-}
-
-void Viewport::resizeEvent(QResizeEvent *event) {
-    EditorPlatform::instance().setScreenSize(event->size());
 }

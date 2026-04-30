@@ -169,7 +169,7 @@ int keyToInput(int key) {
 }
 
 void onFrame(GLFMDisplay *display) {
-    Engine::update();
+    Engine::update(Engine::world());
 
     glfmSwapBuffers(display);
 }

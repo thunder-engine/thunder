@@ -213,13 +213,12 @@ ObjectController::~ObjectController() {
 }
 
 void ObjectController::init(Viewport *viewport) {
-    PipelineContext *pipeline = viewport->pipelineContext();
-
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
     Object::connect(EditorSettings::instance(), _SIGNAL(updated()), m_rayCast, _SLOT(onApplySettings()));
 
+    PipelineContext *pipeline = viewport->pipelineContext();
     pipeline->insertRenderTask(m_rayCast, pipeline->renderTasks().back());
 }
 

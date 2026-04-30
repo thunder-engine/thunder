@@ -41,7 +41,7 @@ public:
     ~MainWindow() override;
 
 public slots:
-    void onOpenEditor(const QString &path);
+    void onOpenEditor(const TString &path);
 
     void onOpenProject(const QString &path);
 
@@ -56,7 +56,7 @@ private:
 
     void addGadget(EditorGadget *gadget);
 
-    AssetEditor *openEditor(const QString &path);
+    AssetEditor *openEditor(const TString &path);
 
     void resetGeometry();
 
@@ -96,8 +96,6 @@ private:
     AssetEditor *m_currentEditor;
 
     QProcess *m_builder;
-
-    bool m_pauseSimulation;
 
 private slots:
     void onBuildProject();

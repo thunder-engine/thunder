@@ -56,12 +56,8 @@ void registerEngine(asIScriptEngine *engine, bool generic) {
                                    generic ? WRAP_FN(unloadResource) : asFUNCTION(unloadResource),
                                    generic ? asCALL_GENERIC : asCALL_CDECL);
 
-    engine->RegisterGlobalFunction("Scene @loadScene(const TString &in, bool)",
-                                   generic ? WRAP_FN(Engine::loadScene) : asFUNCTION(Engine::loadScene),
-                                   generic ? asCALL_GENERIC : asCALL_CDECL);
-
-    engine->RegisterGlobalFunction("void unloadScene(Scene &)",
-                                   generic ? WRAP_FN(Engine::unloadScene) : asFUNCTION(Engine::unloadScene),
+    engine->RegisterGlobalFunction("World &world()",
+                                   generic ? WRAP_FN(Engine::world) : asFUNCTION(Engine::world),
                                    generic ? asCALL_GENERIC : asCALL_CDECL);
 
     engine->SetDefaultNamespace("");

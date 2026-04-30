@@ -55,8 +55,6 @@ public:
 
     bool rescanPath(const TString &path);
 
-    RenderSystem *createRenderer() const;
-
     StringList plugins() const;
 
     StringList extensions(const TString &type) const;

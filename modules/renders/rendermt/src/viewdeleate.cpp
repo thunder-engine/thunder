@@ -21,7 +21,6 @@ void ViewDelegate::drawInMTKView(MTK::View *view) {
 #if defined(SHARED_DEFINE)
     m_viewport->onDraw();
 #else
-    Timer::update();
-    Engine::update();
+    Engine::update(Engine::world());
 #endif
 }

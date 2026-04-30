@@ -49,7 +49,7 @@ private:
         QStyledItemDelegate::initStyleOption(option, index);
         QVariant value = index.data(Qt::DecorationRole);
         switch(value.type()) {
-            case QVariant::Image: {
+            case QMetaType::QImage: {
                 QImage image = value.value<QImage>();
                 if(!image.isNull()) {
                     image = image.scaled(image.size() * m_scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -344,7 +344,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     TString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
     QDir dir(path.data());
     switch(action->data().type()) {
-        case QVariant::Bool: {
+        case QMetaType::Bool: {
             TString name("NewFolder");
             AssetManager::findFreeName(name, dir.path().toStdString());
 
@@ -353,7 +353,7 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
         } break;
-        case QVariant::String: {
+        case QMetaType::QString: {
             Url info(action->data().toString().toStdString());
             TString name = TString("New") + info.baseName();
             TString suff = TString(".") + info.suffix();
@@ -468,7 +468,7 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
     if(origin.siblingAtColumn(1).data().toBool()) {
         ui->contentList->setRootIndex(index);
     } else {
-        emit openEditor(ContentTree::instance()->path(origin).data());
+        emit openEditor(ContentTree::instance()->path(origin));
     }
 }
 

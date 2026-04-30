@@ -32,6 +32,8 @@ public:
     Engine();
     ~Engine();
 
+    static Engine &instance();
+
 /*
     Main cycle
 */
@@ -39,7 +41,7 @@ public:
 
     static bool start();
 
-    static void update();
+    static void update(World *world);
 
 /*
     Settings
@@ -98,16 +100,7 @@ public:
 
     static System *getSystem(const TString &name);
 
-/*
-    Scene management
-*/
     static World *world();
-
-    static Scene *loadScene(const TString &path, bool additive);
-
-    static void unloadScene(Scene *scene);
-
-    static void unloadAllScenes();
 
 /*
     Misc
@@ -120,7 +113,7 @@ public:
 
     static bool loadTranslator(const TString &table);
 
-    static TString translate(const TString &source);
+    static TString translate(const TString &text);
 
     static void addModule(Module *module);
 

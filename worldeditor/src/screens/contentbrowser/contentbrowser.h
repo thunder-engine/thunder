@@ -36,7 +36,7 @@ public:
 
 signals:
     void assetsSelected(const Object::ObjectList &settings);
-    void openEditor(const QString &path);
+    void openEditor(const TString &path);
 
 protected:
     void readSettings();

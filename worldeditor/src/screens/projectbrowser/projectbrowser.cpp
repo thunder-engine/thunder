@@ -16,8 +16,6 @@ ProjectBrowser::ProjectBrowser(QWidget *parent) :
         QDialog(parent),
         ui(new Ui::ProjectBrowser) {
 
-    setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
-
     ui->setupUi(this);
     ui->listView->setModel(new ProjectModel);
 

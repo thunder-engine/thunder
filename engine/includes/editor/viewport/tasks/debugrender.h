@@ -18,15 +18,15 @@ public:
 
     }
 
-    void showBuffer(const std::string &buffer) {
-        m_buffers[buffer] = m_material->createInstance();
-    }
-
-    void hideBuffer(const std::string &buffer) {
-        auto it = m_buffers.find(buffer);
-        if(it != m_buffers.end()) {
-            delete it->second;
-            m_buffers.erase(it);
+    void trackBuffer(const std::string &buffer, bool visible) {
+        if(visible) {
+            m_buffers[buffer] = m_material->createInstance();
+        } else {
+            auto it = m_buffers.find(buffer);
+            if(it != m_buffers.end()) {
+                delete it->second;
+                m_buffers.erase(it);
+            }
         }
     }
 

@@ -127,8 +127,8 @@ void RenderGLSystem::update(World *world) {
 
         if(m_target == -1) {
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_target);
-            static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(m_target);
         }
+        static_cast<RenderTargetGL *>(context->defaultTarget())->setNativeHandle(m_target);
 
         RenderSystem::update(world);
     }

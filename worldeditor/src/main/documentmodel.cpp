@@ -50,9 +50,9 @@ void DocumentModel::newFile(AssetEditor *editor) {
     }
 }
 
-AssetEditor *DocumentModel::openFile(const QString &path) {
+AssetEditor *DocumentModel::openFile(const TString &path) {
     QDir dir(ProjectSettings::instance()->contentPath().data());
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path).toStdString());
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path.data()).toStdString());
 
     AssetEditor *editor = nullptr;
 
@@ -111,7 +111,7 @@ void DocumentModel::closeFile(AssetEditor *editor) {
 }
 
 void DocumentModel::onLoadAsset(QString path) {
-    openFile(path);
+    openFile(path.toStdString());
 }
 
 std::list<AssetEditor *> DocumentModel::documents() {
