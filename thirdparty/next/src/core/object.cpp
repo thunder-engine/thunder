@@ -283,7 +283,7 @@ Object::Object(const Object &origin) :
 Object::~Object() {
     PROFILE_FUNCTION();
 
-    emitSignal(_SIGNAL(destroyed()));
+    destroyed();
 
     if(m_system) {
         m_system->removeObject(this);
@@ -705,8 +705,9 @@ void Object::setParent(Object *parent, int32_t position, bool force) {
 */
 void Object::setName(const TString &name) {
     PROFILE_FUNCTION();
-    if(!name.isEmpty()) {
+    if(!name.isEmpty() && name != m_name) {
         m_name = name;
+        objectNameChanged(name);
     }
 }
 /*!
@@ -1128,4 +1129,16 @@ void Object::enumObjects(Object *object, Object::ObjectList &list) {
     for(const auto &it : object->getChildren()) {
         enumObjects(it, list);
     }
+}
+/*!
+    \internal
+*/
+void Object::destroyed() {
+    emitSignal(_SIGNAL(destroyed()));
+}
+/*!
+    \internal
+*/
+void Object::objectNameChanged(const TString &objectName) {
+    emitSignal(_SIGNAL(objectNameChanged(TString)), objectName);
 }

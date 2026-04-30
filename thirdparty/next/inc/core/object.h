@@ -41,8 +41,10 @@ class NEXT_LIBRARY_EXPORT Object {
     A_GENERIC(Object)
 
     A_METHODS(
-        A_SIGNAL(Object::destroyed)
+        A_SIGNAL(Object::destroyed),
+        A_SIGNAL(Object::objectNameChanged)
     )
+
 public:
     struct Link {
         Link();
@@ -160,6 +162,7 @@ public:
 // Signals
 public:
     void destroyed();
+    void objectNameChanged(const TString &objectName);
 
 protected:
     virtual void loadData(const VariantList &data);
