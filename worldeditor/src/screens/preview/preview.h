@@ -3,8 +3,6 @@
 
 #include <QWidget>
 
-class Engine;
-
 namespace Ui {
     class Preview;
 }
@@ -15,6 +13,9 @@ public:
     Preview(QWidget *parent = nullptr);
 
     void onActivate();
+
+    bool isPaused() const;
+    void setPaused(bool pause);
 
 protected:
     Ui::Preview *ui;

@@ -93,7 +93,6 @@ static std::list<NativeBehaviour *> m_behaviours;
 
 static PlatformAdaptor *m_platform = nullptr;
 static Translator *m_translator = nullptr;
-static World *m_world = nullptr;
 static ResourceSystem *m_resourceSystem = nullptr;
 static RenderSystem *m_renderSystem = nullptr;
 static Engine *m_instance = nullptr;
@@ -173,8 +172,6 @@ Engine::Engine() {
 
     Spline::registerClassFactory(m_instance);
 
-    m_world = ObjectSystem::objectCreate<World>("World");
-
     uint32_t maxThreads = MAX(ThreadPool::optimalThreadCount() - 1, 1);
     if(maxThreads > 1) {
         m_threadPool = new ThreadPool;
@@ -206,6 +203,12 @@ Engine::~Engine() {
         m_platform->destroy();
         delete m_platform;
     }
+}
+/*!
+    Returns Engine object instance.
+*/
+Engine &Engine::instance() {
+    return *m_instance;
 }
 /*!
     Initializes all engine systems. Returns true if successful; otherwise returns false.
@@ -246,7 +249,7 @@ bool Engine::start() {
     setGameMode(true);
 
     TString path = value(gEntry, "").toString();
-    if(loadScene(path, false) == nullptr) {
+    if(world()->loadScene(path, false) == nullptr) {
         aError() << "Unable to load first scene:" << path;
         return false;
     }
@@ -257,10 +260,10 @@ bool Engine::start() {
 }
 /*!
     This method launches all your game modules responsible for processing all the game logic.
-    It calls on each iteration of the game cycle.
+    It calls on each iteration of the game cycle for the particular \a world.
     \note Usually, this method calls internally and must not be called manually.
 */
-void Engine::update() {
+void Engine::update(World *world) {
     PROFILE_FUNCTION();
 
     if(m_renderSystem) {
@@ -280,9 +283,9 @@ void Engine::update() {
             if(isGameMode()) {
                 for(auto it : m_behaviours) {
                     if(it->isEnabled()) {
-                        World *world = it->world();
+                        World *objectWorld = it->world();
 
-                        if(world == m_world) {
+                        if(objectWorld == world) {
                             if(!it->isStarted()) {
                                 it->start();
                             }
@@ -292,10 +295,10 @@ void Engine::update() {
                 }
             }
 
-            m_world->setActive(true);
+            world->setActive(true);
 
             for(auto it : m_pool) {
-                it->m_system->setActiveWorld(m_world);
+                it->m_system->setActiveWorld(world);
                 if(m_threadPool) {
                     m_threadPool->start(it);
                 } else {
@@ -303,12 +306,12 @@ void Engine::update() {
                 }
             }
             for(auto it : m_serial) {
-                it->setActiveWorld(m_world);
+                it->setActiveWorld(world);
                 it->processEvents();
             }
             m_threadPool->waitForDone();
 
-            m_world->setActive(false);
+            world->setActive(false);
         }
 
         m_platform->update();
@@ -668,32 +671,8 @@ void Engine::removeSystem(System *system) {
 World *Engine::world() {
     PROFILE_FUNCTION();
 
+    static World *m_world = ObjectSystem::objectCreate<World>("World");
     return m_world;
-}
-/*!
-    Loads the scene stored in the .map files by the it's \a path to the Engine.
-    \note The previous scenes will be not unloaded in the case of an \a additive flag is true.
-*/
-Scene *Engine::loadScene(const TString &path, bool additive) {
-    PROFILE_FUNCTION();
-
-    return m_world->loadScene(path, additive);
-}
-/*!
-    Unloads the \a scene from the World.
-*/
-void Engine::unloadScene(Scene *scene) {
-    PROFILE_FUNCTION();
-
-    m_world->unloadScene(scene);
-}
-/*!
-    Unloads all scenes from the World.
-*/
-void Engine::unloadAllScenes() {
-    PROFILE_FUNCTION();
-
-    m_world->unloadAll();
 }
 /*!
     Returns path to application config directory.
@@ -724,15 +703,15 @@ bool Engine::loadTranslator(const TString &name) {
     return false;
 }
 /*!
-    Returns the translation text for the \a source String.
+    Returns the translation of \a text.
 */
-TString Engine::translate(const TString &source) {
+TString Engine::translate(const TString &text) {
     PROFILE_FUNCTION();
 
     if(m_translator) {
-        return m_translator->translate(source);
+        return m_translator->translate(text);
     }
-    return source;
+    return text;
 }
 /*!
     Creates an Actor with \a name and attached \a component.

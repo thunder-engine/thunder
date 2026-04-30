@@ -65,8 +65,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
         m_preview(nullptr),
         m_mainEditor(nullptr),
         m_currentEditor(nullptr),
-        m_builder(new QProcess(this)),
-        m_pauseSimulation(false) {
+        m_builder(new QProcess(this)) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
     qRegisterMetaType<Vector3>  ("Vector3");
@@ -140,7 +139,7 @@ void MainWindow::addGadget(EditorGadget *gadget) {
     connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onObjectsSelected);
 }
 
-AssetEditor *MainWindow::openEditor(const QString &path) {
+AssetEditor *MainWindow::openEditor(const TString &path) {
     if(m_documentModel == nullptr) {
         return nullptr;
     }
@@ -167,7 +166,7 @@ AssetEditor *MainWindow::openEditor(const QString &path) {
     return editor;
 }
 
-void MainWindow::onOpenEditor(const QString &path) {
+void MainWindow::onOpenEditor(const TString &path) {
     openEditor(path);
 }
 
@@ -223,7 +222,7 @@ void MainWindow::on_actionOpen_triggered() {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Scene"),
                                                 m_projectSettings->contentPath().data(), "*.map");
     if(!path.isEmpty()) {
-        m_documentModel->openFile(path);
+        m_documentModel->openFile(path.toStdString());
     }
 }
 
@@ -259,8 +258,9 @@ void MainWindow::on_actionPlay_triggered() {
 
 void MainWindow::on_actionPause_triggered() {
     if(m_preview) {
-        m_pauseSimulation = !m_pauseSimulation;
-        ui->pauseButton->setChecked(m_pauseSimulation);
+        bool pause = !m_preview->isPaused();
+        m_preview->setPaused(pause);
+        ui->pauseButton->setChecked(pause);
     }
 }
 
@@ -277,7 +277,7 @@ void MainWindow::setGameMode(bool mode) {
             ui->toolWidget->activateToolWindow(m_mainEditor);
             static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();
 
-            m_pauseSimulation = false;
+            m_preview->setPaused(false);
             ui->pauseButton->setChecked(false);
             ui->actionPause->setChecked(false);
         }
@@ -404,7 +404,7 @@ void MainWindow::onImportFinished() {
 
     if(m_mainEditor->openedDocuments().empty()) {
         TString firstMap = AssetManager::instance()->uuidToPath(ProjectSettings::instance()->firstMap());
-        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap.data());
+        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap);
 
         if(mapSettings) {
             openEditor(firstMap.data());
@@ -673,9 +673,7 @@ void MainWindow::readError() {
 }
 
 void MainWindow::timerEvent(QTimerEvent *) {
-    if(!Engine::isGameMode() || m_pauseSimulation) {
+    if(!Engine::isGameMode() || (m_preview && m_preview->isPaused())) {
         Timer::update();
-    } else {
-        Engine::update();
     }
 }

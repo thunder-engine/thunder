@@ -26,7 +26,7 @@ IconRender::IconRender(QObject *parent) :
         m_world(Engine::objectCreate<World>()),
         m_scene(Engine::objectCreate<Scene>("", m_world)),
         m_light(nullptr),
-        m_render(nullptr),
+        m_context(nullptr),
         m_color(nullptr) {
 
     m_actor = Engine::composeActor<Camera>("ActiveCamera", m_scene);
@@ -65,23 +65,21 @@ const QImage IconRender::render(const TString &uuid) {
         return QImage();
     }
 
-    if(m_render == nullptr) {
-        m_render = PluginManager::instance()->createRenderer();
-        m_render->init();
-        PipelineContext *context = m_render->pipelineContext();
-        if(context) {
-            m_color = context->resultTexture();
-            m_color->setFlags(m_color->flags() | Texture::Feedback);
+    if(m_context == nullptr) {
+        m_context = Engine::objectCreate<PipelineContext>("PipelineContext");
 
-            context->resize(128, 128);
-            context->subscribePost(IconRender::readPixels, this);
-        }
+        m_color = m_context->resultTexture();
+        m_color->setFlags(m_color->flags() | Texture::Feedback);
+
+        m_context->resize(128, 128);
+        m_context->subscribePost(IconRender::readPixels, this);
 
         m_light = Engine::composeActor<DirectLight>("LightSource", m_scene);
         m_light->transform()->setQuaternion(Vector3(-45.0f, 45.0f, 0.0f));
     }
 
-    m_render->update(m_world);
+    Engine::renderSystem()->setPipelineContext(m_context);
+    Engine::renderSystem()->update(m_world);
 
     QImage result;
 

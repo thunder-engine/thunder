@@ -411,10 +411,6 @@ void PluginManager::syncWhiteList() {
     ProjectSettings::instance()->saveSettings();
 }
 
-RenderSystem *PluginManager::createRenderer() const {
-    return reinterpret_cast<RenderSystem *>(m_renderFactory->getObject(m_renderName.data()));
-}
-
 StringList PluginManager::plugins() const {
     StringList result;
 

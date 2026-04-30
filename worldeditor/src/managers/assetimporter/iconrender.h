@@ -3,16 +3,13 @@
 
 #include <QObject>
 
-#include <stdint.h>
-#include <vector>
-
 class World;
 class Actor;
 class Camera;
 class Scene;
 class Texture;
 
-class RenderSystem;
+class PipelineContext;
 class CommandBuffer;
 
 class TString;
@@ -39,7 +36,7 @@ protected:
 
     Camera *m_camera;
 
-    RenderSystem *m_render;
+    PipelineContext *m_context;
 
     Texture *m_color;
 };

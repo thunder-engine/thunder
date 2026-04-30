@@ -99,7 +99,7 @@ void DesktopAdaptor::update() {
 
 void DesktopAdaptor::loop() {
     while(!glfwWindowShouldClose(m_window)) {
-        Engine::update();
+        Engine::update(Engine::world());
 
         glfwPollEvents();
     }

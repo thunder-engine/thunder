@@ -29,6 +29,7 @@ public:
     void composeComponent(Component *component) const override;
 
     PipelineContext *pipelineContext() const;
+    void setPipelineContext(PipelineContext *context);
 
     void addRenderable(Renderable *renderable);
     void removeRenderable(Renderable *renderable);

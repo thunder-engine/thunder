@@ -33,7 +33,6 @@
 #include "commandbuffer.h"
 #include "pipelinecontext.h"
 
-int32_t RenderSystem::m_registered = 0;
 void *RenderSystem::m_windowHandle = nullptr;
 
 std::list<BaseLight *> RenderSystem::m_lightComponents;
@@ -44,92 +43,85 @@ RenderSystem::RenderSystem() :
         m_pipelineContext(nullptr),
         m_frameDirty(true) {
 
-    if(m_registered == 0) {
-        // Core
-        Renderable::registerClassFactory(this);
-        MeshRender::registerClassFactory(this);
-        TextRender::registerClassFactory(this);
-        SpriteRender::registerClassFactory(this);
-        SkinnedMeshRender::registerClassFactory(this);
+    // Core
+    Renderable::registerClassFactory(this);
+    MeshRender::registerClassFactory(this);
+    TextRender::registerClassFactory(this);
+    SpriteRender::registerClassFactory(this);
+    SkinnedMeshRender::registerClassFactory(this);
 
-        BaseLight::registerClassFactory(this);
-        DirectLight::registerClassFactory(this);
-        PointLight::registerClassFactory(this);
-        SpotLight::registerClassFactory(this);
-        AreaLight::registerClassFactory(this);
+    BaseLight::registerClassFactory(this);
+    DirectLight::registerClassFactory(this);
+    PointLight::registerClassFactory(this);
+    SpotLight::registerClassFactory(this);
+    AreaLight::registerClassFactory(this);
 
-        EffectRender::registerClassFactory(this);
+    EffectRender::registerClassFactory(this);
 
-        TileMapRender::registerClassFactory(this);
+    TileMapRender::registerClassFactory(this);
 
-        PostProcessVolume::registerClassFactory(this);
+    PostProcessVolume::registerClassFactory(this);
 
-        // System
-        CommandBuffer::registerClassFactory(this);
+    // System
+    CommandBuffer::registerClassFactory(this);
 
-        PipelineContext::registerClassFactory(this);
+    PipelineContext::registerClassFactory(this);
 
-        // Pipline tasks
-        PipelineTask::registerClassFactory(this);
-        AmbientOcclusion::registerClassFactory(this);
-        AntiAliasing::registerClassFactory(this);
-        Bloom::registerClassFactory(this);
-        DeferredLighting::registerClassFactory(this);
-        GBuffer::registerClassFactory(this);
-        Reflections::registerClassFactory(this);
-        DeferredIndirect::registerClassFactory(this);
-        ShadowMap::registerClassFactory(this);
-        Translucent::registerClassFactory(this);
-        Tonemap::registerClassFactory(this);
-        DepthOfField::registerClassFactory(this);
-    }
-    ++m_registered;
+    // Pipline tasks
+    PipelineTask::registerClassFactory(this);
+    AmbientOcclusion::registerClassFactory(this);
+    AntiAliasing::registerClassFactory(this);
+    Bloom::registerClassFactory(this);
+    DeferredLighting::registerClassFactory(this);
+    GBuffer::registerClassFactory(this);
+    Reflections::registerClassFactory(this);
+    DeferredIndirect::registerClassFactory(this);
+    ShadowMap::registerClassFactory(this);
+    Translucent::registerClassFactory(this);
+    Tonemap::registerClassFactory(this);
+    DepthOfField::registerClassFactory(this);
 
-    setName("Render");
+    setName("RenderSystem");
 }
 
 RenderSystem::~RenderSystem() {
-    --m_registered;
+    // Core
+    Renderable::unregisterClassFactory(this);
+    MeshRender::unregisterClassFactory(this);
+    TextRender::unregisterClassFactory(this);
+    SpriteRender::unregisterClassFactory(this);
+    SkinnedMeshRender::unregisterClassFactory(this);
 
-    if(m_registered) {
-        // Core
-        Renderable::unregisterClassFactory(this);
-        MeshRender::unregisterClassFactory(this);
-        TextRender::unregisterClassFactory(this);
-        SpriteRender::unregisterClassFactory(this);
-        SkinnedMeshRender::unregisterClassFactory(this);
+    BaseLight::unregisterClassFactory(this);
+    DirectLight::unregisterClassFactory(this);
+    PointLight::unregisterClassFactory(this);
+    SpotLight::unregisterClassFactory(this);
+    AreaLight::unregisterClassFactory(this);
 
-        BaseLight::unregisterClassFactory(this);
-        DirectLight::unregisterClassFactory(this);
-        PointLight::unregisterClassFactory(this);
-        SpotLight::unregisterClassFactory(this);
-        AreaLight::unregisterClassFactory(this);
+    EffectRender::unregisterClassFactory(this);
 
-        EffectRender::unregisterClassFactory(this);
+    TileMapRender::unregisterClassFactory(this);
 
-        TileMapRender::unregisterClassFactory(this);
+    PostProcessVolume::unregisterClassFactory(this);
 
-        PostProcessVolume::unregisterClassFactory(this);
+    // System
+    CommandBuffer::unregisterClassFactory(this);
 
-        // System
-        CommandBuffer::unregisterClassFactory(this);
+    PipelineContext::unregisterClassFactory(this);
 
-        PipelineContext::unregisterClassFactory(this);
-
-        // Pipline tasks
-        PipelineTask::unregisterClassFactory(this);
-        AmbientOcclusion::unregisterClassFactory(this);
-        AntiAliasing::unregisterClassFactory(this);
-        Bloom::unregisterClassFactory(this);
-        DeferredLighting::unregisterClassFactory(this);
-        GBuffer::unregisterClassFactory(this);
-        Reflections::unregisterClassFactory(this);
-        DeferredIndirect::unregisterClassFactory(this);
-        ShadowMap::unregisterClassFactory(this);
-        Translucent::unregisterClassFactory(this);
-        Tonemap::unregisterClassFactory(this);
-        DepthOfField::unregisterClassFactory(this);
-    }
+    // Pipline tasks
+    PipelineTask::unregisterClassFactory(this);
+    AmbientOcclusion::unregisterClassFactory(this);
+    AntiAliasing::unregisterClassFactory(this);
+    Bloom::unregisterClassFactory(this);
+    DeferredLighting::unregisterClassFactory(this);
+    GBuffer::unregisterClassFactory(this);
+    Reflections::unregisterClassFactory(this);
+    DeferredIndirect::unregisterClassFactory(this);
+    ShadowMap::unregisterClassFactory(this);
+    Translucent::unregisterClassFactory(this);
+    Tonemap::unregisterClassFactory(this);
+    DepthOfField::unregisterClassFactory(this);
 }
 
 int RenderSystem::threadPolicy() const {
@@ -137,7 +129,6 @@ int RenderSystem::threadPolicy() const {
 }
 
 bool RenderSystem::init() {
-    m_pipelineContext = Engine::objectCreate<PipelineContext>("PipelineContext");
     return true;
 }
 
@@ -160,6 +151,10 @@ void RenderSystem::composeComponent(Component *component) const {
 
 PipelineContext *RenderSystem::pipelineContext() const {
     return m_pipelineContext;
+}
+
+void RenderSystem::setPipelineContext(PipelineContext *context) {
+    m_pipelineContext = context;
 }
 
 void RenderSystem::addRenderable(Renderable *renderable) {

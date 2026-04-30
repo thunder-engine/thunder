@@ -42,6 +42,7 @@ public:
 
     int gridCell();
 
+    bool isGamePaused() const;
     void setGamePaused(bool pause);
 
     bool isLiveUpdate() const;
@@ -86,13 +87,9 @@ protected:
 
     bool processEvent(QEvent *event);
 
-    void resizeEvent(QResizeEvent *event) override;
-
-    void fillTasksMenu(QMenu *menu);
+    QAction *addAction(QMenu *menu, const TString &name);
 
 protected slots:
-    void onBufferMenu();
-
     void onBufferChanged(bool checked);
     void onPostEffectChanged(bool checked);
 
@@ -111,11 +108,8 @@ protected:
     GridRender *m_gridRender;
     DebugRender *m_debugRender;
 
-    RenderSystem *m_renderSystem;
+    PipelineContext *m_pipelineContext;
     QWindow *m_rhiWindow;
-
-    QMenu *m_tasksMenu;
-    QMenu *m_bufferMenu;
 
     Texture *m_color;
 

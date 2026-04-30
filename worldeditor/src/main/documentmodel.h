@@ -19,7 +19,7 @@ public:
 
     void newFile(AssetEditor *editor);
 
-    AssetEditor *openFile(const QString &path);
+    AssetEditor *openFile(const TString &path);
 
     std::list<AssetEditor *> documents();
 

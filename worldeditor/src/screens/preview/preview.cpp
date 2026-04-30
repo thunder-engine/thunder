@@ -26,11 +26,12 @@ Preview::Preview(QWidget *parent) :
 void Preview::onActivate() {
     Timer::reset();
     ui->viewport->rhiWindow()->requestActivate();
+}
 
-    for(auto it : Engine::world()->findChildren<Camera *>()) {
-        if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-            ui->viewport->setCamera(it);
-            break;
-        }
-    }
+bool Preview::isPaused() const {
+    return ui->viewport->isGamePaused();
+}
+
+void Preview::setPaused(bool pause) {
+    ui->viewport->setGamePaused(pause);
 }
