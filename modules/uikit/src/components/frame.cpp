@@ -81,7 +81,13 @@ void Frame::draw(CommandBuffer &buffer) {
         s[12] = size.x * 0.5f;
         s[13] = size.y * 0.5f;
 
-        m_material->setTransform(m * s, 0, rect->hash());
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, s[0]);
+        Mathf::hashCombine(hash, s[5]);
+        Mathf::hashCombine(hash, s[12]);
+        Mathf::hashCombine(hash, s[13]);
+
+        m_material->setTransform(m * s, 0, hash);
 
         buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
     }
@@ -162,7 +168,7 @@ void Frame::setCorners(const Vector4 &corners) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         updateStyleProperty(gCssBorderRadius, m_borderRadius.v, 4);
     }
 #endif
@@ -183,7 +189,7 @@ void Frame::setColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBackgroundColor, StyleSheet::toColor(m_backgroundColor));
     }
 #endif
@@ -204,7 +210,7 @@ void Frame::setTopColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBorderTopColor, StyleSheet::toColor(m_topColor));
     }
 #endif
@@ -225,7 +231,7 @@ void Frame::setRightColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBorderRightColor, StyleSheet::toColor(m_rightColor));
     }
 #endif
@@ -246,7 +252,7 @@ void Frame::setBottomColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBorderBottomColor, StyleSheet::toColor(m_bottomColor));
     }
 #endif
@@ -267,7 +273,7 @@ void Frame::setLeftColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBorderLeftColor, StyleSheet::toColor(m_leftColor));
     }
 #endif

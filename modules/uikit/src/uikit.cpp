@@ -36,6 +36,7 @@ static const char *meta = \
 "       \"Frame\","
 "       \"Image\","
 "       \"Label\","
+"       \"LineEdit\","
 "       \"Menu\","
 "       \"ProgressBar\","
 "       \"RectTransform\","

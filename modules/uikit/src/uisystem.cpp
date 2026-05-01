@@ -1,8 +1,9 @@
 #include "uisystem.h"
 
-#include <components/actor.h>
+#include <components/world.h>
 #include <systems/resourcesystem.h>
 #include <commandbuffer.h>
+#include <input.h>
 
 #include "components/button.h"
 #include "components/checkbox.h"
@@ -19,6 +20,8 @@
 #include "components/slider.h"
 #include "components/splitter.h"
 #include "components/switch.h"
+#include "components/tabbar.h"
+#include "components/tabwidget.h"
 #include "components/toolbutton.h"
 #include "components/uiloader.h"
 #include "components/widget.h"
@@ -63,12 +66,14 @@ UiSystem::UiSystem() :
     ToolButton::registerClassFactory(this);
 
     Foldout::registerClassFactory(this);
+    TabBar::registerClassFactory(this);
+    TabWidget::registerClassFactory(this);
 
     GuiLayer::registerClassFactory(this);
 
     UiLoader::registerClassFactory(this);
 
-    setName("Ui");
+    setName("UiSystem");
 }
 
 UiSystem::~UiSystem() {
@@ -100,6 +105,8 @@ UiSystem::~UiSystem() {
     ToolButton::unregisterClassFactory(this);
 
     Foldout::unregisterClassFactory(this);
+    TabBar::unregisterClassFactory(this);
+    TabWidget::unregisterClassFactory(this);
 
     UiLoader::unregisterClassFactory(this);
 
@@ -144,7 +151,7 @@ void UiSystem::lowerWidget(Widget *widget) {
     }
 }
 
-std::list<Widget *> UiSystem::widgets() {
+std::list<Widget *> &UiSystem::widgets() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_uiComponents;
 }

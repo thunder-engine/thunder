@@ -82,8 +82,27 @@ void Widget::draw(CommandBuffer &buffer) {
     drawSub(buffer);
 
     for(auto it : m_childWidgets) {
-        if(!it->m_subWidget && it->actor()->isEnabled() && it->isEnabled()) {
+        if(!it->m_subWidget && it->isEnabled() && it->actor()->isEnabled()) {
             it->draw(buffer);
+        }
+    }
+}
+/*!
+    \internal
+*/
+bool Widget::isHovered(const Vector2 &pos) {
+    RectTransform *rect = rectTransform();
+    Vector4 area = rect->scissorArea();
+
+    return (pos.x > area.x && pos.x < area.x + area.z && pos.y > area.y && pos.y < area.y + area.w);
+}
+/*!
+    \internal
+*/
+void Widget::update(const Vector2 &pos) {
+    for(auto it : m_childWidgets) {
+        if(it->isEnabled() && it->actor()->isEnabled()) {
+            it->update(pos);
         }
     }
 }
@@ -93,7 +112,7 @@ void Widget::draw(CommandBuffer &buffer) {
 */
 void Widget::drawSub(CommandBuffer &buffer) {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget && it->actor()->isEnabled() && it->isEnabled()) {
+        if(it->m_subWidget && it->isEnabled() && it->actor()->isEnabled()) {
             it->draw(buffer);
         }
     }
@@ -133,7 +152,7 @@ void Widget::boundChanged(const Vector2 &size) {
 */
 void Widget::applyStyle() {
     blockSignals(true);
-    if(m_transform) {
+    if(m_transform && !m_subWidget) {
         m_transform->applyStyle();
     }
     blockSignals(false);
@@ -291,7 +310,7 @@ void Widget::setSystem(ObjectSystem *system) {
     \internal
     This call back can be used to modify some properties for a new \a child.
 */
-void Widget::childAdded(RectTransform *child) const {
+void Widget::childAdded(RectTransform *child) {
     A_UNUSED(child);
 }
 /*!
@@ -391,7 +410,7 @@ Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value,
 }
 
 void Widget::updateStyleProperty(const TString &name, const float *v, int32_t size) {
-    if(!isSignalsBlocked()) {
+    if(!isSignalsBlocked() && !m_subWidget) {
         TString data;
         for(uint32_t i = 0; i < size; i++) {
             data += TString::number((int)v[i]) + "px ";

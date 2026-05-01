@@ -88,21 +88,18 @@ void Image::draw(CommandBuffer &buffer) {
         m_dirtyMesh = false;
     }
 
-    RectTransform *rect = rectTransform();
-    Matrix4 mat(rect->worldTransform());
-
-    const Vector3Vector &verts(m_mesh->vertices());
-    Vector2 scl(rect->worldScale());
-
-    mat[12] -= verts[0].x * scl.x;
-    mat[13] -= verts[0].y * scl.y;
-
     if(m_material) {
-        uint32_t coords[2];
-        memcpy(coords, &mat[12], sizeof(float) * 2);
+        RectTransform *rect = rectTransform();
+        Matrix4 mat(rect->worldTransform());
+
+        const Vector3Vector &verts(m_mesh->vertices());
+        Vector2 scl(rect->worldScale());
+        mat[12] -= verts[0].x * scl.x;
+        mat[13] -= verts[0].y * scl.y;
+
         uint32_t hash = rect->hash();
-        Mathf::hashCombine(hash, coords[0]);
-        Mathf::hashCombine(hash, coords[1]);
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
 
         m_material->setTransform(mat, 0, hash);
 

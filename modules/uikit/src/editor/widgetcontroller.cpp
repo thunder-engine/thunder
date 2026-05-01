@@ -27,8 +27,6 @@ WidgetController::WidgetController(UiEdit *editor) :
         m_drag(false) {
 
     m_activeCamera->setOrthographic(true);
-
-    m_uiSystem = dynamic_cast<UiSystem *>(Engine::getSystem("UiSystem"));
 }
 
 void WidgetController::setRoot(Widget *rootObject) {
@@ -119,7 +117,7 @@ Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {
         }
     }
 
-    if(widget->rectTransform()->isHovered(pos.x, pos.y)) {
+    if(widget->isHovered(pos)) {
         return widget;
     }
 
@@ -175,11 +173,6 @@ void WidgetController::update() {
                 undoRedo()->push(new DeleteObject(selected(), this));
             }
         }
-    }
-
-    if(m_uiSystem) {
-        m_uiSystem->setActiveWorld(m_rootObject->world());
-        m_uiSystem->processEvents();
     }
 }
 

@@ -40,9 +40,9 @@ signals:
 private:
     void update() override;
 
-    NodeWidget *hoveredNode(float mouseX, float mouseY);
-    PortWidget *hoveredPort(float mouseX, float mouseY);
-    int32_t hoveredLink(float mouseX, float mouseY);
+    NodeWidget *hoveredNode(const Vector2 &pos);
+    PortWidget *hoveredPort(const Vector2 &pos);
+    int32_t hoveredLink(const Vector2 &pos);
 
     void cameraMove(const Vector3 &delta) override;
 

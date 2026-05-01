@@ -134,20 +134,17 @@ void Menu::triggered(int index) {
     \internal
     Updates the menu. Handles input and triggers actions based on user interactions.
 */
-void Menu::update() {
+void Menu::update(const Vector2 &pos) {
     if(m_visible) {
-        Vector4 pos = Input::mousePosition();
-        if(Input::touchCount() > 0) {
-            pos = Input::touchPosition(0);
-        }
+        Widget::update(pos);
 
-        bool hover = rectTransform()->isHovered(pos.x, pos.y);
+        bool hover = isHovered(pos);
         if(!hover && Input::isMouseButtonUp(0)) {
             hide();
         } else {
             int index = 0;
             for(auto it : m_actions) {
-                hover = it->rectTransform()->isHovered(pos.x, pos.y);
+                hover = it->isHovered(pos);
                 if(hover) {
                     float y = it->rectTransform()->position().y;
 
@@ -169,8 +166,6 @@ void Menu::update() {
             }
         }
     }
-
-    Widget::update();
 }
 /*!
     \internal

@@ -34,12 +34,24 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor, bool root = false) {
                 MetaProperty property = meta->property(index);
                 Variant current = widget->property(property.name());
 
+                TString annotation;
+                const char *text = property.table()->annotation;
+                if(text) {
+                    annotation = text;
+                }
+
                 switch(current.type()) {
-                case MetaType::BOOLEAN: widget->setProperty(property.name(), it.as_bool()); break;
-                case MetaType::INTEGER: widget->setProperty(property.name(), it.as_int()); break;
-                case MetaType::FLOAT: widget->setProperty(property.name(), it.as_float()); break;
-                case MetaType::STRING: widget->setProperty(property.name(), it.as_string()); break;
-                default: break;
+                    case MetaType::BOOLEAN: widget->setProperty(property.name(), it.as_bool()); break;
+                    case MetaType::INTEGER: widget->setProperty(property.name(), it.as_int()); break;
+                    case MetaType::FLOAT: widget->setProperty(property.name(), it.as_float()); break;
+                    case MetaType::STRING: widget->setProperty(property.name(), it.as_string()); break;
+                    default: {
+                        if(annotation == "editor=Asset") {
+                            Resource *resource = Engine::loadResource(it.as_string());
+                            uint32_t type = MetaType::type(resource->typeName().data()) + 1;
+                            widget->setProperty(property.name(), Variant(type, &resource));
+                        }
+                    } break;
                 }
             }
         }

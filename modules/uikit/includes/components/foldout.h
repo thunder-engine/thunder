@@ -28,7 +28,7 @@ public:
     void setExpanded(bool expanded);
 
     TString text() const;
-    void setText(const TString text);
+    void setText(const TString &text);
 
     Frame *container() const;
     void setContainer(Frame *container);

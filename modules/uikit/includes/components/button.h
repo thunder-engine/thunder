@@ -10,7 +10,12 @@ class UIKIT_EXPORT Button : public AbstractButton {
     A_NOMETHODS()
     A_NOENUMS()
 
+public:
+    Button();
+
 private:
+    void setImage(Image *image) override;
+
     void composeComponent() override;
 };
 

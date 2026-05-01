@@ -83,7 +83,6 @@ void PortWidget::setNodePort(NodePort *port) {
     labelRect->setSize(Vector2());
     labelRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
     labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    labelRect->setMouseTracking(false);
 
     label->setText(m_port->m_name);
     label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
@@ -104,11 +103,9 @@ void PortWidget::released(int position) {
     emitSignal(_SIGNAL(released(int)), position);
 }
 
-void PortWidget::update() {
+void PortWidget::update(const Vector2 &pos) {
     if(m_knob) {
-        Vector4 pos = Input::mousePosition();
-
-        bool hover = m_knob->rectTransform()->isHovered(pos.x, pos.y);
+        bool hover = m_knob->isHovered(pos);
         if(m_hovered != hover) {
             m_hovered = hover;
 

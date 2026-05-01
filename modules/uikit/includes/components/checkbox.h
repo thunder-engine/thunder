@@ -26,6 +26,8 @@ public:
 
     void setFoldMode(bool fold);
 
+    void setLabel(Label *label) override;
+
 private:
     void checkStateSet() override;
 

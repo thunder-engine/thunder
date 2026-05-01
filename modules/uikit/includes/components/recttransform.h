@@ -21,8 +21,7 @@ class UIKIT_EXPORT RectTransform : public Transform {
         A_PROPERTY(Vector2, pivot, RectTransform::pivot, RectTransform::setPivot),
         A_PROPERTY(Vector4, margin, RectTransform::margin, RectTransform::setMargin),
         A_PROPERTY(Vector4, boder, RectTransform::border, RectTransform::setBorder),
-        A_PROPERTY(Vector4, padding, RectTransform::padding, RectTransform::setPadding),
-        A_PROPERTY(bool, mouseTracking, RectTransform::mouseTracking, RectTransform::setMouseTracking)
+        A_PROPERTY(Vector4, padding, RectTransform::padding, RectTransform::setPadding)
     )
     A_NOMETHODS()
 
@@ -61,15 +60,9 @@ public:
     Vector4 padding() const;
     void setPadding(const Vector4 &padding);
 
-    bool mouseTracking() const;
-    void setMouseTracking(bool tracking);
-
     Vector2 mapFromGlobal(float x, float y);
-    bool isHovered(float x, float y) const;
 
     Widget *widget();
-
-    RectTransform *hoveredTransform(float x, float y);
 
     void subscribe(Widget *widget);
     void unsubscribe(Widget *widget);
@@ -122,8 +115,6 @@ private:
 
     SizePolicy m_verticalPolicy;
     SizePolicy m_horizontalPolicy;
-
-    bool m_mouseTracking;
 
     mutable bool m_flag = false;
 

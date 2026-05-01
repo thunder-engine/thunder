@@ -227,10 +227,10 @@ void FloatInput::composeComponent() {
         decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
         setDecreaseButton(decreaseBtn);
 
-        Image *icon = decreaseBtn->icon();
-        if(icon) {
-            icon->setSprite(arrow);
-            RectTransform *rect = icon->rectTransform();
+        decreaseBtn->setIcon(arrow);
+        Image *image = decreaseBtn->image();
+        if(image) {
+            RectTransform *rect = image->rectTransform();
             if(rect) {
                 rect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
             }
@@ -250,9 +250,9 @@ void FloatInput::composeComponent() {
         increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
         setIncreaseButton(increaseBtn);
 
-        Image *icon = increaseBtn->icon();
+        increaseBtn->setIcon(arrow);
+        Image *icon = increaseBtn->image();
         if(icon) {
-            icon->setSprite(arrow);
             RectTransform *rect = icon->rectTransform();
             if(rect) {
                 rect->setRotation(Vector3(0.0f, 0.0f, 90.0f));

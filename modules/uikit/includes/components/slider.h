@@ -25,7 +25,7 @@ public:
     void setMaximum(int value) override;
 
 private:
-    void update() override;
+    void update(const Vector2 &pos) override;
 
     void composeComponent() override;
 

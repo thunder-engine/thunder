@@ -1,7 +1,6 @@
 #include "components/switch.h"
 
 #include "components/frame.h"
-#include "components/image.h"
 #include "components/recttransform.h"
 #include "components/label.h"
 
@@ -81,8 +80,8 @@ void Switch::setKnobColor(const Vector4 color) {
     \internal
     Overrides the update method to handle knob animation.
 */
-void Switch::update() {
-    AbstractButton::update();
+void Switch::update(const Vector2 &pos) {
+    AbstractButton::update(pos);
 
     Frame *knobGraphic = Switch::knobGraphic();
     if(m_currentFade < 1.0f && knobGraphic) {
@@ -136,6 +135,25 @@ void Switch::setMirrored(bool flag) {
 }
 /*!
     \internal
+    Sets the \a label component associated with the button.
+*/
+void Switch::setLabel(Label *label) {
+    AbstractButton::setLabel(label);
+
+    if(label) {
+        label->setAlign(Alignment::Middle | Alignment::Left);
+
+        RectTransform *rect = label->rectTransform();
+        if(rect) {
+            Frame *back = background();
+            RectTransform *backRect = back->rectTransform();
+
+            rect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
+        }
+    }
+}
+/*!
+    \internal
     Overrides the composeComponent method to create the switch component.
 */
 void Switch::composeComponent() {
@@ -147,13 +165,6 @@ void Switch::composeComponent() {
         backRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
         backRect->setPivot(Vector2(0.0f, 0.5f));
         backRect->setSize(Vector2(40.0f, 20.0f));
-
-        Label *label = AbstractButton::label();
-        if(label) {
-            label->setAlign(Alignment::Middle | Alignment::Left);
-            RectTransform *labelRect = label->rectTransform();
-            labelRect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
-        }
 
         // Add knob
         Actor *knob = Engine::composeActor<Frame>(gKnob, background()->actor());
@@ -168,7 +179,4 @@ void Switch::composeComponent() {
         knobRect->setPivot(Vector2(1.0f, 0.5f));
         knobRect->setSize(size);
     }
-
-    // Disable Icon by the default
-    icon()->actor()->setEnabled(false);
 }

@@ -32,11 +32,11 @@ public:
     Widget *widget(int index);
 
 protected:
-    void update() override;
+    void update(const Vector2 &pos) override;
 
     void resizeWidget(int index, int orientation, float delta);
 
-    void childAdded(RectTransform *rect) const override;
+    void childAdded(RectTransform *rect) override;
 
     void composeComponent() override;
 

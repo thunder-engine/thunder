@@ -1,15 +1,14 @@
 #include "pipelinetasks/guilayer.h"
 
-#include "pipelinecontext.h"
-#include "commandbuffer.h"
 #include "uisystem.h"
 
-#include <cmath>
-
-#include "components/actor.h"
 #include "components/world.h"
 #include "components/widget.h"
 #include "components/recttransform.h"
+
+#include <pipelinecontext.h>
+#include <commandbuffer.h>
+#include <input.h>
 
 GuiLayer::GuiLayer() {
 
@@ -22,18 +21,15 @@ GuiLayer::GuiLayer() {
 void GuiLayer::analyze(World *world) {
     m_uiComponents.clear();
 
-    bool update = world->isActive();
+    Vector4 pos = Input::mousePosition();
+    if(Input::touchCount() > 0) {
+        pos = Input::touchPosition(0);
+    }
+
     for(auto it : UiSystem::widgets()) {
-        if(it->isEnabled()) {
-            Actor *actor = it->actor();
-            if(actor && actor->isEnabledInHierarchy()) {
-                if(actor->world() == world) {
-                    if(update) {
-                        static_cast<NativeBehaviour *>(it)->update();
-                    }
-                    m_uiComponents.push_back(it);
-                }
-            }
+        if(it->isEnabled() && it->world() == world && it->parentWidget() == nullptr) {
+            it->update(pos);
+            m_uiComponents.push_back(it);
         }
     }
 }
@@ -48,8 +44,11 @@ void GuiLayer::exec() {
     buffer->setViewProjection(v, Matrix4::ortho(0, m_width, 0, m_height, 0.0f, 100.0f));
 
     for(auto it : m_uiComponents) {
-        if(it->parentWidget() == nullptr && it->rectTransform()) { // Root widget
-            it->rectTransform()->setSize(m_context->size());
+        if(it->parentWidget() == nullptr) { // Root widget
+            RectTransform *rect = it->rectTransform();
+            if(rect) {
+                rect->setSize(m_context->size());
+            }
 
             it->draw(*buffer);
 
