@@ -37,8 +37,8 @@ void GroupWidget::setSize(const Vector2 &size) {
     rect->setSize(size);
 }
 
-void GroupWidget::update() {
-    Widget::update();
+void GroupWidget::update(const Vector2 &pos) {
+    Widget::update(pos);
 
     Vector4 newColor = m_node->color();
     if(m_header->color() != newColor) {
@@ -48,37 +48,34 @@ void GroupWidget::update() {
 
     Input::CursorShape shape = Input::CURSOR_ARROW;
 
-    Vector4 cursor = Input::mousePosition();
     if(m_header) {
-        bool hover = m_header->rectTransform()->isHovered(cursor.x, cursor.y);
+        bool hover = m_header->isHovered(pos);
         if(hover && Input::isMouseButtonDown(0)) {
             emitSignal(_SIGNAL(pressed()));
         } else {
             RectTransform *r = rectTransform();
-            Vector3 pos = r->worldPosition();
+            Vector3 worldPos = r->worldPosition();
             Vector2 size = r->size();
 
-            Vector2 lb(pos.x, pos.y);
-            Vector2 lt(pos.x, pos.y + size.y);
-            Vector2 rb(pos.x + size.x, pos.y);
-            Vector2 rt(pos.x + size.x, pos.y + size.y);
-
-            Vector2 c(cursor.x, cursor.y);
+            Vector2 lb(worldPos.x, worldPos.y);
+            Vector2 lt(worldPos.x, worldPos.y + size.y);
+            Vector2 rb(worldPos.x + size.x, worldPos.y);
+            Vector2 rt(worldPos.x + size.x, worldPos.y + size.y);
 
             int resize = 0;
-            if(Mathf::distanceToSegment(lb, lt, c) < sensor) {
+            if(Mathf::distanceToSegment(lb, lt, pos) < sensor) {
                 shape = Input::CURSOR_HORSIZE;
                 resize |= POINT_L;
             }
-            if(Mathf::distanceToSegment(rb, rt, c) < sensor) {
+            if(Mathf::distanceToSegment(rb, rt, pos) < sensor) {
                 shape = Input::CURSOR_HORSIZE;
                 resize |= POINT_R;
             }
-            if(Mathf::distanceToSegment(lt, rt, c) < sensor) {
+            if(Mathf::distanceToSegment(lt, rt, pos) < sensor) {
                 shape = Input::CURSOR_VERSIZE;
                 resize |= POINT_T;
             }
-            if(Mathf::distanceToSegment(lb, rb, c) < sensor) {
+            if(Mathf::distanceToSegment(lb, rb, pos) < sensor) {
                 shape = Input::CURSOR_VERSIZE;
                 resize |= POINT_B;
             }
@@ -97,29 +94,29 @@ void GroupWidget::update() {
                     m_resize = 0;
                 } else if(Input::isMouseButton(Input::MOUSE_LEFT)) {
                     if(m_resize & POINT_L) {
-                        size.x += pos.x - c.x;
+                        size.x += worldPos.x - pos.x;
                         if(size.x > width)  {
-                            pos.x = c.x;
+                            worldPos.x = pos.x;
                         } else {
                             size.x = width;
                         }
                     }
                     if(m_resize & POINT_R) {
-                        size.x = MAX(c.x - pos.x, width);
+                        size.x = MAX(pos.x - worldPos.x, width);
                     }
                     if(m_resize & POINT_T) {
-                        size.y = MAX(c.y - pos.y, width);
+                        size.y = MAX(pos.y - worldPos.y, width);
                     }
                     if(m_resize & POINT_B) {
-                        size.y += pos.y - c.y;
+                        size.y += worldPos.y - pos.y;
                         if(size.y > width) {
-                            pos.y = c.y;
+                            worldPos.y = pos.y;
                         } else {
                             size.y = width;
                         }
                     }
 
-                    r->setPosition(pos);
+                    r->setPosition(worldPos);
                     setSize(size);
                 }
             } else if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {

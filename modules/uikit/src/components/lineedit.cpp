@@ -142,11 +142,7 @@ void LineEdit::editingFinished() {
     \internal
     Overrides the update method to handle text input and cursor animation.
 */
-void LineEdit::update() {
-    Vector4 pos = Input::mousePosition();
-    if(Input::touchCount() > 0) {
-        pos = Input::touchPosition(0);
-    }
+void LineEdit::update(const Vector2 &pos) {
     Vector4 color(m_normalColor);
 
     if(Widget::focusWidget() == this) {
@@ -237,7 +233,9 @@ void LineEdit::update() {
         }
     }
 
-    bool hover = rectTransform()->isHovered(pos.x, pos.y);
+    Widget::update(pos);
+
+    bool hover = isHovered(pos);
     if(m_hovered != hover) {
         m_currentFade = 0.0f;
         m_hovered = hover;
@@ -270,8 +268,6 @@ void LineEdit::update() {
 
         setColor(MIX(m_backgroundColor, color, m_currentFade));
     }
-
-    Widget::update();
 }
 /*!
     \internal

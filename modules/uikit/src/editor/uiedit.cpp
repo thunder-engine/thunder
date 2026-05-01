@@ -222,11 +222,13 @@ void UiEdit::saveAsset(const TString &path) {
 
 void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
     for(auto it : widget->childWidgets()) {
-        if(it->isSubWidget()) {
-            continue;
-        }
         auto originIt = m_widgets.find(it->typeName());
         if(originIt != m_widgets.end()) {
+            if(it->isSubWidget()) {
+                saveElementHelper(parent, it);
+                continue;
+            }
+
             pugi::xml_node element = parent.append_child(it->typeName().data());
             element.append_attribute(gName) = it->actor()->name().data();
 
@@ -257,13 +259,27 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
                 Variant origin = originIt->second->property(property.name());
                 Variant current = it->property(property.name());
 
+                TString annotation;
+                const char *text = property.table()->annotation;
+                if(text) {
+                    annotation = text;
+                }
+
                 if(origin != current) {
                     switch(current.type()) {
-                    case MetaType::BOOLEAN:
-                    case MetaType::INTEGER:
-                    case MetaType::FLOAT:
-                    case MetaType::STRING: element.append_attribute(property.name()) = current.toString().data(); break;
-                    default: break;
+                        case MetaType::BOOLEAN:
+                        case MetaType::INTEGER:
+                        case MetaType::FLOAT:
+                        case MetaType::STRING: element.append_attribute(property.name()) = current.toString().data(); break;
+                        default: {
+                            if(annotation == "editor=Asset") {
+                                Object *object = (current.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(current.data()));
+                                TString ref = Engine::reference(object);
+                                if(!ref.isEmpty()) {
+                                    element.append_attribute(property.name()) = ref.data();
+                                }
+                            }
+                        } break;
                     }
                 }
             }

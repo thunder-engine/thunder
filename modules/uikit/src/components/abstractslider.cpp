@@ -1,7 +1,6 @@
 #include "components/abstractslider.h"
 
 #include "components/recttransform.h"
-#include "components/frame.h"
 
 #include <timer.h>
 #include <input.h>
@@ -78,15 +77,10 @@ void AbstractSlider::valueChanged(int value) {
     emitSignal(_SIGNAL(valueChanged(int)), value);
 }
 
-void AbstractSlider::update() {
-    Vector4 pos = Input::mousePosition();
-    if(Input::touchCount() > 0) {
-        pos = Input::touchPosition(0);
-    }
+void AbstractSlider::update(const Vector2 &pos) {
+    Widget::update(pos);
 
-    RectTransform *rect = rectTransform();
-
-    bool hover = rect->isHovered(pos.x, pos.y);
+    bool hover = isHovered(pos);
     if(m_hovered != hover) {
         m_currentFade = 0.0f;
         m_hovered = hover;
@@ -103,7 +97,7 @@ void AbstractSlider::update() {
 
         if((Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0)) {
             Vector3 min, max;
-            rect->bound().box(min, max);
+            rectTransform()->bound().box(min, max);
             if(m_orientation == Horizontal) {
                 min.x += m_areaGap;
                 max.x -= m_areaGap;
@@ -112,7 +106,7 @@ void AbstractSlider::update() {
                 max.y -= m_areaGap;
             }
 
-            Vector2 local(Vector2(pos.x, pos.y) - min);
+            Vector2 local(pos - min);
             Vector2 factor(local.x / (max.x - min.x), local.y / (max.y - min.y));
 
             float f = (m_orientation == Horizontal) ? factor.x : (m_areaGap > 0.0f ? 1.0f - factor.y : factor.y);

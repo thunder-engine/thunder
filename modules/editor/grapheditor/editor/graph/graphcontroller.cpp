@@ -358,7 +358,7 @@ void GraphController::update() {
     Vector2 pos(localPos.x - (parentSize.x / parentScale.x) * 0.5f,
                 localPos.y - (parentSize.y / parentScale.y) * 0.5f);
 
-    NodeWidget *hovered = hoveredNode(mousePosition.x, mousePosition.y);
+    NodeWidget *hovered = hoveredNode(mousePosition);
 
     if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(hovered == nullptr && !m_view->isCreationLink()) {
@@ -383,7 +383,7 @@ void GraphController::update() {
                 onSelectNodes({ m_graph->node(hovered->node()) }, Input::isKey(Input::KEY_LEFT_CONTROL));
                 m_softSelected.clear();
             } else {
-                int link = hoveredLink(localPos.x, localPos.y);
+                int link = hoveredLink(localPos);
                 if(link > -1) {
                     onSelectLinks({link});
                 } else {
@@ -433,14 +433,13 @@ void GraphController::update() {
     }
 }
 
-NodeWidget *GraphController::hoveredNode(float mouseX, float mouseY) {
+NodeWidget *GraphController::hoveredNode(const Vector2 &pos) {
     NodeWidget *hovered = nullptr;
 
     for(auto node : m_graph->nodes()) {
         NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
         if(widget) {
-            RectTransform *rect = widget->header()->rectTransform();
-            if(rect->isHovered(mouseX, mouseY)) {
+            if(widget->header()->isHovered(pos)) {
                 hovered = widget;
             }
         }
@@ -449,13 +448,12 @@ NodeWidget *GraphController::hoveredNode(float mouseX, float mouseY) {
     return hovered;
 }
 
-PortWidget *GraphController::hoveredPort(float mouseX, float mouseY) {
+PortWidget *GraphController::hoveredPort(const Vector2 &pos) {
     for(auto node : m_graph->nodes()) {
         for(auto &port : node->ports()) {
             PortWidget *widget = static_cast<PortWidget *>(port.m_widget);
             if(widget) {
-                RectTransform *rect = widget->rectTransform();
-                if(rect->isHovered(mouseX, mouseY)) {
+                if(widget->isHovered(pos)) {
                     return widget;
                 }
             }
@@ -465,7 +463,7 @@ PortWidget *GraphController::hoveredPort(float mouseX, float mouseY) {
     return nullptr;
 }
 
-int GraphController::hoveredLink(float mouseX, float mouseY) {
+int GraphController::hoveredLink(const Vector2 &pos) {
     RectTransform *parentTransform = static_cast<RectTransform *>(m_view->view().transform());
     Matrix4 worlToView(parentTransform->worldTransform().inverse());
 
@@ -494,7 +492,7 @@ int GraphController::hoveredLink(float mouseX, float mouseY) {
             points.push_back(worlToView * (rect->worldTransform() * Vector3(rect->size() * 0.5f, 0.0f)));
         }
 
-        float distance = HandleTools::distanceToPath(Matrix4(), points, Vector2(mouseX, mouseY), false);
+        float distance = HandleTools::distanceToPath(Matrix4(), points, pos, false);
         if(distance < 10.0f) {
             return m_graph->link(it);
         }

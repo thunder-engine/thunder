@@ -110,18 +110,14 @@ void NodeWidget::portReleased(int port) {
     emitSignal(_SIGNAL(portReleased(int)), port);
 }
 
-void NodeWidget::update() {
-    Widget::update();
-
-    Vector4 pos = Input::mousePosition();
+void NodeWidget::update(const Vector2 &pos) {
+    Widget::update(pos);
 
     if(m_header) {
-        RectTransform *hoveredRect = rectTransform()->hoveredTransform(pos.x, pos.y);
-
-        if(hoveredRect == m_header->rectTransform() && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(m_header->isHovered(pos) && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
             pressed();
         } else if(dynamic_cast<StateNode *>(m_node)) {
-            bool hover = (hoveredRect == rectTransform());
+            bool hover = isHovered(pos);
             if(m_hovered != hover) {
                 m_hovered = hover;
 

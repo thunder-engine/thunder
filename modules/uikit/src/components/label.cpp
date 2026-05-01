@@ -193,7 +193,7 @@ void Label::setFontSize(int size) {
         m_size = size;
         m_dirty = true;
 #ifdef SHARED_DEFINE
-        if(!isSignalsBlocked()) {
+        if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_size) + "px");
         }
 #endif
@@ -215,7 +215,7 @@ void Label::setColor(const Vector4 &color) {
         m_material->setVector4(gColor, &m_color);
     }
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssWhiteSpace, StyleSheet::toColor(m_color));
     }
 #endif
@@ -253,7 +253,7 @@ void Label::setWordWrap(bool wrap) {
         }
         m_dirty = true;
 #ifdef SHARED_DEFINE
-        if(!isSignalsBlocked()) {
+        if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssWhiteSpace, wrap ? "normal" : "nowrap");
         }
 #endif
@@ -293,7 +293,7 @@ void Label::setKerning(const bool enable) {
         }
         m_dirty = true;
 #ifdef SHARED_DEFINE
-        if(!isSignalsBlocked()) {
+        if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssFontKerning, enable ? "normal" : "none");
         }
 #endif
@@ -305,6 +305,15 @@ void Label::setKerning(const bool enable) {
 Vector2 Label::cursorAt(int position) {
     std::u32string u32 = m_text.toUtf32();
     return Vector2(m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_size, m_flags), 0.0f);
+}
+/*!
+    Returns a space that text requires to render.
+*/
+float Label::textWidth() const {
+    if(m_font) {
+        return m_font->textWidth(m_text, m_size, m_flags);
+    }
+    return 0.0f;
 }
 /*!
     \internal

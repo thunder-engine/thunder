@@ -44,6 +44,14 @@ void CheckBox::setKnobGraphic(Image *knob) {
 
     if(knob) {
         knob->setColor(m_knobColor);
+
+        Frame *back = background();
+        RectTransform *backRect = back->rectTransform();
+
+        RectTransform *knobRect = knob->rectTransform();
+        knobRect->setSize(Vector2(16, 8));
+        knobRect->setParentTransform(backRect);
+        knobRect->setPosition(Vector3());
     }
 }
 /*!
@@ -92,6 +100,25 @@ void CheckBox::setFoldMode(bool fold) {
 }
 /*!
     \internal
+    Sets the \a label component associated with the button.
+*/
+void CheckBox::setLabel(Label *label) {
+    AbstractButton::setLabel(label);
+
+    if(label) {
+        label->setAlign(Alignment::Middle | Alignment::Left);
+
+        RectTransform *rect = label->rectTransform();
+        if(rect) {
+            Frame *back = background();
+            RectTransform *backRect = back->rectTransform();
+
+            rect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
+        }
+    }
+}
+/*!
+    \internal
     Overrides the checkStateSet method to handle state changes.
 */
 void CheckBox::checkStateSet() {
@@ -123,23 +150,11 @@ void CheckBox::composeComponent() {
         backRect->setPivot(Vector2(0.0f, 0.5f));
         backRect->setSize(Vector2(16.0f, 16.0f));
 
-        Label *label = AbstractButton::label();
-        if(label) {
-            label->setAlign(Alignment::Middle | Alignment::Left);
-            RectTransform *labelRect = label->rectTransform();
-            labelRect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
-        }
-
         // Add knob
-        Image *image = icon();
-        if(image) {
-            image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
-            RectTransform *knobRect = image->rectTransform();
-            knobRect->setSize(Vector2(16, 8));
-            knobRect->setParentTransform(backRect);
-            knobRect->setPosition(Vector3());
-
-            setKnobGraphic(image);
+        setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
+        Image *img = image();
+        if(img) {
+            setKnobGraphic(img);
         }
     }
 }

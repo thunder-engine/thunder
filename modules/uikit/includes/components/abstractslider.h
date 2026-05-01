@@ -43,7 +43,7 @@ public: // signals
     void valueChanged(int value);
 
 protected:
-    void update() override;
+    void update(const Vector2 &pos) override;
 
 protected:
     int m_value;

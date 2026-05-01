@@ -147,6 +147,10 @@ Vector2 Layout::sizeHint() {
 
     bool first = true;
     for(auto it : m_items) {
+        Actor *actor = it->actor();
+        if(actor && !actor->isEnabled()) {
+            continue;
+        }
         if(it->isEnabled()) {
             float spacing = (!first) ? m_spacing : 0.0f;
 
@@ -195,7 +199,7 @@ void Layout::invalidate() {
 /*!
     \internal
 */
-void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
+void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool keepProportions) {
     if(m_orientation == Widget::Vertical) {
         if(horizontal) {
             for(auto it : m_items) {
@@ -203,7 +207,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.x = availableSpace - (margin.w + margin.y);
+                    it->blockSignals(true);
                     it->setSize(size);
+                    it->blockSignals(false);
                 }
             }
             return;
@@ -215,7 +221,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.y = availableSpace - (margin.x + margin.z);
+                    it->blockSignals(true);
                     it->setSize(size);
+                    it->blockSignals(false);
                 }
             }
             return;
@@ -231,6 +239,10 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
     std::list<float> sizes;
 
     for(auto it : m_items) {
+        Actor *actor = it->actor();
+        if(actor && !actor->isEnabled()) {
+            continue;
+        }
         if(it->isEnabled()) {
             RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
             float pref = horizontal ? it->size().x : it->size().y;
@@ -255,10 +267,17 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
     auto size = sizes.begin();
     std::list<float> weights;
     for(auto it : m_items) {
+        Actor *actor = it->actor();
+        if(actor && !actor->isEnabled()) {
+            continue;
+        }
         if(it->isEnabled()) {
             RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
             if(policy == RectTransform::Expanding) {
-                float weight = (*size) / totalExp;
+                float weight = 1.0f / static_cast<float>(expandingCount);
+                if(keepProportions && totalExp > 0.0f) {
+                    weight = (*size) / totalExp;
+                }
                 weights.push_back(weight);
                 ++size;
             }
@@ -269,6 +288,10 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
         float remainingSpace = availableSpace;
 
         for(auto it : m_items) {
+            Actor *actor = it->actor();
+            if(actor && !actor->isEnabled()) {
+                continue;
+            }
             if(it->isEnabled()) {
                 RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
                 if(policy == RectTransform::Fixed || policy == RectTransform::Preferred) {
@@ -285,6 +308,10 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
         if(expandingCount > 0 && remainingSpace > 0) {
             auto weight = weights.begin();
             for(auto it : m_items) {
+                Actor *actor = it->actor();
+                if(actor && !actor->isEnabled()) {
+                    continue;
+                }
                 if(it->isEnabled()) {
                     RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
                     if(policy == RectTransform::Expanding) {
@@ -295,7 +322,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
                         } else {
                             size.y = remainingSpace * (*weight) - (margin.x + margin.z);
                         }
+                        it->blockSignals(true);
                         it->setSize(size);
+                        it->blockSignals(false);
                         ++weight;
                     }
                 }
@@ -305,6 +334,10 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
         float extra = availableSpace - totalPref;
         auto weight = weights.begin();
         for(auto it : m_items) {
+            Actor *actor = it->actor();
+            if(actor && !actor->isEnabled()) {
+                continue;
+            }
             if(it->isEnabled()) {
                 RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
                 if(policy == RectTransform::Expanding) {
@@ -316,7 +349,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal) {
                         } else {
                             size.y += extraSize;
                         }
+                        it->blockSignals(true);
                         it->setSize(size);
+                        it->blockSignals(false);
                     }
                     ++weight;
                 }
@@ -331,6 +366,10 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
     bool first = true;
     float shift = ((m_orientation == Widget::Vertical) ? offset.y : offset.x);
     for(auto it : m_items) {
+        Actor *actor = it->actor();
+        if(actor && !actor->isEnabled()) {
+            continue;
+        }
         if(it->isEnabled()) {
             shift += (!first) ? m_spacing : 0.0f;
 

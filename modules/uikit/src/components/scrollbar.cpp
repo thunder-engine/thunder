@@ -104,7 +104,7 @@ void ScrollBar::setBackArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepBack()));
 
-        RectTransform *rectIcon = button->icon()->rectTransform();
+        RectTransform *rectIcon = button->image()->rectTransform();
         if(m_orientation == Horizontal) {
             rectIcon->setRotation(Vector3(0.0f, 0.0f,-90.0f));
         } else {
@@ -142,7 +142,7 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepFront()));
 
-        RectTransform *rectIcon = button->icon()->rectTransform();
+        RectTransform *rectIcon = button->image()->rectTransform();
         if(m_orientation == Horizontal) {
             rectIcon->setRotation(Vector3(0.0f, 0.0f, 90.0f));
         } else {
@@ -190,10 +190,10 @@ void ScrollBar::boundChanged(const Vector2 &size) {
     recalcKnob();
 }
 
-void ScrollBar::update() {
+void ScrollBar::update(const Vector2 &pos) {
     bool hovered = m_hovered;
 
-    AbstractSlider::update();
+    AbstractSlider::update(pos);
 
     if(hovered != m_hovered) {
         Widget *knob = ScrollBar::knob();
@@ -236,31 +236,15 @@ void ScrollBar::composeComponent() {
     // Add back arrow
     Actor *backActor = Engine::composeActor<Button>(gBackArrow, actor());
     Button *back = backActor->getComponent<Button>();
-    back->setText(TString());
-
-    Image *backIcon = back->icon();
-    if(backIcon) {
-        backIcon->setSprite(Engine::loadResource<Sprite>(gSpriteArrow));
-        RectTransform *rectIcon = backIcon->rectTransform();
-        if(rectIcon) {
-            rectIcon->setSize(Vector2(16.0f, 8.0f));
-        }
-    }
+    back->setIconSize(Vector2(16.0f, 8.0f));
+    back->setIcon(Engine::loadResource<Sprite>(gSpriteArrow));
     setBackArrow(back);
 
     // Add front arrow
     Actor *frontActor = Engine::composeActor<Button>(gFrontArrow, actor());
     Button *front = frontActor->getComponent<Button>();
-    front->setText(TString());
-
-    Image *frontIcon = front->icon();
-    if(frontIcon) {
-        frontIcon->setSprite(Engine::loadResource<Sprite>(gSpriteArrow));
-        RectTransform *rectIcon = frontIcon->rectTransform();
-        if(rectIcon) {
-            rectIcon->setSize(Vector2(16.0f, 8.0f));
-        }
-    }
+    front->setIconSize(Vector2(16.0f, 8.0f));
+    front->setIcon(Engine::loadResource<Sprite>(gSpriteArrow));
     setFrontArrow(front);
 
     setValue(m_value);

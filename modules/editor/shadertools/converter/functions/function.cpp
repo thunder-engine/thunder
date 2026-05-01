@@ -234,10 +234,8 @@ Widget *ShaderNode::widget() {
 
                 Actor *icon = Engine::composeActor<Button>("PreviewBtn", title);
                 m_previewBtn = icon->getComponent<Button>();
-
-                m_previewBtn->setText("");
-                m_previewBtn->icon()->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
                 m_previewBtn->setIconSize(Vector2(16.0f, 8.0f));
+                m_previewBtn->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
 
                 Object::connect(m_previewBtn, _SIGNAL(clicked()), this, _SLOT(switchPreview()));
 

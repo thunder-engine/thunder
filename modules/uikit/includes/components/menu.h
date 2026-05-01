@@ -40,7 +40,7 @@ public: // signals
     void triggered(int);
 
 private:
-    void update() override;
+    void update(const Vector2 &pos) override;
 
     void composeComponent() override;
 

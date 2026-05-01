@@ -8,8 +8,8 @@ class RectTransform;
 class CommandBuffer;
 class StyleSheet;
 
-class UIKIT_EXPORT Widget : public NativeBehaviour {
-    A_OBJECT(Widget, NativeBehaviour, Components/UI)
+class UIKIT_EXPORT Widget : public Component {
+    A_OBJECT(Widget, Component, Components/UI)
 
     A_NOPROPERTIES()
     A_METHODS(
@@ -48,14 +48,18 @@ public:
 
     static Widget *focusWidget();
 
+    virtual void draw(CommandBuffer &buffer);
+
+    virtual bool isHovered(const Vector2 &pos);
+
+    virtual void update(const Vector2 &pos);
+
 public: // slots
     void lower();
 
     void raise();
 
 protected:
-    virtual void draw(CommandBuffer &buffer);
-
     virtual void drawSub(CommandBuffer &buffer);
 
     virtual void boundChanged(const Vector2 &size);
@@ -80,7 +84,7 @@ protected:
     void updateStyleProperty(const TString &name, const float *v, int32_t size);
 
 protected:
-    virtual void childAdded(RectTransform *child) const;
+    virtual void childAdded(RectTransform *child);
 
 protected:
     std::map<TString, std::pair<uint32_t, TString>> m_styleRules;

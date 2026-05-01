@@ -72,7 +72,7 @@ TString Foldout::text() const {
 /*!
     Sets the label \a text for the foldout.
 */
-void Foldout::setText(const TString text) {
+void Foldout::setText(const TString &text) {
     CheckBox *button = Foldout::indicator();
     if(button) {
         button->setText(text);

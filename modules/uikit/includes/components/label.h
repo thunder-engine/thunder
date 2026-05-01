@@ -55,6 +55,8 @@ public:
 
     Vector2 cursorAt(int position);
 
+    float textWidth() const;
+
 private:
     void draw(CommandBuffer &buffer) override;
     void applyStyle() override;

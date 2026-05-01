@@ -197,7 +197,7 @@ namespace UikitSuite {
         RectTransform parentRect;
         parentRect.setBorder(Vector4(1));
         parentRect.setPadding(Vector4(1));
-        parentRect.setSize(Vector3(100.0f));
+        parentRect.setSize(Vector2(100.0f));
 
         RectTransform child1Rect;
         child1Rect.setParentTransform(&parentRect);
@@ -244,7 +244,7 @@ namespace UikitSuite {
         RectTransform parentRect;
         parentRect.setBorder(Vector4(1));
         parentRect.setPadding(Vector4(1));
-        parentRect.setSize(Vector3(100.0f));
+        parentRect.setSize(Vector2(100.0f));
 
         RectTransform child1Rect;
         child1Rect.setParentTransform(&parentRect);
@@ -287,6 +287,26 @@ namespace UikitSuite {
         ASSERT_EQ(38.0f, child3Rect.size().y);
     }
 
+    TEST_F(RectTransformTest, LayoutVerticalZeroExpand) {
+        RectTransform parentRect;
+        parentRect.setSize(Vector2(100.0f));
 
+        Layout* layout = new Layout;
+        layout->setOrientation(Widget::Vertical);
+        parentRect.setLayout(layout);
 
+        RectTransform child1Rect;
+        child1Rect.setHorizontalPolicy(RectTransform::Expanding);
+        child1Rect.setVerticalPolicy(RectTransform::Expanding);
+
+        RectTransform child2Rect;
+        child2Rect.setHorizontalPolicy(RectTransform::Expanding);
+        child2Rect.setVerticalPolicy(RectTransform::Expanding);
+
+        layout->addTransform(&child1Rect);
+        layout->addTransform(&child2Rect);
+
+        ASSERT_EQ(50.0f, child1Rect.size().y);
+        ASSERT_EQ(50.0f, child2Rect.size().y);
+    }
 }

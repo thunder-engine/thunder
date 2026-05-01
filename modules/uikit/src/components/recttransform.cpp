@@ -32,8 +32,7 @@ RectTransform::RectTransform() :
         m_layout(nullptr),
         m_attachedLayout(nullptr),
         m_verticalPolicy(Fixed),
-        m_horizontalPolicy(Fixed),
-        m_mouseTracking(true) {
+        m_horizontalPolicy(Fixed) {
 
 }
 
@@ -303,42 +302,11 @@ void RectTransform::setPadding(const Vector4 &padding) {
     }
 }
 /*!
-    Returns true if this area is interactable with mouse; otherwise returns false.
-    Returns true by the default.
-*/
-bool RectTransform::mouseTracking() const {
-    return m_mouseTracking;
-}
-/*!
-    Sets mouse \a tracking enabled or disabled.
-*/
-void RectTransform::setMouseTracking(bool tracking) {
-    m_mouseTracking = tracking;
-}
-/*!
     Translates the global screen \a x and \a y coordinates to widget space.
 */
 Vector2 RectTransform::mapFromGlobal(float x, float y)  {
     return Vector2(x - m_worldTransform[12],
                    y - m_worldTransform[13]);
-}
-/*!
-    Returns true if the point with coordinates \a x and \a y is within the bounds, otherwise false.
-*/
-bool RectTransform::isHovered(float x, float y) const {
-    if(!m_mouseTracking) {
-        return false;
-    }
-
-    Vector2 pos(m_worldTransform[12],
-                m_worldTransform[13]);
-
-    if(x > pos.x && x < pos.x + m_size.x * m_worldScale.x &&
-       y > pos.y && y < pos.y + m_size.y * m_worldScale.y) {
-        return true;
-    }
-
-    return false;
 }
 /*!
     Returns the first widget associated with this rect transform.
@@ -347,26 +315,6 @@ Widget *RectTransform::widget() {
     if(!m_subscribers.empty()) {
         return m_subscribers.front();
     }
-    return nullptr;
-}
-/*!
-    Returns the most top RectTransform in hierarchy wich contains the point with coodinates \a x and \a y.
-    Returns null if no bounds.
-*/
-RectTransform *RectTransform::hoveredTransform(float x, float y) {
-    if(isHovered(x, y)) {
-        for(auto it : m_children) {
-            RectTransform *rect = dynamic_cast<RectTransform *>(it);
-            if(rect) {
-                RectTransform *result = rect->hoveredTransform(x, y);
-                if(result) {
-                    return result;
-                }
-            }
-        }
-        return this;
-    }
-
     return nullptr;
 }
 /*!
@@ -562,8 +510,8 @@ void RectTransform::cleanDirtySize() const {
         Vector2 bottomRight(m_padding.y + m_border.y, m_padding.z + m_border.z);
         Vector2 internalSize(m_size - topLeft - bottomRight);
 
-        m_layout->solveItemsDimension(MAX(internalSize.x, 0.0f), true);
-        m_layout->solveItemsDimension(MAX(internalSize.y, 0.0f), false);
+        m_layout->solveItemsDimension(MAX(internalSize.x, 0.0f), true, false);
+        m_layout->solveItemsDimension(MAX(internalSize.y, 0.0f), false, false);
 
         // Solve positions
         m_layout->solveItemsPosition(m_size.y, topLeft);
@@ -643,6 +591,9 @@ Vector4 RectTransform::scissorArea() const {
     \internal
 */
 void RectTransform::setParentTransform(Transform *parent, bool force) {
+    if(parent == this) {
+        return;
+    }
     Transform::setParentTransform(parent, force);
 
     RectTransform *rect = dynamic_cast<RectTransform *>(parent);

@@ -91,14 +91,11 @@ Widget *Splitter::widget(int index) {
     return nullptr;
 }
 
-void Splitter::update() {
-    Vector4 pos = Input::mousePosition();
-    if(Input::touchCount() > 0) {
-        pos = Input::touchPosition(0);
-    }
+void Splitter::update(const Vector2 &pos) {
+    Widget::update(pos);
 
-    RectTransform *rect = rectTransform();
-    if(rect->isHovered(pos.x, pos.y)) {
+    if(isHovered(pos)) {
+        RectTransform *rect = rectTransform();
         Input::CursorShape shape = Input::CURSOR_ARROW;
 
         Layout *layout = rect->layout();
@@ -167,7 +164,7 @@ void Splitter::resizeWidget(int index, int orientation, float delta) {
     }
 }
 
-void Splitter::childAdded(RectTransform *rect) const {
+void Splitter::childAdded(RectTransform *rect) {
     if(rect) {
         rect->setHorizontalPolicy(RectTransform::Expanding);
         rect->setVerticalPolicy(RectTransform::Expanding);

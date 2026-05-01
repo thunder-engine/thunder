@@ -14,8 +14,8 @@ Slider::Slider() :
 
 }
 
-void Slider::update() {
-    AbstractSlider::update();
+void Slider::update(const Vector2 &pos) {
+    AbstractSlider::update(pos);
 
     Vector4 color(m_normalColor);
 

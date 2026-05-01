@@ -73,8 +73,6 @@ private:
 
     UiEdit *m_editor;
 
-    UiSystem *m_uiSystem;
-
     uint32_t m_selected;
 
     int32_t m_zoom;

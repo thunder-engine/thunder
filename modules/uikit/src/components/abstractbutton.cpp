@@ -40,6 +40,7 @@ AbstractButton::AbstractButton() :
         m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
         m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
         m_iconSize(16.0f),
+        m_fadeDuration(0.1f),
         m_currentFade(1.0f),
         m_hovered(false),
         m_mirrored(false),
@@ -62,49 +63,65 @@ TString AbstractButton::text() const {
     Sets the \a text displayed on the button.
 */
 void AbstractButton::setText(const TString text) {
-    Label *lbl = label();
+    Label *lbl = AbstractButton::label();
+    if(lbl == nullptr) {
+        Actor *text = Engine::composeActor<Label>(gLabel, actor());
+        lbl = text->getComponent<Label>();
+        setLabel(lbl);
+    }
     if(lbl) {
         lbl->setText(text);
     }
 }
 /*!
-    Returns the background frame object associated with the button.
+    Returns the background frame component associated with the button.
 */
 Frame *AbstractButton::background() const {
     return static_cast<Frame *>(subWidget(gBackground));
 }
 /*!
-    Sets the background \a frame of the button.
+    Sets the background \a frame component associated with the button.
 */
 void AbstractButton::setBackground(Frame *frame) {
     setSubWidget(frame);
 
     if(frame) {
         frame->setColor(m_normalColor);
+        frame->setCorners(Vector4(gCorner));
     }
 }
 /*!
-    Returns the label object associated with the button.
+    Returns the label component object associated with the button.
 */
 Label *AbstractButton::label() const {
     return static_cast<Label *>(subWidget(gLabel));
 }
 /*!
-    Sets the \a label associated with the button.
+    Sets the \a label component associated with the button.
 */
 void AbstractButton::setLabel(Label *label) {
     setSubWidget(label);
+
+    if(label) {
+        label->setColor(m_textColor);
+        label->setAlign(Alignment::Middle | Alignment::Center);
+
+        RectTransform *rect = label->rectTransform();
+        if(rect) {
+            rect->setAnchors(Vector2(0.0f), Vector2(1.0f));
+        }
+    }
 }
 /*!
-     Returns the icon associated with the button.
+     Returns the image component associated with the button.
 */
-Image *AbstractButton::icon() const {
+Image *AbstractButton::image() const {
     return static_cast<Image *>(subWidget(gIcon));
 }
 /*!
-    Sets the icon \a image associated with the button.
+    Sets the icon \a image component associated with the button.
 */
-void AbstractButton::setIcon(Image *image) {
+void AbstractButton::setImage(Image *image) {
     setSubWidget(image);
 
     if(image) {
@@ -116,7 +133,57 @@ void AbstractButton::setIcon(Image *image) {
     }
 }
 /*!
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
      Returns the size of the icon.
+=======
+    \internal
+*/
+void AbstractButton::setHovered(bool hover, bool instant) {
+    if(m_hovered != hover) {
+        if(!hover && instant) {
+            Frame *back = background();
+            if(back) {
+                back->setColor(m_checked ? m_pressedColor : m_normalColor);
+            }
+        } else {
+            m_currentFade = 0.0f;
+        }
+        m_hovered = hover;
+    }
+}
+/*!
+>>>>>>> Stashed changes
+    Returns the icon shown on the button.
+*/
+Sprite *AbstractButton::AbstractButton::icon() const {
+    Image *img = image();
+    if(img) {
+        return img->sprite();
+    }
+    return nullptr;
+}
+/*!
+    Sets the \a icon shown on the button.
+*/
+void AbstractButton::setIcon(Sprite *icon) {
+    Image *img = image();
+    if(img == nullptr) {
+        Actor *imageActor = Engine::composeActor<Image>(gIcon, actor());
+        img = imageActor->getComponent<Image>();
+        setImage(img);
+    }
+    if(img) {
+        img->setSprite(icon);
+    }
+}
+/*!
+    Returns the size of the icon.
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 */
 Vector2 AbstractButton::iconSize() const {
     return m_iconSize;
@@ -126,7 +193,7 @@ Vector2 AbstractButton::iconSize() const {
 */
 void AbstractButton::setIconSize(const Vector2 &size) {
     m_iconSize = size;
-    Image *img = icon();
+    Image *img = image();
     if(img) {
         img->rectTransform()->setSize(m_iconSize);
     }
@@ -148,7 +215,7 @@ void AbstractButton::setColor(const Vector4 &color) {
     }
 
 #ifdef SHARED_DEFINE
-    if(!isSignalsBlocked()) {
+    if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssBackgroundColor, StyleSheet::toColor(m_normalColor));
     }
 #endif
@@ -200,6 +267,12 @@ bool AbstractButton::isChecked() const {
 */
 void AbstractButton::setChecked(bool checked) {
     m_checked = checked;
+
+    Frame *back = background();
+    if(back) {
+        back->setColor(checked ? m_pressedColor : m_normalColor);
+    }
+
     checkStateSet();
 
     toggled(m_checked);
@@ -244,20 +317,13 @@ void AbstractButton::toggled(bool checked) {
     \internal
     Internal method called to update the button's visual appearance and handle user interaction.
 */
-void AbstractButton::update() {
-    Vector4 pos = Input::mousePosition();
-    if(Input::touchCount() > 0) {
-        pos = Input::touchPosition(0);
-    }
-    Vector4 color(m_normalColor);
+void AbstractButton::update(const Vector2 &pos) {
+    Widget::update(pos);
 
     Frame *back = background();
-    bool hover = (back) ? back->rectTransform()->isHovered(pos.x, pos.y) : rectTransform()->isHovered(pos.x, pos.y);
-    if(m_hovered != hover) {
-        m_currentFade = 0.0f;
-        m_hovered = hover;
-    }
+    setHovered((back) ? back->isHovered(pos) : isHovered(pos));
 
+    Vector4 color(m_checked ? m_pressedColor : m_normalColor);
     if(m_hovered) {
         color = m_highlightedColor;
         if(Input::isMouseButtonDown(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
@@ -290,8 +356,6 @@ void AbstractButton::update() {
             back->blockSignals(false);
         }
     }
-
-    Widget::update();
 }
 /*!
     \internal
@@ -333,28 +397,10 @@ void AbstractButton::composeComponent() {
     // Add background
     Actor *background = Engine::composeActor<Frame>(gBackground, actor());
     Frame *frame = background->getComponent<Frame>();
-    frame->setCorners(Vector4(gCorner));
-
     setBackground(frame);
 
-    // Add label
-    Actor *text = Engine::composeActor<Label>(gLabel, actor());
-    Label *label = text->getComponent<Label>();
-    label->setAlign(Alignment::Middle | Alignment::Center);
-    label->setColor(m_textColor);
-
-    RectTransform *r = label->rectTransform();
-    r->setSize(rectTransform()->size());
-    r->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-    setLabel(label);
-    setText("Text");
-
-    // Add icon
-    Actor *icon = Engine::composeActor<Image>(gIcon, actor());
-    Image *image = icon->getComponent<Image>();
-
-    setIcon(image);
-
-    rectTransform()->setSize(Vector2(100.0f, 30.0f));
+    RectTransform *rect = rectTransform();
+    rect->blockSignals(true);
+    rect->setSize(Vector2(100.0f, 30.0f));
+    rect->blockSignals(false);
 }
