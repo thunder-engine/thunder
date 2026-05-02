@@ -5,13 +5,9 @@ Project {
     property stringList srcFiles: {
         var result = [
             "src/*.c",
-            "src/archivers/*.c"
         ];
-        if(qbs.targetOS.contains("windows")) {
-            result.push("src/platform/win32.c")
-        } else {
-            result.push("src/platform/unix.c"),
-            result.push("src/platform/posix.c")
+        if(qbs.targetOS.contains("darwin")) {
+            result.push("src/*.m")
         }
         return result;
     }
@@ -30,13 +26,14 @@ Project {
         Depends { name: "zlib-editor" }
         bundle.isBundle: false
 
-        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]
+        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
         cpp.libraryPaths: [ ]
+        cpp.minimumMacosVersion: physfs.osxVersion
 
         Properties {
             condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: [ "Advapi32" ]
+            cpp.dynamicLibraries: [ "Advapi32", "Shell32" ]
         }
 
         Properties {
@@ -47,6 +44,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
+            cpp.weakFrameworks: ["Foundation"]
             cpp.sonamePrefix: "@executable_path"
         }
 
@@ -66,8 +64,11 @@ Project {
         Depends { name: "bundle" }
         bundle.isBundle: false
 
-        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_NO_CDROM_SUPPORT"]
+        cpp.defines: ["PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.includePaths: physfs.incPaths
+        cpp.minimumMacosVersion: physfs.osxVersion
+        cpp.minimumIosVersion: physfs.iosVersion
+        cpp.minimumTvosVersion: physfs.tvosVersion
 
         Properties {
             condition: qbs.targetOS.contains("darwin")

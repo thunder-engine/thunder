@@ -8,6 +8,14 @@
 
 class AndroidFileHandler : public FileHandler {
 public:
+    void mount(const char *path, bool writable = false) override {
+
+    }
+
+    void unmount(const char *path) override {
+
+    }
+
     StringList list(const char *path) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         StringList result;

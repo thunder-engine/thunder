@@ -124,7 +124,8 @@ void AssetManager::rescan() {
 
     TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
-        m_force |= !Engine::reloadBundle();
+        Engine::resourceSystem()->unloadBundle(TString());
+        m_force |= !Engine::resourceSystem()->loadBundle(TString());
         m_force |= m_projectManager->projectSdk() != SDK_VERSION;
 
         m_assetProvider->init();
@@ -477,7 +478,9 @@ void AssetManager::dumpBundle() {
     if(file.open(File::WriteOnly)) {
         file.write(Json::save(root, 0));
         file.close();
-        Engine::reloadBundle();
+
+        Engine::resourceSystem()->unloadBundle(TString());
+        Engine::resourceSystem()->loadBundle(TString());
     }
 }
 

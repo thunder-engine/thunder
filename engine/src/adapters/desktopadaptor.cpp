@@ -18,14 +18,14 @@
 
 #include "handlers/physfsfilehandler.h"
 
-#define CONFIG_NAME "config.json"
-
 #define NONE -1
 #define RELEASE 0
 #define PRESS 1
 #define REPEAT 2
 
 namespace {
+    const char *gConfigName("config.json");
+
     const char *gScreenWidth("s.width");
     const char *gScreenHeight("s.height");
     const char *gScreenWindowed("s.windowed");
@@ -108,46 +108,14 @@ void DesktopAdaptor::loop() {
 bool DesktopAdaptor::start() {
     PhysfsFileHandler *fileHandler = new PhysfsFileHandler;
     fileHandler->init("");
-    fileHandler->searchPathAdd("base.pak");
     File::setHandler(fileHandler);
 
-    if(!Engine::reloadBundle()) {
-        Log(Log::ERR) << "Filed to load bundle";
+    if(!Engine::resourceSystem()->loadBundle("base.pak")) {
+        aError() << "Filed to load bundle";
         return false;
     }
 
-    TString appConfig = locationLocalDir();
-#if _WIN32
-    int32_t size = MultiByteToWideChar(CP_UTF8, 0, appConfig.data(), appConfig.size(), nullptr, 0);
-    if(size) {
-        std::wstring path;
-        path.resize(size);
-        MultiByteToWideChar(CP_UTF8, 0, appConfig.data(), appConfig.size(), path.data(), size);
-
-        uint32_t start = 0;
-        for(int32_t slash = 0; slash != -1; start = slash) {
-            slash = path.find(L"/", start + 1);
-            if(slash) {
-                CreateDirectoryW(&path.substr(0, slash)[0], nullptr);
-                DWORD error = GetLastError();
-                if(error == ERROR_ALREADY_EXISTS || error == ERROR_ACCESS_DENIED) {
-                    continue;
-                }
-                break;
-            }
-        }
-    }
-#else
-    for(size_t i = 1; i < appConfig.size(); i++) {
-        if(appConfig[i] == '/' || i == appConfig.size()) {
-            int result = ::mkdir(appConfig.mid(0, i).data(), 0777);
-            if(result != 0 && (errno == EEXIST || errno == EACCES)) {
-                continue;
-            }
-        }
-    }
-#endif
-    fileHandler->searchPathAdd(appConfig.data(), true);
+    fileHandler->mount(locationLocalDir().data(), true);
 
     s_width = Engine::value(gScreenWidth, s_width).toInt();
     s_height = Engine::value(gScreenHeight, s_height).toInt();
@@ -163,11 +131,11 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    if(!File::exists(CONFIG_NAME)) {
+    if(!File::exists(gConfigName)) {
         Engine::syncValues();
     }
 
-    File fp(CONFIG_NAME);
+    File fp(gConfigName);
     if(fp.open(File::ReadOnly)) {
         ByteArray data(fp.readAll());
 
@@ -396,7 +364,7 @@ void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double yp
 }
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
-    Log(Log::ERR) << "Desktop adaptor failed with code:" << error << description;
+    aError() << "Desktop adaptor failed with code:" << error << description;
 }
 
 TString DesktopAdaptor::locationLocalDir() const {
@@ -450,7 +418,7 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     map[gScreenWindowed] = s_windowed;
     map[gScreenVsync] = s_vSync;
 
-    File fp(CONFIG_NAME);
+    File fp(gConfigName);
     if(fp.open(File::WriteOnly)) {
         fp.write(Json::save(map, 0));
     }
