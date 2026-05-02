@@ -7,37 +7,55 @@
 
 Splitter::Splitter() :
         m_savedPosition(0.0f),
-        m_index(-1) {
+        m_index(-1),
+        m_orientation(Widget::Horizontal),
+        m_handleWidth(5) {
 
 }
 
-int Splitter::handleWidth() {
-    Layout *layout = rectTransform()->layout();
-    if(layout) {
-        layout->spacing();
-    }
-    return 0;
+int Splitter::handleWidth() const {
+    return m_handleWidth;
 }
 
 void Splitter::setHandleWidth(int width) {
+    m_handleWidth = width;
     Layout *layout = rectTransform()->layout();
     if(layout) {
         layout->setSpacing(width);
     }
 }
 
-int Splitter::orentation() {
-    Layout *layout = rectTransform()->layout();
-    if(layout) {
-        return layout->orientation();
-    }
-    return Horizontal;
+int Splitter::orentation() const {
+    return m_orientation;
 }
 
 void Splitter::setOrientation(int orientation) {
+    m_orientation = orientation;
     Layout *layout = rectTransform()->layout();
     if(layout) {
-        layout->setOrientation(orientation);
+        layout->setOrientation(m_orientation);
+
+        if(m_orientation == Widget::Horizontal) {
+            for(int i = 0; i < layout->count(); i++) {
+                RectTransform *r = layout->transformAt(i);
+                r->setVerticalPolicy(RectTransform::Expanding);
+                if(i == layout->count() - 1) {
+                    r->setHorizontalPolicy(RectTransform::Expanding);
+                } else {
+                    r->setHorizontalPolicy(RectTransform::Fixed);
+                }
+            }
+        } else {
+            for(int i = 0; i < layout->count(); i++) {
+                RectTransform *r = layout->transformAt(i);
+                r->setHorizontalPolicy(RectTransform::Expanding);
+                if(i == layout->count() - 1) {
+                    r->setVerticalPolicy(RectTransform::Expanding);
+                } else {
+                    r->setVerticalPolicy(RectTransform::Fixed);
+                }
+            }
+        }
     }
 }
 
@@ -100,7 +118,6 @@ void Splitter::update(const Vector2 &pos) {
 
         Layout *layout = rect->layout();
         if(layout) {
-            const int orientation = layout->orientation();
             if(m_index == -1) {
                 int hoveredSlitter = -1;
                 const float sense = layout->spacing() * 2;
@@ -108,7 +125,7 @@ void Splitter::update(const Vector2 &pos) {
                     RectTransform *child = layout->transformAt(i);
                     const Matrix4 m(child->worldTransform());
                     const Vector2 size(child->size() * child->worldScale());
-                    if(orientation == Widget::Horizontal) {
+                    if(m_orientation == Widget::Horizontal) {
                         float d = std::abs((m[12] + size.x) - pos.x);
                         if(d < sense) {
                             hoveredSlitter = i;
@@ -126,18 +143,20 @@ void Splitter::update(const Vector2 &pos) {
                 }
 
                 if(hoveredSlitter > -1 && Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-                    m_savedPosition = (orientation == Widget::Horizontal) ? pos.x : pos.y;
+                    m_savedPosition = (m_orientation == Widget::Horizontal) ? pos.x : pos.y;
                     m_index = hoveredSlitter;
                 }
             } else {
-                shape = (orientation == Widget::Horizontal) ? Input::CURSOR_HORSIZE : Input::CURSOR_VERSIZE;
+                shape = (m_orientation == Widget::Horizontal) ? Input::CURSOR_HORSIZE : Input::CURSOR_VERSIZE;
 
                 if(Input::isMouseButton(Input::MOUSE_LEFT)) {
-                    float delta = ((orientation == Widget::Horizontal) ? pos.x : pos.y) - m_savedPosition;
-                    m_savedPosition = (orientation == Widget::Horizontal) ? pos.x : pos.y;
+                    float delta = ((m_orientation == Widget::Horizontal) ? pos.x : pos.y) - m_savedPosition;
+                    if(delta != 0.0f) {
+                        m_savedPosition = (m_orientation == Widget::Horizontal) ? pos.x : pos.y;
 
-                    resizeWidget(m_index, orientation, delta);
-                    resizeWidget(m_index + 1, orientation, -delta);
+                        resizeWidget(m_index, delta);
+                        resizeWidget(m_index + 1, -delta);
+                    }
                 }
 
                 if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
@@ -150,12 +169,12 @@ void Splitter::update(const Vector2 &pos) {
     }
 }
 
-void Splitter::resizeWidget(int index, int orientation, float delta) {
+void Splitter::resizeWidget(int index, float delta) {
     Widget *widget = Splitter::widget(index);
     if(widget) {
         RectTransform *rect = widget->rectTransform();
         Vector2 size(rect->size());
-        if(orientation == Widget::Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             size.x = MAX(size.x + delta, 0.0f);
         } else {
             size.y = MAX(size.y + delta, 0.0f);
@@ -166,8 +185,28 @@ void Splitter::resizeWidget(int index, int orientation, float delta) {
 
 void Splitter::childAdded(RectTransform *rect) {
     if(rect) {
-        rect->setHorizontalPolicy(RectTransform::Expanding);
-        rect->setVerticalPolicy(RectTransform::Expanding);
+        Layout *layout = rectTransform()->layout();
+        if(m_orientation == Widget::Horizontal) {
+            rect->setVerticalPolicy(RectTransform::Expanding);
+            for(int i = 0; i < layout->count(); i++) {
+                RectTransform *r = layout->transformAt(i);
+                if(r == rect) {
+                    rect->setHorizontalPolicy(RectTransform::Expanding);
+                } else {
+                    r->setHorizontalPolicy(RectTransform::Fixed);
+                }
+            }
+        } else {
+            rect->setHorizontalPolicy(RectTransform::Expanding);
+            for(int i = 0; i < layout->count(); i++) {
+                RectTransform *r = layout->transformAt(i);
+                if(r == rect) {
+                    rect->setVerticalPolicy(RectTransform::Expanding);
+                } else {
+                    r->setVerticalPolicy(RectTransform::Fixed);
+                }
+            }
+        }
     }
 }
 
@@ -175,7 +214,7 @@ void Splitter::composeComponent() {
     Frame::composeComponent();
 
     Layout *layout = new Layout;
-    layout->setOrientation(Horizontal);
+    layout->setOrientation(m_orientation);
     layout->setSpacing(5);
 
     rectTransform()->setLayout(layout);
