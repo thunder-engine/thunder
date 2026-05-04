@@ -292,7 +292,7 @@ void AssetManager::fixUUIDs() {
         outFile.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
         pushToImport(fetchSettings(path));
     }
-    aInfo() << "Fixed:" << m_importQueue.size() << "files.";
+    aInfo() << "Fixed:" << static_cast<int>(m_importQueue.size()) << "files.";
     m_changedUUIDs.clear();
 }
 
