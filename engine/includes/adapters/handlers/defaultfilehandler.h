@@ -166,10 +166,6 @@ protected:
         return ::ftell(reinterpret_cast<FILE *>(handle));
     }
 
-    TString md5(const char *path) override {
-        return TString();
-    }
-
 protected:
     StringList m_searchPath;
 

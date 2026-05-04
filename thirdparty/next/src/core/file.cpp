@@ -126,11 +126,3 @@ bool File::isFile(const TString &path) {
 bool File::isDir(const TString &path) {
     return s_handler->isDir(path.data());
 }
-
-/*!
-    Returns the MD5 hash for the \a file.
-    \note This function calculates hash sum in editor mode and returns cached sum for the resource in game mode.
-*/
-TString File::md5(const TString &file) {
-    return s_handler->md5(file.data());
-}

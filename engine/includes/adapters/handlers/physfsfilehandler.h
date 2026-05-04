@@ -126,15 +126,6 @@ protected:
         return static_cast<size_t>(PHYSFS_tell(reinterpret_cast<PHYSFS_file *>(handle)));
     }
 
-    TString md5(const char *path) override {
-        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
-        auto it = indices.find(path);
-        if(it != indices.end()) {
-            return it->second.md5;
-        }
-
-        return TString();
-    }
 };
 
 #endif // PHYSFSFILEHANDLER_H

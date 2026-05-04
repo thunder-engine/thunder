@@ -71,8 +71,6 @@ public:
 
     static bool isDir(const TString &path);
 
-    static TString md5(const TString &file);
-
 protected:
     friend class FileHandler;
 
@@ -119,8 +117,6 @@ public:
     virtual size_t size(int *handle) = 0;
 
     virtual size_t tell(int *handle) = 0;
-
-    virtual TString md5(const char *path) = 0;
 
 };
 
