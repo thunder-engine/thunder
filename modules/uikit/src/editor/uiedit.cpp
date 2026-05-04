@@ -180,7 +180,7 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
         AssetEditor::loadAsset(settings);
 
         File loadFile(settings->source());
-        if(!loadFile.open(File::ReadOnly)) {
+        if(!loadFile.open(File::Read)) {
             qWarning("Couldn't open file.");
             return;
         }
@@ -208,7 +208,7 @@ void UiEdit::saveAsset(const TString &path) {
         doc.save(ss);
 
         File loadFile(m_settings.front()->source());
-        if(!loadFile.open(File::WriteOnly)) {
+        if(!loadFile.open(File::Write)) {
             qWarning("Couldn't open file.");
             return;
         }

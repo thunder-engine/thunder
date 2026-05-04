@@ -360,12 +360,14 @@ void PluginManager::initSystems() {
 void PluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
         for(auto it : m_engine->getAllObjectsByType(type)) {
-            const Object::ObjectList &children = it->parent()->getChildren();
+            Object *parent = it->parent();
+
+            const Object::ObjectList &children = parent->getChildren();
             auto pos = std::find(children.begin(), children.end(), it);
             int32_t index = std::distance(children.begin(), pos);
 
             Variant v = Engine::toVariant(it);
-            backup.push_back({ Bson::save(v), it->parent(), index });
+            backup.push_back({ Bson::save(v), parent, index });
 
             delete it;
         }

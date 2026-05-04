@@ -31,7 +31,7 @@ void AnimConverter::init() {
 
 AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         AnimationClip *clip = Engine::loadResource<AnimationClip>(settings->destination());
         if(clip == nullptr) {
             clip = Engine::objectCreate<AnimationClip>(settings->destination());
@@ -74,7 +74,7 @@ Variant AnimConverter::readJson(const TString &data, AssetConverterSettings *set
 
     if(update) {
         File src(settings->source());
-        if(src.open(File::WriteOnly)) {
+        if(src.open(File::Write)) {
             src.write(Json::save(result, 0));
             src.close();
         }

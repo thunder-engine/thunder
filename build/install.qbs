@@ -182,6 +182,15 @@ Product {
     }
 
     Group {
+        name: "Changed UUIDs list"
+        files: [
+            install.RESOURCE_ROOT + "/uuid.txt"
+        ]
+        qbs.install: true
+        qbs.installDir: install.SDK_PATH + "/resources"
+        qbs.installPrefix: install.PREFIX
+    }
+    Group {
         name: "Shaders Engine"
         files: [
             install.RESOURCE_ROOT + "/engine/shaders/*"

@@ -1,6 +1,9 @@
 {
-	"guid": "{00000000-0581-0000-0000-000000000000}",
+	"guid": "{0c053d44-0810-449c-a050-40b7669936fb}",
+	"id": -1971323125,
 	"md5": "{dbcc08eb-78f7-2ea6-36ca-48bd68b2e084}",
+	"meta": {
+	},
 	"settings": {
 		"Compress_Animation": 1,
 		"Custom_Scale": 1.000000,
@@ -14,9 +17,11 @@
 	},
 	"subitems": {
 		"Cone001": [
-			"{165d583d-e41a-49c2-817c-5e434453b077}",
-			"Mesh"
+			"{050d583d-e41a-49c2-817c-5e434453b077}",
+			"Mesh",
+			944255565
 		]
 	},
-	"version": 8
+	"type": "Prefab",
+	"version": 9
 }

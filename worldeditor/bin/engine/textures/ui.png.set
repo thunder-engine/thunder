@@ -1,5 +1,6 @@
 {
-	"guid": "{00000000-0202-0000-0000-000000000000}",
+	"guid": "{0305e53c-f76a-4c16-8288-2edd73d81b89}",
+	"id": -1787133460,
 	"md5": "{64d63ec1-ce57-140a-77a3-2c352594384a}",
 	"meta": {
 		"Arrow": {
@@ -72,6 +73,7 @@
 		}
 	},
 	"settings": {
+		"compressed": false,
 		"filtering": 1,
 		"mipMaping": false,
 		"pixelsPerUnit": 1,
@@ -79,10 +81,27 @@
 		"wrap": 1
 	},
 	"subitems": {
-		"_Page1": [
-			"{94caf46c-6679-4830-a2eb-14af5faabce4}",
-			"Texture"
+		"Arrow": [
+			"{060a2480-0861-47aa-8db8-b00e048fde6e}",
+			"Sprite",
+			-680546607
+		],
+		"Check": [
+			"{0606cbd9-b921-4a0b-a56f-5fb904e3e7aa}",
+			"Sprite",
+			-386686091
+		],
+		"Knob": [
+			"{060b3772-d144-410c-a493-ce9691ed5cc8}",
+			"Sprite",
+			-698762039
+		],
+		"Rectangle": [
+			"{060d024f-63d1-4aac-993e-e53ede9ab832}",
+			"Sprite",
+			2103622437
 		]
 	},
-	"version": 9
+	"type": "Texture",
+	"version": 10
 }

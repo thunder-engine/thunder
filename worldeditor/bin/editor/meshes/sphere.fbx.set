@@ -1,6 +1,9 @@
 {
-	"guid": "{00000000-0582-0000-0000-000000000000}",
+	"guid": "{0c019d7c-8f34-4cc5-888d-8e488d1de324}",
+	"id": 824728289,
 	"md5": "{d29d59ee-fe09-184f-fe42-a2092e4a2641}",
+	"meta": {
+	},
 	"settings": {
 		"Compress_Animation": 1,
 		"Custom_Scale": 1.000000,
@@ -14,9 +17,11 @@
 	},
 	"subitems": {
 		"Sphere001": [
-			"{0ca06588-d34e-4484-8316-961dca7aeb9c}",
-			"Mesh"
+			"{05006588-d34e-4484-8316-961dca7aeb9c}",
+			"Mesh",
+			398448192
 		]
 	},
-	"version": 8
+	"type": "Prefab",
+	"version": 9
 }

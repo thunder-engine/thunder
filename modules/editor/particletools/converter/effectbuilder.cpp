@@ -126,7 +126,7 @@ Actor *EffectBuilder::createActor(const AssetConverterSettings *settings, const 
 
 void EffectBuilder::convertOld(const TString &path) {
     File loadFile(path.data());
-    if(!loadFile.open(File::ReadOnly)) {
+    if(!loadFile.open(File::Read)) {
         qWarning("Couldn't open file.");
         return;
     }

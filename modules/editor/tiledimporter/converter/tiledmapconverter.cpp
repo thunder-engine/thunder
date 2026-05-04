@@ -38,7 +38,7 @@ void TiledMapConverter::init() {
 
 AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings *settings) {
     File file(settings->source());
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         TString buffer(file.readAll());
         file.close();
 
@@ -84,7 +84,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                         if(source.isEmpty()) {
                             TString tilesetName(element.attribute("name").as_string());
-                            ResourceSystem::ResourceInfo resInfo = settings->subItem(tilesetName, true);
+                            ResourceSystem::ResourceInfo resInfo = settings->subItem(tilesetName, MetaType::name<TileSet>());
 
                             tileSet = Engine::loadResource<TileSet>(resInfo.uuid);
                             if(tileSet == nullptr) {
@@ -98,7 +98,6 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileSet), dst.absoluteDir() + "/" + resInfo.uuid);
                             if(result == AssetConverter::Success) {
                                 resInfo.id = tileSet->uuid();
-                                resInfo.type = MetaType::name<TileSet>();
                                 settings->setSubItem(tilesetName, resInfo);
                             }
                         } else {
@@ -111,7 +110,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         tileOffset = element.attribute("firstgid").as_int();
                     } else if(std::string(element.name()) == "layer") {
                         TString tilemapName(element.attribute("name").as_string());
-                        ResourceSystem::ResourceInfo resInfo = settings->subItem(tilemapName, true);
+                        ResourceSystem::ResourceInfo resInfo = settings->subItem(tilemapName, MetaType::name<TileMap>());
 
                         TileMap *tileMap = Engine::loadResource<TileMap>(resInfo.uuid);
                         if(tileMap == nullptr) {
@@ -147,7 +146,6 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileMap), dst.absoluteDir() + "/" + resInfo.uuid);
                         if(result == AssetConverter::Success) {
                             resInfo.id = tileMap->uuid();
-                            resInfo.type = MetaType::name<TileMap>();
                             settings->setSubItem(tilemapName, resInfo);
                         }
 

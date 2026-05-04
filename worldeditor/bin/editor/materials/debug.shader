@@ -1,7 +1,26 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="1" type="texture2d" name="mainTexture" target="true"/>
+        <property name="mainTexture" binding="1" type="texture2d" target="true" />
     </properties>
+    <fragment><![CDATA[
+#version 450 core
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(binding = UNIFORM + 1) uniform sampler2D mainTexture;
+
+layout(location = 0) in vec2 _uv0;
+layout(location = 1) flat in int _instanceOffset;
+
+layout(location = 0) out vec4 color;
+
+void main() {
+    color = vec4(texture(mainTexture, _uv0).xyz, 1.0);
+}
+]]></fragment>
     <vertex><![CDATA[
 #version 450 core
 
@@ -32,25 +51,7 @@ void main(void) {
     gl_Position = pos;
 }
 ]]></vertex>
-    <fragment><![CDATA[
-#version 450 core
-
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
-layout(binding = UNIFORM + 1) uniform sampler2D mainTexture;
-
-layout(location = 0) in vec2 _uv0;
-layout(location = 1) flat in int _instanceOffset;
-
-layout(location = 0) out vec4 color;
-
-void main() {
-    color = vec4(texture(mainTexture, _uv0).xyz, 1.0);
-}
-]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
     </pass>
 </shader>

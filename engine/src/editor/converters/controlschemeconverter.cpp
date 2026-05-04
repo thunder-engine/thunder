@@ -23,7 +23,7 @@ void ControlSchemeConverter::init() {
 
 AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         ControlScheme *scheme = Engine::loadResource<ControlScheme>(settings->destination());
         if(scheme == nullptr) {
             scheme = Engine::objectCreate<ControlScheme>(settings->destination());

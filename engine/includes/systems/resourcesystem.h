@@ -4,6 +4,8 @@
 #include "system.h"
 #include "resource.h"
 
+#include <set>
+
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
     struct ResourceInfo {
@@ -47,10 +49,14 @@ public:
 
     void setCleanImport(bool flag);
 
+    int indexOf(const TString &type);
+
 private:
     void update(World *) override;
 
     int threadPolicy() const override;
+
+    void factoryAdd(const TString &name, const TString &url, const MetaObject *meta) override;
 
     Object *instantiateObject(const MetaObject *meta, const TString &name, Object *parent) override;
 
@@ -63,6 +69,8 @@ private:
 
     std::unordered_map<TString, Resource *> m_resourceCache;
     std::unordered_map<Resource *, TString> m_referenceCache;
+
+    StringList m_types;
 
     ObjectList m_deleteList;
 

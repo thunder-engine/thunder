@@ -191,7 +191,7 @@ void AbstractNodeGraph::load(const TString &path) {
 
     pugi::xml_document doc;
     File file(path);
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         TString content(file.readAll());
         file.close();
         pugi::xml_document doc;

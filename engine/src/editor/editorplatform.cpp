@@ -164,7 +164,7 @@ void EditorPlatform::setImportPath(const TString &path) {
 
 bool EditorPlatform::init() {
     File fp(locationLocalDir() + "/config.json");
-    if(fp.open(File::ReadOnly | File::Text)) {
+    if(fp.open(File::Read | File::Text)) {
         ByteArray data = fp.readAll();
         fp.close();
 
@@ -353,7 +353,7 @@ void EditorPlatform::syncConfiguration(VariantMap &map) const {
     }
 
     File fp(dir + "/config.json");
-    if(fp.open(File::WriteOnly)) {
+    if(fp.open(File::Write)) {
         fp.write(Json::save(map, 0));
         fp.close();
     }

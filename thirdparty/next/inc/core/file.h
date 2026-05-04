@@ -10,10 +10,10 @@ class FileHandler;
 class NEXT_LIBRARY_EXPORT File {
 public:
     enum OpenMode {
-        ReadOnly    = (1<<0),
-        WriteOnly   = (1<<1),
-        Append      = (1<<2),
-        Text        = (1<<4)
+        Read    = (1<<0),
+        Write   = (1<<1),
+        Append  = (1<<2),
+        Text    = (1<<4)
     };
 
 public:

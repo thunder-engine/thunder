@@ -31,14 +31,14 @@ EffectGraph::EffectGraph() :
     m_version = EffectBuilder::version();
 
     if(m_nodeTypes.empty()) {
-        GraphNode::registerClassFactory(Engine::resourceSystem());
-        EffectRootNode::registerClassFactory(Engine::resourceSystem());
-        EffectModule::registerClassFactory(Engine::resourceSystem());
-        EmitterState::registerClassFactory(Engine::resourceSystem());
-        SpriteParticle::registerClassFactory(Engine::resourceSystem());
-        RenderableModule::registerClassFactory(Engine::resourceSystem());
-        MeshParticle::registerClassFactory(Engine::resourceSystem());
-        CustomModule::registerClassFactory(Engine::resourceSystem());
+        GraphNode::registerClassFactory(&Engine::instance());
+        EffectRootNode::registerClassFactory(&Engine::instance());
+        EffectModule::registerClassFactory(&Engine::instance());
+        EmitterState::registerClassFactory(&Engine::instance());
+        SpriteParticle::registerClassFactory(&Engine::instance());
+        RenderableModule::registerClassFactory(&Engine::instance());
+        MeshParticle::registerClassFactory(&Engine::instance());
+        CustomModule::registerClassFactory(&Engine::instance());
 
         m_nodeTypes.push_back("EmitterUpdate/EmitterState");
 

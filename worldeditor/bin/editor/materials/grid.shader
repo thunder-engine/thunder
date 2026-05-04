@@ -1,39 +1,12 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="vec4" name="mainColor"/>
-        <property type="int" name="scale"/>
-        <property type="float" name="width"/>
-        <property type="int" name="orientation"/>
-        <property type="bool" name="ortho"/>
+        <property name="mainColor" type="vec4" />
+        <property name="scale" type="int" />
+        <property name="width" type="float" />
+        <property name="orientation" type="int" />
+        <property name="ortho" type="bool" />
     </properties>
-    <vertex><![CDATA[
-#version 450 core
-
-#pragma flags
-
-layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec4 color;
-
-layout(location = 0) out vec4 _vertex;
-layout(location = 1) out vec4 _color;
-
-layout(location = 2) flat out int _instanceOffset;
-layout(location = 3) flat out mat4 _screenToWorld;
-
-#include "ShaderLayout.h"
-
-void main(void) {
-#pragma offset
-
-    _vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0);
-    _screenToWorld = cameraScreenToWorld();
-#ifdef ORIGIN_TOP
-    _vertex.y = -_vertex.y;
-#endif
-    _color = color;
-    gl_Position = _vertex;
-}
-]]></vertex>
     <fragment><![CDATA[
 #version 450 core
 
@@ -114,8 +87,36 @@ void main() {
     }
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
-        <depth comp="Less" write="false" test="true"/>
+    <vertex><![CDATA[
+#version 450 core
+
+#pragma flags
+
+layout(location = 0) in vec3 vertex;
+layout(location = 1) in vec4 color;
+
+layout(location = 0) out vec4 _vertex;
+layout(location = 1) out vec4 _color;
+
+layout(location = 2) flat out int _instanceOffset;
+layout(location = 3) flat out mat4 _screenToWorld;
+
+#include "ShaderLayout.h"
+
+void main(void) {
+#pragma offset
+
+    _vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0);
+    _screenToWorld = cameraScreenToWorld();
+#ifdef ORIGIN_TOP
+    _vertex.y = -_vertex.y;
+#endif
+    _color = color;
+    gl_Position = _vertex;
+}
+]]></vertex>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
+        <depth comp="Less" write="false" test="true" />
     </pass>
 </shader>

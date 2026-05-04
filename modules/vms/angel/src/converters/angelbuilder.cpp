@@ -108,7 +108,7 @@ bool AngelBuilder::buildProject() {
         }
         for(auto &it : m_sources) {
             File file(it);
-            if(file.open(File::ReadOnly)) {
+            if(file.open(File::Read)) {
                 TString code(file.readAll());
                 mod->AddScriptSection("AngelData", code.data());
                 file.close();
@@ -120,7 +120,7 @@ bool AngelBuilder::buildProject() {
             TString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
 
             File dst(destination.data());
-            if(dst.open(File::WriteOnly)) {
+            if(dst.open(File::Write)) {
                 AngelScript *serial = Engine::loadResource<AngelScript>(persistentUUID());
                 if(serial == nullptr) {
                     serial = Engine::objectCreate<AngelScript>(persistentUUID());

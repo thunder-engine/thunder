@@ -119,10 +119,8 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
         path = findFreeElementName(info.baseName());
     }
 
-    ResourceSystem::ResourceInfo resInfo = subItem(path, true);
+    ResourceSystem::ResourceInfo resInfo = subItem(path, MetaType::name<Mesh>());
     m_elements[path] = element;
-
-    resInfo.type = MetaType::name<Mesh>();
 
     setSubItem(path, resInfo);
 
@@ -460,7 +458,7 @@ void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *se
     Url dst(settings->absoluteDestination());
 
     for(auto &it : settings->elements()) {
-        ResourceSystem::ResourceInfo info = settings->subItem(it.first, true);
+        ResourceSystem::ResourceInfo info = settings->subItem(it.first, MetaType::name<Sprite>());
 
         Sprite *sprite = Engine::loadResource<Sprite>(info.uuid);
         if(sprite == nullptr) {
@@ -480,7 +478,6 @@ void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *se
         AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = sprite->uuid();
-            info.type = MetaType::name<Sprite>();
             settings->setSubItem(it.first, info);
         }
     }

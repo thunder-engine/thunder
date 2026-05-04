@@ -7,6 +7,7 @@
 #include <QPainter>
 
 #include "editor/projectsettings.h"
+#include "systems/resourcesystem.h"
 
 #include "config.h"
 
@@ -105,8 +106,23 @@ bool AssetConverterSettings::isOutdated() const {
             }
         }
         m_info.md5 = md5.toStdString();
+        if(!m_changedUuids.empty()) {
+            result = true;
+        }
     }
     return result;
+}
+/*!
+    Returns list of changed uuid's needs to be fixed in project.
+*/
+std::list<std::pair<TString, TString>> &AssetConverterSettings::changedUuids() {
+    return m_changedUuids;
+}
+/*!
+    Reset the list of changed uuid's.
+*/
+void AssetConverterSettings::clearChangedUuids() {
+    m_changedUuids.clear();
 }
 /*!
     Returns whether this asset represents code (default returns false).
@@ -201,6 +217,27 @@ uint32_t AssetConverterSettings::version() const {
 */
 void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
+}
+/*!
+    Fixes \a uuid according it's \a type and \a lod level.
+*/
+TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type, int lod) {
+    Uuid result(uuid);
+
+    if(!result.isNull()) {
+        int index = Engine::resourceSystem()->indexOf(type) + 1;
+        ByteArray array = result.toByteArray();
+        array[0] = index;
+        array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
+        result.fromByteArray(array);
+    }
+
+    TString str(result.toString());
+    if(str != uuid) {
+        m_changedUuids.push_back(std::make_pair(uuid, str));
+    }
+
+    return str;
 }
 
 QImage AssetConverterSettings::renderDocumentIcon(const TString &path, const TString &color) {
@@ -319,18 +356,18 @@ void AssetConverterSettings::setSubItemsDirty() {
     Returns the resource information for a sub-item identified by \a key.
 
     This method retrieves the ResourceInfo associated with the given sub-item key.
-    If the sub-item doesn't exist and \a create is true, a new sub-item is created
+    If the sub-item doesn't exist and \a type is provided, a new sub-item is created
     with a generated UUID and the parent's MD5 hash.
 */
-ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, bool create) const {
+ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, const TString &type) const {
     auto it = m_subItems.find(key);
     if(it != m_subItems.end()) {
         return it->second.info;
     }
-    if(create) {
+    if(!type.isEmpty()) {
         ResourceSystem::ResourceInfo info;
+        info.type = type;
         info.uuid = Uuid::createUuid().toString();
-        info.md5 = m_info.md5;
         return info;
     }
     return ResourceSystem::ResourceInfo();
@@ -338,9 +375,12 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
 /*!
     Sets a sub-item with \a name, \a info.
 */
-void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info) {
+void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod) {
     if(!name.isEmpty() && !info.uuid.isEmpty()) {
-        m_subItems[name] = {info, QImage(), false};
+        ResourceSystem::ResourceInfo fixedInfo(info);
+        fixedInfo.uuid = fixUuid(fixedInfo.uuid, fixedInfo.type, 0);
+
+        m_subItems[name] = {fixedInfo, QImage(), false};
     }
 }
 /*!
@@ -360,7 +400,7 @@ void AssetConverterSettings::setSubItemData(const TString &name, const Variant &
 
 AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &data, const TString &path) {
     File file(path);
-    if(file.open(File::WriteOnly)) {
+    if(file.open(File::Write)) {
         std::set<TString> types;
         for(auto &it : data.toList()) {
             types.insert(it.toList().begin()->toString());
@@ -387,7 +427,7 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
 */
 bool AssetConverterSettings::loadSettings() {
     File meta(source() + "." + gMetaExt);
-    if(meta.open(File::ReadOnly)) {
+    if(meta.open(File::Read)) {
         VariantMap object = Json::load(meta.readAll()).toMap();
         meta.close();
 
@@ -438,6 +478,8 @@ bool AssetConverterSettings::loadSettings() {
         if(it != object.end()) {
             setCurrentVersion(it->second.toInt());
         }
+
+        m_info.uuid = fixUuid(m_info.uuid, m_info.type, 0);
 
         it = object.find(gMeta);
         if(it != object.end()) {
@@ -524,11 +566,17 @@ void AssetConverterSettings::saveSettings() {
     obj[gSubItems] = sub;
 
     File fp(source() + "." + gMetaExt);
-    if(fp.open(File::WriteOnly)) {
+    if(fp.open(File::Write)) {
         fp.write(Json::save(obj, 0));
         fp.close();
         m_modified = false;
     }
+}
+
+void AssetConverterSettings::newSettings() {
+    m_info.uuid = Uuid::createUuid().toString();
+    m_info.md5 = TString();
+    m_info.id = 0;
 }
 /*!
     Returns true if import setting has been modified; otherwise return false.

@@ -1,6 +1,7 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="texture2d" name="depthMap" target="true"/>
+        <property name="depthMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[	
 #version 450 core
@@ -31,7 +32,7 @@ void main(void) {
     rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, 0.0f);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
     </pass>
 </shader>

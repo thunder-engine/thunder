@@ -32,7 +32,7 @@ void TiledSetConverter::init() {
 
 AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings *settings) {
     File file(settings->source());
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         TString buffer(file.readAll());
         file.close();
 

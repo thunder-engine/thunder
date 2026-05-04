@@ -59,7 +59,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
     SpineConverterSettings *spineSettings = static_cast<SpineConverterSettings *>(settings);
 
     File file(settings->source());
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         Variant spine = Json::load(file.readAll());
         file.close();
 
@@ -275,7 +275,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         attachmentName = it->second.toString();
                     }
 
-                    ResourceSystem::ResourceInfo resSprite = settings->subItem(attachmentName, true);
+                    ResourceSystem::ResourceInfo resSprite = settings->subItem(attachmentName, MetaType::name<Sprite>());
                     Sprite *sprite = Engine::loadResource<Sprite>(resSprite.uuid);
                     if(sprite == nullptr) {
                         sprite = Engine::objectCreate<Sprite>(resSprite.uuid);
@@ -303,7 +303,6 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
                     if(result == AssetConverter::Success) {
                         resSprite.id = sprite->uuid();
-                        resSprite.type = MetaType::name<Sprite>();
                         settings->setSubItem(attachmentName, resSprite);
                     }
 
@@ -323,7 +322,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 void SpineConverter::importAtlas(SpineConverterSettings *settings) {
     Url info(settings->source());
     File file(info.absoluteDir() + "/" + info.baseName() + ".atlas");
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         TString data(file.readAll());
         file.close();
 

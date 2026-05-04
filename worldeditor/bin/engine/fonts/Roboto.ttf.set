@@ -1,9 +1,13 @@
 {
-	"guid": "{00000000-0601-0000-0000-000000000000}",
+	"guid": "{0708c960-daae-491e-9392-34a348dd05ac}",
+	"id": 1633171301,
 	"md5": "{3e1af3ef-546b-9e6e-cef9-f3ba197bf7d2}",
+	"meta": {
+	},
 	"settings": {
 	},
 	"subitems": {
 	},
+	"type": "Font",
 	"version": 1
 }

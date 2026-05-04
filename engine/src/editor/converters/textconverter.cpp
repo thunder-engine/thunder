@@ -24,7 +24,7 @@ void TextConverter::init() {
 
 AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         Text *text = Engine::loadResource<Text>(settings->destination());
         if(text == nullptr) {
             text = Engine::objectCreate<Text>(settings->destination());

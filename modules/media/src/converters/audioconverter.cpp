@@ -217,8 +217,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     ogg_stream_packetin(&stream, &header_code);
 
     TString path("stream");
-    ResourceSystem::ResourceInfo resInfo = settings->subItem(path, true);
-    settings->setSubItem(path, resInfo);
+    ResourceSystem::ResourceInfo resInfo = settings->subItem(path, MetaType::name<AudioClip>());
 
     AudioClip *clip = Engine::loadResource<AudioClip>(settings->destination());
     if(clip) {
@@ -227,7 +226,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
 
     Url dst(settings->absoluteDestination());
     File file(dst.absoluteDir() + "/" + resInfo.uuid);
-    if(file.open(File::WriteOnly)) {
+    if(file.open(File::Write)) {
         while(true) {
             if(ogg_stream_flush(&stream, &page) == 0) {
                 break;
@@ -299,6 +298,9 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     header.push_back(resInfo.uuid);
     header.push_back(settings->stream());
     result[HEADER] = header;
+
+    resInfo.id = clip->uuid();
+    settings->setSubItem(path, resInfo);
 
     return result;
 }

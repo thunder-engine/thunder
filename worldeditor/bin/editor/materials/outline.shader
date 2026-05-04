@@ -1,8 +1,9 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property type="vec4" name="color"/>
-        <property type="float" name="width"/>
-        <property binding="0" type="texture2d" name="outlineMap" target="true"/>
+        <property name="color" type="vec4" />
+        <property name="width" type="float" />
+        <property name="outlineMap" binding="0" type="texture2d" target="true" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -40,7 +41,7 @@ void main(void) {
     rgb = vec4(color.xyz, v);
 }
 ]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="PostProcess" twoSided="true">
-        <blend src="SourceAlpha" dst="OneMinusSourceAlpha" op="Add"/>
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
     </pass>
 </shader>

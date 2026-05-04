@@ -113,11 +113,11 @@ protected:
 
     int *open(const char *path, int mode) override {
         TString s;
-        if(mode & File::ReadOnly) {
+        if(mode & File::Read) {
             s += 'r';
         }
 
-        if(mode & File::WriteOnly) {
+        if(mode & File::Write) {
             s += 'w';
         }
 

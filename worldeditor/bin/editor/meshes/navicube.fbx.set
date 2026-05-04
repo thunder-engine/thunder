@@ -1,6 +1,9 @@
 {
-	"guid": "{5cc26f3d-8d12-4015-b267-39fd52bbc4a9}",
+	"guid": "{0c026f3d-8d12-4015-b267-39fd52bbc4a9}",
+	"id": 2059112511,
 	"md5": "{e2dc39f8-7a1b-5f54-6a5b-18ef76e94e33}",
+	"meta": {
+	},
 	"settings": {
 		"Compress_Animation": 1,
 		"Custom_Scale": 1.000000,
@@ -14,9 +17,11 @@
 	},
 	"subitems": {
 		"Cube": [
-			"{b3c4322c-c755-40f8-8c33-8daf1ee45717}",
-			"Mesh"
+			"{0504322c-c755-40f8-8c33-8daf1ee45717}",
+			"Mesh",
+			1637763787
 		]
 	},
-	"version": 8
+	"type": "Prefab",
+	"version": 9
 }

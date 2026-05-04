@@ -35,6 +35,7 @@ public:
     TString toString() const;
 
     ByteArray toByteArray() const;
+    void fromByteArray(const ByteArray &array);
 
     bool operator== (const Uuid &other) const;
 

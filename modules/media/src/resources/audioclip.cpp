@@ -78,7 +78,7 @@ bool AudioClip::isStream() const {
     This is an internal function and must not be called manually.
 */
 bool AudioClip::loadAudioData() {
-    if(m_clip.open(File::ReadOnly)) {
+    if(m_clip.open(File::Read)) {
         ov_callbacks callbacks = { &read, &seek, &close, &tell };
 
         if(ov_open_callbacks(this, m_vorbisFile, nullptr, 0, callbacks) < 0) {

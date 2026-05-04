@@ -28,7 +28,7 @@ void PhysicMaterialConverter::init() {
 
 AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         PhysicMaterial *material = Engine::loadResource<PhysicMaterial>(settings->destination());
         if(material == nullptr) {
             material = Engine::objectCreate<PhysicMaterial>(settings->destination());

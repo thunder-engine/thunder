@@ -428,8 +428,9 @@ void MainWindow::onImportFinished() {
 
     PluginManager::instance()->syncWhiteList();
 
-    if(m_projectSettings->projectSdk() != SDK_VERSION) {
-        m_projectSettings->setProjectSdk(SDK_VERSION);
+    TString version(SDK_VERSION);
+    if(m_projectSettings->projectSdk() != version) {
+        m_projectSettings->setProjectSdk(version);
         m_projectSettings->saveSettings();
     }
 

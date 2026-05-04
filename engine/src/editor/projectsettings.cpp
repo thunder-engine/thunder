@@ -21,8 +21,6 @@ namespace {
     const char *gProjects("Projects");
 };
 
-ProjectSettings *ProjectSettings::m_pInstance = nullptr;
-
 ProjectSettings::ProjectSettings() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
@@ -44,15 +42,8 @@ ProjectSettings::ProjectSettings() {
 }
 
 ProjectSettings *ProjectSettings::instance() {
-    if(!m_pInstance) {
-        m_pInstance = new ProjectSettings;
-    }
-    return m_pInstance;
-}
-
-void ProjectSettings::destroy() {
-    delete m_pInstance;
-    m_pInstance = nullptr;
+    static ProjectSettings instance;
+    return &instance;
 }
 
 void ProjectSettings::init(const TString &project, const TString &target) {
@@ -98,7 +89,7 @@ void ProjectSettings::loadSettings() {
     blockSignals(true);
 
     File file(m_projectPath);
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         VariantMap object = Json::load(file.readAll()).toMap();
         file.close();
 
@@ -198,7 +189,7 @@ void ProjectSettings::saveSettings() {
     }
 
     File file(m_projectPath);
-    if(file.open(File::WriteOnly)) {
+    if(file.open(File::Write)) {
         file.write(Json::save(object, 0));
         file.close();
     } else {

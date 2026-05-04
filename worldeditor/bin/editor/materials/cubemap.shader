@@ -1,7 +1,27 @@
-<shader version="11">
+<?xml version="1.0"?>
+<shader version="14">
     <properties>
-        <property binding="0" type="samplercube" name="mainTexture" path=".embedded/invalid.png"/>
+        <property path=".embedded/invalid.png" name="mainTexture" binding="0" type="samplercube" />
     </properties>
+    <fragment><![CDATA[	
+#version 450 core
+
+#pragma flags
+
+#define NO_INSTANCE
+
+#include "ShaderLayout.h"
+
+layout(binding = UNIFORM) uniform samplerCube mainTexture;
+
+layout(location = 0) in vec3 _vertex;
+
+layout(location = 0) out vec4 rgb;
+
+void main(void) {
+    rgb = texture(mainTexture, _vertex);
+}
+]]></fragment>
     <vertex><![CDATA[
 #version 450 core
 
@@ -26,26 +46,7 @@ void main(void) {
     gl_Position = cameraWorldToScreen() * vec4(_vertex, 1.0);
 }
 ]]></vertex>
-    <fragment><![CDATA[	
-#version 450 core
-
-#pragma flags
-
-#define NO_INSTANCE
-
-#include "ShaderLayout.h"
-
-layout(binding = UNIFORM) uniform samplerCube mainTexture;
-
-layout(location = 0) in vec3 _vertex;
-
-layout(location = 0) out vec4 rgb;
-
-void main(void) {
-    rgb = texture(mainTexture, _vertex);
-}
-]]></fragment>
-    <pass wireFrame="false" lightModel="Unlit" type="Surface" twoSided="true">
-        <depth comp="Less" write="true" test="true"/>
+    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <depth comp="Less" write="true" test="true" />
     </pass>
 </shader>

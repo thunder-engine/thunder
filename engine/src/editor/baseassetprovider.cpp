@@ -229,9 +229,7 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
 
     TString filePath(path + freeName + suff);
 
-    if(File::isDir(src)) {
-        copyRecursively(src, filePath);
-    } else {
+    if(!File::isDir(src)) {
         // Source and meta
         File::copy(src, filePath);
         File::copy(src + "." + gMetaExt, filePath + "." + gMetaExt);
@@ -239,6 +237,7 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
 
     AssetConverterSettings *targetSettings = asset->fetchSettings(filePath);
     if(targetSettings) {
+        targetSettings->newSettings();
         targetSettings->saveSettings();
 
         if(!targetSettings->isCode()) {
@@ -246,19 +245,6 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
             if(s) {
                 asset->registerAsset(targetSettings->source(), targetSettings->info());
             }
-        }
-
-        TString uuid = asset->fetchSettings(src)->destination();
-        // Icon
-        TString iconPath(project->iconPath() + "/" + uuid + ".png");
-        if(File::exists(iconPath)) {
-            File::copy(iconPath, project->iconPath() + "/" + targetSettings->destination() + ".png");
-        }
-
-        // Resource
-        TString resourcePath(project->importPath() + "/" + uuid);
-        if(File::exists(resourcePath)) {
-            File::copy(resourcePath, project->importPath() + "/" + targetSettings->destination());
         }
 
         asset->dumpBundle();

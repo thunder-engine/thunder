@@ -26,7 +26,6 @@ class ENGINE_EXPORT AssetManager : public QObject {
 
 public:
     static AssetManager *instance();
-    static void destroy();
 
     void init();
 
@@ -69,6 +68,10 @@ public:
 
     void createFromTemplate(const TString &destination);
 
+    void fixUUIDs();
+
+    void getChangedUUIDs();
+
 public slots:
     void reimport();
 
@@ -82,7 +85,7 @@ signals:
     void directoryChanged(const QString &path);
     void fileChanged(const QString &path);
 
-    void imported(const TString &path);
+    void imported();
     void importStarted(int count, const TString &stage);
     void importFinished();
 
@@ -99,8 +102,6 @@ private:
     AssetManager();
     ~AssetManager();
 
-    static AssetManager *m_instance;
-
 protected:
     friend class BaseAssetProvider;
 
@@ -115,6 +116,8 @@ protected:
     std::list<CodeBuilder *> m_builders;
 
     std::list<AssetConverterSettings *> m_importQueue;
+
+    std::list<std::pair<TString, TString>> m_changedUUIDs;
 
     BaseAssetProvider *m_assetProvider;
 

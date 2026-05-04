@@ -27,8 +27,6 @@
 #include "resources/computebuffer.h"
 #include "resources/computeshader.h"
 
-#include "resources/meshgroup.h"
-
 #include "resources/controlscheme.h"
 
 #include "resources/tileset.h"
@@ -45,7 +43,6 @@ ResourceSystem::ResourceSystem() :
     Texture::registerClassFactory(this);
     Material::registerClassFactory(this);
     Mesh::registerClassFactory(this);
-    MeshGroup::registerClassFactory(this);
     Sprite::registerClassFactory(this);
     Font::registerClassFactory(this);
     AnimationClip::registerClassFactory(this);
@@ -97,6 +94,15 @@ int ResourceSystem::threadPolicy() const {
     return Pool;
 }
 
+void ResourceSystem::factoryAdd(const TString &name, const TString &url, const MetaObject *meta) {
+    System::factoryAdd(name, url, meta);
+
+    int index = indexOf(name);
+    if(index == -1) {
+        m_types.push_back(name);
+    }
+}
+
 void ResourceSystem::setResource(Resource *object, const TString &uuid) {
     PROFILE_FUNCTION();
 
@@ -117,7 +123,7 @@ Resource *ResourceSystem::loadResource(const TString &path) {
 
         File fp(uuid);
         if(!m_clean || fp.exists()) {
-            if(fp.open(File::ReadOnly)) {
+            if(fp.open(File::Read)) {
                 ByteArray data(fp.readAll());
 
                 Variant var = Bson::load(data);
@@ -258,6 +264,18 @@ void ResourceSystem::setCleanImport(bool flag) {
     m_clean = flag;
 }
 
+/*!
+    Returns index of resource \a type in registry.
+    This index is not persistent across projects and should only be used for asset grouping.
+*/
+int ResourceSystem::indexOf(const TString &type) {
+    auto it = std::find(m_types.begin(), m_types.end(), type);
+    if (it != m_types.end()) {
+        return std::distance(m_types.begin(), it);
+    }
+    return -1;
+}
+
 void ResourceSystem::processState(Resource *resource) {
     if(resource) {
         switch(resource->state()) {
@@ -265,7 +283,7 @@ void ResourceSystem::processState(Resource *resource) {
                 TString uuid = reference(resource);
                 if(!uuid.isEmpty()) {
                     File fp(uuid);
-                    if(fp.open(File::ReadOnly)) {
+                    if(fp.open(File::Read)) {
                         ByteArray data(fp.readAll());
                         fp.close();
 
