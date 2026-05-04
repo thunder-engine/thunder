@@ -17,7 +17,7 @@ Uuid::Uuid(const TString &uuid) {
     for(size_t i = 0; i < uuid.length(); ++i) {
         if(uuid.at(i) == '-' || uuid.at(i) == '{') continue;
 
-        if(i + 1 >= uuid.length() || pos == 15) {
+        if(i + 1 >= uuid.length() || pos == 16) {
             break;
         }
 
@@ -84,6 +84,12 @@ TString Uuid::toString() const {
 
 ByteArray Uuid::toByteArray() const {
     return ByteArray(data.begin(), data.end());
+}
+
+void Uuid::fromByteArray(const ByteArray &array) {
+    for(uint8_t i = 0; i < 16; i++) {
+        data[i] = array[i];
+    }
 }
 
 bool Uuid::operator== (const Uuid &other) const {

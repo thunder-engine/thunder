@@ -811,7 +811,7 @@ bool SceneComposer::loadScene(const TString &path, bool additive) {
     Engine::resourceSystem()->processEvents();
 
     File file(path.data());
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         ByteArray array = file.readAll();
         Variant var = Json::load(array);
         Map *map = dynamic_cast<Map *>(Engine::toObject(var, nullptr));
@@ -842,7 +842,7 @@ void SceneComposer::saveScene(const TString &path, Scene *scene) {
     TString data = Json::save(Engine::toVariant(map), 0);
     if(!data.isEmpty()) {
         File file(path.data());
-        if(file.open(File::WriteOnly)) {
+        if(file.open(File::Write)) {
             file.write(data);
             file.close();
             scene->setModified(false);
@@ -923,7 +923,7 @@ void SceneComposer::saveIsolated(Prefab *prefab) {
             TString data = Json::save(Engine::toVariant(prefab), 0);
             if(!data.isEmpty()) {
                 File file(AssetManager::instance()->uuidToPath(Engine::reference(prefab)));
-                if(file.open(File::WriteOnly)) {
+                if(file.open(File::Write)) {
                     file.write(data);
                     file.close();
 

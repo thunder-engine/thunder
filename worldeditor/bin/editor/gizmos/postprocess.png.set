@@ -1,7 +1,11 @@
 {
-	"guid": "{00000000-0287-0000-0000-000000000000}",
+	"guid": "{03014b7a-e43f-456b-a5a9-42851442464f}",
+	"id": -80007033,
 	"md5": "{682efc1d-ee04-a194-ae63-e1e4d6e7d4b2}",
+	"meta": {
+	},
 	"settings": {
+		"compressed": false,
 		"filtering": 0,
 		"mipMaping": false,
 		"pixelsPerUnit": 100,
@@ -10,5 +14,6 @@
 	},
 	"subitems": {
 	},
-	"version": 8
+	"type": "Texture",
+	"version": 10
 }

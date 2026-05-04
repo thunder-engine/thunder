@@ -22,7 +22,7 @@ void StyleSheetConverter::init() {
 
 AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         StyleSheet *style = Engine::loadResource<StyleSheet>(settings->destination());
         if(style == nullptr) {
             style = Engine::objectCreate<StyleSheet>(settings->destination());

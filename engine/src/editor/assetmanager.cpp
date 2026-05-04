@@ -3,6 +3,8 @@
 #include <QDir>
 #include <QMessageBox>
 
+#include <fstream>
+
 #include "config.h"
 
 #include <json.h>
@@ -31,6 +33,8 @@
 
 #define INDEX_VERSION 2
 
+#define VERSION_CHECK(major, minor) ((major<<8)|(minor))
+
 namespace {
     const char *gVersion("version");
 
@@ -41,8 +45,6 @@ namespace {
 
     const char *gPersistent("Persistent");
 };
-
-AssetManager *AssetManager::m_instance = nullptr;
 
 AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
@@ -66,15 +68,8 @@ AssetManager::~AssetManager() {
 }
 
 AssetManager *AssetManager::instance() {
-    if(!m_instance) {
-        m_instance = new AssetManager;
-    }
-    return m_instance;
-}
-
-void AssetManager::destroy() {
-    delete m_instance;
-    m_instance = nullptr;
+    static AssetManager instance;
+    return &instance;
 }
 
 void AssetManager::init() {
@@ -124,8 +119,13 @@ void AssetManager::rescan() {
 
     TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
+        bool update = m_projectManager->projectSdk() != SDK_VERSION;
+        if(update) {
+            getChangedUUIDs();
+        }
+
         m_force |= !Engine::reloadBundle();
-        m_force |= m_projectManager->projectSdk() != SDK_VERSION;
+        m_force |= update;
 
         m_assetProvider->init();
     } else {
@@ -217,6 +217,85 @@ TString AssetManager::pathToLocal(const TString &source) const {
     return path;
 }
 
+void AssetManager::getChangedUUIDs() {
+    StringList currentStr = m_projectManager->projectSdk().split('.');
+    uint32_t currentMajor = currentStr.front().toInt();
+    uint32_t currentMinor = currentStr.back().toInt();
+    uint32_t current = VERSION_CHECK(currentMajor, currentMinor);
+
+    StringList targetStr = TString(SDK_VERSION).split('.');
+    uint32_t targetMajor = targetStr.front().toInt();
+    uint32_t targetMinor = targetStr.back().toInt();
+    uint32_t target = VERSION_CHECK(targetMajor, targetMinor);
+
+    if(current < target) {
+        File file(m_projectManager->resourcePath() + "/uuid.txt");
+        if(file.open(File::Read | File::Text)) {
+            VariantMap pairs = Json::load(file.readAll()).toMap();
+            file.close();
+            for(auto &it : pairs) {
+                m_changedUUIDs.push_back(std::make_pair(it.first, it.second.toString()));
+            }
+        }
+    }
+}
+
+void AssetManager::fixUUIDs() {
+    if(m_changedUUIDs.empty()) {
+        return;
+    }
+
+    aInfo() << "Fixing dependencies";
+    for(auto &path : File::list(ProjectSettings::instance()->contentPath())) {
+        std::ifstream file(path.toStdString(), std::ios::binary | std::ios::ate);
+        if(!file) {
+            continue;
+        }
+
+        std::streamsize size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        char start = 0;
+        if(!file.read(&start, 1)) {
+            continue;
+        }
+        if(start != '{' && start != '[' && start != '<') {
+            continue;
+        }
+        file.seekg(0, std::ios::beg);
+
+        std::vector<char> buffer(size);
+        if(!file.read(buffer.data(), size)) {
+            continue;
+        }
+        file.close();
+
+        bool found = false;
+        for(auto &it : m_changedUUIDs) {
+            for(size_t i = 0; i <= buffer.size() - it.first.size(); ++i) {
+                if(std::equal(it.first.toStdString().begin(), it.first.toStdString().end(), buffer.begin() + i)) {
+                    std::copy(it.second.toStdString().begin(), it.second.toStdString().end(), buffer.begin() + i);
+                    found = true;
+                    i += it.first.size() - 1;
+                }
+            }
+        }
+
+        if(!found) {
+            continue;
+        }
+
+        std::ofstream outFile(path.toStdString(), std::ios::binary | std::ios::trunc);
+        if(!outFile) {
+            continue;
+        }
+        outFile.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
+        pushToImport(fetchSettings(path));
+    }
+    aInfo() << "Fixed:" << static_cast<int>(m_importQueue.size()) << "files.";
+    m_changedUUIDs.clear();
+}
+
 void AssetManager::reimport() {
     m_importQueue.sort([](AssetConverterSettings *left, AssetConverterSettings *right) {
         return left->type() < right->type();
@@ -267,7 +346,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
             AssetConverterSettings *settings = converter->createSettings();
 
             settings->setSource(path);
-            settings->info().uuid = Uuid::createUuid().toString();
+            settings->newSettings();
             m_converterSettings[path] = settings;
 
             converter->makePrefab(actor, settings);
@@ -341,7 +420,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
         settings->setSource(source);
 
         if(!settings->loadSettings()) {
-            settings->info().uuid = Uuid::createUuid().toString();
+            settings->newSettings();
         }
 
         m_converterSettings[path] = settings;
@@ -474,7 +553,7 @@ void AssetManager::dumpBundle() {
     root[gSettings] = values;
 
     File file(m_projectManager->importPath() + "/" + gIndex);
-    if(file.open(File::WriteOnly)) {
+    if(file.open(File::Write)) {
         file.write(Json::save(root, 0));
         file.close();
         Engine::reloadBundle();
@@ -488,6 +567,11 @@ void AssetManager::onPerform() {
         convert(settings);
     } else {
         bool result = false;
+
+        fixUUIDs();
+        if(!m_importQueue.empty()) {
+            return;
+        }
 
         for(CodeBuilder *it : std::as_const(m_builders)) {
             it->rescanSources(m_projectManager->contentPath());
@@ -551,7 +635,6 @@ void AssetManager::convert(AssetConverterSettings *settings) {
         switch(result) {
             case AssetConverter::Success: {
                 aInfo() << "Converting:" << settings->source();
-
                 settings->setCurrentVersion(settings->version());
 
                 TString source = settings->source();
@@ -559,23 +642,23 @@ void AssetManager::convert(AssetConverterSettings *settings) {
 
                 for(const TString &it : settings->subKeys()) {
                     TString path = source + "/" + it;
-
                     registerAsset(path, settings->subItem(it));
-
                     m_converterSettings[pathToLocal(path)] = settings;
 
                     TString uuid = settings->subItem(it).uuid;
                     if(File::exists(m_projectManager->importPath() + "/" + uuid)) {
                         Engine::reloadResource(uuid);
-                        emit imported(path);
+                        emit imported();
                     }
                 }
 
                 Engine::reloadResource(settings->destination());
-
-                emit imported(source);
+                emit imported();
 
                 settings->saveSettings();
+                auto &list = settings->changedUuids();
+                m_changedUUIDs.insert(m_changedUUIDs.end(), list.begin(), list.end());
+                settings->clearChangedUuids();
             } break;
             default: break;
         }

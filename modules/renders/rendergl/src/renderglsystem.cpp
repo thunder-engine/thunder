@@ -19,8 +19,6 @@
 
 #include <log.h>
 
-static int32_t registered = 0;
-
 void _CheckGLError(const char* file, int line) {
     GLenum err ( glGetError() );
 
@@ -45,37 +43,31 @@ RenderGLSystem::RenderGLSystem() :
 
     PROFILE_FUNCTION();
 
-    if(registered == 0) {
-        ResourceSystem *system = Engine::resourceSystem();
+    ResourceSystem *system = Engine::resourceSystem();
 
-        TextureGL::registerClassFactory(system);
-        RenderTargetGL::registerClassFactory(system);
-        MaterialGL::registerClassFactory(system);
-        MeshGL::registerClassFactory(system);
-        ComputeBufferGL::registerClassFactory(system);
-        ComputeShaderGL::registerClassFactory(system);
+    TextureGL::registerClassFactory(system);
+    RenderTargetGL::registerClassFactory(system);
+    MaterialGL::registerClassFactory(system);
+    MeshGL::registerClassFactory(system);
+    ComputeBufferGL::registerClassFactory(system);
+    ComputeShaderGL::registerClassFactory(system);
 
-        CommandBufferGL::registerClassFactory(system);
-    }
-    ++registered;
+    CommandBufferGL::registerClassFactory(system);
 }
 
 RenderGLSystem::~RenderGLSystem() {
     PROFILE_FUNCTION();
 
-    --registered;
-    if(registered == 0) {
-        ResourceSystem *system = Engine::resourceSystem();
+    ResourceSystem *system = Engine::resourceSystem();
 
-        TextureGL::unregisterClassFactory(system);
-        RenderTargetGL::unregisterClassFactory(system);
-        MaterialGL::unregisterClassFactory(system);
-        MeshGL::unregisterClassFactory(system);
-        ComputeBufferGL::unregisterClassFactory(system);
-        ComputeShaderGL::unregisterClassFactory(system);
+    TextureGL::unregisterClassFactory(system);
+    RenderTargetGL::unregisterClassFactory(system);
+    MaterialGL::unregisterClassFactory(system);
+    MeshGL::unregisterClassFactory(system);
+    ComputeBufferGL::unregisterClassFactory(system);
+    ComputeShaderGL::unregisterClassFactory(system);
 
-        CommandBufferGL::unregisterClassFactory(system);
-    }
+    CommandBufferGL::unregisterClassFactory(system);
 
     setName("RenderGL");
 }
@@ -85,32 +77,27 @@ RenderGLSystem::~RenderGLSystem() {
 bool RenderGLSystem::init() {
     PROFILE_FUNCTION();
 
-    static bool done = false;
-    if(!done) {
 #ifndef THUNDER_MOBILE
-        if(!gladLoadGL()) {
-            CheckGLError();
-            aWarning() << "[ RenderGL ] Failed to initialize OpenGL context.";
-            return false;
-        }
+    if(!gladLoadGL()) {
         CheckGLError();
+        aWarning() << "[ RenderGL ] Failed to initialize OpenGL context.";
+        return false;
+    }
+    CheckGLError();
 #endif
 
-        int32_t texture;
-        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
-        CheckGLError();
+    int32_t texture;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture);
+    CheckGLError();
 
-        Texture::setMaxTextureSize(texture);
+    Texture::setMaxTextureSize(texture);
 
-        glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &texture);
-        CheckGLError();
+    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &texture);
+    CheckGLError();
 
-        Texture::setMaxCubemapSize(texture);
+    Texture::setMaxCubemapSize(texture);
 
-        CommandBufferGL::setInited();
-
-        done = true;
-    }
+    CommandBufferGL::setInited();
 
     return RenderSystem::init();
 }

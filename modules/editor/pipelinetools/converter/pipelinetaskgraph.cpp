@@ -2,7 +2,7 @@
 
 #include "pipelineconverter.h"
 
-#include <systems/resourcesystem.h>
+#include <engine.h>
 #include <url.h>
 #include <log.h>
 
@@ -13,8 +13,8 @@ namespace {
 PipelineTaskGraph::PipelineTaskGraph() :
         m_rootNode(nullptr) {
 
-    PipelineRootNode::registerClassFactory(Engine::resourceSystem());
-    PipelineNode::registerClassFactory(Engine::resourceSystem());
+    PipelineRootNode::registerClassFactory(&Engine::instance());
+    PipelineNode::registerClassFactory(&Engine::instance());
 
     m_version = PipelineConverterSettings::version();
 

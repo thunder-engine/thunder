@@ -11,8 +11,7 @@
 
 ImportQueue::ImportQueue(QWidget *parent) :
         QDialog(parent),
-        ui(new Ui::ImportQueue),
-        m_render(new IconRender) {
+        ui(new Ui::ImportQueue) {
     ui->setupUi(this);
 
     AssetManager *manager = AssetManager::instance();
@@ -31,10 +30,8 @@ ImportQueue::~ImportQueue() {
     delete ui;
 }
 
-void ImportQueue::onProcessed(const TString &path) {
+void ImportQueue::onProcessed() {
     ui->progressBar->setValue(ui->progressBar->value() + 1);
-
-    m_iconQueue.insert(AssetManager::instance()->pathToUuid(path));
 }
 
 void ImportQueue::onStarted(int count, const TString &action) {
@@ -45,15 +42,6 @@ void ImportQueue::onStarted(int count, const TString &action) {
 }
 
 void ImportQueue::onImportFinished() {
-    for(auto &it : m_iconQueue) {
-        QImage image = m_render->render(it);
-        if(!image.isNull()) {
-            image.save((ProjectSettings::instance()->iconPath() + "/" + it.toStdString() + ".png").data(), "PNG");
-        }
-        emit AssetManager::instance()->iconUpdated(it);
-    }
-    m_iconQueue.clear();
-
     hide();
     emit importFinished();
 }

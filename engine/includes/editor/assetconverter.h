@@ -92,8 +92,8 @@ public:
 
     void setSubItemsDirty();
 
-    ResourceSystem::ResourceInfo subItem(const TString &key, bool create = false) const;
-    void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info);
+    ResourceSystem::ResourceInfo subItem(const TString &key, const TString &type = TString()) const;
+    void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod = 0);
 
     Variant subItemData(const TString &key) const;
     virtual void setSubItemData(const TString &name, const Variant &data);
@@ -102,6 +102,7 @@ public:
 
     bool loadSettings();
     void saveSettings();
+    void newSettings();
 
     bool isModified() const;
     void setModified();
@@ -114,12 +115,17 @@ public:
     // signals
     void updated();
 
+    std::list<std::pair<TString, TString>> &changedUuids();
+    void clearChangedUuids();
+
 protected:
     virtual TString propertyAllias(const TString &name) const;
 
     static TString defaultIconPath(const TString &type);
 
     void setVersion(uint32_t version);
+
+    TString fixUuid(const TString &uuid, const TString &type, int lod);
 
     static QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
 
@@ -139,6 +145,8 @@ protected:
     QImage m_icon;
 
     std::map<TString, SubItem> m_subItems;
+
+    std::list<std::pair<TString, TString>> m_changedUuids;
 
     static std::map<TString, TString> m_defaultIcons;
 

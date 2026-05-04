@@ -91,11 +91,11 @@ protected:
             return reinterpret_cast<int *>(PHYSFS_openAppend(path));
         }
 
-        if(mode & File::ReadOnly) {
+        if(mode & File::Read) {
             return reinterpret_cast<int *>(PHYSFS_openRead(path));
         }
 
-        if(mode & File::WriteOnly) {
+        if(mode & File::Write) {
             return reinterpret_cast<int *>(PHYSFS_openWrite(path));
         }
 

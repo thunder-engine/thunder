@@ -22,7 +22,7 @@ void UiConverter::init() {
 
 AssetConverter::ReturnCode UiConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         UiDocument *document = Engine::loadResource<UiDocument>(settings->destination());
         if(document == nullptr) {
             document = Engine::objectCreate<UiDocument>(settings->destination());

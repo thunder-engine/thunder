@@ -60,7 +60,7 @@ bool Builder::package(const TString &target) {
             aInfo() << "\tCoping:" << origin.data();
 
             File inFile(it);
-            if(!inFile.open(File::ReadOnly)) {
+            if(!inFile.open(File::Read)) {
                 zipClose(zf, nullptr);
                 aError() << "Can't open input file.";
                 return false;

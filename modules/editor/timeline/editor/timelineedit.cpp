@@ -60,7 +60,7 @@ void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
         File file(AssetManager::instance()->uuidToPath(Engine::reference(clip)));
-        if(file.open(File::WriteOnly)) {
+        if(file.open(File::Write)) {
             VariantMap data = clip->saveUserData();
 
             file.write(Json::save(data["Tracks"], 0));

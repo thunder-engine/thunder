@@ -51,7 +51,7 @@ AssetConverterSettings *CodeBuilder::createSettings() {
 
 void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName) {
     File file(settings->source());
-    if(file.open(File::ReadOnly)) {
+    if(file.open(File::Read)) {
         TString data(file.readAll());
         file.close();
 
@@ -65,7 +65,7 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
             data.replace(it.arg(oldName), it.arg(newName));
         }
 
-        if(file.open(File::WriteOnly)) {
+        if(file.open(File::Write)) {
             file.write(data);
             file.close();
         }
@@ -124,7 +124,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
         File::mkPath(Url(dst).dir());
 
         File outFile(dst);
-        if(outFile.open(File::WriteOnly)) {
+        if(outFile.open(File::Write)) {
             outFile.write(out);
             outFile.close();
         }

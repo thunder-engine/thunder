@@ -31,7 +31,6 @@ public:
     ~ProjectSettings() {}
 
     static ProjectSettings *instance();
-    static void destroy();
 
     void init(const TString &project, const TString &target = TString());
 
@@ -97,8 +96,6 @@ private:
 
     VariantList getPlatforms() const;
     void setPlatforms(VariantList platforms);
-
-    static ProjectSettings *m_pInstance;
 
 private:
     StringList m_platforms;

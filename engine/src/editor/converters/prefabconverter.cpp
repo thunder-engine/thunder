@@ -69,7 +69,7 @@ void PrefabConverter::createFromTemplate(const TString &destination) {
         }
 
         File dst(destination);
-        if(dst.open(File::WriteOnly)) {
+        if(dst.open(File::Write)) {
             dst.write(Json::save(variant));
             dst.close();
         }
@@ -78,7 +78,7 @@ void PrefabConverter::createFromTemplate(const TString &destination) {
 
 void PrefabConverter::makePrefab(Actor *actor, AssetConverterSettings *settings) {
     File file(settings->source());
-    if(file.open(File::WriteOnly)) {
+    if(file.open(File::Write)) {
         Prefab *fab = Engine::objectCreate<Prefab>(settings->destination());
         fab->setActor(actor);
 
@@ -105,7 +105,7 @@ AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *
     AssetConverter::ReturnCode result = InternalError;
 
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         Variant variant = readJson(src.readAll(), settings);
         src.close();
 
@@ -145,7 +145,7 @@ Variant PrefabConverter::readJson(const TString &data, AssetConverterSettings *s
 
     if(update) {
         File src(settings->source());
-        if(src.open(File::WriteOnly)) {
+        if(src.open(File::Write)) {
             src.write(Json::save(result, 0));
             src.close();
         }

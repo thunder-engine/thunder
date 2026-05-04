@@ -90,7 +90,7 @@ public:
     static void removeInvalid(Invalid *invalid);
 
 protected:
-    void factoryAdd(const TString &name, const TString &url, const MetaObject *meta);
+    virtual void factoryAdd(const TString &name, const TString &url, const MetaObject *meta);
 
     void factoryRemove(const TString &name, const TString &url);
 

@@ -521,7 +521,7 @@ bool Engine::reloadBundle() {
     indices.clear();
 
     File fp(gIndex);
-    if(fp.open(File::ReadOnly)) {
+    if(fp.open(File::Read)) {
         Variant var = Json::load(TString(fp.readAll()));
         if(var.isValid()) {
             VariantMap root = var.toMap();

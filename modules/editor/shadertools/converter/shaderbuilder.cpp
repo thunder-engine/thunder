@@ -469,7 +469,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &bu
 
 bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int flags) {
     File file(path.data());
-    if(file.open(File::ReadOnly | File::Text)) {
+    if(file.open(File::Read | File::Text)) {
         ByteArray data = file.readAll();
         file.close();
 

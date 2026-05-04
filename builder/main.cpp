@@ -109,7 +109,5 @@ int main(int argc, char *argv[]) {
 
     int result = a.exec();
 
-    AssetManager::destroy();
-
     return result;
 }

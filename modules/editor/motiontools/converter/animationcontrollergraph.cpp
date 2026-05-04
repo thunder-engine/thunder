@@ -22,12 +22,12 @@ AnimationControllerGraph::AnimationControllerGraph() :
     m_version = AnimationControllerBuilder::version();
 
     if(m_nodeTypes.empty()) {
-        GraphNode::registerClassFactory(Engine::resourceSystem());
-        GraphLink::registerClassFactory(Engine::resourceSystem());
-        StateNode::registerClassFactory(Engine::resourceSystem());
-        BaseState::registerClassFactory(Engine::resourceSystem());
-        EntryState::registerClassFactory(Engine::resourceSystem());
-        StateLink::registerClassFactory(Engine::resourceSystem());
+        GraphNode::registerClassFactory(&Engine::instance());
+        GraphLink::registerClassFactory(&Engine::instance());
+        StateNode::registerClassFactory(&Engine::instance());
+        BaseState::registerClassFactory(&Engine::instance());
+        EntryState::registerClassFactory(&Engine::instance());
+        StateLink::registerClassFactory(&Engine::instance());
 
         for(auto &it : Engine::factories()) {
             Url url(it.second);

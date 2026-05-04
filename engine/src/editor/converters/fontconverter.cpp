@@ -26,7 +26,7 @@ void FontConverter::init() {
 
 AssetConverter::ReturnCode FontConverter::convertFile(AssetConverterSettings *settings) {
     File src(settings->source());
-    if(src.open(File::ReadOnly)) {
+    if(src.open(File::Read)) {
         Font *font = Engine::loadResource<Font>(settings->destination());
         if(font == nullptr) {
             font = Engine::objectCreate<Font>(settings->destination());

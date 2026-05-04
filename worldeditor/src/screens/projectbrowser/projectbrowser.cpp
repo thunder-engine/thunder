@@ -39,7 +39,7 @@ void ProjectBrowser::onNewProject() {
             m_projectPath += gProjectExt;
         }
         File file(m_projectPath.toStdString());
-        if(file.open(File::WriteOnly)) {
+        if(file.open(File::Write)) {
             file.close();
 
             done(QDialog::Accepted);

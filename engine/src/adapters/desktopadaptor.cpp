@@ -168,7 +168,7 @@ bool DesktopAdaptor::start() {
     }
 
     File fp(CONFIG_NAME);
-    if(fp.open(File::ReadOnly)) {
+    if(fp.open(File::Read)) {
         ByteArray data(fp.readAll());
 
         Variant var = Json::load(TString(data));
@@ -451,7 +451,7 @@ void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
     map[gScreenVsync] = s_vSync;
 
     File fp(CONFIG_NAME);
-    if(fp.open(File::WriteOnly)) {
+    if(fp.open(File::Write)) {
         fp.write(Json::save(map, 0));
     }
 }
