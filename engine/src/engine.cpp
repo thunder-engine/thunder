@@ -131,9 +131,8 @@ Engine::Engine() {
 
     m_instance = this;
 
-    Backtrace::installCrashHandler();
-
 #ifndef THUNDER_MOBILE
+    Backtrace::installCrashHandler();
     m_platform = new DesktopAdaptor;
     Log::addHandler(new DesktopLogHandler);
 #endif

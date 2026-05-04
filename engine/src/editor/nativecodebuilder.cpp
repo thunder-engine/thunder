@@ -66,9 +66,9 @@ NativeCodeBuilder::NativeCodeBuilder() {
     };
 
     m_defines = {
-        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
-        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
-        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+        TString("COMPANY_NAME=\"\\\"%1\\\"\"").arg(project->projectCompany()),
+        TString("PRODUCT_NAME=\"\\\"%1\\\"\"").arg(project->projectName()),
+        TString("PRODUCT_VERSION=\"\\\"%1\\\"\"").arg(project->projectVersion())
     };
 }
 

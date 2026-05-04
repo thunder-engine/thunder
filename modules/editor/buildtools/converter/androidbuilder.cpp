@@ -189,6 +189,8 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
         args.push_back(TString("-l") + it);
     }
 
+    aInfo() << TString::join(args, " ");
+
     if(m_process.start(tools + "/bin/clang++" + gApplication, args) && m_process.waitForStarted()) {
         aInfo() << name() << "Compiling application for:" << arch;
         return m_process.waitForFinished();
