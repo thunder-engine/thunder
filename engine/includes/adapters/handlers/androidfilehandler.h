@@ -46,13 +46,13 @@ public:
         A_UNUSED(origin);
         A_UNUSED(target);
         return false;
-    };
+    }
 
     bool copy(const char *origin, const char *target) override {
         A_UNUSED(origin);
         A_UNUSED(target);
         return false;
-    };
+    }
 
     bool exists(const char *path) override {
         A_UNUSED(path);
@@ -62,8 +62,8 @@ public:
     bool isDir(const char *path) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         if(dir) {
-             AAssetDir_close(dir);
-             return true;
+            AAssetDir_close(dir);
+            return true;
         }
         return false;
     }
@@ -105,17 +105,6 @@ public:
     size_t tell(int *handle) override {
         return size(handle) - AAsset_getRemainingLength(reinterpret_cast<AAsset *>(handle));
     }
-
-    TString md5(const char *path) override {
-        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
-        auto it = indices.find(path);
-        if(it != indices.end()) {
-            return it->second.md5;
-        }
-
-        return TString();
-    }
-
 };
 
 #endif // ANDROIDFILE_H
