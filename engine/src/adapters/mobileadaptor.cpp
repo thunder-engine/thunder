@@ -27,6 +27,12 @@
 const char *configLocation();
 const char *assetsLocation();
 
+#ifdef __ANDROID__
+const char *assetsLocation() {
+    return "";
+}
+#endif
+
 class DefaultHandler : public LogHandler {
 protected:
     void setRecord(Log::LogTypes type, const char *record) {
@@ -192,7 +198,6 @@ void onCreate(GLFMDisplay *display, int width, int height) {
     #else
         PhysfsFileHandler *handler = new PhysfsFileHandler;
         handler->init("");
-        handler->mount(assetsLocation());
 		File::setHandler(handler);
     #endif
 #endif
