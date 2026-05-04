@@ -91,7 +91,7 @@ bool ResourceSystem::loadBundle(const TString &path) {
     File::mount(path);
 
     File fp(gIndex);
-    if(fp.open(File::ReadOnly)) {
+    if(fp.open(File::Read)) {
         Variant var = Json::load(TString(fp.readAll()));
         if(var.isValid()) {
             VariantMap root = var.toMap();
@@ -135,19 +135,7 @@ bool ResourceSystem::unloadBundle(const TString &path) {
     for(auto it : m_observers) {
         (*it.first)(path, true, it.second);
     }
-}
 
-void ResourceSystem::factoryAdd(const TString &name, const TString &url, const MetaObject *meta) {
-    System::factoryAdd(name, url, meta);
-
-    int index = indexOf(name);
-    if(index == -1) {
-        m_types.push_back(name);
-    }
-}
-
-void ResourceSystem::setResource(Resource *object, const TString &uuid) {
-    PROFILE_FUNCTION();
     auto indexCopy = m_indexMap;
     for(auto &it : indexCopy) {
         if(it.second.bundle == path) {
@@ -158,6 +146,15 @@ void ResourceSystem::setResource(Resource *object, const TString &uuid) {
     File::unmount(path);
 
     return true;
+}
+
+void ResourceSystem::factoryAdd(const TString &name, const TString &url, const MetaObject *meta) {
+    System::factoryAdd(name, url, meta);
+
+    int index = indexOf(name);
+    if(index == -1) {
+        m_types.push_back(name);
+    }
 }
 
 Resource *ResourceSystem::loadResource(const TString &path) {
@@ -325,46 +322,6 @@ int ResourceSystem::indexOf(const TString &type) const {
     return -1;
 }
 
-void ResourceSystem::processState(Resource *resource) {
-    if(resource) {
-        switch(resource->state()) {
-            case Resource::Loading: {
-                TString uuid = reference(resource);
-                if(!uuid.isEmpty()) {
-                    File fp(uuid);
-                    if(fp.open(File::Read)) {
-                        ByteArray data(fp.readAll());
-                        fp.close();
-
-                        Variant var = Bson::load(data);
-                        if(!var.isValid()) {
-                            var = Json::load(TString(data));
-                        }
-
-                        if(var.isValid()) {
-                            Engine::toObject(var, nullptr, uuid);
-                        }
-
-                        resource->switchState(Resource::ToBeUpdated);
-                    } else {
-                        aError() << "Unable to load resource:" << uuid;
-                        resource->setState(Resource::Invalid);
-                    }
-                }
-            } break;
-            case Resource::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
-                //resource->switchState(Resource::Unloading);
-            } break;
-            case Resource::ToBeDeleted: {
-                auto it = std::find(m_deleteList.begin(), m_deleteList.end(), resource);
-                if(it == m_deleteList.end()) {
-                    m_deleteList.push_back(resource);
-                }
-            } break;
-            default: break;
-        }
-    }
-
 void ResourceSystem::subscribe(BundleUpdatedCallback callback, void *object) {
     m_observers.push_back(std::make_pair(callback, object));
 }
@@ -441,7 +398,7 @@ void ResourceSystem::processState(Resource *resource) {
             TString uuid = reference(resource);
             if(!uuid.isEmpty()) {
                 File fp(uuid);
-                if(fp.open(File::ReadOnly)) {
+                if(fp.open(File::Read)) {
                     ByteArray data(fp.readAll());
                     fp.close();
 
