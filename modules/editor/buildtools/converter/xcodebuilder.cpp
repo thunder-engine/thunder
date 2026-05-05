@@ -19,7 +19,7 @@ namespace {
 #else
     const char *gMode("Debug");
 #endif
-};
+}
 
 XcodeBuilder::XcodeBuilder() {
     setName("[XcodeBuilder]");
@@ -27,6 +27,13 @@ XcodeBuilder::XcodeBuilder() {
     connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
 
     m_defPref = TString(5, '\t'); m_defSep = ",\n";
+
+    ProjectSettings *project = ProjectSettings::instance();
+    m_defines = {
+        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
+        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
+        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+    };
 }
 
 bool XcodeBuilder::buildProject() {

@@ -246,6 +246,11 @@ bool Engine::start() {
         }
     }
 
+    if(m_renderSystem) {
+        PipelineContext *context = Engine::objectCreate<PipelineContext>("PipelineContext");
+        m_renderSystem->setPipelineContext(context);
+    }
+
     setGameMode(true);
 
     TString path = value(gEntry, "").toString();
@@ -288,6 +293,7 @@ void Engine::update(World *world) {
                         if(objectWorld == world) {
                             if(!it->isStarted()) {
                                 it->start();
+                                it->setStarted(true);
                             }
                             it->update();
                         }

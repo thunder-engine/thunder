@@ -13,12 +13,12 @@ public:
     }
 
     // Use this to initialize behaviour
-    void start() {
+    void start() override {
 
     }
 
     // Will be called each frame. Use this to write your game logic
-    void update() {
+    void update() override {
 
     }
 };

@@ -40,7 +40,7 @@ NativeBehaviour::~NativeBehaviour() {
     Start is called on the same frame when a script is enabled just before the update method will be called the first time.
 */
 void NativeBehaviour::start() {
-    m_started = true;
+
 }
 /*!
     Update is called every frame, if the NativeBehaviour is enabled.
@@ -56,4 +56,13 @@ void NativeBehaviour::update() {
 */
 bool NativeBehaviour::isStarted() const {
     return m_started;
+}
+/*!
+    Marks behaviour as \a started.
+    \note This method is used for internal purposes and shouldn't be called manually.
+
+    \internal
+*/
+void NativeBehaviour::setStarted(bool started) {
+    m_started = true;
 }

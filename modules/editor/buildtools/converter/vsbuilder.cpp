@@ -43,6 +43,13 @@ VsBuilder::VsBuilder() {
     m_libPathPref = ";";
     m_libsPref = ""; m_libsSuff = ".lib"; m_libsSep = ";";
     m_defSep = ";";
+
+    ProjectSettings *project = ProjectSettings::instance();
+    m_defines = {
+        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
+        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
+        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+    };
 }
 
 bool VsBuilder::buildProject() {

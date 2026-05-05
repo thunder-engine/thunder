@@ -19,6 +19,7 @@ public:
     virtual void update();
 
     bool isStarted() const;
+    void setStarted(bool started);
 
 protected:
     bool m_started;
