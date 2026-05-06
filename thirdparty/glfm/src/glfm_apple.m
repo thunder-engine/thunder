@@ -1331,7 +1331,12 @@ static void glfm__getDrawableSize(double displayWidth, double displayHeight, dou
     }
     [NSEvent removeMonitor:self.keyEventMonitor];
     self.keyEventMonitor = nil;
-    [self.textInputContext deactivate];
+    if (@available(macOS 15, *)) {
+        // Do nothing
+    } else {
+        // See note on [self.textInputContext activate] above.
+        [self.textInputContext deactivate];
+    }
     self.textInputContext = nil;
 #endif
 #if GLFM_INCLUDE_METAL
@@ -1415,7 +1420,14 @@ static void glfm__getDrawableSize(double displayWidth, double displayHeight, dou
     if ([glfmView conformsToProtocol:@protocol(NSTextInputClient)]) {
         self.textInputContext = GLFM_AUTORELEASE([[NSTextInputContext alloc]
                                                   initWithClient:(id<NSTextInputClient>)glfmView]);
-        [self.textInputContext activate];
+        // Invoking [self.textInputContext activate] causes a log error:
+        // "ViewBridge to RemoteViewService Terminated: Error Domain=com.apple.ViewBridge".
+        // If macOS 15, it appears unnecessary.
+        if (@available(macOS 15, *)) {
+            // Do nothing
+        } else {
+            [self.textInputContext activate];
+        }
     }
 
 #endif
@@ -1987,6 +1999,12 @@ static void glfm__getDrawableSize(double displayWidth, double displayHeight, dou
             case UIPressTypePageDown:
                 keyCode = GLFMKeyCodePageDown;
                 break;
+#if __TV_OS_VERSION_MAX_ALLOWED >= 180100
+            case UIPressTypeTVRemoteOneTwoThree:
+                // Fallthrough
+            case UIPressTypeTVRemoteFourColors:
+                // Fallthrough
+#endif
             default:
                 keyCode = GLFMKeyCodeUnknown;
                 break;
@@ -2826,6 +2844,8 @@ configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
     //self.window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone; // Make the topmost row of the view visible
     self.window.excludedFromWindowsMenu = YES; // Single-window app
     self.window.tabbingMode = NSWindowTabbingModeDisallowed; // No tabs
+    self.window.backgroundColor = [NSColor blackColor]; // Remove background vibrancy/NSVisualEffectView
+    self.window.restorable = NO;
     self.window.releasedWhenClosed = NO;
     self.window.acceptsMouseMovedEvents = YES;
     self.window.delegate = self;
@@ -2850,6 +2870,12 @@ configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
         contentFrame.origin.y = screenFrame.origin.y + screenFrame.size.height / 2 - height / 2;
         contentFrame.size.width = width;
         contentFrame.size.height = height;
+#if 0
+        // Useful for creating example app icons
+        contentFrame.size.width = 128;
+        contentFrame.size.height = 128;
+        [self.window setStyleMask:NSWindowStyleMaskBorderless];
+#endif
         [self.window setFrame:[self.window frameRectForContentRect:contentFrame] display:NO];
     }
 
@@ -2860,6 +2886,11 @@ configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
 
     // Enter fullscreen if requested
     glfm__displayChromeUpdated(glfmViewController.glfmDisplay);
+}
+
+- (BOOL)applicationSupportsSecureRestorableState:(NSApplication *) app {
+    // Workaround for warning "Secure coding is automatically enabled for restorable state!"
+    return YES;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -2967,6 +2998,17 @@ int main(int argc, const char * argv[]) {
         } else {
             [NSApplication sharedApplication];
         }
+
+        // Add SIGTERM handler
+        // The SIGTERM signal is received when the user selects Quit from the dock icon menu.
+        // Note, this handler will not work when debugging.
+        signal(SIGTERM, SIG_IGN);
+        dispatch_source_t sigtermSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGTERM, 0,
+                                                                 dispatch_get_main_queue());
+        dispatch_source_set_event_handler(sigtermSource, ^{
+            [NSApp terminate:nil];
+        });
+        dispatch_resume(sigtermSource);
 
         // Set the delegate and run
         GLFMAppDelegate *delegate = [GLFMAppDelegate new];
