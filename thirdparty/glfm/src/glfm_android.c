@@ -36,7 +36,7 @@
 #define GLFM_RESIZE_EVENT_MAX_WAIT_FRAMES 5
 
 // If GLFM_HANDLE_BACK_BUTTON is 1, when the user presses the back button, the task is moved to the back. Otherwise,
-// when the user presses the back button, the activity is destroyed. On newer API levels (31) this may not be needed.
+// when the user presses the back button, the activity is destroyed.
 #define GLFM_HANDLE_BACK_BUTTON 1
 
 // MARK: - Platform data (global singleton)
@@ -1048,7 +1048,7 @@ static uint32_t glfm__getUnicodeChar(GLFMPlatformData *platformData, jint keyCod
  * destroyed, and the main thread is destroyed. The glfm__mainLoop() function would be called again in the same process
  * if the user returns to the app.
  *
- * With this, when the app is in the background, the app will pause in the ALooper_pollAll() call.
+ * With this, when the app is in the background, the app will pause in the ALooper_pollOnce() call.
  */
 static bool glfm__handleBackButton(GLFMPlatformData *platformData) {
     if (!platformData || !platformData->activity) {
@@ -1596,10 +1596,11 @@ static void *glfm__mainLoop(void *param) {
 
     // Run the main loop
     while (!platformData->destroyRequested) {
-        int eventIdentifier;
 
-        while ((eventIdentifier = ALooper_pollAll(platformData->animating ? 0 : -1,
-                                                  NULL, NULL, NULL)) >= 0) {
+        // Poll input
+        int eventIdentifier;
+        while ((eventIdentifier = ALooper_pollOnce(platformData->animating ? 0 : -1,
+                                                   NULL, NULL, NULL)) > ALOOPER_POLL_TIMEOUT) {
             if (eventIdentifier == GLFMLooperIDCommand) {
                 uint8_t cmd = 0;
                 if (read(platformData->commandPipeRead, &cmd, sizeof(cmd)) == sizeof(cmd)) {
@@ -1618,6 +1619,7 @@ static void *glfm__mainLoop(void *param) {
             }
         }
 
+        // Render
         if (platformData->animating && platformData->display) {
             platformData->swapCalled = false;
             glfm__drawFrame(platformData);
@@ -2394,13 +2396,13 @@ double glfmGetTime(void) {
         } else if (clock_gettime(CLOCK_MONOTONIC, &time) == 0) {
             clockID = CLOCK_MONOTONIC;
         } else {
-            clock_gettime(CLOCK_REALTIME, &time);
+            (void)clock_gettime(CLOCK_REALTIME, &time);
             clockID = CLOCK_REALTIME;
         }
         initTime = time.tv_sec;
         initialized = true;
     } else {
-        clock_gettime(clockID, &time);
+        (void)clock_gettime(clockID, &time);
     }
     // Subtract by initTime to ensure that conversion to double keeps nanosecond accuracy
     return (double)(time.tv_sec - initTime) + (double)time.tv_nsec / 1e9;

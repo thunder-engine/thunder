@@ -3,13 +3,10 @@ import qbs.FileInfo
 
 Project {
     id: glfm
-    property stringList srcFiles: {
-        var sources = [
-        "src/glfm_internal.h",
-        "include/glfm.h"
-        ];
-        return sources;
-    }
+    property stringList srcFiles: [
+        //"src/glfm_internal.h",
+        //"include/glfm.h"
+    ]
 
     property stringList incPaths: [
         "include"

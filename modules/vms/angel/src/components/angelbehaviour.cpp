@@ -258,7 +258,7 @@ Variant AngelBehaviour::readProperty(const MetaProperty &property) const {
             }
 
             VariantList list;
-            for(int i = 0; i < array->GetSize(); i++) {
+            for(uint32_t i = 0; i < array->GetSize(); i++) {
                 switch(typeId) {
                     case MetaType::BOOLEAN: list.push_back(Variant(*reinterpret_cast<bool *>(array->At(i)))); break;
                     case MetaType::INTEGER: list.push_back(Variant(*reinterpret_cast<int *>(array->At(i)))); break;

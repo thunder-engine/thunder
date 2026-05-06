@@ -55,7 +55,9 @@ Scene *World::loadScene(const TString &path, bool additive) {
                 scene->setParent(this);
             } else {
                 for(auto it : getChildren()) {
-                    unloadScene(dynamic_cast<Scene *>(it));
+                    if(it != scene) {
+                        unloadScene(dynamic_cast<Scene *>(it));
+                    }
                 }
                 scene->setParent(this);
             }

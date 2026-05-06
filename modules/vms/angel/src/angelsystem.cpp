@@ -122,7 +122,7 @@ bool AngelSystem::init() {
 void AngelSystem::reset() {
     if(m_scriptEngine) {
         if(Engine::isGameMode()) {
-            for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+            for(uint32_t m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
                 asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
                 if(module) {
                     module->ResetGlobalVars(m_context);
@@ -198,7 +198,8 @@ void AngelSystem::reload() {
                         TypeFuncs<AngelBehaviour>::compare,
                         TypeFuncs<AngelBehaviour>::index,
                         info->GetName(),
-                        MetaType::BASE_OBJECT
+                        MetaType::BASE_OBJECT,
+                        nullptr
                     };
 
                     MetaType::registerType(staticTable);
@@ -225,7 +226,8 @@ void AngelSystem::reload() {
                         TypeFuncs<AngelBehaviour *>::compare,
                         TypeFuncs<AngelBehaviour *>::index,
                         type,
-                        MetaType::POINTER | MetaType::BASE_OBJECT
+                        MetaType::POINTER | MetaType::BASE_OBJECT,
+                        nullptr
                     };
 
                     MetaType::registerType(staticTable);
@@ -246,7 +248,7 @@ void AngelSystem::reload() {
 }
 
 asIScriptObject *AngelSystem::createScriptObject(const TString &name) {
-    for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+    for(uint32_t m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
         asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
         asITypeInfo *type = module->GetTypeInfoByDecl(name.data());
         if(type) {
@@ -442,7 +444,7 @@ void AngelSystem::unloadAll(bool reload) {
         m_context = nullptr;
     }
 
-    for(int m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
+    for(uint32_t m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
         asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
         if(module) {
             for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
@@ -536,7 +538,7 @@ void wrapGeneric(asIScriptGeneric *gen) {
 
             bool hasParam = false;
             std::string params = "(";
-            for(int i = 0; i < function->GetParamCount(); i++) {
+            for(uint32_t i = 0; i < function->GetParamCount(); i++) {
                 int typeId = 0;
                 asDWORD flags = 0;
                 function->GetParam(i, &typeId, &flags);

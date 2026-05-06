@@ -16,15 +16,14 @@ int thunderMain() {
     Log::setLogLevel(Log::INF);
 
     Engine *engine = new Engine;
-    if(engine->init()) {
+    if(Engine::init()) {
         //+{RegisterModules}
         //-{RegisterModules}
-        engine->addModule(new Module${projectName}(engine));
+        Engine::addModule(new Module${projectName}(engine));
 
-        engine->start();
+        Engine::start();
     }
-
-    delete engine;
+    // No need to delete Engine after all
 
     return 0;
 }
