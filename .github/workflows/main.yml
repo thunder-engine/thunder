@@ -283,7 +283,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
+        echo "QT_PATH=$(./build/install-qt.sh -d ${QT_INSTALL_DIR} --version ${{ matrix.qt_version }} --toolchain win64_msvc2019_64 --host windows_x86 qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative)" >> $GITHUB_ENV
 
     - name: Install Qbs
       run: |
