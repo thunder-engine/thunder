@@ -32,6 +32,15 @@
 #include "resources/tileset.h"
 #include "resources/tilemap.h"
 
+namespace {
+    static const char *gIndex("index");
+    static const char *gVersion("version");
+    static const char *gContent("content");
+    static const char *gSettings("settings");
+}
+
+#define INDEX_VERSION 2
+
 ResourceSystem::ResourceSystem() :
         m_clean(false) {
     setName("ResourceSystem");
@@ -74,24 +83,69 @@ ResourceSystem::~ResourceSystem() {
         it.first->setState(Resource::ToBeDeleted);
     }
 }
+/*!
+    This loads the resource bundle at given \a path.
+    Returns true in case of success; otherwise returns false.
+*/
+bool ResourceSystem::loadBundle(const TString &path) {
+    File::mount(path);
 
-void ResourceSystem::update(World *) {
-    PROFILE_FUNCTION();
+    File fp(gIndex);
+    if(fp.open(File::Read)) {
+        Variant var = Json::load(TString(fp.readAll()));
+        if(var.isValid()) {
+            VariantMap root = var.toMap();
 
-    for(auto &it : m_referenceCache) {
-        processState(it.first);
+            int32_t version = root[gVersion].toInt();
+            if(version == INDEX_VERSION) {
+                for(auto &it : root[gContent].toMap()) {
+                    VariantList item = it.second.toList();
+                    auto i = item.begin();
+                    TString path = i->toString();
+                    i++;
+                    TString type = i->toString();
+                    i++;
+                    TString md5 = i->toString();
+
+                    uint32_t id = 0;
+                    if(item.size() > 3) {
+                        i++;
+                        id = static_cast<uint32_t>(i->toInt());
+                    }
+
+                    m_indexMap[path] = {path, type, it.first, md5, id};
+                }
+
+                for(auto &it : root[gSettings].toMap()) {
+                    Engine::setValue(it.first, it.second);
+                }
+
+                for(auto it : m_observers) {
+                    (*it.first)(path, false, it.second);
+                }
+
+                return true;
+            }
+        }
     }
-
-    while(!m_deleteList.empty()) {
-        Object *res = m_deleteList.back();
-        m_deleteList.pop_back();
-
-        delete res;
-    }
+    return false;
 }
 
-int ResourceSystem::threadPolicy() const {
-    return Pool;
+bool ResourceSystem::unloadBundle(const TString &path) {
+    for(auto it : m_observers) {
+        (*it.first)(path, true, it.second);
+    }
+
+    auto indexCopy = m_indexMap;
+    for(auto &it : indexCopy) {
+        if(it.second.bundle == path) {
+            m_indexMap.erase(it.first);
+        }
+    }
+
+    File::unmount(path);
+
+    return true;
 }
 
 void ResourceSystem::factoryAdd(const TString &name, const TString &url, const MetaObject *meta) {
@@ -101,13 +155,6 @@ void ResourceSystem::factoryAdd(const TString &name, const TString &url, const M
     if(index == -1) {
         m_types.push_back(name);
     }
-}
-
-void ResourceSystem::setResource(Resource *object, const TString &uuid) {
-    PROFILE_FUNCTION();
-
-    m_resourceCache[uuid] = object;
-    m_referenceCache[object] = uuid;
 }
 
 Resource *ResourceSystem::loadResource(const TString &path) {
@@ -263,12 +310,11 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
 void ResourceSystem::setCleanImport(bool flag) {
     m_clean = flag;
 }
-
 /*!
     Returns index of resource \a type in registry.
     This index is not persistent across projects and should only be used for asset grouping.
 */
-int ResourceSystem::indexOf(const TString &type) {
+int ResourceSystem::indexOf(const TString &type) const {
     auto it = std::find(m_types.begin(), m_types.end(), type);
     if (it != m_types.end()) {
         return std::distance(m_types.begin(), it);
@@ -276,51 +322,19 @@ int ResourceSystem::indexOf(const TString &type) {
     return -1;
 }
 
-void ResourceSystem::processState(Resource *resource) {
-    if(resource) {
-        switch(resource->state()) {
-            case Resource::Loading: {
-                TString uuid = reference(resource);
-                if(!uuid.isEmpty()) {
-                    File fp(uuid);
-                    if(fp.open(File::Read)) {
-                        ByteArray data(fp.readAll());
-                        fp.close();
-
-                        Variant var = Bson::load(data);
-                        if(!var.isValid()) {
-                            var = Json::load(TString(data));
-                        }
-
-                        if(var.isValid()) {
-                            Engine::toObject(var, nullptr, uuid);
-                        }
-
-                        resource->switchState(Resource::ToBeUpdated);
-                    } else {
-                        aError() << "Unable to load resource:" << uuid;
-                        resource->setState(Resource::Invalid);
-                    }
-                }
-            } break;
-            case Resource::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
-                //resource->switchState(Resource::Unloading);
-            } break;
-            case Resource::ToBeDeleted: {
-                auto it = std::find(m_deleteList.begin(), m_deleteList.end(), resource);
-                if(it == m_deleteList.end()) {
-                    m_deleteList.push_back(resource);
-                }
-            } break;
-            default: break;
-        }
-    }
+void ResourceSystem::subscribe(BundleUpdatedCallback callback, void *object) {
+    m_observers.push_back(std::make_pair(callback, object));
 }
 
-void ResourceSystem::removeObject(Object *object) {
-    ObjectSystem::removeObject(object);
-
-    deleteFromCahe(static_cast<Resource *>(object));
+void ResourceSystem::unsubscribe(void *object) {
+    auto it = m_observers.begin();
+    while(it != m_observers.end()) {
+        if((it->second) == object) {
+            it = m_observers.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 Resource *ResourceSystem::resource(TString &path) const {
@@ -334,7 +348,16 @@ Resource *ResourceSystem::resource(TString &path) const {
     return nullptr;
 }
 
+void ResourceSystem::setResource(Resource *object, const TString &uuid) {
+    PROFILE_FUNCTION();
+
+    m_resourceCache[uuid] = object;
+    m_referenceCache[object] = uuid;
+}
+
 Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString &name, Object *parent) {
+    PROFILE_FUNCTION();
+
     Object *result = System::instantiateObject(meta, name, parent);
 
     Resource *resource = dynamic_cast<Resource *>(result);
@@ -347,4 +370,70 @@ Object *ResourceSystem::instantiateObject(const MetaObject *meta, const TString 
     }
 
     return result;
+}
+
+void ResourceSystem::update(World *) {
+    PROFILE_FUNCTION();
+
+    for(auto &it : m_referenceCache) {
+        processState(it.first);
+    }
+
+    while(!m_deleteList.empty()) {
+        Object *res = m_deleteList.back();
+        m_deleteList.pop_back();
+
+        delete res;
+    }
+}
+
+int ResourceSystem::threadPolicy() const {
+    return Pool;
+}
+
+void ResourceSystem::processState(Resource *resource) {
+    if(resource) {
+        switch(resource->state()) {
+        case Resource::Loading: {
+            TString uuid = reference(resource);
+            if(!uuid.isEmpty()) {
+                File fp(uuid);
+                if(fp.open(File::Read)) {
+                    ByteArray data(fp.readAll());
+                    fp.close();
+
+                    Variant var = Bson::load(data);
+                    if(!var.isValid()) {
+                        var = Json::load(TString(data));
+                    }
+
+                    if(var.isValid()) {
+                        Engine::toObject(var, nullptr, uuid);
+                    }
+
+                    resource->switchState(Resource::ToBeUpdated);
+                } else {
+                    aError() << "Unable to load resource:" << uuid;
+                    resource->setState(Resource::Invalid);
+                }
+            }
+        } break;
+        case Resource::Suspend: { /// \todo Don't delete resource imidiately Cache pattern implementation required
+            //resource->switchState(Resource::Unloading);
+        } break;
+        case Resource::ToBeDeleted: {
+            auto it = std::find(m_deleteList.begin(), m_deleteList.end(), resource);
+            if(it == m_deleteList.end()) {
+                m_deleteList.push_back(resource);
+            }
+        } break;
+        default: break;
+        }
+    }
+}
+
+void ResourceSystem::removeObject(Object *object) {
+    ObjectSystem::removeObject(object);
+
+    deleteFromCahe(static_cast<Resource *>(object));
 }

@@ -57,6 +57,8 @@ protected:
 
     static void messageCallback(const asSMessageInfo *msg, void *param);
 
+    static void bundleUpdated(const TString &path, bool unload, void *ptr);
+
 private:
     std::unordered_map<asITypeInfo *, MetaObject *> m_metaObjects;
     std::unordered_map<TString, MetaType::Table *> m_metaTypes;

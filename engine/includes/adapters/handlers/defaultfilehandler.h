@@ -13,8 +13,12 @@ public:
         m_searchPath.clear();
     }
 
-    void searchPathAdd(const TString &path) {
+    void mount(const char *path, bool writable = false) override {
         m_searchPath.push_back(path);
+    }
+
+    void unmount(const char *path) override {
+        m_searchPath.remove(path);
     }
 
 protected:
@@ -160,10 +164,6 @@ protected:
 
     size_t tell(int *handle) override {
         return ::ftell(reinterpret_cast<FILE *>(handle));
-    }
-
-    TString md5(const char *path) override {
-        return TString();
     }
 
 protected:

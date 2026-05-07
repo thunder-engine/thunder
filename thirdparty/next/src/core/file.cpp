@@ -83,6 +83,14 @@ FileHandler *File::handler() {
     return s_handler;
 }
 
+void File::mount(const TString &path, bool writable) {
+    s_handler->mount(path.data(), writable);
+}
+
+void File::unmount(const TString &path) {
+    s_handler->unmount(path.data());
+}
+
 bool File::exists(const TString &file) {
     return s_handler->exists(file.data());
 }
@@ -117,12 +125,4 @@ bool File::isFile(const TString &path) {
 
 bool File::isDir(const TString &path) {
     return s_handler->isDir(path.data());
-}
-
-/*!
-    Returns the MD5 hash for the \a file.
-    \note This function calculates hash sum in editor mode and returns cached sum for the resource in game mode.
-*/
-TString File::md5(const TString &file) {
-    return s_handler->md5(file.data());
 }

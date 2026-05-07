@@ -159,11 +159,11 @@ EditorPlatform &EditorPlatform::instance() {
 void EditorPlatform::setImportPath(const TString &path) {
     DefaultFileHandler *handler = static_cast<DefaultFileHandler *>(File::handler());
     handler->clearSearchPaths();
-    handler->searchPathAdd(path);
+    handler->mount(path.data());
 }
 
 bool EditorPlatform::init() {
-    File fp(locationLocalDir() + "/config.json");
+    File fp(locationLocalDir() + "/../" + EDITOR_NAME "/config.json");
     if(fp.open(File::Read | File::Text)) {
         ByteArray data = fp.readAll();
         fp.close();

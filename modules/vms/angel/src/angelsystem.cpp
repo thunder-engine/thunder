@@ -82,7 +82,10 @@ AngelSystem::AngelSystem(Engine *engine) :
 
     AngelBehaviour::registerClassFactory(this);
 
-    AngelScript::registerClassFactory(engine->resourceSystem());
+    ResourceSystem *resourceSystem = engine->resourceSystem();
+    AngelScript::registerClassFactory(resourceSystem);
+
+    resourceSystem->subscribe(bundleUpdated, this);
 
     setName("AngelScript");
 
@@ -864,4 +867,8 @@ void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
 
     A_UNUSED(param);
     Log((Log::LogTypes)msg->type) << gLabel << msg->section << "(" << msg->row << msg->col << "):" << msg->message;
+}
+
+void AngelSystem::bundleUpdated(const TString &path, bool unload, void *ptr) {
+    //AngelSystem *system = reinterpret_cast<AngelSystem *>(ptr);
 }

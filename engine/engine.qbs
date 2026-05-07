@@ -72,11 +72,6 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: [ "Shell32" ]
-        }
-
-        Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.rpaths: "$ORIGIN/../lib"
         }

@@ -17,12 +17,18 @@ public:
         }
     }
 
-    void searchPathAdd(const char *path, bool writable = false) {
-        if(PHYSFS_addToSearchPath(path, writable ? 0 : 1) == 0) {
+    void mount(const char *path, bool writable = false) override {
+        if(PHYSFS_mount(path, "/", 0) == 0) {
             aError() << "[ FileIO ] Filed to add search path." << path << PHYSFS_getLastError();
         }
         if(writable && PHYSFS_setWriteDir(path) == 0) {
             aError() << "[ FileIO ] Can't set directory for writing.";
+        }
+    }
+
+    void unmount(const char *path) override {
+        if(PHYSFS_unmount(path) == 0) {
+            aError() << "[ FileIO ] Filed to remove from search path.";
         }
     }
 
@@ -120,15 +126,6 @@ protected:
         return static_cast<size_t>(PHYSFS_tell(reinterpret_cast<PHYSFS_file *>(handle)));
     }
 
-    TString md5(const char *path) override {
-        const ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
-        auto it = indices.find(path);
-        if(it != indices.end()) {
-            return it->second.md5;
-        }
-
-        return TString();
-    }
 };
 
 #endif // PHYSFSFILEHANDLER_H

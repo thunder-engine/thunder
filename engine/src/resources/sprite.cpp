@@ -29,7 +29,7 @@ Sprite::~Sprite() {
     PROFILE_FUNCTION();
 
     if(m_texture) {
-        m_texture->decRef();
+        m_texture->unsubscribe(this);
     }
 }
 /*!
@@ -136,9 +136,15 @@ Texture *Sprite::texture() const {
 void Sprite::setTexture(Texture *texture) {
     PROFILE_FUNCTION();
 
-    m_texture = texture;
-    if(m_texture) {
-        m_texture->incRef();
+    if(m_texture != texture) {
+        if(m_texture) {
+            m_texture->unsubscribe(this);
+        }
+
+        m_texture = texture;
+        if(m_texture) {
+            m_texture->subscribe(&Sprite::textureUpdated, this);
+        }
     }
 }
 
@@ -360,4 +366,10 @@ Mesh *Sprite::composeMesh(Mesh *mesh, Mode mode, Vector2 &size) {
         }
     }
     return m_mesh;
+}
+
+void Sprite::textureUpdated(int state, void *ptr) {
+    if(state == Resource::ToBeDeleted) {
+        static_cast<Sprite *>(ptr)->m_texture = nullptr;
+    }
 }

@@ -46,12 +46,6 @@
 #include "pipelinecontext.h"
 
 namespace {
-    static const char *gIndex("index");
-
-    static const char *gVersion("version");
-    static const char *gContent("content");
-    static const char *gSettings("settings");
-
     static const char *gObjects("objects");
 
     static const char *gEntry(".entry");
@@ -61,8 +55,6 @@ namespace {
 
     static const char *gTransform("Transform");
 }
-
-#define INDEX_VERSION 2
 
 class SystemRunner : public Runable {
 public:
@@ -139,9 +131,8 @@ Engine::Engine() {
 
     m_instance = this;
 
-    Backtrace::installCrashHandler();
-
 #ifndef THUNDER_MOBILE
+    Backtrace::installCrashHandler();
     m_platform = new DesktopAdaptor;
     Log::addHandler(new DesktopLogHandler);
 #endif
@@ -514,53 +505,6 @@ TString Engine::reference(Object *object) {
     PROFILE_FUNCTION();
 
     return m_resourceSystem->reference(static_cast<Resource *>(object));
-}
-/*!
-    This method reads the index file for the resource bundle.
-    The index file helps to find required game resources.
-    Returns true in case of success; otherwise returns false.
-*/
-bool Engine::reloadBundle() {
-    PROFILE_FUNCTION();
-
-    ResourceSystem::Dictionary &indices = m_resourceSystem->indices();
-    indices.clear();
-
-    File fp(gIndex);
-    if(fp.open(File::Read)) {
-        Variant var = Json::load(TString(fp.readAll()));
-        if(var.isValid()) {
-            VariantMap root = var.toMap();
-
-            int32_t version = root[gVersion].toInt();
-            if(version == INDEX_VERSION) {
-                for(auto &it : root[gContent].toMap()) {
-                    VariantList item = it.second.toList();
-                    auto i = item.begin();
-                    TString path = i->toString();
-                    i++;
-                    TString type = i->toString();
-                    i++;
-                    TString md5 = i->toString();
-
-                    uint32_t id = 0;
-                    if(item.size() > 3) {
-                        i++;
-                        id = static_cast<uint32_t>(i->toInt());
-                    }
-
-                    indices[path] = {type, it.first, md5, id};
-                }
-
-                for(auto &it : root[gSettings].toMap()) {
-                    setValue(it.first, it.second);
-                }
-
-                return true;
-            }
-        }
-    }
-    return false;
 }
 /*!
     Returns the resource management system which can be used in external modules.
