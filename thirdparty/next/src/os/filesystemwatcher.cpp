@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -16,6 +17,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/inotify.h>
 #include <fcntl.h>
 #endif
 
