@@ -46,7 +46,11 @@ protected:
 
     bool remove(const char *path) override {
         try {
-            return std::filesystem::remove(path);
+            if(isDir(path)) {
+                return std::filesystem::remove_all(path);
+            } else {
+                return std::filesystem::remove(path);
+            }
         } catch (const std::filesystem::filesystem_error &) {
             return false;
         }

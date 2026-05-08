@@ -80,6 +80,8 @@ public:
 
     bool isEmpty() const;
 
+    bool startsWith(const TString &str) const;
+
     int indexOf(const TString &str) const;
     int indexOf(const char ch) const;
 
