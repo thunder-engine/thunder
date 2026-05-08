@@ -360,8 +360,8 @@ public:
 
             if(event->mask & IN_CREATE || event->mask & IN_DELETE || event->mask & IN_MODIFY ||
                event->mask & IN_MOVED_FROM || event->mask & IN_MOVED_TO) {
-                if(!eventPath.empty()) {
-                    p_ptr->fileChanged(fullPath);
+                if(!eventPath.isEmpty()) {
+                    p_ptr->fileChanged(eventPath);
                 }
             }
 
