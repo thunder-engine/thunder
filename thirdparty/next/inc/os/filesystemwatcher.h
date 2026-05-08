@@ -39,11 +39,18 @@ public:
     bool addPaths(const StringList &paths);
 
     bool removePath(const TString &path);
+    bool removePaths(const StringList &paths);
+
+    StringList directories() const;
+    StringList files() const;
 
 public: // signals
     void fileChanged(const TString &path);
 
     void directoryChanged(const TString &path);
+
+private:
+    bool event(Event *event) override;
 
 private:
     FileSystemWatcherPrivate *m_ptr;

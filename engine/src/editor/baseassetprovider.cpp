@@ -1,7 +1,6 @@
 #include "editor/baseassetprovider.h"
 
-#include <QDirIterator>
-#include <QFileSystemWatcher>
+#include <os/filesystemwatcher.h>
 
 #include "editor/projectsettings.h"
 #include "editor/assetmanager.h"
@@ -10,60 +9,62 @@
 #include "config.h"
 
 BaseAssetProvider::BaseAssetProvider() :
-        m_dirWatcher(new QFileSystemWatcher(this)),
-        m_fileWatcher(new QFileSystemWatcher(this)) {
+        m_dirWatcher(nullptr) {
 
+    FileSystemWatcher::registerClassFactory(&Engine::instance());
+
+    m_dirWatcher = Engine::objectCreate<FileSystemWatcher>();
+
+    connect(m_dirWatcher, _SIGNAL(directoryChanged(TString)), this, _SLOT(onDirectoryChanged(TString)));
+    connect(m_dirWatcher, _SIGNAL(fileChanged(TString)), this, _SLOT(onFileChanged(TString)));
 }
 
 BaseAssetProvider::~BaseAssetProvider() {
     delete m_dirWatcher;
-    delete m_fileWatcher;
 }
 
-void BaseAssetProvider::init() {
-    QStringList paths = m_dirWatcher->directories();
-    if(!paths.isEmpty()) {
+void BaseAssetProvider::init(bool force) {
+    StringList paths = m_dirWatcher->directories();
+    if(!paths.empty()) {
         m_dirWatcher->removePaths(paths);
     }
 
-    connect(m_dirWatcher, &QFileSystemWatcher::directoryChanged, this, &BaseAssetProvider::onDirectoryChanged);
-    connect(m_dirWatcher, SIGNAL(directoryChanged(QString)), AssetManager::instance(), SIGNAL(directoryChanged(QString)));
-    connect(m_dirWatcher, SIGNAL(directoryChanged(QString)), AssetManager::instance(), SLOT(reimport()));
+    ProjectSettings *mgr = ProjectSettings::instance();
+    TString resourcePath(ProjectSettings::instance()->resourcePath());
 
-    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, this, &BaseAssetProvider::onFileChanged);
-    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, AssetManager::instance(), &AssetManager::fileChanged);
-    connect(m_fileWatcher, &QFileSystemWatcher::fileChanged, AssetManager::instance(), &AssetManager::reimport);
+    onDirectoryChangedForce(resourcePath + "/engine/materials",force);
+    onDirectoryChangedForce(resourcePath + "/engine/textures", force);
+    onDirectoryChangedForce(resourcePath + "/engine/meshes",   force);
+    onDirectoryChangedForce(resourcePath + "/engine/pipelines",force);
+    onDirectoryChangedForce(resourcePath + "/engine/fonts",    force);
+#ifndef BUILDER
+    onDirectoryChangedForce(resourcePath + "/editor/materials",force);
+    onDirectoryChangedForce(resourcePath + "/editor/gizmos",   force);
+    onDirectoryChangedForce(resourcePath + "/editor/meshes",   force);
+    onDirectoryChangedForce(resourcePath + "/editor/textures", force);
+#endif
+    onDirectoryChangedForce(mgr->contentPath(), force);
 }
 
-void BaseAssetProvider::cleanupBundle() {
-    AssetManager *mgr = AssetManager::instance();
-
-    for(auto &path : File::list(ProjectSettings::instance()->importPath())) {
-        TString fileName(Url(path).name());
-        if(!File::isDir(path) && fileName != gIndex && mgr->uuidToPath(fileName).isEmpty()) {
-            File::remove(path);
-        }
-    }
-}
-
-void BaseAssetProvider::onFileChanged(const QString &path) {
+void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
+
+    AssetManager::instance()->fileChanged(path.data());
+    AssetManager::instance()->reimport();
 }
 
-void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
-    AssetManager *mgr = AssetManager::instance();
-
-    TString filePath(path.toStdString());
-    if(File::exists(filePath) && Url(path.toStdString()).suffix() != gMetaExt) {
-        AssetConverterSettings *settings = mgr->fetchSettings(filePath);
+void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
+    if(File::exists(path) && Url(path).suffix() != gMetaExt) {
+        AssetManager *mgr = AssetManager::instance();
+        AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
             if(force || settings->isOutdated()) {
                 mgr->pushToImport(settings);
             } else {
                 if(!settings->isCode()) {
-                    mgr->registerAsset(filePath, settings->info());
+                    mgr->registerAsset(path, settings->info());
                     for(const TString &it : settings->subKeys()) {
-                        mgr->registerAsset(filePath + "/" + it, settings->subItem(it));
+                        mgr->registerAsset(path + "/" + it, settings->subItem(it));
                     }
                 }
             }
@@ -71,26 +72,24 @@ void BaseAssetProvider::onFileChangedForce(const QString &path, bool force) {
     }
 }
 
-void BaseAssetProvider::onDirectoryChanged(const QString &path) {
+void BaseAssetProvider::onDirectoryChanged(const TString &path) {
     onDirectoryChangedForce(path);
+
+    AssetManager::instance()->directoryChanged(path.data());
 }
 
-void BaseAssetProvider::onDirectoryChangedForce(const QString &path, bool force) {
+void BaseAssetProvider::onDirectoryChangedForce(const TString &path, bool force) {
     m_dirWatcher->addPath(path);
 
-    for(auto &item : File::list(path.toStdString())) {
+    for(auto &item : File::list(path)) {
         if(Url(item).suffix() == gMetaExt) {
             continue;
         }
-
         if(File::isDir(item)) {
-            m_dirWatcher->addPath(item.data());
-            continue;
+            m_dirWatcher->addPath(item);
+        } else {
+            onFileChangedForce(item, force);
         }
-
-        m_fileWatcher->addPath(item.data());
-
-        onFileChangedForce(item.data(), force);
     }
 }
 
@@ -100,26 +99,9 @@ void BaseAssetProvider::removeResource(const TString &source) {
     }
 
     ProjectSettings *project = ProjectSettings::instance();
-    TString src(project->contentPath() + "/" + source);
-    if(File::isDir(src)) {
-        m_dirWatcher->removePath(src.data());
-
-        QDir dir(project->contentPath().data());
-        QDirIterator it(src.data(), QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
-        while(it.hasNext()) {
-            removeResource(dir.relativeFilePath(it.next()).toStdString());
-        }
-        QDir().rmdir(src.data());
-        return;
-    }
-
     AssetManager *asset = AssetManager::instance();
-    CodeBuilder *builder = nullptr;
-    BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
-    if(settings) {
-        builder = settings->builder();
-    }
-    m_fileWatcher->removePath(src.data());
+    TString src(project->contentPath() + "/" + source);
+
     Engine::unloadResource(source);
 
     TString uuid = asset->unregisterAsset(source);
@@ -131,6 +113,11 @@ void BaseAssetProvider::removeResource(const TString &source) {
     File::remove(src + "." + gMetaExt);
     File::remove(src);
 
+    CodeBuilder *builder = nullptr;
+    BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
+    if(settings) {
+        builder = settings->builder();
+    }
     if(builder) {
         builder->rescanSources(project->contentPath());
         if(!builder->isEmpty()) {
@@ -144,29 +131,26 @@ void BaseAssetProvider::removeResource(const TString &source) {
 
 void BaseAssetProvider::renameResource(const TString &oldName, const TString &newName) {
     AssetManager *asset = AssetManager::instance();
-    ProjectSettings *project = ProjectSettings::instance();
 
     ResourceSystem::Dictionary &indices(Engine::resourceSystem()->indices());
 
     if(File::isDir(oldName)) {
-        QStringList dirs = m_dirWatcher->directories();
-        QStringList files = m_fileWatcher->files();
-        if(!dirs.isEmpty()) {
+        StringList dirs = m_dirWatcher->directories();
+        if(!dirs.empty()) {
             m_dirWatcher->removePaths(dirs);
-            m_dirWatcher->addPaths(dirs.replaceInStrings(oldName.data(), newName.data()));
-        }
-        if(!files.isEmpty()) {
-            m_fileWatcher->removePaths(files);
-            m_fileWatcher->addPaths(files.replaceInStrings(oldName.data(), newName.data()));
+            for(auto &it : dirs) {
+                it.replace(oldName, newName);
+            }
+            m_dirWatcher->addPaths(dirs);
         }
 
-        QDir dir;
-        if(dir.rename(oldName.data(), newName.data())) {
+        if(File::rename(oldName, newName)) {
             std::map<TString, ResourceSystem::ResourceInfo> back;
 
+            ProjectSettings *project = ProjectSettings::instance();
             for(auto it = indices.cbegin(); it != indices.cend();) {
-                QString path = (project->contentPath() + "/" + it->first).data();
-                if(path.startsWith(oldName.data())) {
+                TString path(project->contentPath() + "/" + it->first);
+                if(path.startsWith(oldName)) {
                     back[path.toStdString()] = it->second;
                     it = indices.erase(it);
                 } else {
@@ -181,11 +165,8 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
             }
             asset->dumpBundle();
         } else {
-            if(!dirs.isEmpty()) {
+            if(!dirs.empty()) {
                 m_dirWatcher->addPaths(dirs);
-            }
-            if(!files.isEmpty()) {
-                m_fileWatcher->addPaths(files);
             }
         }
     } else {
@@ -203,7 +184,7 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
             AssetConverterSettings *settings = asset->fetchSettings(newName);
             if(settings) {
                 AssetConverter *converter = asset->getConverter(newName);
-                converter->renameAsset(settings, Url(oldName).baseName(), Url(oldName).baseName());
+                converter->renameAsset(settings, Url(oldName).baseName(), Url(newName).baseName());
             }
         }
     }
@@ -211,9 +192,8 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
 
 void BaseAssetProvider::duplicateResource(const TString &source) {
     AssetManager *asset = AssetManager::instance();
-    ProjectSettings *project = ProjectSettings::instance();
 
-    TString src(project->contentPath() + "/" + source);
+    TString src(ProjectSettings::instance()->contentPath() + "/" + source);
 
     Url info(src);
 
@@ -249,39 +229,4 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
 
         asset->dumpBundle();
     }
-}
-
-// Copied from: https://forum.qt.io/topic/59245/is-there-any-api-to-recursively-copy-a-directory-and-all-it-s-sub-dirs-and-files/3
-bool BaseAssetProvider::copyRecursively(const TString &sourceFolder, const TString &destFolder) {
-    QDir sourceDir(sourceFolder.data());
-
-    if(!sourceDir.exists()) {
-        return false;
-    }
-
-    QDir destDir(destFolder.data());
-    if(!destDir.exists()) {
-        destDir.mkdir(destFolder.data());
-    }
-
-    QStringList files = sourceDir.entryList(QDir::Files);
-    for(int i = 0; i< files.count(); i++) {
-        TString srcName = sourceFolder + "/" + files[i].toStdString();
-        TString destName = destFolder + "/" + files[i].toStdString();
-        if(!QFile::copy(srcName.data(), destName.data())) {
-            return false;
-        }
-    }
-
-    files.clear();
-    files = sourceDir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
-    for(int i = 0; i < files.count(); i++) {
-        TString srcName = sourceFolder + "/" + files[i].toStdString();
-        TString destName = destFolder + "/" + files[i].toStdString();
-        if(!copyRecursively(srcName, destName)) {
-            return false;
-        }
-    }
-
-    return true;
 }

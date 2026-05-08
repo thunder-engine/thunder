@@ -119,7 +119,6 @@ void AssetManager::rescan() {
 
     TString target = m_projectManager->targetPath();
     if(target.isEmpty()) {
-
         bool update = m_projectManager->projectSdk() != SDK_VERSION;
         if(update) {
             getChangedUUIDs();
@@ -128,24 +127,11 @@ void AssetManager::rescan() {
         Engine::resourceSystem()->unloadBundle(TString());
         m_force |= !Engine::resourceSystem()->loadBundle(TString());
         m_force |= update;
-
-        m_assetProvider->init();
     } else {
         m_force = true;
     }
 
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/materials").data(),m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/textures").data(), m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/meshes").data(),   m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/pipelines").data(),m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/engine/fonts").data(),    m_force);
-#ifndef BUILDER
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/materials").data(),m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/gizmos").data(),   m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/meshes").data(),   m_force);
-    m_assetProvider->onDirectoryChangedForce((m_projectManager->resourcePath() + "/editor/textures").data(), m_force);
-#endif
-    m_assetProvider->onDirectoryChangedForce(m_projectManager->contentPath().data(), m_force);
+    m_assetProvider->init(m_force);
 
     Engine::resourceSystem()->setCleanImport(m_force);
 
@@ -175,7 +161,7 @@ TString AssetManager::assetTypeName(const TString &source) {
 }
 
 bool AssetManager::pushToImport(const TString &source) {
-    m_assetProvider->onFileChangedForce(source.data(), true);
+    m_assetProvider->onFileChangedForce(source, true);
     return true;
 }
 
@@ -601,7 +587,13 @@ void AssetManager::onPerform() {
             }
         }
 
-        m_assetProvider->cleanupBundle();
+        // Cleanup bundle
+        for(auto &path : File::list(ProjectSettings::instance()->importPath())) {
+            TString fileName(Url(path).name());
+            if(!File::isDir(path) && fileName != gIndex && uuidToPath(fileName).isEmpty()) {
+                File::remove(path);
+            }
+        }
 
         auto tmp = m_indices;
         for(auto &index : tmp) {

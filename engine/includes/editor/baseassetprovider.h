@@ -1,40 +1,37 @@
 #ifndef BASEASSETPROVIDER_H
 #define BASEASSETPROVIDER_H
 
-#include <QObject>
-
 #include <engine.h>
 
-class QFileSystemWatcher;
+class FileSystemWatcher;
 
-class ENGINE_EXPORT BaseAssetProvider : public QObject {
-    Q_OBJECT
+class ENGINE_EXPORT BaseAssetProvider : public Object {
+    A_OBJECT(BaseAssetProvider, Object, Core)
+
+    A_METHODS(
+        A_SLOT(BaseAssetProvider::onFileChanged),
+        A_SLOT(BaseAssetProvider::onDirectoryChanged)
+    )
+
 public:
     BaseAssetProvider();
-
     ~BaseAssetProvider();
 
-    void init();
+    void init(bool force);
 
     void renameResource(const TString &source, const TString &destination);
     void removeResource(const TString &source);
     void duplicateResource(const TString &source);
 
-    void cleanupBundle();
+public: // slots
+    void onFileChanged(const TString &path);
+    void onFileChangedForce(const TString &path, bool force = false);
 
-protected:
-    bool copyRecursively(const TString &sourceFolder, const TString &destFolder);
-
-public slots:
-    void onFileChanged(const QString &path);
-    void onFileChangedForce(const QString &path, bool force = false);
-
-    void onDirectoryChanged(const QString &path);
-    void onDirectoryChangedForce(const QString &path, bool force = false);
+    void onDirectoryChanged(const TString &path);
+    void onDirectoryChangedForce(const TString &path, bool force = false);
 
 private:
-    QFileSystemWatcher *m_dirWatcher;
-    QFileSystemWatcher *m_fileWatcher;
+    FileSystemWatcher *m_dirWatcher;
 
 };
 

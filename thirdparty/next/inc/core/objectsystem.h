@@ -89,6 +89,8 @@ public:
 
     static void removeInvalid(Invalid *invalid);
 
+    static void notify(Object *receiver, Event *event);
+
 protected:
     virtual void factoryAdd(const TString &name, const TString &url, const MetaObject *meta);
 

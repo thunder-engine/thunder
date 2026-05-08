@@ -212,6 +212,16 @@ bool TString::isEmpty() const {
     return m_data.empty();
 }
 /*!
+    Returns true if this string starts with the string \a str; otherwise returns false.
+    The comparison is case-sensitive.
+*/
+bool TString::startsWith(const TString &str) const {
+    if (str.length() > length()) {
+        return false;
+    }
+    return m_data.compare(0, str.length(), str.m_data) == 0;
+}
+/*!
     Returns the index position of the first occurrence of the string \a str in this string. Returns -1 if \a str is not found.
 */
 int TString::indexOf(const TString &str) const {

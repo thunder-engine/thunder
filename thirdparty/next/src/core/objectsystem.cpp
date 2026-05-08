@@ -556,7 +556,12 @@ Object::ObjectList &ObjectSystem::invalidObjects() {
 void ObjectSystem::removeInvalid(Invalid *invalid) {
     s_Invalids.remove(invalid);
 }
-
+/*!
+    Sends \a event to \a receiver.
+*/
+void ObjectSystem::notify(Object *receiver, Event *event) {
+    receiver->postEvent(event);
+}
 /*!
     Returns a list of objects with specified \a type.
     \warning This is very small function!
