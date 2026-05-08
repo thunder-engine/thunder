@@ -23,7 +23,7 @@
 
 class FileSystemWatcherPrivate;
 
-class NEXT_LIBRARY_EXPORT FileSystemWatcher : Object {
+class NEXT_LIBRARY_EXPORT FileSystemWatcher : public Object {
     A_OBJECT(FileSystemWatcher, Object, Core)
 
     A_METHODS(
