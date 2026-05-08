@@ -3,6 +3,10 @@
 #include <file.h>
 
 #include <filesystem>
+#include <atomic>
+#include <algorithm>
+#include <thread>
+#include <mutex>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -389,23 +393,23 @@ public:
         return state;
     }
 
-    void collectFiles(const TString &path, std::unordered_map<TString, FileInfo>& state) {
+    void collectFiles(const TString &path, std::unordered_map<TString, FileInfo> &state) {
         try {
             if(File::isDir(path)) {
                 for(const auto& entry : File::list(path)) {
                     try {
                         FileInfo info;
-                        info.path = entry.path().string();
-                        info.lastWriteTime = std::filesystem::last_write_time(entry.path());
-                        info.size = std::filesystem::file_size(entry.path());
+                        info.path = entry;
+                        info.lastWriteTime = std::filesystem::last_write_time(entry.toStdString());
+                        info.size = std::filesystem::file_size(entry.toStdString());
                         state[info.path] = info;
                     } catch (...) {}
                 }
             } else if(File::isFile(path)) {
                 FileInfo info;
                 info.path = path;
-                info.lastWriteTime = std::filesystem::last_write_time(path);
-                info.size = std::filesystem::file_size(path);
+                info.lastWriteTime = std::filesystem::last_write_time(path.toStdString());
+                info.size = std::filesystem::file_size(path.toStdString());
                 state[info.path] = info;
             }
         } catch (...) {}
