@@ -17,8 +17,11 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <sys/inotify.h>
 #include <fcntl.h>
+#endif
+
+#ifdef __linux__
+#include <sys/inotify.h>
 #endif
 
 class FileSystemWatcherPrivate {
@@ -346,7 +349,7 @@ public:
         for (char* ptr = buffer; ptr < buffer + length; ) {
             struct inotify_event* event = reinterpret_cast<struct inotify_event*>(ptr);
 
-            std::string eventPath;
+            TString eventPath;
             auto it = watchDescriptors.find(event->wd);
             if (it != watchDescriptors.end()) {
                 eventPath = it->second;
