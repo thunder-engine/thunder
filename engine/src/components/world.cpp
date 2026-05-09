@@ -4,6 +4,8 @@
 #include "components/scene.h"
 #include "resources/map.h"
 
+#include <algorithm>
+
 /*!
     \class World
     \brief A root object in the scene graph hierarchy.
