@@ -48,6 +48,8 @@ public:
 
     void setRayCastHandler(RayCastCallback callback, System *system);
 
+    std::list<Scene *> &scenes();
+
 public: // signals
     void sceneLoaded();
     void sceneUnloaded();

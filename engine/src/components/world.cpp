@@ -161,6 +161,12 @@ void World::setRayCastHandler(RayCastCallback callback, System *system) {
     m_rayCastSystem = system;
 }
 /*!
+    Returns list of all scenes.
+*/
+std::list<Scene *> &World::scenes() {
+    return m_scenes;
+}
+/*!
     Emmits signal when scene has been loaded.
 */
 void World::sceneLoaded() {
