@@ -6,6 +6,8 @@
 
 #include "system.h"
 
+#include <algorithm>
+
 namespace {
     const char *gResource("Resource");
 };
