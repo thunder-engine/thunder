@@ -144,16 +144,21 @@ void Actor::setHierarchyEnabled(bool enabled) {
 */
 void Actor::setScene(Scene *scene) {
     if(m_scene != scene) {
-        m_scene = scene;
-        if(m_scene && m_scene->world()) {
-            m_scene->world()->graphUpdated();
+        if(scene && scene->world()) {
+            scene->world()->graphUpdated();
         }
         for(auto it : getChildren()) {
             Actor *child = dynamic_cast<Actor *>(it);
             if(child) {
                 child->setScene(scene);
+            } else {
+                Component *component = dynamic_cast<Component *>(it);
+                if(component) {
+                    component->changeScene(m_scene, scene);
+                }
             }
         }
+        m_scene = scene;
     }
 }
 

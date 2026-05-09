@@ -14,11 +14,63 @@ Scene::Scene() :
         m_modified(false) {
 
 }
+
+Scene::Scene(const Scene &origin) :
+        m_groups(origin.m_groups),
+        m_map(origin.m_map),
+        m_modified(origin.m_modified) {
+
+}
 /*!
     Returns the World to which the scene belongs.
 */
 World *Scene::world() const {
     return static_cast<World *>(parent());
+}
+/*!
+    Adds \a object to \a group.
+*/
+void Scene::addToGroup(Object *object, const TString &group) {
+    addToGroupByHash(object, static_cast<uint32_t>(Mathf::hashString(group)));
+}
+/*!
+    Adds \a object to a group with specific \a hash.
+*/
+void Scene::addToGroupByHash(Object *object, uint32_t hash) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    m_groups[hash].push_back(object);
+}
+/*!
+    Removes \a object from \a group.
+*/
+void Scene::removeFromGroup(Object *object, const TString &group) {
+    removeFromGroupByHash(object, static_cast<uint32_t>(Mathf::hashString(group)));
+}
+/*!
+    Removes \a object from a group with specific \a hash.
+*/
+void Scene::removeFromGroupByHash(Object *object, uint32_t hash) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    auto it = m_groups.find(hash);
+    if(it != m_groups.end()) {
+        it->second.remove(object);
+    }
+}
+/*!
+    Returns a list of objects in \a group.
+*/
+Object::ObjectList &Scene::getObjectsInGroup(const TString &group) {
+    return getObjectsInGroupByHash(static_cast<uint32_t>(Mathf::hashString(group)));
+}
+/*!
+    Returns a list of objects from a group with specific \a hash.
+*/
+Object::ObjectList &Scene::getObjectsInGroupByHash(uint32_t hash) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return m_groups[hash];
 }
 /*!
     \internal
