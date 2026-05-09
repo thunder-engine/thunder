@@ -4,6 +4,8 @@
 #include "components/scene.h"
 #include "resources/map.h"
 
+#include <algorithm>
+
 /*!
     \class World
     \brief A root object in the scene graph hierarchy.
@@ -40,7 +42,9 @@ void World::setActive(bool flag) {
     Create an empty new Scene at runtime with the given \a name.
 */
 Scene *World::createScene(const TString &name) {
-    return Engine::objectCreate<Scene>(name, this);
+    Scene *result = Engine::objectCreate<Scene>(name, this);
+    m_scenes.push_back(result);
+    return result;
 }
 /*!
     Loads the scene stored in the .map files by the it's \a path.
@@ -54,13 +58,14 @@ Scene *World::loadScene(const TString &path, bool additive) {
             if(additive) {
                 scene->setParent(this);
             } else {
-                for(auto it : getChildren()) {
+                for(auto it : m_scenes) {
                     if(it != scene) {
-                        unloadScene(dynamic_cast<Scene *>(it));
+                        unloadScene(it);
                     }
                 }
                 scene->setParent(this);
             }
+            m_scenes.push_back(scene);
             sceneLoaded();
             return scene;
         }
@@ -73,17 +78,15 @@ Scene *World::loadScene(const TString &path, bool additive) {
 void World::unloadScene(Scene *scene) {
     Map *map = scene->map();
     if(map) {
+        m_scenes.remove(scene);
         scene->setParent(map);
         Engine::unloadResource(map);
 
         sceneUnloaded();
         if(m_activeScene == scene) {
             Scene *newScene = nullptr;
-            for(auto it : getChildren()) {
-                newScene = dynamic_cast<Scene *>(it);
-                if(newScene != nullptr) {
-                    break;
-                }
+            if(!m_scenes.empty()) {
+                newScene = m_scenes.front();
             }
             setActiveScene(newScene);
         }
@@ -93,19 +96,14 @@ void World::unloadScene(Scene *scene) {
     Unloads all from the World.
 */
 void World::unloadAll() {
-    Object::ObjectList copyList(getChildren());
-    for(auto it : copyList) {
-        Scene *scene = dynamic_cast<Scene *>(it);
-        if(scene) {
-            Map *map = scene->map();
-            if(map) {
-                scene->setParent(map);
-                Engine::unloadResource(map);
-            }
-        } else {
-            delete it;
+    for(auto it : m_scenes) {
+        Map *map = it->map();
+        if(map) {
+            it->setParent(map);
+            Engine::unloadResource(map);
         }
     }
+    m_scenes.clear();
     setActiveScene(nullptr);
 }
 /*!
@@ -163,6 +161,12 @@ void World::setRayCastHandler(RayCastCallback callback, System *system) {
     m_rayCastSystem = system;
 }
 /*!
+    Returns list of all scenes.
+*/
+std::list<Scene *> &World::scenes() {
+    return m_scenes;
+}
+/*!
     Emmits signal when scene has been loaded.
 */
 void World::sceneLoaded() {
@@ -191,8 +195,16 @@ void World::graphUpdated() {
 */
 void World::addChild(Object *child, int32_t position) {
     Object::addChild(child, position);
-    if(m_activeScene == nullptr && dynamic_cast<Scene *>(child)) {
-        setActiveScene(static_cast<Scene *>(child));
+
+    Scene *scene = dynamic_cast<Scene *>(child);
+    if(scene) {
+        auto it = std::find(m_scenes.begin(), m_scenes.end(), scene);
+        if(it != m_scenes.end()) {
+            m_scenes.push_back(scene);
+        }
+    }
+    if(m_activeScene == nullptr && scene) {
+        setActiveScene(scene);
     }
 }
 

@@ -6,6 +6,8 @@
 
 #include "system.h"
 
+#include <algorithm>
+
 namespace {
     const char *gResource("Resource");
 };
@@ -41,7 +43,11 @@ Actor *Component::actor() const {
     Returns a Scene which the Component is attached to.
 */
 Scene *Component::scene() const {
-    return actor()->scene();
+    Actor *actor = Component::actor();
+    if(actor) {
+        return actor->scene();
+    }
+    return nullptr;
 }
 /*!
     Returns a World which the Component is attached to.
@@ -80,9 +86,9 @@ bool Component::isEnabledInHierarchy() const {
     Returns a transform attached to this Actor.
 */
 Transform *Component::transform() const {
-    Actor *act = actor();
-    if(act) {
-        return act->transform();
+    Actor *actor = Component::actor();
+    if(actor) {
+        return actor->transform();
     }
     return nullptr;
 }
@@ -112,10 +118,40 @@ Actor *Component::instantiate(Prefab *prefab, Vector3 position, Quaternion rotat
     return result;
 }
 /*!
-    Returns a translated version of \a source text; otherwise returns source text if no appropriate translated std::string is available.
+    Returns a translated version of \a source text; otherwise returns source text if no appropriate translated string is available.
 */
 TString Component::tr(const TString &source) {
     return Engine::translate(source);
+}
+/*!
+    Adds a \a tag for current component.
+    Automatically adds component to specific Scene group.
+*/
+void Component::addTag(const TString &tag) {
+    uint32_t hash = Mathf::hashString(tag);
+    auto it = std::find(m_tags.begin(), m_tags.end(), hash);
+    if(it == m_tags.end()) {
+        Scene *scene = Component::scene();
+        if(scene) {
+            scene->addToGroupByHash(this, hash);
+        }
+    }
+}
+/*!
+    Removes a \a tag for current component.
+    Automatically removes component from specific Scene group.
+*/
+void Component::removeTag(const TString &tag) {
+    uint32_t hash = Mathf::hashString(tag);
+    auto it = std::find(m_tags.begin(), m_tags.end(), hash);
+    if(it != m_tags.end()) {
+        m_tags.erase(it);
+
+        Scene *scene = Component::scene();
+        if(scene) {
+            scene->removeFromGroupByHash(this, hash);
+        }
+    }
 }
 /*!
     \internal
@@ -284,6 +320,19 @@ VariantMap Component::saveUserData() const {
         }
     }
     return result;
+}
+/*!
+    This method will be called automatically when \a current scene will be \a changed to a new one.
+*/
+void Component::changeScene(Scene *current, Scene *changed) {
+    for(auto it : m_tags) {
+        if(current) {
+            current->removeFromGroupByHash(this, it);
+        }
+        if(current) {
+            changed->addToGroupByHash(this, it);
+        }
+    }
 }
 /*!
     \internal

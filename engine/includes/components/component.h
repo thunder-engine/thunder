@@ -56,6 +56,9 @@ public:
 
     TString tr(const TString &source);
 
+    void addTag(const TString &tag);
+    void removeTag(const TString &tag);
+
     virtual void composeComponent();
 
     virtual void drawGizmos();
@@ -68,6 +71,13 @@ protected:
     virtual void onReferenceDestroyed();
 
 private:
+    void changeScene(Scene *current, Scene *changed);
+
+private:
+    friend class Actor;
+
+    std::vector<uint32_t> m_tags;
+
     bool m_enable;
 
 };
