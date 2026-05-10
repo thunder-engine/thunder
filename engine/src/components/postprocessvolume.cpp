@@ -26,10 +26,13 @@ PostProcessVolume::PostProcessVolume() :
     for(auto &it : m_settings->settings()) {
         Object::setProperty(it.first.c_str(), it.second);
     }
+
+    static uint32_t hash = Mathf::hashString("postProcess");
+    addTagByHash(hash);
 }
 
 PostProcessVolume::~PostProcessVolume() {
-    static_cast<RenderSystem *>(system())->removePostProcessVolume(this);
+
 }
 /*!
     Returns the priority of volume in the list.
@@ -90,14 +93,6 @@ void PostProcessVolume::setProperty(const char *name, const Variant &value) {
     Object::setProperty(name, value);
 
     m_settings->writeValue(name, value);
-}
-/*!
-    \internal
-*/
-void PostProcessVolume::setSystem(ObjectSystem *system) {
-    Component::setSystem(system);
-
-    static_cast<RenderSystem *>(system)->addPostProcessVolume(this);
 }
 /*!
     \internal

@@ -198,14 +198,19 @@ void PipelineContext::analizeGraph() {
 
     // Add renderables
     m_sceneRenderables.clear();
-    for(auto it : RenderSystem::renderables()) {
-        if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            if(update) {
-                it->update();
+    static uint32_t renderableHash = Mathf::hashString("renderable");
+    for(auto scene : m_world->scenes()) {
+        for(auto it : scene->getObjectsInGroupByHash(renderableHash)) {
+            Renderable *renderable = static_cast<Renderable *>(it);
+            if(renderable->isEnabledInHierarchy()) {
+                if(update) {
+                    renderable->update();
+                }
+                m_sceneRenderables.push_back(renderable);
             }
-            m_sceneRenderables.push_back(it);
         }
     }
+
     // Renderables frustum culling
     Frustum frustum(camera->frustum());
     Matrix4 viewProjection(camera->projectionMatrix() * camera->viewMatrix());
@@ -220,22 +225,25 @@ void PipelineContext::analizeGraph() {
 
     // Add lights
     m_sceneLights.clear();
-    for(auto it : RenderSystem::lights()) {
-        if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            if(!m_frustumCulling || !it->isCulled(frustum, viewProjection)) {
-                m_sceneLights.push_back(it);
+    static uint32_t lightHash = Mathf::hashString("lights");
+    for(auto scene : m_world->scenes()) {
+        for(auto it : scene->getObjectsInGroupByHash(lightHash)) {
+            BaseLight *light = static_cast<BaseLight *>(it);
+            if(light->isEnabledInHierarchy() && (!m_frustumCulling || !light->isCulled(frustum, viewProjection))) {
+                m_sceneLights.push_back(light);
             }
         }
     }
 
     // Add Post process volumes
     m_culledPostProcessSettings.clear();
-    for(auto it : RenderSystem::postProcessVolumes()) {
-        if(it->world() == m_world && it->isEnabledInHierarchy()) {
-            if(!it->unbound() && !it->bound().intersect(cameraWorldPosition, camera->nearPlane())) {
-                continue;
+    static uint32_t postHash = Mathf::hashString("postProcess");
+    for(auto scene : m_world->scenes()) {
+        for(auto it : scene->getObjectsInGroupByHash(postHash)) {
+            PostProcessVolume *volume = static_cast<PostProcessVolume *>(it);
+            if(volume->isEnabledInHierarchy() && (volume->unbound() || volume->bound().intersect(cameraWorldPosition, camera->nearPlane()))) {
+                m_culledPostProcessSettings.push_back(std::make_pair(volume->settings(), volume->blendWeight()));
             }
-            m_culledPostProcessSettings.push_back(std::make_pair(it->settings(), it->blendWeight()));
         }
     }
 

@@ -60,9 +60,6 @@ protected:
 
     virtual void setMaterialsList(const std::list<Material *> &materials);
 
-private:
-    void setSystem(ObjectSystem *system) override;
-
 protected:
     friend class PipelineContext;
     friend class PipelineTask;

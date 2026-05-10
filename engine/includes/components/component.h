@@ -22,12 +22,16 @@ class ENGINE_EXPORT Component : public Object {
         A_METHOD(Component *, Component::component),
         A_METHOD(Actor *, Component::instantiate),
         A_METHOD(TString, Component::tr),
+        A_METHOD(void, Component::addTag),
+        A_METHOD(void, Component::removeTag),
+        A_METHOD(bool, Component::hasTag),
         A_METHOD(void, Component::deleteLater),
         A_SLOT(Component::onReferenceDestroyed)
     )
 
 public:
     Component();
+    ~Component();
 
     Actor *actor() const;
     Scene *scene() const;
@@ -57,12 +61,20 @@ public:
     TString tr(const TString &source);
 
     void addTag(const TString &tag);
+    void addTagByHash(uint32_t hash);
+
     void removeTag(const TString &tag);
+    void removeTagByHash(uint32_t hash);
+
+    bool hasTag(const TString &tag);
+    bool hasTagByHash(uint32_t hash);
 
     virtual void composeComponent();
 
     virtual void drawGizmos();
     virtual void drawGizmosSelected();
+
+    void setParent(Object *parent, int32_t position = -1, bool force = false) override;
 
 protected:
     void loadUserData(const VariantMap &data) override;

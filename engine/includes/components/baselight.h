@@ -65,9 +65,6 @@ protected:
 
     virtual void cleanDirty();
 
-private:
-    void setSystem(ObjectSystem *system) override;
-
 protected:
     static std::vector<Quaternion> s_directions;
 
