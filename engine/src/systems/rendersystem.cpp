@@ -35,10 +35,6 @@
 
 void *RenderSystem::m_windowHandle = nullptr;
 
-std::list<BaseLight *> RenderSystem::m_lightComponents;
-std::list<Renderable *> RenderSystem::m_renderableComponents;
-std::list<PostProcessVolume *> RenderSystem::m_postProcessVolumes;
-
 RenderSystem::RenderSystem() :
         m_pipelineContext(nullptr),
         m_frameDirty(true) {
@@ -155,41 +151,6 @@ PipelineContext *RenderSystem::pipelineContext() const {
 
 void RenderSystem::setPipelineContext(PipelineContext *context) {
     m_pipelineContext = context;
-}
-
-void RenderSystem::addRenderable(Renderable *renderable) {
-    m_renderableComponents.push_back(renderable);
-}
-
-void RenderSystem::removeRenderable(Renderable *renderable) {
-    m_renderableComponents.remove(renderable);
-}
-
-std::list<Renderable *> &RenderSystem::renderables() {
-    return m_renderableComponents;
-}
-
-void RenderSystem::addLight(BaseLight *light) {
-    m_lightComponents.push_back(light);
-}
-void RenderSystem::removeLight(BaseLight *light) {
-    m_lightComponents.remove(light);
-}
-
-std::list<BaseLight *> &RenderSystem::lights() {
-    return m_lightComponents;
-}
-
-void RenderSystem::addPostProcessVolume(PostProcessVolume *volume) {
-    m_postProcessVolumes.push_back(volume);
-}
-
-void RenderSystem::removePostProcessVolume(PostProcessVolume *volume) {
-    m_postProcessVolumes.remove(volume);
-}
-
-std::list<PostProcessVolume *> &RenderSystem::postProcessVolumes() {
-    return m_postProcessVolumes;
 }
 
 #if defined(SHARED_DEFINE)

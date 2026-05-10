@@ -34,8 +34,6 @@ public:
 private:
     void setProperty(const char *name, const Variant &value) override;
 
-    void setSystem(ObjectSystem *system) override;
-
     void drawGizmos() override;
 
 private:

@@ -33,6 +33,16 @@ Component::Component() :
         m_enable(true) {
 
 }
+
+Component::~Component() {
+    Scene *scene = Component::scene();
+    if(scene) {
+        for(auto it : m_tags) {
+            scene->removeFromGroupByHash(this, it);
+        }
+    }
+}
+
 /*!
     Returns an Actor which the Component is attached to.
 */
@@ -124,13 +134,20 @@ TString Component::tr(const TString &source) {
     return Engine::translate(source);
 }
 /*!
-    Adds a \a tag for current component.
+    Adds \a tag for current component.
     Automatically adds component to specific Scene group.
 */
 void Component::addTag(const TString &tag) {
-    uint32_t hash = Mathf::hashString(tag);
-    auto it = std::find(m_tags.begin(), m_tags.end(), hash);
-    if(it == m_tags.end()) {
+    addTagByHash(Mathf::hashString(tag));
+}
+/*!
+    Adds a tag for current component by tag \a hash.
+    Automatically adds component to specific Scene group.
+*/
+void Component::addTagByHash(uint32_t hash) {
+    if(!hasTagByHash(hash)) {
+        m_tags.push_back(hash);
+
         Scene *scene = Component::scene();
         if(scene) {
             scene->addToGroupByHash(this, hash);
@@ -138,11 +155,17 @@ void Component::addTag(const TString &tag) {
     }
 }
 /*!
-    Removes a \a tag for current component.
+    Removes \a tag for current component.
     Automatically removes component from specific Scene group.
 */
 void Component::removeTag(const TString &tag) {
-    uint32_t hash = Mathf::hashString(tag);
+    removeTagByHash(Mathf::hashString(tag));
+}
+/*!
+    Removes a tag for current component by tag \a hash.
+    Automatically removes component from specific Scene group.
+*/
+void Component::removeTagByHash(uint32_t hash) {
     auto it = std::find(m_tags.begin(), m_tags.end(), hash);
     if(it != m_tags.end()) {
         m_tags.erase(it);
@@ -152,6 +175,18 @@ void Component::removeTag(const TString &tag) {
             scene->removeFromGroupByHash(this, hash);
         }
     }
+}
+/*!
+    Returns true if component has a \a tag; otherwise returns false.
+*/
+bool Component::hasTag(const TString &tag) {
+    return hasTagByHash(Mathf::hashString(tag));
+}
+/*!
+    Returns true if component has a tag provided by its \a hash; otherwise returns false.
+*/
+bool Component::hasTagByHash(uint32_t hash) {
+    return std::find(m_tags.begin(), m_tags.end(), hash) != m_tags.end();
 }
 /*!
     \internal
@@ -322,6 +357,12 @@ VariantMap Component::saveUserData() const {
     return result;
 }
 /*!
+    \internal
+*/
+void Component::onReferenceDestroyed() {
+
+}
+/*!
     This method will be called automatically when \a current scene will be \a changed to a new one.
 */
 void Component::changeScene(Scene *current, Scene *changed) {
@@ -329,14 +370,20 @@ void Component::changeScene(Scene *current, Scene *changed) {
         if(current) {
             current->removeFromGroupByHash(this, it);
         }
-        if(current) {
+        if(changed) {
             changed->addToGroupByHash(this, it);
         }
     }
 }
-/*!
-    \internal
-*/
-void Component::onReferenceDestroyed() {
 
+void Component::setParent(Object *parent, int32_t position, bool force) {
+    Scene *currentScene = Component::scene();
+
+    Object::setParent(parent, position, force);
+
+    Scene *changedScene = Component::scene();
+
+    if(currentScene != changedScene) {
+        changeScene(currentScene, changedScene);
+    }
 }

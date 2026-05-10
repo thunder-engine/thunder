@@ -33,18 +33,20 @@ Matrix4 BaseLight::s_scale = Matrix4(Vector3(0.5f), Quaternion(), Vector3(0.5f))
 */
 
 BaseLight::BaseLight() :
-    m_params(1.0f, 1.0f, 0.5f, 1.0f),
-    m_color(1.0f),
-    m_materialInstance(nullptr),
-    m_hash(0),
-    m_lod(0),
-    m_shadows(false),
-    m_dirty(true) {
+        m_params(1.0f, 1.0f, 0.5f, 1.0f),
+        m_color(1.0f),
+        m_materialInstance(nullptr),
+        m_hash(0),
+        m_lod(0),
+        m_shadows(false),
+        m_dirty(true) {
 
+    static uint32_t hash = Mathf::hashString("lights");
+    addTagByHash(hash);
 }
 
 BaseLight::~BaseLight() {
-    static_cast<RenderSystem *>(system())->removeLight(this);
+
 }
 
 /*!
@@ -215,15 +217,6 @@ void BaseLight::setParams(Vector4 &params) {
     if(m_materialInstance) {
         m_materialInstance->setVector4(uniParams, &m_params);
     }
-}
-/*!
-    \internal
-*/
-void BaseLight::setSystem(ObjectSystem *system) {
-    Object::setSystem(system);
-
-    RenderSystem *render = static_cast<RenderSystem *>(system);
-    render->addLight(this);
 }
 /*!
     \internal

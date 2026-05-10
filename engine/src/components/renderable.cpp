@@ -24,11 +24,11 @@ Renderable::Renderable() :
         m_lod(0),
         m_transformHash(0) {
 
+    static uint32_t hash = Mathf::hashString("renderable");
+    addTagByHash(hash);
 }
 
 Renderable::~Renderable() {
-    static_cast<RenderSystem *>(system())->removeRenderable(this);
-
     for(auto it : m_materials) {
         delete it;
     }
@@ -144,15 +144,6 @@ void Renderable::setMaterialsList(const std::list<Material *> &materials) {
 */
 AABBox Renderable::localBound() {
     return AABBox();
-}
-/*!
-    \internal
-*/
-void Renderable::setSystem(ObjectSystem *system) {
-    Object::setSystem(system);
-
-    RenderSystem *render = static_cast<RenderSystem *>(system);
-    render->addRenderable(this);
 }
 /*!
     Filters \a out an \a in renderable components by it's material \a layer.

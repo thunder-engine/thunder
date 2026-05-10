@@ -199,7 +199,7 @@ void World::addChild(Object *child, int32_t position) {
     Scene *scene = dynamic_cast<Scene *>(child);
     if(scene) {
         auto it = std::find(m_scenes.begin(), m_scenes.end(), scene);
-        if(it != m_scenes.end()) {
+        if(it == m_scenes.end()) {
             m_scenes.push_back(scene);
         }
     }

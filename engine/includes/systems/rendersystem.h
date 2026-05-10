@@ -5,8 +5,6 @@
 #include "system.h"
 
 class PipelineContext;
-class Widget;
-class BaseLight;
 class Renderable;
 class PostProcessVolume;
 
@@ -31,21 +29,6 @@ public:
     PipelineContext *pipelineContext() const;
     void setPipelineContext(PipelineContext *context);
 
-    void addRenderable(Renderable *renderable);
-    void removeRenderable(Renderable *renderable);
-
-    static std::list<Renderable *> &renderables();
-
-    void addLight(BaseLight *light);
-    void removeLight(BaseLight *light);
-
-    static std::list<BaseLight *> &lights();
-
-    void addPostProcessVolume(PostProcessVolume *volume);
-    void removePostProcessVolume(PostProcessVolume *volume);
-
-    static std::list<PostProcessVolume *> &postProcessVolumes();
-
 #if defined(SHARED_DEFINE)
     virtual QWindow *createRhiWindow(Viewport *viewport);
 #endif
@@ -57,12 +40,6 @@ protected:
     static void *m_windowHandle;
 
 private:
-    static int32_t m_registered;
-
-    static std::list<BaseLight *> m_lightComponents;
-    static std::list<Renderable *> m_renderableComponents;
-    static std::list<PostProcessVolume *> m_postProcessVolumes;
-
     PipelineContext *m_pipelineContext;
 
     bool m_frameDirty;
