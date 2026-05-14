@@ -39,6 +39,7 @@
 #endif
 
 #include "resources/translator.h"
+#include "resources/pipeline.h"
 
 #include "systems/resourcesystem.h"
 #include "systems/rendersystem.h"
@@ -239,6 +240,7 @@ bool Engine::start() {
 
     if(m_renderSystem) {
         PipelineContext *context = Engine::objectCreate<PipelineContext>("PipelineContext");
+        context->setPipeline(loadResource<Pipeline>(value(".pipeline", ".embedded/Deferred.pipeline").toString()));
         m_renderSystem->setPipelineContext(context);
     }
 
@@ -675,15 +677,7 @@ Actor *Engine::composeActor(const TString &component, const TString &name, Objec
         Object *object = Engine::objectCreate(component, component, actor);
         Component *comp = dynamic_cast<Component *>(object);
         if(comp) {
-            FactoryPair *pair = metaFactory(component);
-            if(pair) {
-                System *system = dynamic_cast<System *>(pair->second);
-                if(system) {
-                    system->composeComponent(comp);
-                } else {
-                    comp->composeComponent();
-                }
-            }
+            comp->composeComponent();
         }
 
         if(actor->transform() == nullptr) {

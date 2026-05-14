@@ -23,9 +23,6 @@ public:
     static std::list<Widget *> &widgets();
 
 private:
-    void composeComponent(Component *component) const override;
-
-private:
     static std::list<Widget *> m_uiComponents;
 
     static std::mutex m_mutex;

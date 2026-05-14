@@ -24,7 +24,6 @@
 
 #include <algorithm>
 
-
 #include "frustum.h"
 
 namespace {
@@ -50,12 +49,6 @@ PipelineContext::PipelineContext() :
         m_height(64),
         m_frustumCulling(true) {
 
-    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
-    if(mtl) {
-        m_finalMaterial = mtl->createInstance();
-    }
-
-    setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
 }
 
 PipelineContext::~PipelineContext() {
@@ -364,6 +357,13 @@ int32_t PipelineContext::lod(float size) {
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */
 void PipelineContext::setPipeline(Pipeline *pipeline) {
+    if(m_finalMaterial == nullptr) {
+        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+        if(mtl) {
+            m_finalMaterial = mtl->createInstance();
+        }
+    }
+
     m_pipeline = pipeline;
 
     if(m_pipeline) {

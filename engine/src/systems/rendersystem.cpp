@@ -141,10 +141,6 @@ void RenderSystem::update(World *world) {
     }
 }
 
-void RenderSystem::composeComponent(Component *component) const {
-    component->composeComponent();
-}
-
 PipelineContext *RenderSystem::pipelineContext() const {
     return m_pipelineContext;
 }
