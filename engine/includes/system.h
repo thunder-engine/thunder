@@ -26,8 +26,6 @@ public:
 
     virtual void syncSettings() const;
 
-    virtual void composeComponent(Component *component) const;
-
     void setActiveWorld(World *world);
 
     void processEvents() override;

@@ -62,13 +62,6 @@ void System::syncSettings() const {
 
 }
 /*!
-    This method is a helper to initialize specifically a new \a component.
-    Usually used in the editor.
-*/
-void System::composeComponent(Component *component) const {
-    A_UNUSED(component);
-}
-/*!
     Sets active \a world.
 */
 void System::setActiveWorld(World *world) {

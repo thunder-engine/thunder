@@ -133,11 +133,6 @@ void AbstractButton::setImage(Image *image) {
     }
 }
 /*!
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-     Returns the size of the icon.
-=======
     \internal
 */
 void AbstractButton::setHovered(bool hover, bool instant) {
@@ -154,7 +149,6 @@ void AbstractButton::setHovered(bool hover, bool instant) {
     }
 }
 /*!
->>>>>>> Stashed changes
     Returns the icon shown on the button.
 */
 Sprite *AbstractButton::AbstractButton::icon() const {
@@ -180,10 +174,6 @@ void AbstractButton::setIcon(Sprite *icon) {
 }
 /*!
     Returns the size of the icon.
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 */
 Vector2 AbstractButton::iconSize() const {
     return m_iconSize;

@@ -24,8 +24,6 @@ public:
 
     int threadPolicy() const override;
 
-    void composeComponent(Component *component) const override;
-
     PipelineContext *pipelineContext() const;
     void setPipelineContext(PipelineContext *context);
 
