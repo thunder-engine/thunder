@@ -155,7 +155,3 @@ std::list<Widget *> &UiSystem::widgets() {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_uiComponents;
 }
-
-void UiSystem::composeComponent(Component *component) const {
-    component->composeComponent();
-}
