@@ -5,7 +5,7 @@
 
 #include "pipelinetask.h"
 
-class Widget;
+class Canvas;
 
 class GuiLayer : public PipelineTask {
     A_OBJECT(GuiLayer, PipelineTask, Pipeline)
@@ -21,7 +21,7 @@ private:
     void setInput(int index, Texture *source) override;
 
 private:
-    std::list<Widget *> m_uiComponents;
+    std::list<Canvas *> m_canvas;
 
 };
 

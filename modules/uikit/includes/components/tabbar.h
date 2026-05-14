@@ -57,7 +57,7 @@ protected:
 
     void update(const Vector2 &pos) override;
 
-    void draw(CommandBuffer &buffer) override;
+    void draw() override;
 
     void composeComponent() override;
 

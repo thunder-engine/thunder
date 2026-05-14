@@ -1,5 +1,6 @@
 #include "components/frame.h"
 
+#include "components/canvas.h"
 #include "components/recttransform.h"
 
 #include <components/actor.h>
@@ -10,7 +11,6 @@
 #include <resources/material.h>
 #include <resources/stylesheet.h>
 
-#include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <gizmos.h>
 
@@ -31,7 +31,7 @@ namespace {
     const char *gCssBorderBottomColor("border-bottom-color");
     const char *gCssBorderLeftColor("border-left-color");
     const char *gCssBorderRadius("border-radius");
-};
+}
 
 /*!
     \class Frame
@@ -51,7 +51,6 @@ Frame::Frame() :
         m_rightColor(0.8f),
         m_bottomColor(0.8f),
         m_leftColor(0.8f),
-        m_mesh(PipelineContext::defaultPlane()),
         m_material(nullptr) {
 
     Material *material = Engine::loadResource<Material>(".embedded/Frame.shader");
@@ -69,30 +68,13 @@ Frame::Frame() :
 /*!
     \internal
 */
-void Frame::draw(CommandBuffer &buffer) {
+void Frame::draw() {
     if(m_material) {
-        RectTransform *rect = rectTransform();
-        Matrix4 m(rect->worldTransform());
-
-        Vector2 size(rect->size());
-        Matrix4 s;
-        s[0] = size.x;
-        s[5] = size.y;
-        s[12] = size.x * 0.5f;
-        s[13] = size.y * 0.5f;
-
-        uint32_t hash = rect->hash();
-        Mathf::hashCombine(hash, s[0]);
-        Mathf::hashCombine(hash, s[5]);
-        Mathf::hashCombine(hash, s[12]);
-        Mathf::hashCombine(hash, s[13]);
-
-        m_material->setTransform(m * s, 0, hash);
-
-        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+        Canvas *canvas = Frame::canvas();
+        canvas->drawRect(m_material, rectTransform());
     }
 
-    Widget::draw(buffer);
+    Widget::draw();
 }
 /*!
     \internal

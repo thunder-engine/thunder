@@ -3,6 +3,7 @@
 #include "components/recttransform.h"
 #include "components/frame.h"
 #include "components/button.h"
+#include "components/canvas.h"
 
 #include "resources/stylesheet.h"
 
@@ -286,7 +287,7 @@ Vector4 TabBar::tabCornerRadius() const {
 */
 bool TabBar::isHovered(const Vector2 &pos) {
     RectTransform *rect = rectTransform();
-    Vector4 area = rect->scissorArea();
+    Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
         area.z -= NAVI_SIZE;
@@ -322,30 +323,32 @@ void TabBar::update(const Vector2 &pos) {
 /*!
     \internal
 */
-void TabBar::draw(CommandBuffer &buffer) {
+void TabBar::draw() {
     RectTransform *rect = rectTransform();
-    Vector4 area(rect->scissorArea());
+    Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
-        m_backButton->draw(buffer);
+        m_backButton->draw();
         area.z -= NAVI_SIZE;
     }
 
     if(m_frontButton->isEnabled()) {
-        m_frontButton->draw(buffer);
+        m_frontButton->draw();
     }
 
-    buffer.enableScissor(area.x, area.y, area.z, area.w);
+    Canvas *canvas = TabBar::canvas();
+    canvas->setClipRegion(area);
 
     for(auto it : m_childWidgets) {
         if(it->isSubWidget() && it->actor()->isEnabled() && it->isEnabled()) {
             if(it != m_frontButton && it != m_backButton) {
-                it->draw(buffer);
+                it->draw();
             }
         }
     }
 
-    buffer.disableScissor();
+    canvas->disableClip();
+
 }
 /*!
     \internal
@@ -362,8 +365,10 @@ void TabBar::composeComponent() {
         m_frontButton->setEnabled(false);
 
         Image *image = m_frontButton->image();
-        RectTransform *imageRect = image->rectTransform();
-        imageRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+        if(image) {
+            RectTransform *imageRect = image->rectTransform();
+            imageRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+        }
 
         RectTransform *rect = m_frontButton->rectTransform();
         rect->setSize(Vector2(16));
@@ -382,8 +387,10 @@ void TabBar::composeComponent() {
         m_backButton->setEnabled(false);
 
         Image *image = m_backButton->image();
-        RectTransform *imageRect = image->rectTransform();
-        imageRect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
+        if(image) {
+            RectTransform *imageRect = image->rectTransform();
+            imageRect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
+        }
 
         RectTransform *rect = m_backButton->rectTransform();
         rect->setSize(Vector2(16));

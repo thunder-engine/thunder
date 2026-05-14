@@ -14,6 +14,7 @@
 #include <editor/assetconverter.h>
 #include <editor/viewport/cameracontroller.h>
 
+#include "components/canvas.h"
 #include "components/uiloader.h"
 #include "components/recttransform.h"
 
@@ -33,18 +34,23 @@ namespace {
 
     const char *gCss("css=");
     const char *gEditorTag("editor=");
-};
+}
 
 UiEdit::UiEdit() :
         ui(new Ui::UiEdit),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
+        m_canvas(nullptr),
+        m_loader(nullptr),
         m_controller(new WidgetController(this)) {
 
     ui->setupUi(this);
 
-    Actor *actor = Engine::composeActor<UiLoader>("Screen", m_scene);
-    m_loader = actor->getComponent<UiLoader>();
+    Actor *canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
+    m_canvas = canvas->getComponent<Canvas>();
+
+    Actor *loader = Engine::composeActor<UiLoader>("Loader", canvas);
+    m_loader = loader->getComponent<UiLoader>();
 
     m_controller->setRoot(m_loader);
     m_controller->activateCamera(1, true);

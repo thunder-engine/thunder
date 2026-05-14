@@ -12,6 +12,7 @@ class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
+class Canvas;
 
 class NODEGRAPH_EXPORT GraphView : public Viewport {
     Q_OBJECT
@@ -75,6 +76,8 @@ protected:
     Scene *m_scene;
 
     Actor *m_view;
+
+    Actor *m_canvas;
 
     QMenu *m_createMenu;
 

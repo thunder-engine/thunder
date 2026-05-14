@@ -3,6 +3,7 @@
 #include "components/label.h"
 #include "components/frame.h"
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include <components/actor.h>
 
@@ -20,7 +21,13 @@
 #define HOLD_TIME 0.1f
 
 namespace {
-    const char *gText("text");
+    const char *gColor("mainColor");
+    const char *gTexture("mainTexture");
+    const char *gUseSDF("useSdf");
+
+    const char *gDefaultFont(".embedded/DefaultFont.shader");
+    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
+    const char *gDefaultFrame(".embedded/Frame.shader");
 }
 
 /*!
@@ -33,14 +40,13 @@ namespace {
 */
 
 LineEdit::LineEdit() :
-        m_normalColor(0.5f, 0.5f, 0.5f, 1.0f),
-        m_highlightedColor(0.6f, 0.6f, 0.6f, 1.0f),
-        m_pressedColor(0.7f, 0.7f, 0.7f, 1.0f),
+        m_backgroundColor(0.5f, 0.5f, 0.5f, 1.0f),
         m_textColor(1.0f, 1.0f, 1.0f, 1.0f),
-        m_cursor(PipelineContext::defaultPlane()),
+        m_font(nullptr),
+        m_textMesh(Engine::objectCreate<Mesh>()),
         m_cursorPosition(0),
-        m_fadeDuration(0.2f),
-        m_currentFade(1.0f),
+        m_fontSize(14),
+        m_textPosition(0.0f),
         m_cursorBlinkRate(0.85f),
         m_cursorBlinkCurrent(0.0f),
         m_cursorRepeatHold(0.0f),
@@ -48,10 +54,22 @@ LineEdit::LineEdit() :
         m_focused(false),
         m_cursorVisible(false) {
 
-    Material *material = Engine::loadResource<Material>(".embedded/DefaultSprite.shader");
-    if(material) {
-        m_cursorMaterial = material->createInstance();
-        m_cursorMaterial->setTexture("mainTexture", PipelineContext::whiteTexture());
+    m_textMesh->makeDynamic();
+
+    Material *fontMaterial = Engine::loadResource<Material>(gDefaultFont);
+    if(fontMaterial) {
+        m_fontMaterial = fontMaterial->createInstance();
+    }
+
+    Material *cursorMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(cursorMaterial) {
+        m_cursorMaterial = cursorMaterial->createInstance();
+        m_cursorMaterial->setTexture(gTexture, PipelineContext::whiteTexture());
+    }
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_frameMaterial = frameMaterial->createInstance();
     }
 
     m_cursorTransform.scale(Vector3(2.0f, 16.0f, 1.0f));
@@ -59,24 +77,44 @@ LineEdit::LineEdit() :
 /*!
     \internal
 */
-void LineEdit::drawSub(CommandBuffer &buffer) {
+void LineEdit::draw() {
+    Canvas *canvas = LineEdit::canvas();
+
     RectTransform *rect = rectTransform();
-    Vector4 scissor(rect->scissorArea());
-    buffer.enableScissor(scissor.x, scissor.y, scissor.z, scissor.w);
+    if(m_textDirty && m_font) {
+        m_font->composeMesh(m_textMesh, m_text, m_fontSize,
+                            Alignment::Left | Alignment::Middle, 0, rect->size());
 
-    Widget::drawSub(buffer);
+        m_textMesh->setColors(Vector4Vector(m_textMesh->vertices().size(), Vector4(1.0f)));
 
+        m_fontMaterial->setTexture(gTexture, m_font->page());
+
+        m_textDirty = false;
+    }
+
+    // Draw background
+    if(m_backgroundImage) {
+    } else { // drawing a rect
+        canvas->drawRect(m_frameMaterial, rect);
+    }
+
+    // Draw text
+    canvas->setClipRegion(rect->clipRegion());
+    m_fontMaterial->setTransform(rect->worldTransform(), 0, rect->hash());
+    canvas->drawMesh(m_textMesh, m_fontMaterial);
+
+    // Draw cursor
     uint32_t hash;
     std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
 
     if(m_cursorVisible && m_cursorMaterial) {
         m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform, 0, hash);
-        buffer.drawMesh(m_cursor, 0, Material::Translucent, *m_cursorMaterial);
+        canvas->drawRect(m_cursorMaterial, nullptr);
     }
+    canvas->disableClip();
 
-    buffer.disableScissor();
+    Widget::draw();
 }
-
 /*!
     Returns the current text entered into the TextInput.
 */
@@ -87,18 +125,39 @@ TString LineEdit::text() const {
     Sets the \a text in the TextInput.
 */
 void LineEdit::setText(const TString &text) {
-    Label *label = textComponent();
-    if(label) {
-        m_text = text;
-        label->setText(m_text);
-        if(m_cursorPosition == 0) {
-            m_cursorPosition = m_text.toUtf32().size();
-            recalcCursor();
-        }
+    m_text = text;
+    m_textDirty = true;
+
+    if(m_cursorPosition == 0) {
+        m_cursorPosition = m_text.toUtf32().size();
+        recalcCursor();
     }
 }
 /*!
-    Returns the color of the text.
+    Returns the font which will be used to draw a text.
+*/
+Font *LineEdit::font() const {
+    return m_font;
+}
+/*!
+    Changes the \a font which will be used to draw a text.
+*/
+void LineEdit::setFont(Font *font) {
+    if(m_font != font) {
+        if(m_font) {
+            m_font->unsubscribe(this);
+        }
+
+        m_font = font;
+        if(m_font) {
+            m_font->subscribe(&LineEdit::fontUpdated, this);
+        }
+
+        m_textDirty = true;
+    }
+}
+/*!
+    Returns color of the text.
 */
 Vector4 LineEdit::textColor() const {
     return m_textColor;
@@ -109,22 +168,21 @@ Vector4 LineEdit::textColor() const {
 void LineEdit::setTextColor(const Vector4 &color) {
     m_textColor = color;
 
-    Label *label = textComponent();
-    if(label) {
-        label->setColor(m_textColor);
+    if(m_fontMaterial) {
+        m_fontMaterial->setVector4(gColor, &m_textColor);
     }
 }
 /*!
-    Returns the text label component.
+    Returns the background color.
 */
-Label *LineEdit::textComponent() const {
-    return static_cast<Label *>(subWidget(gText));
+Vector4 LineEdit::backgroundColor() const {
+    return m_backgroundColor;
 }
 /*!
-    Sets the text \a label component.
+    Sets background \a color.
 */
-void LineEdit::setTextComponent(Label *label) {
-    setSubWidget(label);
+void LineEdit::setBackgroundColor(const Vector4 &color) {
+    m_backgroundColor = color;
 }
 
 void LineEdit::focusIn() {
@@ -143,8 +201,6 @@ void LineEdit::editingFinished() {
     Overrides the update method to handle text input and cursor animation.
 */
 void LineEdit::update(const Vector2 &pos) {
-    Vector4 color(m_normalColor);
-
     if(Widget::focusWidget() == this) {
         bool breakCursorFlashing = false;
 
@@ -237,36 +293,16 @@ void LineEdit::update(const Vector2 &pos) {
 
     bool hover = isHovered(pos);
     if(m_hovered != hover) {
-        m_currentFade = 0.0f;
         m_hovered = hover;
     }
 
     if(m_hovered) {
-        color = m_highlightedColor;
-
         if(!m_focused && (Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN))) {
-            m_currentFade = 0.0f;
-
             Widget::setFocusWidget(this);
 
             focusIn();
             m_focused = true;
         }
-
-        if(Input::isMouseButtonUp(0)) {
-            m_currentFade = 0.0f;
-        }
-
-        if(Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0) {
-            color = m_pressedColor;
-        }
-    }
-
-    if(m_currentFade < 1.0f) {
-        m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
-        m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
-
-        setColor(MIX(m_backgroundColor, color, m_currentFade));
     }
 }
 /*!
@@ -276,46 +312,50 @@ void LineEdit::update(const Vector2 &pos) {
 void LineEdit::composeComponent() {
     Widget::composeComponent();
 
-    // Add label
-    Actor *text = Engine::composeActor<Label>(gText, actor());
-    Label *label = text->getComponent<Label>();
-    label->setAlign(Alignment::Middle | Alignment::Left);
-
-    RectTransform *labelRect = label->rectTransform();
-    labelRect->setSize(Vector2());
-    labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-    setSubWidget(label);
+    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("");
 
     RectTransform *rect = rectTransform();
-    rect->setSize(Vector2(100.0f, 30.0f));
-    rect->setPadding(Vector4(2.0f));
+    if(rect) {
+        rect->setSize(Vector2(100.0f, 30.0f));
+        rect->setPadding(Vector4(2.0f));
+    }
 
-    setColor(m_normalColor);
     recalcCursor();
 }
 /*!
     \internal
-    Recalculates the cursor position based on the current text and adjusts the label accordingly.
+    Recalculates the cursor position based on the current text and adjusts the text position accordingly.
 */
 void LineEdit::recalcCursor() {
-    Label *label = static_cast<Label *>(subWidget(gText));
-    if(label) {
-        RectTransform *r = label->rectTransform();
-        float pos = (m_cursorPosition > 0) ? label->cursorAt(m_cursorPosition).x : 0.0f;
+    float pos = (m_cursorPosition > 0) ? cursorAt(m_cursorPosition) : 0.0f;
 
-        m_cursorTransform[12] = pos + rectTransform()->padding().w;
-        m_cursorTransform[13] = rectTransform()->size().y * 0.5f;
+    m_cursorTransform[12] = pos + rectTransform()->padding().w;
+    m_cursorTransform[13] = rectTransform()->size().y * 0.5f;
 
-        float x = r->position().x;
-        float size = r->size().x;
-        float gap = pos + x;
-        if(gap > size) {
-            r->setPosition(Vector3(size - pos, 0.0f, 0.0f));
-        } else if(gap < 0.0f) {
-            r->setPosition(Vector3(x - gap, 0.0f, 0.0f));
-        }
-        m_cursorTransform[12] += r->position().x;
+    float x = m_textPosition;
+    float size = m_font->textWidth(m_text, m_fontSize, 0);
+    float gap = pos + x;
+    if(gap > size) {
+        m_textPosition = size - pos;
+    } else if(gap < 0.0f) {
+        m_textPosition = x - gap;
+    }
+    m_cursorTransform[12] += m_textPosition;
+}
+/*!
+    Returns a \a position for virtual cursor.
+*/
+float LineEdit::cursorAt(int position) const {
+    std::u32string u32 = m_text.toUtf32();
+    return m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_fontSize, 0);
+}
+/*!
+    \internal
+*/
+void LineEdit::fontUpdated(int state, void *ptr) {
+    if(state == Resource::Ready) {
+        LineEdit *p = static_cast<LineEdit *>(ptr);
+        p->m_textDirty = true;
     }
 }

@@ -54,7 +54,7 @@ public:
     void setDrawMode(int mode);
 
 protected:
-    void draw(CommandBuffer &buffer) override;
+    void draw() override;
 
     void boundChanged(const Vector2 &size) override;
 

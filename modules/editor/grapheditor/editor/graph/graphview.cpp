@@ -21,6 +21,7 @@
 #include <components/world.h>
 #include <components/camera.h>
 #include <components/recttransform.h>
+#include <components/canvas.h>
 
 #include <pipelinecontext.h>
 #include <pipelinetask.h>
@@ -132,7 +133,8 @@ void GraphView::setWorld(World *scene) {
     Viewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
-    m_view = Engine::composeActor<Widget>("View", m_scene);
+    m_canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
+    m_view = Engine::composeActor<Widget>("View", m_canvas);
 
     Actor *actor = Engine::composeActor<LinksRender>(gLinksRender, m_view);
     m_linksRender = actor->getComponent<LinksRender>();

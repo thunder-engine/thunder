@@ -46,7 +46,7 @@ public:
 protected:
     void boundChanged(const Vector2 &size) override;
 
-    void draw(CommandBuffer &buffer) override;
+    void draw() override;
 
     void applyStyle() override;
 
@@ -57,8 +57,6 @@ protected:
     Vector4 m_rightColor;
     Vector4 m_bottomColor;
     Vector4 m_leftColor;
-
-    Mesh *m_mesh;
 
     MaterialInstance *m_material;
 

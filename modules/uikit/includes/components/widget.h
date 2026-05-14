@@ -1,12 +1,14 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include <nativebehaviour.h>
+#include <component.h>
 #include <uikit.h>
 
 class RectTransform;
 class CommandBuffer;
 class StyleSheet;
+
+class Canvas;
 
 class UIKIT_EXPORT Widget : public Component {
     A_OBJECT(Widget, Component, Components/UI)
@@ -44,15 +46,18 @@ public:
 
     RectTransform *rectTransform();
 
+    Canvas *canvas();
+    void setCanvas(Canvas *canvas);
+
     bool isSubWidget() const;
 
-    static Widget *focusWidget();
-
-    virtual void draw(CommandBuffer &buffer);
+    virtual void draw();
 
     virtual bool isHovered(const Vector2 &pos);
 
     virtual void update(const Vector2 &pos);
+
+    static Widget *focusWidget();
 
 public: // slots
     void lower();
@@ -60,7 +65,7 @@ public: // slots
     void raise();
 
 protected:
-    virtual void drawSub(CommandBuffer &buffer);
+    virtual void drawSub();
 
     virtual void boundChanged(const Vector2 &size);
 
@@ -94,8 +99,6 @@ protected:
 private:
     void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
 
-    void setSystem(ObjectSystem *system) override;
-
 private:
     friend class GuiLayer;
     friend class RectTransform;
@@ -105,6 +108,8 @@ private:
     StringList m_classes;
 
     Widget *m_parent;
+
+    Canvas *m_canvas;
 
     RectTransform *m_transform;
 

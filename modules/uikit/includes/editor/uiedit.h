@@ -10,6 +10,7 @@
 class WidgetController;
 class UndoCommand;
 class Widget;
+class Canvas;
 class UiLoader;
 
 namespace Ui {
@@ -72,6 +73,8 @@ private:
     World *m_world;
 
     Scene *m_scene;
+
+    Canvas *m_canvas;
 
     UiLoader *m_loader;
 

@@ -1,6 +1,7 @@
 #include "components/label.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include "stylesheet.h"
 
@@ -16,19 +17,15 @@
 #include <commandbuffer.h>
 
 namespace  {
-    const char *gFont("Font");
-
     const char *gColor("mainColor");
     const char *gTexture("mainTexture");
-    const char *gWeight("weight");
     const char *gUseSDF("useSdf");
 
     const char *gCssColor("color");
     const char *gCssFontSize("font-size");
-    const char *gCssFontWeight("font-weight");
     const char *gCssFontKerning("font-kerning");
     const char *gCssWhiteSpace("white-space");
-};
+}
 
 /*!
     \class Label
@@ -46,7 +43,6 @@ Label::Label() :
         m_mesh(Engine::objectCreate<Mesh>()),
         m_size(14),
         m_alignment(Alignment::Center | Alignment::Middle),
-        m_fontWeight(0.5f),
         m_flags(Font::Wrap),
         m_dirty(true),
         m_translated(false) {
@@ -56,7 +52,8 @@ Label::Label() :
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
         m_material = material->createInstance();
-        m_material->setFloat(gWeight, &m_fontWeight);
+        int sdf = 0;
+        m_material->setInteger(gUseSDF, &sdf);
     }
 }
 
@@ -69,7 +66,7 @@ Label::~Label() {
 /*!
     \internal
 */
-void Label::draw(CommandBuffer &buffer) {
+void Label::draw() {
     if(m_material && !m_text.isEmpty()) {
         Transform *t = transform();
         m_material->setTransform(t->worldTransform(), 0, t->hash());
@@ -84,17 +81,14 @@ void Label::draw(CommandBuffer &buffer) {
 
             m_material->setTexture(gTexture, m_font->page());
 
-
             m_dirty = false;
         }
 
-        int sdf = m_flags & Font::Sdf;
-        m_material->setInteger(gUseSDF, &sdf);
-
-        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+        Canvas *canvas = Label::canvas();
+        canvas->drawMesh(m_mesh, m_material);
     }
 
-    Widget::draw(buffer);
+    Widget::draw();
 }
 /*!
     \internal
@@ -112,22 +106,6 @@ void Label::applyStyle() {
     it = m_styleRules.find(gCssFontSize);
     if(it != m_styleRules.end()) {
         setFontSize(it->second.second.toInt());
-    }
-
-    it = m_styleRules.find(gCssFontWeight);
-    if(it != m_styleRules.end()) {
-        m_fontWeight = 0.5f;
-        if(it->second.second == "normal") {
-            m_fontWeight = 0.5f;
-        } else if(it->second.second == "bold") {
-            m_fontWeight = 0.8f;
-        } else if(it->second.second.back() == '0') {
-            m_fontWeight = it->second.second.toFloat() / 100.0f + 0.1f;
-        }
-
-        if(m_material) {
-            m_material->setFloat(gWeight, &m_fontWeight);
-        }
     }
 
     it = m_styleRules.find(gCssWhiteSpace);
@@ -300,13 +278,6 @@ void Label::setKerning(const bool enable) {
     }
 }
 /*!
-    Returns a \a position for virtual cursor.
-*/
-Vector2 Label::cursorAt(int position) {
-    std::u32string u32 = m_text.toUtf32();
-    return Vector2(m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_size, m_flags), 0.0f);
-}
-/*!
     Returns a space that text requires to render.
 */
 float Label::textWidth() const {
@@ -322,31 +293,6 @@ void Label::loadData(const VariantList &data) {
     Component::loadData(data);
 
     m_dirty = true;
-}
-/*!
-    \internal
-*/
-void Label::loadUserData(const VariantMap &data) {
-    Component::loadUserData(data);
-
-    auto it = data.find(gFont);
-    if(it != data.end()) {
-        setFont(Engine::loadResource<Font>((*it).second.toString()));
-    }
-}
-/*!
-    \internal
-*/
-VariantMap Label::saveUserData() const {
-    VariantMap result = Widget::saveUserData();
-
-    Font *o = font();
-    TString ref = Engine::reference(o);
-    if(!ref.isEmpty()) {
-        result[gFont] = ref;
-    }
-
-    return result;
 }
 /*!
     \internal
