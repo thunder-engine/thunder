@@ -58,12 +58,11 @@ public:
     float textWidth() const;
 
 private:
-    void draw(CommandBuffer &buffer) override;
+    void draw() override;
+
     void applyStyle() override;
 
     void loadData(const VariantList &data) override;
-    void loadUserData(const VariantMap &data) override;
-    VariantMap saveUserData() const override;
 
     bool event(Event *ev) override;
 
@@ -91,8 +90,6 @@ private:
     int m_alignment;
 
     int m_flags;
-
-    float m_fontWeight;
 
     bool m_dirty;
 

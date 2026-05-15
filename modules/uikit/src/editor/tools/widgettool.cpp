@@ -123,7 +123,7 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
         return;
     }
 
-    Vector4 area = rect->scissorArea();
+    Vector4 area(rect->clipRegion());
     Vector3 size(area.z, area.w, 0.0f);
     Vector3 center(area.x + area.z * 0.5f, area.y + area.w * 0.5f, 0.0f);
     Handles::s_Color = Handles::s_Normal;

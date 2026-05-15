@@ -88,8 +88,6 @@ void CheckBox::setMirrored(bool flag) {
         rect->setAnchors(Vector2(flag ? 1.0f : 0.0f, 0.5f), Vector2(flag ? 1.0f : 0.0f, 0.5f));
         rect->setPivot(Vector2(flag ? 1.0f : 0.0f, 0.5f));
     }
-
-    AbstractButton::setMirrored(flag);
 }
 /*!
     \internal

@@ -26,7 +26,7 @@ public:
     void composeLinks();
 
 private:
-    void draw(CommandBuffer &buffer) override;
+    void draw() override;
 
     void composeBezierLink(Vector3 &s, Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link = nullptr);
     void composeStateLink(const Vector3 &s, const Vector3 &e, Vector3Vector &vertices, Vector2Vector &uvs, Vector4Vector &colors, IndexVector &indices, GraphLink *link = nullptr);

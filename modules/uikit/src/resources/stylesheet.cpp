@@ -80,8 +80,8 @@ void StyleSheet::resolve(Widget *widget) {
     The method splits the inline styles into key-value pairs and applies them to the \a widget.
 */
 void StyleSheet::resolveInline(Widget *widget, const TString &style) {
-    TString inlineStyle = style;
-    if(!inlineStyle.isEmpty()) {
+    if(!style.isEmpty()) {
+        TString inlineStyle = style;
         std::map<TString, TString> result;
 
         inlineStyle = inlineStyle.trimmed();

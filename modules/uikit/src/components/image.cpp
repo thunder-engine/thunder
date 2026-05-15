@@ -1,6 +1,7 @@
 #include "components/image.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/material.h>
@@ -55,7 +56,7 @@ Image::~Image() {
 /*!
     \internal
 */
-void Image::draw(CommandBuffer &buffer) {
+void Image::draw() {
     if(m_dirtyMesh) {
         if(m_sprite) {
             Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
@@ -112,10 +113,11 @@ void Image::draw(CommandBuffer &buffer) {
             }
         }
 
-        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+        Canvas *canvas = Image::canvas();
+        canvas->drawMesh(m_mesh, m_material);
     }
 
-    Widget::draw(buffer);
+    Widget::draw();
 }
 /*!
     Returns an instantiated Material assigned to Image.

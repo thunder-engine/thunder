@@ -63,6 +63,7 @@ public:
     Vector2 mapFromGlobal(float x, float y);
 
     Widget *widget();
+    std::list<Widget *> &widgets();
 
     void subscribe(Widget *widget);
     void unsubscribe(Widget *widget);
@@ -82,7 +83,7 @@ public:
 
     Vector2 sizeHint() const;
 
-    Vector4 scissorArea() const;
+    Vector4 clipRegion() const;
 
     void setParentTransform(Transform *parent, bool force = false) override;
 

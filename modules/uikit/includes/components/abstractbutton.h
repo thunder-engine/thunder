@@ -16,10 +16,7 @@ class UIKIT_EXPORT AbstractButton : public Widget {
         A_PROPERTY(bool, checkable, AbstractButton::isCheckable, AbstractButton::setCheckable),
         A_PROPERTY(bool, checked, AbstractButton::isChecked, AbstractButton::setChecked),
         A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive),
-        A_PROPERTYEX(Vector4, color, AbstractButton::color, AbstractButton::setColor, "editor=Color"),
-        A_PROPERTYEX(Frame *, background, AbstractButton::background, AbstractButton::setBackground, "editor=Component"),
-        A_PROPERTYEX(Label *, label, AbstractButton::label, AbstractButton::setLabel, "editor=Component"),
-        A_PROPERTYEX(Image *, image, AbstractButton::image, AbstractButton::setImage, "editor=Component")
+        A_PROPERTYEX(Vector4, color, AbstractButton::color, AbstractButton::setColor, "editor=Color")
     )
     A_METHODS(
         A_SIGNAL(AbstractButton::pressed),
@@ -57,9 +54,6 @@ public:
 
     bool isExclusive() const;
     void setExclusive(bool exclusive);
-
-    bool isMirrored() const;
-    virtual void setMirrored(bool mirrored);
 
     Frame *background() const;
     void setBackground(Frame *frame);
@@ -99,7 +93,6 @@ protected:
     float m_currentFade;
 
     bool m_hovered;
-    bool m_mirrored;
     bool m_checkable;
     bool m_checked;
     bool m_exclusive;

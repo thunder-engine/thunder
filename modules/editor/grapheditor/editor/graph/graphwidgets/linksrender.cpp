@@ -6,6 +6,7 @@
 #include "../graphcontroller.h"
 
 #include <components/actor.h>
+#include <components/canvas.h>
 #include <components/recttransform.h>
 
 #include <resources/material.h>
@@ -35,12 +36,14 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
 /*!
     \internal
 */
-void LinksRender::draw(CommandBuffer &buffer) {
+void LinksRender::draw() {
     Transform *t = rectTransform();
     m_material->setTransform(t->worldTransform(), 0, t->hash());
 
+    Canvas *canvas = LinksRender::canvas();
+
     if(m_linksMesh && !m_linksMesh->vertices().empty()) {
-        buffer.drawMesh(m_linksMesh, 0, Material::Translucent, *m_material);
+        canvas->drawMesh(m_linksMesh, m_material);
     }
     if(m_creationMesh && m_portWidget) {
         RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
@@ -107,7 +110,7 @@ void LinksRender::draw(CommandBuffer &buffer) {
             m_creationMesh->recalcBounds();
         }
 
-        buffer.drawMesh(m_creationMesh, 0, Material::Translucent, *m_material);
+        canvas->drawMesh(m_creationMesh, m_material);
     }
 }
 

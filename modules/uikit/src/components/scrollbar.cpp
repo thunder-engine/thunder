@@ -104,11 +104,14 @@ void ScrollBar::setBackArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepBack()));
 
-        RectTransform *rectIcon = button->image()->rectTransform();
-        if(m_orientation == Horizontal) {
-            rectIcon->setRotation(Vector3(0.0f, 0.0f,-90.0f));
-        } else {
-            rectIcon->setRotation(Vector3(0.0f, 0.0f, 180.0f));
+        Image *image = button->image();
+        if(image) {
+            RectTransform *rectIcon = image->rectTransform();
+            if(m_orientation == Horizontal) {
+                rectIcon->setRotation(Vector3(0.0f, 0.0f,-90.0f));
+            } else {
+                rectIcon->setRotation(Vector3(0.0f, 0.0f, 180.0f));
+            }
         }
     }
 }
@@ -142,11 +145,14 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepFront()));
 
-        RectTransform *rectIcon = button->image()->rectTransform();
-        if(m_orientation == Horizontal) {
-            rectIcon->setRotation(Vector3(0.0f, 0.0f, 90.0f));
-        } else {
-            rectIcon->setRotation(Vector3(0.0f, 0.0f, 0.0f));
+        Image *image = button->image();
+        if(image) {
+            RectTransform *rectIcon = image->rectTransform();
+            if(m_orientation == Horizontal) {
+                rectIcon->setRotation(Vector3(0.0f, 0.0f, 90.0f));
+            } else {
+                rectIcon->setRotation(Vector3(0.0f, 0.0f, 0.0f));
+            }
         }
     }
 }

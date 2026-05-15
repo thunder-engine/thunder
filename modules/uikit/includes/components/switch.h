@@ -26,7 +26,7 @@ public:
     Vector4 knobColor() const;
     void setKnobColor(const Vector4 color);
 
-    void setMirrored(bool flag) override;
+    void setMirrored(bool flag);
 
     void setLabel(Label *label) override;
 

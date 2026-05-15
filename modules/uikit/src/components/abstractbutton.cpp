@@ -43,7 +43,6 @@ AbstractButton::AbstractButton() :
         m_fadeDuration(0.1f),
         m_currentFade(1.0f),
         m_hovered(false),
-        m_mirrored(false),
         m_checkable(false),
         m_checked(false),
         m_exclusive(false) {
@@ -278,18 +277,6 @@ bool AbstractButton::isExclusive() const {
 */
 void AbstractButton::setExclusive(bool exclusive) {
     m_exclusive = exclusive;
-}
-/*!
-    Returns true if the button is mirrored; otherwise, false.
-*/
-bool AbstractButton::isMirrored() const {
-    return m_mirrored;
-}
-/*!
-    Sets whether the button should be \a mirrored.
-*/
-void AbstractButton::setMirrored(bool mirrored) {
-    m_mirrored = mirrored;
 }
 
 void AbstractButton::pressed() {

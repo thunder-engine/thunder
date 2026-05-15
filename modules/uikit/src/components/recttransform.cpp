@@ -318,6 +318,12 @@ Widget *RectTransform::widget() {
     return nullptr;
 }
 /*!
+    Returns a list of widgets associated with this rect transform
+*/
+std::list<Widget *> &RectTransform::widgets() {
+    return m_subscribers;
+}
+/*!
     Subscribes a \a widget to changes in the RectTransform.
 */
 void RectTransform::subscribe(Widget *widget) {
@@ -577,7 +583,7 @@ Vector2 RectTransform::sizeHint() const {
 /*!
     Returns the internal scissor area. All content outside of this are will not be rendered.
 */
-Vector4 RectTransform::scissorArea() const {
+Vector4 RectTransform::clipRegion() const {
     cleanDirty();
 
     Vector4 offsets(m_margin + m_border + m_padding);
