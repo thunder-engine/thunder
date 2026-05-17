@@ -1,9 +1,7 @@
 #include "components/abstractbutton.h"
 
 #include "components/recttransform.h"
-#include "components/frame.h"
-#include "components/label.h"
-#include "components/image.h"
+#include "components/canvas.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
@@ -15,13 +13,24 @@
 #include <log.h>
 
 namespace {
-    const char *gBackground("background");
-    const char *gLabel("label");
-    const char *gIcon("icon");
-
     const float gCorner = 4.0f;
 
     const char *gCssBackgroundColor("background-color");
+
+    const char *gOverride("mainTexture");
+    const char *gColor("mainColor");
+
+    const char *gBackgroundColor("backgroundColor");
+    const char *gBorderWidth("borderWidth");
+    const char *gBorderRadius("borderRadius");
+
+    const char *gTopColor("topColor");
+    const char *gRightColor("rightColor");
+    const char *gBottomColor("bottomColor");
+    const char *gLeftColor("leftColor");
+
+    const char *gDefaultSprite(".embedded/DefaultUI.shader");
+    const char *gDefaultFrame(".embedded/Frame.shader");
 }
 /*!
     \class AbstractButton
@@ -34,102 +43,84 @@ namespace {
 */
 
 AbstractButton::AbstractButton() :
-        Widget(),
-        m_normalColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
+        m_borderRadius(0.0f),
+        m_borderColor(0.8f),
+        m_backgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)),
         m_highlightedColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f)),
         m_pressedColor(Vector4(0.7f, 0.7f, 0.7f, 1.0f)),
-        m_textColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f)),
-        m_iconSize(16.0f),
+        m_currentColor(m_backgroundColor),
+        m_backgroundImage(nullptr),
+        m_backgroundMesh(nullptr),
+        m_imageMaterial(nullptr),
+        m_frameMaterial(nullptr),
         m_fadeDuration(0.1f),
         m_currentFade(1.0f),
         m_hovered(false),
         m_checkable(false),
         m_checked(false),
-        m_exclusive(false) {
+        m_exclusive(false),
+        m_dirtyBackground(true)  {
 
-}
-/*!
-    Returns the text displayed on the button.
-*/
-TString AbstractButton::text() const {
-    Label *lbl = label();
-    if(lbl) {
-        return lbl->text();
+    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(spriteMaterial) {
+        m_imageMaterial = spriteMaterial->createInstance();
+        m_imageMaterial->setVector4(gColor, &m_backgroundColor);
     }
-    return TString();
-}
-/*!
-    Sets the \a text displayed on the button.
-*/
-void AbstractButton::setText(const TString text) {
-    Label *lbl = AbstractButton::label();
-    if(lbl == nullptr) {
-        Actor *text = Engine::composeActor<Label>(gLabel, actor());
-        lbl = text->getComponent<Label>();
-        setLabel(lbl);
-    }
-    if(lbl) {
-        lbl->setText(text);
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_frameMaterial = frameMaterial->createInstance();
+
+        Vector4 width(0.0f);
+        m_frameMaterial->setVector4(gBorderWidth, &width);
+        m_frameMaterial->setVector4(gBorderRadius, &m_borderRadius);
+        m_frameMaterial->setVector4(gTopColor, &m_borderColor);
+        m_frameMaterial->setVector4(gRightColor, &m_borderColor);
+        m_frameMaterial->setVector4(gBottomColor, &m_borderColor);
+        m_frameMaterial->setVector4(gLeftColor, &m_borderColor);
+        m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 }
-/*!
-    Returns the background frame component associated with the button.
-*/
-Frame *AbstractButton::background() const {
-    return static_cast<Frame *>(subWidget(gBackground));
-}
-/*!
-    Sets the background \a frame component associated with the button.
-*/
-void AbstractButton::setBackground(Frame *frame) {
-    setSubWidget(frame);
 
-    if(frame) {
-        frame->setColor(m_normalColor);
-        frame->setCorners(Vector4(gCorner));
-    }
-}
 /*!
-    Returns the label component object associated with the button.
+    \internal
 */
-Label *AbstractButton::label() const {
-    return static_cast<Label *>(subWidget(gLabel));
-}
-/*!
-    Sets the \a label component associated with the button.
-*/
-void AbstractButton::setLabel(Label *label) {
-    setSubWidget(label);
+void AbstractButton::draw() {
+    RectTransform *rect = rectTransform();
+    if(m_dirtyBackground) {
+        if(m_backgroundImage) {
+            m_backgroundMesh = Engine::objectCreate<Mesh>();
+            m_backgroundMesh->makeDynamic();
 
-    if(label) {
-        label->setColor(m_textColor);
-        label->setAlign(Alignment::Middle | Alignment::Center);
+            Vector2 size(rect->size());
+            m_backgroundImage->composeMesh(m_backgroundMesh, Sprite::Sliced, size);
 
-        RectTransform *rect = label->rectTransform();
-        if(rect) {
-            rect->setAnchors(Vector2(0.0f), Vector2(1.0f));
+            m_imageMaterial->setTexture(gOverride, m_backgroundImage->texture());
         }
+        m_dirtyBackground = false;
     }
-}
-/*!
-     Returns the image component associated with the button.
-*/
-Image *AbstractButton::image() const {
-    return static_cast<Image *>(subWidget(gIcon));
-}
-/*!
-    Sets the icon \a image component associated with the button.
-*/
-void AbstractButton::setImage(Image *image) {
-    setSubWidget(image);
 
-    if(image) {
-        RectTransform *rect = image->rectTransform();
-        if(rect) {
-            rect->setAnchors(Vector2(0.5f), Vector2(0.5f));
-            rect->setSize(m_iconSize);
-        }
+    Canvas *canvas = AbstractButton::canvas();
+    if(m_backgroundImage) {
+        Matrix4 mat(rect->worldTransform());
+
+        const Vector3Vector &verts(m_backgroundMesh->vertices());
+        Vector2 scl(rect->worldScale());
+        mat[12] -= verts[0].x * scl.x;
+        mat[13] -= verts[0].y * scl.y;
+
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
+
+        m_imageMaterial->setTransform(mat, 0, hash);
+
+        canvas->drawMesh(m_backgroundMesh, m_imageMaterial);
+    } else {
+        canvas->drawRect(m_frameMaterial, rect);
     }
+
+    Widget::draw();
 }
 /*!
     \internal
@@ -137,75 +128,84 @@ void AbstractButton::setImage(Image *image) {
 void AbstractButton::setHovered(bool hover, bool instant) {
     if(m_hovered != hover) {
         if(!hover && instant) {
-            Frame *back = background();
-            if(back) {
-                back->setColor(m_checked ? m_pressedColor : m_normalColor);
-            }
+            updateBackgroundColor(m_checked ? m_pressedColor : m_backgroundColor);
         } else {
             m_currentFade = 0.0f;
         }
         m_hovered = hover;
     }
 }
+
 /*!
-    Returns the icon shown on the button.
+    Returns background image.
 */
-Sprite *AbstractButton::AbstractButton::icon() const {
-    Image *img = image();
-    if(img) {
-        return img->sprite();
-    }
-    return nullptr;
+Sprite *AbstractButton::backgroundImage() const {
+    return m_backgroundImage;
 }
 /*!
-    Sets the \a icon shown on the button.
+    Sets background \a image.
 */
-void AbstractButton::setIcon(Sprite *icon) {
-    Image *img = image();
-    if(img == nullptr) {
-        Actor *imageActor = Engine::composeActor<Image>(gIcon, actor());
-        img = imageActor->getComponent<Image>();
-        setImage(img);
-    }
-    if(img) {
-        img->setSprite(icon);
+void AbstractButton::setBackgroundImage(Sprite *image) {
+    if(m_backgroundImage != image) {
+        m_backgroundImage = image;
+
+        m_dirtyBackground = true;
     }
 }
 /*!
-    Returns the size of the icon.
+    Returns the corners radiuses of button.
 */
-Vector2 AbstractButton::iconSize() const {
-    return m_iconSize;
+Vector4 AbstractButton::corners() const {
+    return m_borderRadius;
 }
 /*!
-    Sets the \a size of the icon.
+    Sets the \a corners radiuses of button.
 */
-void AbstractButton::setIconSize(const Vector2 &size) {
-    m_iconSize = size;
-    Image *img = image();
-    if(img) {
-        img->rectTransform()->setSize(m_iconSize);
+void AbstractButton::setCorners(const Vector4 &corners) {
+    m_borderRadius = corners;
+
+    if(m_frameMaterial) {
+        RectTransform *rect = rectTransform();
+        if(rect) {
+            Vector4 normCorners(m_borderRadius / rect->size().y);
+            m_frameMaterial->setVector4(gBorderRadius, &normCorners);
+        }
     }
 }
-/*!
-    Returns the normal color of the button.
-*/
-Vector4 AbstractButton::color() const {
-    return m_normalColor;
+
+Vector4 AbstractButton::borderColor() const {
+    return m_borderColor;
 }
-/*!
-    Sets the normal \a color of the button.
-*/
-void AbstractButton::setColor(const Vector4 &color) {
-    m_normalColor = color;
-    Frame *back = background();
-    if(back) {
-        back->setColor(m_normalColor);
+
+void AbstractButton::setBorderColor(const Vector4 &color) {
+    m_borderColor = color;
+
+    if(m_frameMaterial) {
+        m_frameMaterial->setVector4(gTopColor, &m_borderColor);
+        m_frameMaterial->setVector4(gRightColor, &m_borderColor);
+        m_frameMaterial->setVector4(gBottomColor, &m_borderColor);
+        m_frameMaterial->setVector4(gLeftColor, &m_borderColor);
+    }
+}
+
+Vector4 AbstractButton::backgroundColor() const {
+    return m_backgroundColor;
+}
+
+void AbstractButton::setBackgroundColor(const Vector4 &color) {
+    m_backgroundColor = color;
+
+    if(m_imageMaterial) {
+        m_imageMaterial->setVector4(gColor, &m_backgroundColor);
+    }
+
+    if(m_frameMaterial) {
+        m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssBackgroundColor, StyleSheet::toColor(m_normalColor));
+        StyleSheet::setStyleProperty(this, gCssBackgroundColor, StyleSheet::toColor(m_backgroundColor));
     }
 #endif
 }
@@ -257,10 +257,7 @@ bool AbstractButton::isChecked() const {
 void AbstractButton::setChecked(bool checked) {
     m_checked = checked;
 
-    Frame *back = background();
-    if(back) {
-        back->setColor(checked ? m_pressedColor : m_normalColor);
-    }
+    updateBackgroundColor(checked ? m_pressedColor : m_backgroundColor);
 
     checkStateSet();
 
@@ -297,10 +294,9 @@ void AbstractButton::toggled(bool checked) {
 void AbstractButton::update(const Vector2 &pos) {
     Widget::update(pos);
 
-    Frame *back = background();
-    setHovered((back) ? back->isHovered(pos) : isHovered(pos));
+    setHovered(isHovered(pos));
 
-    Vector4 color(m_checked ? m_pressedColor : m_normalColor);
+    Vector4 color(m_checked ? m_pressedColor : m_backgroundColor);
     if(m_hovered) {
         color = m_highlightedColor;
         if(Input::isMouseButtonDown(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
@@ -323,15 +319,11 @@ void AbstractButton::update(const Vector2 &pos) {
         }
     }
 
-    if(back) {
-        if(m_currentFade < 1.0f) {
-            m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
-            m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
+    if(m_currentFade < 1.0f) {
+        m_currentFade += 1.0f / m_fadeDuration * Timer::deltaTime();
+        m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-            back->blockSignals(true);
-            back->setColor(MIX(back->color(), color, m_currentFade));
-            back->blockSignals(false);
-        }
+        updateBackgroundColor(MIX(m_currentColor, color, m_currentFade));
     }
 }
 /*!
@@ -344,7 +336,7 @@ void AbstractButton::applyStyle() {
     // Background color
     auto it = m_styleRules.find(gCssBackgroundColor);
     if(it != m_styleRules.end()) {
-        setColor(StyleSheet::toColor(it->second.second));
+        setBackgroundColor(StyleSheet::toColor(it->second.second));
     }
 }
 /*!
@@ -371,13 +363,31 @@ void AbstractButton::checkStateSet() {
 void AbstractButton::composeComponent() {
     Widget::composeComponent();
 
-    // Add background
-    Actor *background = Engine::composeActor<Frame>(gBackground, actor());
-    Frame *frame = background->getComponent<Frame>();
-    setBackground(frame);
-
     RectTransform *rect = rectTransform();
     rect->blockSignals(true);
     rect->setSize(Vector2(100.0f, 30.0f));
     rect->blockSignals(false);
+}
+/*!
+    \internal
+*/
+void AbstractButton::boundChanged(const Vector2 &) {
+    m_dirtyBackground = true;
+
+    if(m_frameMaterial) {
+        RectTransform *rect = rectTransform();
+        if(rect) {
+            Vector4 normCorners(m_borderRadius / rect->size().y);
+            m_frameMaterial->setVector4(gBorderRadius, &normCorners);
+        }
+    }
+}
+
+void AbstractButton::updateBackgroundColor(const Vector4 &color) {
+    m_currentColor = color;
+    if(m_backgroundImage) {
+        m_imageMaterial->setVector4(gColor, &color);
+    } else {
+        m_frameMaterial->setVector4(gBackgroundColor, &color);
+    }
 }
