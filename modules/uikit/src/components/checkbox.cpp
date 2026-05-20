@@ -1,17 +1,20 @@
 #include "components/checkbox.h"
 
-#include "components/frame.h"
-#include "components/image.h"
+#include "components/canvas.h"
 #include "components/recttransform.h"
-#include "components/label.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include <resources/material.h>
 
-#include <timer.h>
+#include "stylesheet.h"
 
-namespace  {
-    const char *gKnob("icon");
+namespace {
+    const char *gOverride("mainTexture");
+    const char *gColor("mainColor");
+
+    const char *gCssColor("color");
+    const char *gCssIndicatorSize("indicator-size");
+
+    const char *gDefaultSprite(".embedded/DefaultUI.shader");
 }
 
 /*!
@@ -26,68 +29,76 @@ namespace  {
 CheckBox::CheckBox() :
         AbstractButton(),
         m_knobColor(1.0f),
-        m_foldMode(false) {
+        m_knobSize(Vector2(16.0f, 8.0f)),
+        m_knobIcon(nullptr),
+        m_iconMesh(Engine::objectCreate<Mesh>()),
+        m_iconMaterial(nullptr),
+        m_foldMode(false),
+        m_dirtyIcon(true) {
 
     setCheckable(true);
+
+    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(spriteMaterial) {
+        m_iconMaterial = spriteMaterial->createInstance();
+        m_iconMaterial->setVector4(gColor, &m_knobColor);
+    }
 }
 /*!
-    Returns the graphical knob component.
+    Returns indicator icon.
 */
-Image *CheckBox::knobGraphic() const {
-    return static_cast<Image *>(subWidget(gKnob));
+Sprite *CheckBox::indicator() const {
+    return m_knobIcon;
 }
 /*!
-    Sets the graphical \a knob component.
+    Sets indicator \a icon.
 */
-void CheckBox::setKnobGraphic(Image *knob) {
-    setSubWidget(knob);
-
-    if(knob) {
-        knob->setColor(m_knobColor);
-
-        Frame *back = background();
-        RectTransform *backRect = back->rectTransform();
-
-        RectTransform *knobRect = knob->rectTransform();
-        knobRect->setSize(Vector2(16, 8));
-        knobRect->setParentTransform(backRect);
-        knobRect->setPosition(Vector3());
+void CheckBox::setIndicator(Sprite *icon) {
+    m_knobIcon = icon;
+    if(m_knobIcon != icon) {
+        m_knobIcon = icon;
+        m_dirtyIcon = true;
     }
 }
 /*!
     Returns the color of the graphical knob.
 */
-Vector4 CheckBox::knobColor() const {
+Vector4 CheckBox::indicatorColor() const {
     return m_knobColor;
 }
 /*!
     Sets the \a color of the graphical knob.
 */
-void CheckBox::setKnobColor(const Vector4 color) {
+void CheckBox::setIndicatorColor(const Vector4 color) {
     m_knobColor = color;
 
-    Image *knob = knobGraphic();
-    if(knob) {
-        knob->setColor(m_knobColor);
+    if(m_iconMaterial) {
+        m_iconMaterial->setVector4(gColor, &m_knobColor);
     }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_knobColor));
+    }
+#endif
 }
 /*!
-    \internal
-    Overrides the setMirrored method to handle mirrored UI elements.
+    Returns the size of indicator.
 */
-void CheckBox::setMirrored(bool flag) {
-    Label *lbl = label();
-    if(lbl) {
-        RectTransform *rect = lbl->rectTransform();
-        rect->setMargin(Vector4(1.0f, flag ? 43.0f : 5.0f, 2.0f, flag ? 5.0f : 43.0f));
-    }
+Vector2 CheckBox::indicatorSize() const {
+    return m_knobSize;
+}
+/*!
+    Sets the \a size of indicator.
+*/
+void CheckBox::setIndicatorSize(const Vector2 &size) {
+    m_knobSize = size;
+    m_dirtyIcon = true;
 
-    Frame *frame = background();
-    if(frame) {
-        RectTransform *rect = frame->rectTransform();
-        rect->setAnchors(Vector2(flag ? 1.0f : 0.0f, 0.5f), Vector2(flag ? 1.0f : 0.0f, 0.5f));
-        rect->setPivot(Vector2(flag ? 1.0f : 0.0f, 0.5f));
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssIndicatorSize, m_knobSize.v, 2);
     }
+#endif
 }
 /*!
     \internal
@@ -98,61 +109,71 @@ void CheckBox::setFoldMode(bool fold) {
 }
 /*!
     \internal
-    Sets the \a label component associated with the button.
-*/
-void CheckBox::setLabel(Label *label) {
-    AbstractButton::setLabel(label);
-
-    if(label) {
-        label->setAlign(Alignment::Middle | Alignment::Left);
-
-        RectTransform *rect = label->rectTransform();
-        if(rect) {
-            Frame *back = background();
-            RectTransform *backRect = back->rectTransform();
-
-            rect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
-        }
-    }
-}
-/*!
-    \internal
-    Overrides the checkStateSet method to handle state changes.
-*/
-void CheckBox::checkStateSet() {
-    AbstractButton::checkStateSet();
-
-    Image *knob = knobGraphic();
-    if(knob) {
-        if(m_foldMode) {
-            RectTransform *rect = knob->rectTransform();
-            if(rect) {
-                rect->setRotation(Vector3(0.0f, 0.0f, m_checked ? 90.0f : 0.0f));
-            }
-        } else {
-            knob->actor()->setEnabled(m_checked);
-        }
-    }
-}
-/*!
-    \internal
     Overrides the composeComponent method to create the switch component.
 */
 void CheckBox::composeComponent() {
     AbstractButton::composeComponent();
 
-    Frame *back = background();
-    if(back) {
-        RectTransform *backRect = back->rectTransform();
-        backRect->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
-        backRect->setPivot(Vector2(0.0f, 0.5f));
-        backRect->setSize(Vector2(16.0f, 16.0f));
+    RectTransform *rect = rectTransform();
+    rect->blockSignals(true);
+    rect->setSize(Vector2(16.0f));
+    rect->blockSignals(false);
 
-        // Add knob
-        setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
-        Image *img = image();
-        if(img) {
-            setKnobGraphic(img);
+    setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
+}
+/*!
+    \internal
+*/
+void CheckBox::draw() {
+    AbstractButton::draw();
+
+    if(m_knobIcon && m_checked) {
+        if(m_dirtyIcon) {
+            m_iconMaterial->setTexture(gOverride, m_knobIcon->texture());
+            m_knobIcon->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
+
+            m_dirtyIcon = false;
         }
+
+        RectTransform *rect = rectTransform();
+        Vector2 size(rect->size());
+
+        Matrix4 mat(rect->worldTransform());
+        Vector2 scl(rect->worldScale());
+        mat[12] += size.x * 0.5f * scl.x;
+        mat[13] += size.y * 0.5f * scl.y;
+
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
+
+        if(m_foldMode) {
+            Matrix3 rot;
+            rot.rotate(Vector3(0.0f, 0.0f, 1.0f), 90.0f);
+            mat *= rot;
+            Mathf::hashCombine(hash, 90.0f);
+        }
+
+        m_iconMaterial->setTransform(mat, 0, hash);
+
+        Canvas *canvas = CheckBox::canvas();
+        canvas->drawMesh(m_iconMesh, m_iconMaterial);
     }
+}
+/*!
+    \internal
+    Applies style settings assigned to widget.
+*/
+void CheckBox::applyStyle() {
+    AbstractButton::applyStyle();
+
+    bool pixels;
+    setIndicatorSize(styleBlock2Length(gCssIndicatorSize, m_knobSize, pixels));
+
+    blockSignals(true);
+    auto it = m_styleRules.find(gCssColor);
+    if(it != m_styleRules.end()) {
+        setIndicatorColor(StyleSheet::toColor(it->second.second));
+    }
+    blockSignals(false);
 }

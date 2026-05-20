@@ -68,8 +68,6 @@ public: // signals
     void toggled(bool checked);
 
 protected:
-    void composeComponent() override;
-
     void updateBackgroundColor(const Vector4 &color);
 
     void update(const Vector2 &pos) override;

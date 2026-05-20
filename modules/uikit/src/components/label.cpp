@@ -194,7 +194,7 @@ void Label::setColor(const Vector4 &color) {
     }
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssWhiteSpace, StyleSheet::toColor(m_color));
+        StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_color));
     }
 #endif
 }

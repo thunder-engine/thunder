@@ -264,7 +264,18 @@ void Button::applyStyle() {
     }
     blockSignals(false);
 }
+/*!
+    \internal
+    Internal method called to compose the button component by adding background, label, and icon components.
+*/
+void Button::composeComponent() {
+    AbstractButton::composeComponent();
 
+    RectTransform *rect = rectTransform();
+    rect->blockSignals(true);
+    rect->setSize(Vector2(100.0f, 30.0f));
+    rect->blockSignals(false);
+}
 /*!
     \internal
 */

@@ -365,18 +365,6 @@ void AbstractButton::checkStateSet() {
 }
 /*!
     \internal
-    Internal method called to compose the button component by adding background, label, and icon components.
-*/
-void AbstractButton::composeComponent() {
-    Widget::composeComponent();
-
-    RectTransform *rect = rectTransform();
-    rect->blockSignals(true);
-    rect->setSize(Vector2(100.0f, 30.0f));
-    rect->blockSignals(false);
-}
-/*!
-    \internal
 */
 void AbstractButton::boundChanged(const Vector2 &) {
     m_dirtyBackground = true;

@@ -12,7 +12,7 @@ class UIKIT_EXPORT Button : public AbstractButton {
         A_PROPERTY(TString, text, Button::text, Button::setText),
         A_PROPERTYEX(Font *, font, Button::font, Button::setFont, "editor=Asset"),
         A_PROPERTYEX(int, fontSize, Button::fontSize, Button::setFontSize, "css=font-size"),
-        A_PROPERTYEX(Vector4, textColor, Button::textColor, Button::setTextColor, "editor=Color"),
+        A_PROPERTYEX(Vector4, textColor, Button::textColor, Button::setTextColor, "editor=Color, css=color"),
         A_PROPERTYEX(Sprite *, icon, Button::icon, Button::setIcon, "editor=Asset"),
         A_PROPERTYEX(Vector2, iconSize, Button::iconSize, Button::setIconSize, "css=icon-size")
     )
@@ -47,6 +47,8 @@ public:
 
 protected:
     void applyStyle() override;
+
+    void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
 
