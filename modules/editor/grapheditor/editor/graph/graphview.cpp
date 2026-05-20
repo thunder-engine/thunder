@@ -141,7 +141,7 @@ void GraphView::setWorld(World *scene) {
 
     actor = Engine::composeActor<Frame>(gFrame, m_view);
     m_rubberBand = actor->getComponent<Frame>();
-    m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
+    m_rubberBand->setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
     m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
 
     RectTransform *rect = m_rubberBand->rectTransform();

@@ -62,7 +62,7 @@ void PortWidget::setNodePort(NodePort *port) {
         } else {
             m_knob->setCorners(Vector4(knobSize * 0.5f));
         }
-        m_knob->setColor(m_port->m_color);
+        m_knob->setBackgroundColor(m_port->m_color);
     }
 
     // Create editor (only for inputs)
@@ -116,7 +116,7 @@ void PortWidget::update(const Vector2 &pos) {
                 color.z = CLAMP(color.z + 0.25f, 0.0f, 1.0f);
                 color.w = CLAMP(color.w + 0.25f, 0.0f, 1.0f);
             }
-            m_knob->setColor(color);
+            m_knob->setBackgroundColor(color);
         }
 
         if(m_hovered) {

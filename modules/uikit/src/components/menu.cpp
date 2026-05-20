@@ -174,7 +174,7 @@ void Menu::update(const Vector2 &pos) {
 void Menu::composeComponent() {
     Frame::composeComponent();
 
-    setColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
+    setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
     setCorners(Vector4(gCorner));
     rectTransform()->setPivot(Vector2(0.0f, 1.0f));
 
@@ -185,7 +185,7 @@ void Menu::composeComponent() {
 
     Actor *actor = Engine::composeActor<Frame>(gSelected, Menu::actor());
     Frame *select = actor->getComponent<Frame>();
-    select->setColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
+    select->setBackgroundColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
     select->setCorners(0.0f);
     select->setBorderColor(0.0f);
 

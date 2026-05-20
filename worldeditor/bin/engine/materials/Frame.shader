@@ -4,10 +4,7 @@
         <property name="borderWidth" type="vec4" />
         <property name="borderRadius" type="vec4" />
         <property name="backgroundColor" type="vec4" />
-        <property name="topColor" type="vec4" />
-        <property name="rightColor" type="vec4" />
-        <property name="bottomColor" type="vec4" />
-        <property name="leftColor" type="vec4" />
+        <property name="borderColor" type="vec4" />
     </properties>
     <fragment><![CDATA[
 #version 450 core
@@ -58,17 +55,6 @@ void main(void) {
 
     // Border
     float border = surface - smoothstep(softness, softness, sdf - borderWidth.x);
-
-    float brd0 = step(1.0, ratio * _uv0.x + _uv0.y);
-    float brd1 = step(1.0, ratio * (1.0 - _uv0.x) + _uv0.y);
-    float brd2 = step(1.0, ratio * (1.0 - _uv0.x) + (1.0 - _uv0.y));
-    float brd3 = step(1.0, ratio * (_uv0.x) + (1.0 - _uv0.y));
-
-    float top = brd0 * brd1;
-    float right = (1.0 - brd1) * (1.0 - brd2);
-    float left = (1.0 - brd0) * (1.0 - brd3);
-
-    vec4 borderColor = mix(mix(mix(bottomColor, leftColor, left), rightColor, right), topColor, top);
 
     rgb = mix(vec4(backgroundColor.xyz, backgroundColor.w * surface), borderColor, border);
 }

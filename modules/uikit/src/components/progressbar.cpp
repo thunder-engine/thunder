@@ -99,7 +99,7 @@ void ProgressBar::setChunk(Frame *frame) {
 
     if(frame) {
         connect(frame, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        frame->setColor(m_progressColor);
+        frame->setBackgroundColor(m_progressColor);
     }
 }
 /*!
@@ -116,7 +116,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 
     Frame *chunk = ProgressBar::chunk();
     if(chunk) {
-        chunk->setColor(m_progressColor);
+        chunk->setBackgroundColor(m_progressColor);
     }
 }
 /*!
@@ -128,7 +128,7 @@ void ProgressBar::composeComponent() {
 
     Actor *progress = Engine::composeActor<Frame>(gChunk, actor());
     Frame *progressFrame = progress->getComponent<Frame>();
-    progressFrame->setColor(m_progressColor);
+    progressFrame->setBackgroundColor(m_progressColor);
     progressFrame->setBorderColor(0.0f);
 
     RectTransform *progressRect = progressFrame->rectTransform();
