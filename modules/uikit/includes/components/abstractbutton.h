@@ -28,6 +28,7 @@ class UIKIT_EXPORT AbstractButton : public Widget {
 
 public:
     AbstractButton();
+    ~AbstractButton();
 
     Sprite *backgroundImage() const;
     void setBackgroundImage(Sprite *image);

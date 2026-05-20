@@ -242,10 +242,9 @@ Widget *ShaderNode::widget() {
                 RectTransform *previewRect = m_previewBtn->rectTransform();
                 if(previewRect) {
                     previewRect->setSize(Vector2(16.0f));
-                    previewRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
                     previewRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
                     previewRect->setPivot(Vector2(1.0f, 0.5f));
-                    previewRect->setPosition(Vector3(-16.0f, 0.0f, 0.0f));
+                    previewRect->setPosition(Vector3(-8.0f, 0.0f, 0.0f));
                 }
             }
         }
