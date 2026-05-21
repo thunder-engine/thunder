@@ -14,8 +14,6 @@
 #include "actions/selectwidgets.h"
 #include "actions/deletewiget.h"
 
-#include "uisystem.h"
-
 WidgetController::WidgetController(UiEdit *editor) :
         CameraController(),
         m_rootObject(nullptr),

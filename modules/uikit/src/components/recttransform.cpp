@@ -586,7 +586,7 @@ Vector2 RectTransform::sizeHint() const {
 Vector4 RectTransform::clipRegion() const {
     cleanDirty();
 
-    Vector4 offsets(m_margin + m_border + m_padding);
+    Vector4 offsets(m_border + m_padding);
 
     return Vector4(m_worldTransform[12] + offsets.w,
                    m_worldTransform[13] + offsets.x,
