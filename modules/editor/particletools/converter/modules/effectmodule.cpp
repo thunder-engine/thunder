@@ -5,6 +5,7 @@
 #include <components/label.h>
 #include <components/recttransform.h>
 #include <components/checkbox.h>
+#include <components/layout.h>
 
 #include <amath.h>
 
@@ -36,11 +37,20 @@ Widget *EffectModule::widget(Object *parent) {
     if(m_checkBoxWidget == nullptr) {
         TString moduleName = name();
 
-        Actor *function = Engine::composeActor<CheckBox>(moduleName, parent);
+        Actor *group = Engine::composeActor<Widget>(moduleName, parent);
+        Widget *groupWidget = group->getComponent<Widget>();
+        RectTransform *rect = groupWidget->rectTransform();
+        Layout *layout = new Layout;
+        layout->setOrientation(Widget::Horizontal);
+        rect->setLayout(layout);
+
+        Actor *function = Engine::composeActor<CheckBox>(moduleName, group);
         m_checkBoxWidget = function->getComponent<CheckBox>();
         m_checkBoxWidget->setChecked(m_enabled);
-        m_checkBoxWidget->setText(moduleName);
-        m_checkBoxWidget->setMirrored(true);
+
+        Actor *label = Engine::composeActor<Label>(moduleName, group);
+        Label *labelWidget = label->getComponent<Label>();
+        labelWidget->setText(moduleName);
 
         m_checkBoxWidget->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
 
