@@ -1,17 +1,11 @@
 #include "components/switch.h"
 
-#include "components/frame.h"
 #include "components/recttransform.h"
-#include "components/label.h"
 
 #include <components/actor.h>
 #include <components/textrender.h>
 
 #include <timer.h>
-
-namespace  {
-    const char *gKnob("knob");
-}
 
 /*!
     \class Switch
@@ -23,58 +17,11 @@ namespace  {
 */
 
 Switch::Switch() :
-        AbstractButton(),
-        m_knobColor(1.0f),
+        CheckBox(),
         m_switchDuration(0.2f),
         m_currentFade(1.0f) {
 
-    setCheckable(true);
-}
-/*!
-    Returns the switch animation duration in seconds.
-*/
-float Switch::switchDuration() const {
-    return m_switchDuration;
-}
-/*!
-    Sets the switch animation \a duration in seconds.
-*/
-void Switch::setSwitchDuration(float duration) {
-    m_switchDuration = duration;
-}
-/*!
-    Returns the graphical knob component.
-*/
-Frame *Switch::knobGraphic() const {
-    return static_cast<Frame *>(subWidget(gKnob));
-}
-/*!
-    Sets the graphical \a knob component.
-*/
-void Switch::setKnobGraphic(Frame *knob) {
-    setSubWidget(knob);
-
-    if(knob) {
-        connect(knob, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        knob->setColor(m_knobColor);
-    }
-}
-/*!
-    Returns the color of the graphical knob.
-*/
-Vector4 Switch::knobColor() const {
-    return m_knobColor;
-}
-/*!
-    Sets the \a color of the graphical knob.
-*/
-void Switch::setKnobColor(const Vector4 color) {
-    m_knobColor = color;
-
-    Frame *knobGraphic = Switch::knobGraphic();
-    if(knobGraphic) {
-        knobGraphic->setColor(m_knobColor);
-    }
+    m_switchMode = true;
 }
 /*!
     \internal
@@ -83,20 +30,14 @@ void Switch::setKnobColor(const Vector4 color) {
 void Switch::update(const Vector2 &pos) {
     AbstractButton::update(pos);
 
-    Frame *knobGraphic = Switch::knobGraphic();
-    if(m_currentFade < 1.0f && knobGraphic) {
+    if(m_currentFade < 1.0f) {
         m_currentFade += 1.0f / m_switchDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-        Actor *actor = knobGraphic->actor();
-        RectTransform *transform = dynamic_cast<RectTransform *>(actor->transform());
-        if(transform) {
-            if(m_checked) {
-                transform->setPivot(Vector2(MIX(1.0f, 0.0f, m_currentFade), 0.5f));
-            } else {
-                transform->setPivot(Vector2(MIX(0.0f, 1.0f, m_currentFade), 0.5f));
-            }
-        }
+        float width = rectTransform()->size().x;
+        float left = (width - m_knobSize.x) * -0.5f;
+        float right = (width - m_knobSize.x) * 0.5f;
+        m_iconOffset = m_checked ? MIX(left, right, m_currentFade) : MIX(right, left, m_currentFade);
     }
 }
 /*!
@@ -109,72 +50,28 @@ void Switch::checkStateSet() {
 }
 /*!
     \internal
-    Overrides the setMirrored method to handle mirrored UI elements.
-*/
-void Switch::setMirrored(bool flag) {
-    Label *lbl = label();
-    if(lbl) {
-        RectTransform *rect = lbl->rectTransform();
-        rect->setMargin(Vector4(1.0f, flag ? 43.0f : 5.0f, 2.0f, flag ? 5.0f : 43.0f));
-
-        if(flag) {
-            lbl->setAlign(Alignment::Middle | Alignment::Right);
-        } else {
-            lbl->setAlign(Alignment::Middle | Alignment::Left);
-        }
-    }
-
-    Frame *frame = background();
-    if(frame) {
-        RectTransform *rect = frame->rectTransform();
-        rect->setAnchors(Vector2(flag ? 1.0f : 0.0f, 0.0f), Vector2(flag ? 1.0f : 0.0f, 1.0f));
-        rect->setPivot(Vector2(flag ? 1.0f : 0.0f, 0.5f));
-    }
-}
-/*!
-    \internal
-    Sets the \a label component associated with the button.
-*/
-void Switch::setLabel(Label *label) {
-    AbstractButton::setLabel(label);
-
-    if(label) {
-        label->setAlign(Alignment::Middle | Alignment::Left);
-
-        RectTransform *rect = label->rectTransform();
-        if(rect) {
-            Frame *back = background();
-            RectTransform *backRect = back->rectTransform();
-
-            rect->setMargin(Vector4(0.0f, 0.0f, 0.0f, backRect->size().x + back->corners().x));
-        }
-    }
-}
-/*!
-    \internal
-    Overrides the composeComponent method to create the switch component.
 */
 void Switch::composeComponent() {
-    AbstractButton::composeComponent();
+    CheckBox::composeComponent();
 
-    Frame *back = background();
-    if(back) {
-        RectTransform *backRect = back->rectTransform();
-        backRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
-        backRect->setPivot(Vector2(0.0f, 0.5f));
-        backRect->setSize(Vector2(40.0f, 20.0f));
+    RectTransform *rect = rectTransform();
+    rect->blockSignals(true);
+    rect->setSize(Vector2(32.0f, 16.0f));
+    rect->blockSignals(false);
 
-        // Add knob
-        Actor *knob = Engine::composeActor<Frame>(gKnob, background()->actor());
-        Frame *frame = knob->getComponent<Frame>();
-        frame->setCorners(background()->corners());
-        setKnobGraphic(frame);
+    blockSignals(true);
+    setIndicatorSize(Vector2(16.0f));
+    blockSignals(false);
+}
+/*!
+    \internal
+*/
+void Switch::boundChanged(const Vector2 &size) {
+    CheckBox::boundChanged(size);
 
-        RectTransform *knobRect = frame->rectTransform();
-        Vector2 size = backRect->size();
-        size.x *= 0.5f;
-        knobRect->setAnchors(Vector2(0.5f, 0.0f), Vector2(0.5f, 1.0f));
-        knobRect->setPivot(Vector2(1.0f, 0.5f));
-        knobRect->setSize(size);
+    if(m_checked) {
+        m_iconOffset = (size.x - m_knobSize.x) * 0.5f;
+    } else {
+        m_iconOffset = (size.x - m_knobSize.x) *-0.5f;
     }
 }

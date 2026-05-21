@@ -11,10 +11,16 @@ namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
 
+    const char *gBackgroundColor("backgroundColor");
+    const char *gBorderWidth("borderWidth");
+    const char *gBorderRadius("borderRadius");
+    const char *gBorderColor("borderColor");
+
     const char *gCssColor("color");
     const char *gCssIndicatorSize("indicator-size");
 
     const char *gDefaultSprite(".embedded/DefaultUI.shader");
+    const char *gDefaultFrame(".embedded/Frame.shader");
 }
 
 /*!
@@ -29,11 +35,14 @@ namespace {
 CheckBox::CheckBox() :
         AbstractButton(),
         m_knobColor(1.0f),
-        m_knobSize(Vector2(16.0f, 8.0f)),
+        m_knobSize(Vector2(12.0f)),
         m_knobIcon(nullptr),
         m_iconMesh(Engine::objectCreate<Mesh>()),
         m_iconMaterial(nullptr),
+        m_frameMaterial(nullptr),
+        m_iconOffset(0.0f),
         m_foldMode(false),
+        m_switchMode(false),
         m_dirtyIcon(true) {
 
     setCheckable(true);
@@ -42,6 +51,17 @@ CheckBox::CheckBox() :
     if(spriteMaterial) {
         m_iconMaterial = spriteMaterial->createInstance();
         m_iconMaterial->setVector4(gColor, &m_knobColor);
+    }
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_frameMaterial = frameMaterial->createInstance();
+
+        Vector4 width(0.0f);
+        m_frameMaterial->setVector4(gBorderWidth, &width);
+        m_frameMaterial->setVector4(gBorderRadius, &m_borderRadius);
+        m_frameMaterial->setVector4(gBorderColor, &m_borderColor);
+        m_frameMaterial->setVector4(gBackgroundColor, &m_knobColor);
     }
 }
 /*!
@@ -69,12 +89,17 @@ Vector4 CheckBox::indicatorColor() const {
 /*!
     Sets the \a color of the graphical knob.
 */
-void CheckBox::setIndicatorColor(const Vector4 color) {
+void CheckBox::setIndicatorColor(const Vector4 &color) {
     m_knobColor = color;
 
     if(m_iconMaterial) {
         m_iconMaterial->setVector4(gColor, &m_knobColor);
     }
+
+    if(m_frameMaterial) {
+        m_frameMaterial->setVector4(gBackgroundColor, &m_knobColor);
+    }
+
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_knobColor));
@@ -118,8 +143,6 @@ void CheckBox::composeComponent() {
     rect->blockSignals(true);
     rect->setSize(Vector2(16.0f));
     rect->blockSignals(false);
-
-    setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Check"));
 }
 /*!
     \internal
@@ -127,8 +150,8 @@ void CheckBox::composeComponent() {
 void CheckBox::draw() {
     AbstractButton::draw();
 
-    if(m_knobIcon && m_checked) {
-        if(m_dirtyIcon) {
+    if(m_checked || m_foldMode || m_switchMode) {
+        if(m_knobIcon && m_dirtyIcon) {
             m_iconMaterial->setTexture(gOverride, m_knobIcon->texture());
             m_knobIcon->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
 
@@ -140,24 +163,36 @@ void CheckBox::draw() {
 
         Matrix4 mat(rect->worldTransform());
         Vector2 scl(rect->worldScale());
-        mat[12] += size.x * 0.5f * scl.x;
+        mat[12] += (size.x * 0.5f + m_iconOffset) * scl.x;
         mat[13] += size.y * 0.5f * scl.y;
 
         uint32_t hash = rect->hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
+        Mathf::hashCombine(hash, m_iconOffset);
 
-        if(m_foldMode) {
+        if(m_foldMode && !m_checked) {
             Matrix3 rot;
             rot.rotate(Vector3(0.0f, 0.0f, 1.0f), 90.0f);
             mat *= rot;
             Mathf::hashCombine(hash, 90.0f);
         }
 
-        m_iconMaterial->setTransform(mat, 0, hash);
-
         Canvas *canvas = CheckBox::canvas();
-        canvas->drawMesh(m_iconMesh, m_iconMaterial);
+        if(m_knobIcon) {
+            m_iconMaterial->setTransform(mat, 0, hash);
+            canvas->drawMesh(m_iconMesh, m_iconMaterial);
+        } else {
+            Matrix4 s;
+            s[0] = m_knobSize.x;
+            s[5] = m_knobSize.y;
+
+            Mathf::hashCombine(hash, s[0]);
+            Mathf::hashCombine(hash, s[5]);
+
+            m_frameMaterial->setTransform(mat * s, 0, hash);
+            canvas->drawRect(m_frameMaterial, nullptr);
+        }
     }
 }
 /*!

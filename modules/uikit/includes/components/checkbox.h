@@ -21,21 +21,21 @@ public:
     void setIndicator(Sprite *icon);
 
     Vector4 indicatorColor() const;
-    void setIndicatorColor(const Vector4 color);
+    void setIndicatorColor(const Vector4 &color);
 
     Vector2 indicatorSize() const;
     void setIndicatorSize(const Vector2 &size);
 
     void setFoldMode(bool fold);
 
-    void draw() override;
-
 protected:
     void composeComponent() override;
 
+    void draw() override;
+
     void applyStyle() override;
 
-private:
+protected:
     Vector4 m_knobColor;
     Vector2 m_knobSize;
 
@@ -44,8 +44,12 @@ private:
     Mesh *m_iconMesh;
 
     MaterialInstance *m_iconMaterial;
+    MaterialInstance *m_frameMaterial;
+
+    float m_iconOffset;
 
     bool m_foldMode;
+    bool m_switchMode;
     bool m_dirtyIcon;
 
 };
