@@ -104,14 +104,10 @@ void ScrollBar::setBackArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepBack()));
 
-        Image *image = button->image();
-        if(image) {
-            RectTransform *rectIcon = image->rectTransform();
-            if(m_orientation == Horizontal) {
-                rectIcon->setRotation(Vector3(0.0f, 0.0f,-90.0f));
-            } else {
-                rectIcon->setRotation(Vector3(0.0f, 0.0f, 180.0f));
-            }
+        if(m_orientation == Horizontal) {
+            button->setIconRotation(-90.0f);
+        } else {
+            button->setIconRotation(180.0f);
         }
     }
 }
@@ -144,15 +140,10 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
     button = dynamic_cast<Button *>(arrow);
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepFront()));
-
-        Image *image = button->image();
-        if(image) {
-            RectTransform *rectIcon = image->rectTransform();
-            if(m_orientation == Horizontal) {
-                rectIcon->setRotation(Vector3(0.0f, 0.0f, 90.0f));
-            } else {
-                rectIcon->setRotation(Vector3(0.0f, 0.0f, 0.0f));
-            }
+        if(m_orientation == Horizontal) {
+            button->setIconRotation(90.0f);
+        } else {
+            button->setIconRotation(0.0f);
         }
     }
 }
@@ -178,14 +169,14 @@ void ScrollBar::recalcKnob() {
             float scaledPage = pageFactor * (1.0f - normalGap * 2.0f);
             knobRect->setPivot(Vector2(0.0f, 0.5f));
             knobRect->setAnchors(Vector2(scaledFactor, 0.5f), Vector2(scaledFactor, 0.5f));
-            knobRect->setSize(Vector2(MIX(0.0f, size.x, scaledPage), m_hovered ? 8.0f : 2.0f));
+            knobRect->setSize(Vector2(MIX(0.0f, size.x, scaledPage), m_hovered ? 8.0f : 4.0f));
         } else {
             float normalGap = m_areaGap / size.y;
             float scaledFactor = normalGap + factor * (1.0f - normalGap * 2.0f);
             float scaledPage = pageFactor * (1.0f - normalGap * 2.0f);
             knobRect->setPivot(Vector2(0.5f, 1.0f));
             knobRect->setAnchors(Vector2(0.5f, 1.0f - scaledFactor), Vector2(0.5f, 1.0f - scaledFactor));
-            knobRect->setSize(Vector2(m_hovered ? 8.0f : 2.0f, MIX(0.0f, size.y, scaledPage)));
+            knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, MIX(0.0f, size.y, scaledPage)));
         }
     }
 }
@@ -213,9 +204,9 @@ void ScrollBar::update(const Vector2 &pos) {
 
             Vector2 size(knobRect->size());
             if(m_orientation == Horizontal) {
-                knobRect->setSize(Vector2(size.x, m_hovered ? 8.0f : 2.0f));
+                knobRect->setSize(Vector2(size.x, m_hovered ? 8.0f : 4.0f));
             } else {
-                knobRect->setSize(Vector2(m_hovered ? 8.0f : 2.0f, size.y));
+                knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, size.y));
             }
         }
     }
@@ -228,7 +219,7 @@ void ScrollBar::composeComponent() {
     Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
     Frame *knob = knobActor->getComponent<Frame>();
     knob->setCorners(Vector4(0.0f));
-    knob->setColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+    knob->setBackgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 
     RectTransform *rectKnob = knob->rectTransform();
 

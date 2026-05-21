@@ -244,7 +244,7 @@ void FloatInput::composeComponent() {
     rightRect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f));
     rightRect->setPivot(Vector2(1.0f, 1.0f));
 
-    rectTransform()->setSize(Vector2(100.0f, 30.0f));
+    rectTransform()->setSize(Vector2(100.0f, 20.0f));
 
     setCorners(Vector4(4.0f));
 }
