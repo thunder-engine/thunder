@@ -43,6 +43,8 @@ public:
 
     void setIconRotation(float angle);
 
+    float contentWidth() const;
+
     void draw() override;
 
 protected:

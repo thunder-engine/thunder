@@ -186,6 +186,19 @@ void Button::setIconSize(const Vector2 &size) {
 void Button::setIconRotation(float angle) {
     m_rotation = angle;
 }
+
+float Button::contentWidth() const {
+    float result = 0.0f;
+    if(m_font) {
+        result += m_font->textWidth(m_text, m_fontSize, 0);
+    }
+
+    if(m_icon) {
+        result += m_iconSize.x;
+    }
+
+    return result;
+}
 /*!
     \internal
 */

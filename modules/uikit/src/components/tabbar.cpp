@@ -1,13 +1,10 @@
 #include "components/tabbar.h"
 
 #include "components/recttransform.h"
-#include "components/frame.h"
 #include "components/button.h"
 #include "components/canvas.h"
 
 #include "resources/stylesheet.h"
-
-#include "commandbuffer.h"
 
 #define NAVI_SIZE 32
 
@@ -56,11 +53,8 @@ int TabBar::insertTab(int index, const TString &title) {
         setSubWidget(button);
 
         button->setText(title);
-
-        Frame *back = button->background();
-        if(back) {
-            back->setCorners(m_tabCornerRadius);
-        }
+        button->setCorners(m_tabCornerRadius);
+        button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
 
         if(m_showClose) {
             createCloseButton(buttonActor);
@@ -266,9 +260,7 @@ int TabBar::indexOf(Button *button) const {
 void TabBar::setTabCornerRadius(const Vector4 &radius) {
     m_tabCornerRadius = radius;
     for(auto it : m_tabs) {
-        if(it->background()) {
-            it->background()->setCorners(m_tabCornerRadius);
-        }
+        it->setCorners(m_tabCornerRadius);
     }
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -348,7 +340,6 @@ void TabBar::draw() {
     }
 
     canvas->disableClip();
-
 }
 /*!
     \internal
@@ -362,13 +353,8 @@ void TabBar::composeComponent() {
         setSubWidget(m_frontButton);
         m_frontButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_frontButton->setIconSize(Vector2(16.0f, 8.0f));
+        m_frontButton->setIconRotation(90.0f);
         m_frontButton->setEnabled(false);
-
-        Image *image = m_frontButton->image();
-        if(image) {
-            RectTransform *imageRect = image->rectTransform();
-            imageRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
-        }
 
         RectTransform *rect = m_frontButton->rectTransform();
         rect->setSize(Vector2(16));
@@ -384,13 +370,8 @@ void TabBar::composeComponent() {
         setSubWidget(m_backButton);
         m_backButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_backButton->setIconSize(Vector2(16.0f, 8.0f));
+        m_backButton->setIconRotation(-90.0f);
         m_backButton->setEnabled(false);
-
-        Image *image = m_backButton->image();
-        if(image) {
-            RectTransform *imageRect = image->rectTransform();
-            imageRect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
-        }
 
         RectTransform *rect = m_backButton->rectTransform();
         rect->setSize(Vector2(16));
@@ -433,18 +414,8 @@ void TabBar::updateTabPositions() {
     for(auto it : m_tabs) {
         RectTransform *rect = it->rectTransform();
         float width = m_tabPadding.y + m_tabPadding.w;
-        Label *label = it->label();
-        if(label) {
-            width += label->textWidth();
-            label->setAlign(Alignment::Middle | Alignment::Left);
-            label->rectTransform()->setPosition(Vector3(m_tabPadding.w, 0.0f, 0.0f));
-        }
 
-        Image *image = it->image();
-        if(image) {
-            width += rect->padding().w;
-            width += it->iconSize().x;
-        }
+        width += it->contentWidth();
 
         if(m_showClose) {
             width += m_tabPadding.w + 16;
