@@ -171,7 +171,7 @@ void CheckBox::draw() {
         Mathf::hashCombine(hash, mat[13]);
         Mathf::hashCombine(hash, m_iconOffset);
 
-        if(m_foldMode && !m_checked) {
+        if(m_foldMode && m_checked) {
             Matrix3 rot;
             rot.rotate(Vector3(0.0f, 0.0f, 1.0f), 90.0f);
             mat *= rot;

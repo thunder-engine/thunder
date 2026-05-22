@@ -10,9 +10,7 @@ class UIKIT_EXPORT Foldout : public Widget {
     A_OBJECT(Foldout, Widget, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTY(TString, text, Foldout::text, Foldout::setText),
-        A_PROPERTYEX(Frame *, container, Foldout::container, Foldout::setContainer, "editor=Component"),
-        A_PROPERTYEX(CheckBox *, indicator, Foldout::indicator, Foldout::setIndicator, "editor=Component")
+        A_PROPERTY(TString, text, Foldout::text, Foldout::setText)
     )
     A_METHODS(
         A_SLOT(Foldout::onExpand)
@@ -38,9 +36,17 @@ public:
 
     void onExpand();
 
-private:
+protected:
+    void insertRect(int index, RectTransform *content);
+
     void composeComponent() override;
 
+    void childAdded(RectTransform *rect) override;
+
+private:
+    RectTransform *m_contentArea;
+
+    CheckBox *m_indicator;
 };
 
 #endif // FOLDOUT_H

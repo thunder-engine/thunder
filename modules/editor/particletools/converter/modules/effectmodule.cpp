@@ -30,16 +30,17 @@ EffectModule::EffectModule() :
         m_stage(ParticleSpawn),
         m_enabled(true),
         m_blockUpdate(false),
-        m_checkBoxWidget(nullptr) {
+        m_checkBoxWidget(nullptr),
+        m_groupWidget(nullptr) {
 }
 
 Widget *EffectModule::widget(Object *parent) {
-    if(m_checkBoxWidget == nullptr) {
+    if(m_groupWidget == nullptr) {
         TString moduleName = name();
 
         Actor *group = Engine::composeActor<Widget>(moduleName, parent);
-        Widget *groupWidget = group->getComponent<Widget>();
-        RectTransform *rect = groupWidget->rectTransform();
+        m_groupWidget = group->getComponent<Widget>();
+        RectTransform *rect = m_groupWidget->rectTransform();
         Layout *layout = new Layout;
         layout->setOrientation(Widget::Horizontal);
         rect->setLayout(layout);
@@ -52,12 +53,10 @@ Widget *EffectModule::widget(Object *parent) {
         Label *labelWidget = label->getComponent<Label>();
         labelWidget->setText(moduleName);
 
-        m_checkBoxWidget->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
-
         Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }
 
-    return m_checkBoxWidget;
+    return m_groupWidget;
 }
 
 void EffectModule::setEnabled(bool enabled) {

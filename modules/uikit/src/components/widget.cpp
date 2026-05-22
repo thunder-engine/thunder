@@ -200,7 +200,7 @@ Widget *Widget::focusWidget() {
 */
 Widget *Widget::subWidget(const TString &name) const {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget ) {
+        if(it->m_subWidget) {
             if(it->actor()->name() == name) {
                 return it;
             } else {
