@@ -68,9 +68,6 @@ Label::~Label() {
 */
 void Label::draw() {
     if(m_material && !m_text.isEmpty()) {
-        Transform *t = transform();
-        m_material->setTransform(t->worldTransform(), 0, t->hash());
-
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
             m_font->composeMesh(m_mesh,
@@ -83,6 +80,17 @@ void Label::draw() {
 
             m_dirty = false;
         }
+
+        RectTransform *rect = rectTransform();
+        Matrix4 mat(rect->worldTransform());
+
+        mat[12] += rect->padding().w;
+
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
+
+        m_material->setTransform(mat, 0, hash);
 
         Canvas *canvas = Label::canvas();
         canvas->drawMesh(m_mesh, m_material);

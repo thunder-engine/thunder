@@ -131,18 +131,14 @@ void CheckBox::setIndicatorSize(const Vector2 &size) {
 */
 void CheckBox::setFoldMode(bool fold) {
     m_foldMode = fold;
-}
-/*!
-    \internal
-    Overrides the composeComponent method to create the switch component.
-*/
-void CheckBox::composeComponent() {
-    AbstractButton::composeComponent();
-
-    RectTransform *rect = rectTransform();
-    rect->blockSignals(true);
-    rect->setSize(Vector2(16.0f));
-    rect->blockSignals(false);
+    if(m_foldMode) {
+        RectTransform *rect = rectTransform();
+        if(rect) {
+            m_iconOffset = rect->size().x * 0.5f;
+        }
+    } else {
+        m_iconOffset = 0.0f;
+    }
 }
 /*!
     \internal
@@ -211,4 +207,28 @@ void CheckBox::applyStyle() {
         setIndicatorColor(StyleSheet::toColor(it->second.second));
     }
     blockSignals(false);
+}
+/*!
+    \internal
+    Overrides the composeComponent method to create the switch component.
+*/
+void CheckBox::composeComponent() {
+    AbstractButton::composeComponent();
+
+    RectTransform *rect = rectTransform();
+    rect->blockSignals(true);
+    rect->setSize(Vector2(16.0f));
+    rect->blockSignals(false);
+}
+/*!
+    \internal
+    Callback method called when the \a size of the frame changed.
+    Updates material properties based on corner radius and border width.
+*/
+void CheckBox::boundChanged(const Vector2 &size) {
+    AbstractButton::boundChanged(size);
+
+    if(m_foldMode) {
+        m_iconOffset = (size.x - m_knobSize.x) *-0.5f;
+    }
 }

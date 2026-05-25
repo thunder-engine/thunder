@@ -35,6 +35,8 @@ protected:
 
     void applyStyle() override;
 
+    void boundChanged(const Vector2 &size) override;
+
 protected:
     Vector4 m_knobColor;
     Vector2 m_knobSize;

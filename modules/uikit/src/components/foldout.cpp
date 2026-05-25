@@ -1,10 +1,12 @@
 #include "components/foldout.h"
 
 #include "components/checkbox.h"
+#include "components/label.h"
 #include "components/recttransform.h"
 #include "components/layout.h"
 
 namespace {
+    const char *gLabel("label");
     const char *gIndicator("indicator");
     const char *gContainer("container");
 }
@@ -34,9 +36,8 @@ void Foldout::insertWidget(int index, Widget *widget) {
     Returns true id foldout is currently expanded; otherwise returns false.
 */
 bool Foldout::isExpanded() const {
-    Frame *container = Foldout::container();
-    if(container) {
-        return container->actor()->isEnabled();
+    if(m_contentArea) {
+        return m_contentArea->actor()->isEnabled();
     }
     return false;
 }
@@ -44,29 +45,37 @@ bool Foldout::isExpanded() const {
     Expands or collapses the foldout based on the \a expanded parameter.
 */
 void Foldout::setExpanded(bool expanded) {
-    Frame *container = Foldout::container();
-    if(container) {
-        container->actor()->setEnabled(expanded);
+    if(m_contentArea) {
+        m_contentArea->actor()->setEnabled(expanded);
     }
 }
 /*!
     Returns the current text of the foldout's label.
 */
 TString Foldout::text() const {
-    //CheckBox *button = Foldout::indicator();
-    //if(button) {
-    //    return button->text();
-    //}
+    Label *label = static_cast<Label *>(subWidget(gLabel));
+    if(label) {
+        return label->text();
+    }
     return TString();
 }
 /*!
     Sets the label \a text for the foldout.
 */
 void Foldout::setText(const TString &text) {
-    //CheckBox *button = Foldout::indicator();
-    //if(button) {
-    //    button->setText(text);
-    //}
+    Label *label = static_cast<Label *>(subWidget(gLabel));
+    if(label) {
+        label->setText(text);
+    } else {
+        Actor *labelActor = Engine::composeActor<Label>(gLabel, m_indicator->actor());
+        Label *label = labelActor->getComponent<Label>();
+        label->setText(text);
+        label->setAlign(Alignment::Left | Alignment::Middle);
+        setSubWidget(label);
+
+        RectTransform *rect = label->rectTransform();
+        rect->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
+    }
 }
 /*!
     Returns container component attached to this widget.
@@ -102,6 +111,9 @@ CheckBox *Foldout::indicator() const {
 void Foldout::setIndicator(CheckBox *indicator) {
     setSubWidget(indicator);
 
+    RectTransform *rect = indicator->rectTransform();
+    rect->setHorizontalPolicy(RectTransform::Expanding);
+
     m_indicator = indicator;
 }
 /*!
@@ -123,11 +135,9 @@ void Foldout::childAdded(RectTransform *rect) {
 */
 void Foldout::insertRect(int index, RectTransform *content) {
     content->setHorizontalPolicy(RectTransform::Expanding);
-    content->setVerticalPolicy(RectTransform::Expanding);
+    content->setVerticalPolicy(RectTransform::Fixed);
 
     m_contentArea->layout()->addTransform(content);
-    RectTransform *rect = rectTransform();
-    rect->layout()->invalidate();
 }
 /*!
     \internal
@@ -157,7 +167,6 @@ void Foldout::composeComponent() {
 
     RectTransform *rect = rectTransform();
     rect->setLayout(mainLayout);
-    rect->setHorizontalPolicy(RectTransform::Expanding);
     rect->setVerticalPolicy(RectTransform::Preferred);
 
     // Initially add tab bar and content area to layout
