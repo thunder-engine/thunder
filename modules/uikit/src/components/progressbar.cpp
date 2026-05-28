@@ -1,11 +1,23 @@
 #include "components/progressbar.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include <components/actor.h>
 
-namespace  {
-    const char *gChunk("chunk");
+#include <resources/material.h>
+
+namespace {
+    const char *gBackgroundColor("backgroundColor");
+    const char *gBorderWidth("borderWidth");
+    const char *gBorderRadius("borderRadius");
+    const char *gBorderColor("borderColor");
+
+    const char *gOverride("mainTexture");
+    const char *gColor("mainColor");
+
+    const char *gDefaultSprite(".embedded/DefaultUI.shader");
+    const char *gDefaultFrame(".embedded/Frame.shader");
 }
 
 /*!
@@ -18,14 +30,46 @@ namespace  {
 */
 
 ProgressBar::ProgressBar() :
-        m_backgroundColor(0.5f, 0.5f, 0.5f, 1.0f),
         m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
+        m_progressImage(nullptr),
+        m_progressMesh(nullptr),
+        m_imageProgress(nullptr),
+        m_frameProgress(nullptr),
         m_orientation(Horizontal),
         m_from(0.0f),
         m_to(1.0f),
-        m_value(0.0f) {
+        m_value(0.0f),
+        m_dirtyProgress(true) {
 
+    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(spriteMaterial) {
+        m_imageProgress = spriteMaterial->createInstance();
+        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+    }
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_frameProgress = frameMaterial->createInstance();
+
+        Vector4 width(0.0f);
+        m_frameProgress->setVector4(gBorderWidth, &width);
+        m_frameProgress->setVector4(gBorderRadius, &m_borderRadius);
+        m_frameProgress->setVector4(gBorderColor, &m_borderColor);
+        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
+    }
 }
+
+ProgressBar::~ProgressBar() {
+    delete m_progressImage;
+    delete m_progressMesh;
+
+    delete m_imageProgress;
+    m_imageProgress = nullptr;
+
+    delete m_frameProgress;
+    m_frameProgress = nullptr;
+}
+
 int ProgressBar::orientation() const {
     return m_orientation;
 }
@@ -34,7 +78,7 @@ void ProgressBar::setOrientation(int orientation) {
     if(m_orientation != orientation) {
         m_orientation = orientation;
 
-        recalcProgress();
+        repaint();
     }
 }
 /*!
@@ -50,7 +94,7 @@ void ProgressBar::setFrom(float value) {
     if(m_from != value) {
         m_from = value;
 
-        recalcProgress();
+        repaint();
     }
 }
 /*!
@@ -66,7 +110,7 @@ void ProgressBar::setTo(float value) {
     if(m_to != value) {
         m_to = value;
 
-        recalcProgress();
+        repaint();
     }
 }
 /*!
@@ -82,26 +126,8 @@ void ProgressBar::setValue(float value) {
     if(m_value != value) {
         m_value = value;
 
-        recalcProgress();
+        repaint();
     }
-}
-/*!
-    Returns the frame representing the progress chunk.
-*/
-Frame *ProgressBar::chunk() const {
-    return static_cast<Frame *>(subWidget(gChunk));
-}
-/*!
-    Sets the \a frame representing the progress chunk.
-*/
-void ProgressBar::setChunk(Frame *frame) {
-    setSubWidget(frame);
-
-    if(frame) {
-        connect(frame, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
-        frame->setBackgroundColor(m_progressColor);
-    }
-    repaint();
 }
 /*!
     Returns the color of the progress indicator.
@@ -115,11 +141,83 @@ Vector4 ProgressBar::progressColor() const {
 void ProgressBar::setProgressColor(const Vector4 color) {
     m_progressColor = color;
 
-    Frame *chunk = ProgressBar::chunk();
-    if(chunk) {
-        chunk->setBackgroundColor(m_progressColor);
+    if(m_frameProgress) {
+        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
     }
+
+    if(m_imageProgress) {
+        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+    }
+
     repaint();
+}
+/*!
+    Returns progress image.
+*/
+Sprite *ProgressBar::progressImage() const {
+    return m_progressImage;
+}
+/*!
+    Sets progress \a image.
+*/
+void ProgressBar::setProgressImage(Sprite *image) {
+    if(m_progressImage != image) {
+        m_progressImage = image;
+
+        m_dirtyProgress = true;
+        repaint();
+    }
+}
+/*!
+    \internal
+    Internal method called to draw progress bar.
+*/
+void ProgressBar::draw() {
+    Frame::draw();
+
+    RectTransform *rect = rectTransform();
+    if(m_dirtyProgress) {
+        if(m_progressImage) {
+            m_progressMesh = Engine::objectCreate<Mesh>();
+            m_progressMesh->makeDynamic();
+
+            Vector2 size(rect->size());
+            m_backgroundImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
+
+            m_imageProgress->setTexture(gOverride, m_progressImage->texture());
+        }
+        m_dirtyProgress = false;
+    }
+
+    Canvas *canvas = Frame::canvas();
+
+    Vector4 clip = rect->clipRegion();
+    if(m_orientation == Horizontal) {
+        clip.z = clip.z / (m_to - m_from) * m_value;
+    } else {
+        clip.w = clip.w / (m_to - m_from) * m_value;
+    }
+
+    canvas->setClipRegion(clip);
+    if(m_progressImage) {
+        Matrix4 mat(rect->worldTransform());
+
+        const Vector3Vector &verts(m_progressMesh->vertices());
+        Vector2 scl(rect->worldScale());
+        mat[12] -= verts[0].x * scl.x;
+        mat[13] -= verts[0].y * scl.y;
+
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
+
+        m_imageProgress->setTransform(mat, 0, hash);
+
+        canvas->drawMesh(m_progressMesh, m_imageProgress);
+    } else {
+        canvas->drawRect(m_frameProgress, rect);
+    }
+    canvas->disableClip();
 }
 /*!
     \internal
@@ -128,38 +226,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
 void ProgressBar::composeComponent() {
     Widget::composeComponent();
 
-    Actor *progress = Engine::composeActor<Frame>(gChunk, actor());
-    Frame *progressFrame = progress->getComponent<Frame>();
-    progressFrame->setBackgroundColor(m_progressColor);
-    progressFrame->setBorderColor(0.0f);
-
-    RectTransform *progressRect = progressFrame->rectTransform();
-    progressRect->setMinAnchors(Vector2(0.0f, 0.0f));
-    progressRect->setSize(Vector2());
-
-    setChunk(progressFrame);
-
     setValue(0.5f);
 
-    rectTransform()->setSize(Vector2(100.0f, 30.0f));
-}
-/*!
-    \internal
-    Recalculates the progress based on the current values.
-*/
-void ProgressBar::recalcProgress() {
-    Frame *progressFrame = ProgressBar::chunk();
-    if(progressFrame) {
-        float factor = CLAMP(m_value / (m_to - m_from), 0.0f, 1.0f);
-
-        RectTransform *progressRect = progressFrame->rectTransform();
-        if(m_orientation == Horizontal) {
-            progressRect->setMaxAnchors(Vector2(factor, 1.0f));
-        } else {
-            progressRect->setMaxAnchors(Vector2(1.0f, factor));
-        }
-        progressRect->setSize(Vector2());
-
-        repaint();
-    }
+    rectTransform()->setSize(Vector2(100.0f, 20.0f));
 }

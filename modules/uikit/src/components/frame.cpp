@@ -194,8 +194,8 @@ void Frame::setBackgroundColor(const Vector4 &color) {
         m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 
-    if(m_frameMaterial) {
-        m_frameMaterial->setVector4(gColor, &m_backgroundColor);
+    if(m_imageMaterial) {
+        m_imageMaterial->setVector4(gColor, &m_backgroundColor);
     }
     repaint();
 

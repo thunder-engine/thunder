@@ -60,6 +60,8 @@ public:
 
     void repaint();
 
+    void setEnabled(bool enable) override;
+
 public: // slots
     void lower();
 

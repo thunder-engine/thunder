@@ -12,13 +12,14 @@ class UIKIT_EXPORT ProgressBar : public Frame {
         A_PROPERTY(float, to, ProgressBar::to, ProgressBar::setTo),
         A_PROPERTY(float, value, ProgressBar::value, ProgressBar::setValue),
         A_PROPERTYEX(Vector4, progressColor, ProgressBar::progressColor, ProgressBar::setProgressColor, "editor=Color"),
-        A_PROPERTYEX(Frame *, chunk, ProgressBar::chunk, ProgressBar::setChunk, "editor=Component")
+        A_PROPERTYEX(Sprite *, progressImage, ProgressBar::progressImage, ProgressBar::setProgressImage, "editor=Asset")
     )
     A_NOMETHODS()
     A_NOENUMS()
 
 public:
     ProgressBar();
+    ~ProgressBar();
 
     int orientation() const;
     void setOrientation(int orientation);
@@ -35,23 +36,31 @@ public:
     Vector4 progressColor() const;
     void setProgressColor(const Vector4 color);
 
-    Frame *chunk() const;
-    void setChunk(Frame *frame);
+    Sprite *progressImage() const;
+    void setProgressImage(Sprite *image);
 
 private:
+    void draw() override;
+
     void composeComponent() override;
 
-    void recalcProgress();
-
 private:
-    Vector4 m_backgroundColor;
     Vector4 m_progressColor;
+
+    Sprite *m_progressImage;
+
+    Mesh *m_progressMesh;
+
+    MaterialInstance *m_imageProgress;
+    MaterialInstance *m_frameProgress;
 
     int m_orientation;
 
     float m_from;
     float m_to;
     float m_value;
+
+    bool m_dirtyProgress;
 
 };
 

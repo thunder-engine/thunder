@@ -36,6 +36,8 @@ Widget::Widget() :
 }
 
 Widget::~Widget() {
+    repaint();
+
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
@@ -115,6 +117,14 @@ void Widget::repaint() {
     if(canvas) {
         canvas->markDirty();
     }
+}
+/*!
+    Sets current state of widget to \a enabled or disabled.
+*/
+void Widget::setEnabled(bool enabled) {
+    Component::setEnabled(enabled);
+
+    repaint();
 }
 /*!
     \internal
