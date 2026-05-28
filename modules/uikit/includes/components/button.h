@@ -74,6 +74,7 @@ protected:
 
     float m_rotation;
 
+    bool m_translated;
     bool m_dirtyIcon;
     bool m_dirtyText;
 

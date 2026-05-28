@@ -46,12 +46,19 @@ void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialI
     A_UNUSED(instance);
 }
 /*!
+    Returns render target for subsequent rendering commands.
+*/
+RenderTarget *CommandBuffer::renderTarget() {
+    return m_target;
+}
+/*!
     Sets the render \a target for subsequent rendering commands.
     Parameter \a level specifies the Mipmap level.
 */
 void CommandBuffer::setRenderTarget(RenderTarget *target, uint32_t level) {
-    A_UNUSED(target);
     A_UNUSED(level);
+
+    m_target = target;
 }
 /*!
     Converts a 32-bit \a id to a Vector4 color.

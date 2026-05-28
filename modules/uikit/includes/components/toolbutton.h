@@ -1,12 +1,12 @@
 #ifndef TOOLBUTTON_H
 #define TOOLBUTTON_H
 
-#include "abstractbutton.h"
+#include "button.h"
 
 class Menu;
 
-class UIKIT_EXPORT ToolButton : public AbstractButton {
-    A_OBJECT(ToolButton, AbstractButton, Components/UI)
+class UIKIT_EXPORT ToolButton : public Button {
+    A_OBJECT(ToolButton, Button, Components/UI)
 
     A_NOPROPERTIES()
     A_METHODS(

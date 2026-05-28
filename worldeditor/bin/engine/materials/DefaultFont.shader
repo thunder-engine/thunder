@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <shader version="14">
     <properties>
-        <property name="mainColor" type="vec4" />
         <property name="weight" type="float" />
         <property name="useSdf" type="int" />
         <property name="mainTexture" binding="0" type="texture2d" />
@@ -69,7 +68,7 @@ void main(void) {
 #pragma objectId
 
     _uv = uv0;
-    _color = color * mainColor;
+    _color = color;
 
     vec4 vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0f);
 #ifdef ORIGIN_TOP

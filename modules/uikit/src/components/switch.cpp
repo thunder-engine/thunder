@@ -38,6 +38,7 @@ void Switch::update(const Vector2 &pos) {
         float left = (width - m_knobSize.x) * -0.5f;
         float right = (width - m_knobSize.x) * 0.5f;
         m_iconOffset = m_checked ? MIX(left, right, m_currentFade) : MIX(right, left, m_currentFade);
+        repaint();
     }
 }
 /*!

@@ -78,6 +78,7 @@ void CheckBox::setIndicator(Sprite *icon) {
     if(m_knobIcon != icon) {
         m_knobIcon = icon;
         m_dirtyIcon = true;
+        repaint();
     }
 }
 /*!
@@ -100,6 +101,8 @@ void CheckBox::setIndicatorColor(const Vector4 &color) {
         m_frameMaterial->setVector4(gBackgroundColor, &m_knobColor);
     }
 
+    repaint();
+
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_knobColor));
@@ -118,6 +121,7 @@ Vector2 CheckBox::indicatorSize() const {
 void CheckBox::setIndicatorSize(const Vector2 &size) {
     m_knobSize = size;
     m_dirtyIcon = true;
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -139,6 +143,7 @@ void CheckBox::setFoldMode(bool fold) {
     } else {
         m_iconOffset = 0.0f;
     }
+    repaint();
 }
 /*!
     \internal
@@ -230,5 +235,6 @@ void CheckBox::boundChanged(const Vector2 &size) {
 
     if(m_foldMode) {
         m_iconOffset = (size.x - m_knobSize.x) *-0.5f;
+        repaint();
     }
 }

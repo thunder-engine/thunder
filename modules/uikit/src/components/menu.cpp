@@ -1,22 +1,24 @@
 #include "components/menu.h"
 
 #include "components/recttransform.h"
-#include "components/label.h"
-#include "components/layout.h"
+#include "components/canvas.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "resources/font.h"
+#include "resources/material.h"
 
 #include <input.h>
 
-#include <stdint.h>
+namespace  {
+    const char *gTexture("mainTexture");
+    const char *gUseSDF("useSdf");
 
-namespace {
-    const char *gSelected = "selected";
+    const char *gBackgroundColor("backgroundColor");
+    const char *gBorderWidth("borderWidth");
+    const char *gBorderRadius("borderRadius");
+    const char *gBorderColor("borderColor");
 
-    const float gCorner = 4.0f;
-    const float gRowHeight = 20.0f;
-};
+    const char *gDefaultFrame(".embedded/Frame.shader");
+}
 
 /*!
     \class Menu
@@ -29,94 +31,138 @@ namespace {
 */
 
 Menu::Menu() :
-        m_visible(false) {
+        m_textMesh(Engine::objectCreate<Mesh>()),
+        m_dirtyText(true) {
 
-}
-/*!
-    Adds a section to the menu with the specified \a text.
-*/
-void Menu::addSection(const TString &text) {
-    Actor *actor = Engine::composeActor<Label>(text, Menu::actor());
-    Label *label = actor->getComponent<Label>();
-    if(label) {
-        label->setText(text);
-        label->setAlign(Alignment::Middle | Alignment::Left);
-
-        RectTransform *labelRect = label->rectTransform();
-        if(labelRect) {
-            labelRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-            labelRect->setSize(Vector2(gRowHeight));
-            labelRect->setMargin(Vector4(gRowHeight, 0.0f, 0.0f, 0.0f));
-            labelRect->setPivot(Vector2(0.0f, 1.0f));
-        }
-
-        addWidget(label);
+    Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
+    if(material) {
+        m_textMaterial = material->createInstance();
+        int sdf = 0;
+        m_textMaterial->setInteger(gUseSDF, &sdf);
     }
-}
-/*!
-    Adds a \a widget to the menu.
-*/
-void Menu::addWidget(Widget *widget) {
-    Layout *layout = rectTransform()->layout();
-    if(layout) {
-        layout->addTransform(widget->rectTransform());
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_selectionMaterial = frameMaterial->createInstance();
+
+        Vector4 width(0.0f);
+        m_selectionMaterial->setVector4(gBorderWidth, &width);
+        m_selectionMaterial->setVector4(gBorderRadius, &m_borderRadius);
+        m_selectionMaterial->setVector4(gBorderColor, &m_borderColor);
+        m_selectionMaterial->setVector4(gBackgroundColor, &m_selectionColor);
     }
-    m_actions.push_back(widget);
+
+}
+
+Menu::~Menu() {
+    delete m_textMesh;
 }
 /*!
-    Returns the selection frame for the menu;
+    Adds a section to the menu with the specified \a text and optional \a icon.
 */
-Frame *Menu::selected() const {
-    return static_cast<Frame *>(subWidget(gSelected));
+void Menu::addAction(const TString &text, Sprite *icon) {
+    MenuItem item;
+    item.type = MenuItem::Action;
+    item.text = text;
+    item.icon = icon;
+    m_items.push_back(item);
+
+    m_dirtyText = true;
+    updateSize();
 }
-/*!
-    Sets the selection \a frame for the menu;
-*/
-void Menu::setSelected(Frame *frame) {
-    setSubWidget(frame);
+
+void Menu::addSeparator() {
+    MenuItem item;
+    item.type = MenuItem::Separator;
+    m_items.push_back(item);
+
+    updateSize();
 }
-/*!
-    Returns the title of the menu.
-*/
-TString Menu::title() const {
-    return m_title;
-}
-/*!
-    Sets the \a title of the menu.
-*/
-void Menu::setTitle(const TString &title) {
-    m_title = title;
+
+void Menu::addSubmenu(const TString &text, Menu *submenu, Sprite *icon) {
+    MenuItem item;
+    item.type = MenuItem::Submenu;
+    item.text = text;
+    item.submenu = submenu;
+    item.icon = icon;
+    m_items.push_back(item);
+
+    m_dirtyText = true;
+    updateSize();
 }
 /*!
     Displays the menu at the specified \a position.
 */
 void Menu::show(const Vector2 &position) {
     aboutToShow();
-    actor()->setEnabled(true);
+    setEnabled(true);
     rectTransform()->setPosition(Vector3(position, 0.0f));
-    m_visible = true;
+    repaint();
 }
 /*!
     Hides the menu.
 */
 void Menu::hide() {
-    if(m_visible) {
-        m_visible = false;
+    if(isEnabled()) {
         aboutToHide();
     }
-    actor()->setEnabled(false);
+    setEnabled(false);
+    repaint();
 }
 /*!
     Returns the text of the item at the specified \a index.
 */
 TString Menu::itemText(int index) {
-    auto it = std::next(m_actions.begin(), index);
-    Label *label = dynamic_cast<Label *>(*it);
-    if(label) {
-        return label->text();
+    if(index > -1 && index < m_items.size()) {
+        return m_items[index].text;
     }
-
     return TString();
+}
+
+void Menu::setItemText(int index, const TString &text) {
+    if(index > -1 && index < m_items.size()) {
+        m_items[index].text = text;
+        m_dirtyText = true;
+        repaint();
+    }
+}
+
+Sprite *Menu::itemIcon(int index) {
+    if(index > -1 && index < m_items.size()) {
+        return m_items[index].icon;
+    }
+    return nullptr;
+}
+
+void Menu::setItemIcon(int index, Sprite *icon) {
+    if(index > -1 && index < m_items.size()) {
+        m_items[index].icon = icon;
+        repaint();
+    }
+}
+/*!
+    Returns the font which will be used to draw a text.
+*/
+Font *Menu::font() const {
+    return m_font;
+}
+/*!
+    Changes the \a font which will be used to draw a text.
+*/
+void Menu::setFont(Font *font) {
+    if(m_font != font) {
+        if(m_font) {
+            m_font->unsubscribe(this);
+        }
+
+        m_font = font;
+        if(m_font) {
+            m_font->subscribe(&Menu::fontUpdated, this);
+        }
+
+        m_dirtyText = true;
+        repaint();
+    }
 }
 
 void Menu::aboutToShow() {
@@ -132,70 +178,129 @@ void Menu::triggered(int index) {
 }
 /*!
     \internal
+    Internal method called to draw menu.
+*/
+void Menu::draw() {
+    Frame::draw();
+
+    RectTransform *rect = rectTransform();
+    Vector2 size(rect->size());
+    Matrix4 transform(rect->worldTransform());
+
+    if(m_dirtyText && m_font) {
+        m_textMesh->clear();
+        Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, Font::Additive, m_textColor};
+        settings.boundaries = Vector2(size.x - 40.0f, m_rowHeight);
+        settings.offset.x = 20.0f;
+        settings.offset.y = -settings.boundaries.y - m_rowHeight;
+        for(size_t i = 0; i < m_items.size(); ++i) {
+            if(m_items[i].type != MenuItem::Separator) {
+                m_font->composeMesh(m_textMesh, m_items[i].text, settings);
+                settings.offset.y += m_rowHeight;
+            } else {
+                settings.offset.y -= m_separatorHeight;
+            }
+        }
+        m_textMaterial->setTexture(gTexture, m_font->page());
+        m_dirtyText = false;
+    }
+
+    Canvas *canvas = Menu::canvas();
+
+    uint32_t hash = rect->hash();
+    m_textMaterial->setTransform(transform, 0, hash);
+
+    if(m_hoveredIndex > -1 && m_items[m_hoveredIndex].type != MenuItem::Separator) {
+        Matrix4 s;
+        s[0] = size.x;
+        s[5] = m_rowHeight;
+        s[12] = size.x * 0.5f;
+        s[13] = size.y - s[5] * 0.5f - m_hoveredIndex * m_rowHeight;
+        Mathf::hashCombine(hash, s[13]);
+
+        m_selectionMaterial->setTransform(transform * s, 0, hash);
+        canvas->drawRect(m_selectionMaterial, nullptr);
+    }
+
+    canvas->drawMesh(m_textMesh, m_textMaterial);
+}
+/*!
+    \internal
     Updates the menu. Handles input and triggers actions based on user interactions.
 */
 void Menu::update(const Vector2 &pos) {
-    if(m_visible) {
-        Widget::update(pos);
+    Widget::update(pos);
 
-        bool hover = isHovered(pos);
-        if(!hover && Input::isMouseButtonUp(0)) {
-            hide();
-        } else {
-            int index = 0;
-            for(auto it : m_actions) {
-                hover = it->isHovered(pos);
-                if(hover) {
-                    float y = it->rectTransform()->position().y;
+    RectTransform *rect = rectTransform();
+    Vector2 localPos = rect->mapFromGlobal(pos.x, pos.y);
 
-                    Frame *select = selected();
-                    if(select) {
-                        RectTransform *r = select->rectTransform();
-                        if(r) {
-                            r->setPosition(Vector3(0.0f, y, 0.0f));
-                            r->setSize(Vector2(0.0f, it->rectTransform()->size().y));
-                        }
-                    }
-                    if(Input::isMouseButtonDown(0)) {
-                        triggered(index);
-                        hide();
-                    }
-                    break;
-                }
-                ++index;
+    int newHoveredIndex = -1;
+    if(localPos.x >= 0 && localPos.x <= rect->size().x &&
+        localPos.y >= 0 && localPos.y <= rect->size().y) {
+
+        newHoveredIndex = static_cast<int>((rect->size().y - localPos.y) / m_rowHeight);
+    }
+
+    if(newHoveredIndex != m_hoveredIndex && newHoveredIndex < m_items.size()) {
+        m_hoveredIndex = newHoveredIndex;
+        repaint();
+    }
+
+    if(Input::isMouseButtonDown(0)) {
+        if(newHoveredIndex > -1) {
+            auto &item = m_items[m_hoveredIndex];
+
+            if(item.type == MenuItem::Action) {
+                triggered(newHoveredIndex);
             }
+        }
+
+        if(!isHovered(pos)) {
+            hide();
         }
     }
 }
 /*!
     \internal
-    Composes the menu components and sets initial properties.
+*/
+void Menu::updateSize() {
+    float height = 0.0f;
+    float width = m_minWidth;
+
+    for(auto &item : m_items) {
+        if(item.type == MenuItem::Separator) {
+            height += m_separatorHeight;
+        } else {
+            if(m_font && !item.text.isEmpty()) {
+                float textWidth = m_font->textWidth(item.text, m_fontSize, 0);
+                width = std::max(width, textWidth + 40.0f);
+            }
+            height += m_rowHeight;
+        }
+    }
+
+    rectTransform()->setSize(Vector2(width, height));
+    repaint();
+}
+/*!
+    \internal
 */
 void Menu::composeComponent() {
     Frame::composeComponent();
 
-    setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
-    setCorners(Vector4(gCorner));
-    rectTransform()->setPivot(Vector2(0.0f, 1.0f));
+    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
 
-    RectTransform *r = rectTransform();
-    if(r) {
-        r->setLayout(new Layout);
+    addAction("Test Action #1");
+    addAction("Test Action #2");
+    addAction("Test Action #3");
+}
+/*!
+    \internal
+*/
+void Menu::fontUpdated(int state, void *ptr) {
+    if(state == Resource::Ready) {
+        Menu *p = static_cast<Menu *>(ptr);
+        p->m_dirtyText = true;
+        p->repaint();
     }
-
-    Actor *actor = Engine::composeActor<Frame>(gSelected, Menu::actor());
-    Frame *select = actor->getComponent<Frame>();
-    select->setBackgroundColor(Vector4(0.01f, 0.6f, 0.89f, 1.0f));
-    select->setCorners(0.0f);
-    select->setBorderColor(0.0f);
-
-    r = select->rectTransform();
-    if(r) {
-        r->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-        r->setPivot(Vector2(0.0f, 1.0f));
-    }
-
-    setSelected(select);
-
-    hide();
 }

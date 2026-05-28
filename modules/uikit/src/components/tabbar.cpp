@@ -169,6 +169,7 @@ void TabBar::setCurrentIndex(int index) {
         idx++;
     }
 
+    repaint();
     currentChanged(m_currentIndex);
 }
 /*!
@@ -435,6 +436,7 @@ void TabBar::updateTabPositions() {
             m_positionOffset = 0.0f;
             updateTabPositions();
         }
+        repaint();
     }
     if(m_frontButton) {
         m_frontButton->setEnabled(showBackFront);
@@ -455,6 +457,7 @@ void TabBar::createCloseButton(Actor *parent) {
             closeRect->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
             closeRect->setSize(Vector2(16));
             closeRect->blockSignals(false);
+            repaint();
         }
 
         connect(closeBtn, _SIGNAL(clicked()), this, _SLOT(onCloseButtonClicked()));

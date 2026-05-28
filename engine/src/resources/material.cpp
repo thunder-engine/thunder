@@ -203,6 +203,12 @@ void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uin
     }
 }
 /*!
+    This method allows to override blend \a state.
+*/
+void MaterialInstance::setBlendState(const Material::BlendState &state) {
+
+}
+/*!
     Sets the \a value of a parameter with specified \a name in the uniform buffer.
 */
 void MaterialInstance::setBufferValue(const TString &name, const void *value) {

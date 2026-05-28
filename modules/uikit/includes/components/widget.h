@@ -58,6 +58,8 @@ public:
 
     static Widget *focusWidget();
 
+    void repaint();
+
 public: // slots
     void lower();
 

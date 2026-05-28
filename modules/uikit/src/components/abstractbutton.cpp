@@ -68,6 +68,7 @@ Vector4 AbstractButton::highlightedColor() const {
 */
 void AbstractButton::setHighlightedColor(const Vector4 &color) {
     m_highlightedColor = color;
+    repaint();
 }
 /*!
     Returns the color used when the button is pressed.
@@ -80,6 +81,7 @@ Vector4 AbstractButton::pressedColor() const {
 */
 void AbstractButton::setPressedColor(const Vector4 &color) {
     m_pressedColor = color;
+    repaint();
 }
 /*!
     Returns true if the button is checkable; otherwise, false.
@@ -199,4 +201,5 @@ void AbstractButton::updateBackgroundColor(const Vector4 &color) {
     } else {
         m_frameMaterial->setVector4(gBackgroundColor, &color);
     }
+    repaint();
 }

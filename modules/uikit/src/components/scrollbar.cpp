@@ -179,6 +179,7 @@ void ScrollBar::recalcKnob() {
             knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, MIX(0.0f, size.y, scaledPage)));
         }
     }
+    repaint();
 }
 
 void ScrollBar::boundChanged(const Vector2 &size) {
@@ -209,6 +210,7 @@ void ScrollBar::update(const Vector2 &pos) {
                 knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, size.y));
             }
         }
+        repaint();
     }
 }
 

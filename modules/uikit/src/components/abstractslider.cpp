@@ -30,6 +30,7 @@ int AbstractSlider::orientation() const {
 
 void AbstractSlider::setOrientation(int orientation) {
     m_orientation = orientation;
+    repaint();
 }
 
 int AbstractSlider::value() const {
@@ -124,5 +125,6 @@ void AbstractSlider::update(const Vector2 &pos) {
     if(m_currentFade < 1.0f) {
         m_currentFade += 1.0f / gFadeDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
+        repaint();
     }
 }

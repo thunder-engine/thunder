@@ -77,7 +77,7 @@ private:
 
     Vector4 m_color;
 
-    Vector2 m_meshSize;
+    Vector2 m_boundaries;
 
     Font *m_font;
 

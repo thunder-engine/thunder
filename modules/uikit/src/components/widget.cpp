@@ -1,6 +1,7 @@
 #include "components/widget.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include "stylesheet.h"
 #include "uisystem.h"
@@ -107,6 +108,16 @@ void Widget::update(const Vector2 &pos) {
 }
 /*!
     \internal
+    Marks parent canvas as dirty.
+*/
+void Widget::repaint() {
+    Canvas *canvas = Widget::canvas();
+    if(canvas) {
+        canvas->markDirty();
+    }
+}
+/*!
+    \internal
     Internal method called to draw the sub widget using the provided command buffer.
 */
 void Widget::drawSub() {
@@ -151,6 +162,8 @@ void Widget::applyStyle() {
     for(auto it : m_childWidgets) {
         it->applyStyle();
     }
+
+    repaint();
 }
 /*!
     Returns the parent Widget.
@@ -177,7 +190,7 @@ RectTransform *Widget::rectTransform() {
     Returns the Canvas that is the root node in the given Widget hierarchy.
 */
 Canvas *Widget::canvas() {
-    if(m_canvas == nullptr) {
+    if(m_canvas == nullptr && m_parent) {
         m_canvas = m_parent->canvas();
     }
 

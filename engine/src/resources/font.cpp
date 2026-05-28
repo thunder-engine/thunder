@@ -166,17 +166,17 @@ float Font::textWidth(const TString &text, int size, int flags) {
     return pos;
 }
 
-void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment, int flags, const Vector2 &boundaries) {
+void Font::composeMesh(Mesh *mesh, const TString &text, const Settings &settings) {
     std::u32string u32 = text.toUtf32();
     uint32_t length = u32.length();
     if(length) {
-        int adjustedSize = (flags & Sdf) ? DF_GLYPH_SIZE : size;
+        int adjustedSize = (settings.flags & Sdf) ? DF_GLYPH_SIZE : settings.size;
         requestCharacters(u32, adjustedSize);
 
         FT_Face face = reinterpret_cast<FT_Face>(m_face);
 
         float spaceWidth = 0;
-        float spaceLine = size * 1.2f;
+        float spaceLine = settings.size * 1.2f;
 
         FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
         if(!error) {
@@ -188,38 +188,48 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
         Vector2Vector &uv0 = mesh->uv0();
         Vector4Vector &colors = mesh->colors();
 
-        vertices.resize(length * 4);
-        indices.resize(length * 6);
-        uv0.resize(vertices.size());
+        uint32_t begin = 0;
+        uint32_t vertexCount = length * 4;
+        uint32_t indexCount = length * 6;
+        if(settings.flags & Additive) {
+            vertexCount += vertices.size();
+            indexCount += indices.size();
+            begin = vertices.size() / 4;
+        }
+
+        vertices.resize(vertexCount);
+        indices.resize(indexCount);
+        uv0.resize(vertexCount);
+        colors.resize(vertexCount);
 
         std::list<float> width;
         std::list<uint32_t> position;
 
-        Vector3 pos(0.0, boundaries.y - size, 0.0f);
+        Vector3 pos(settings.offset.x, settings.boundaries.y - settings.size - settings.offset.y, 0.0f);
         uint32_t previous = 0;
-        uint32_t it = 0;
-        uint32_t space = 0;
+        uint32_t index = begin;
+        uint32_t space = index;
 
         for(uint32_t i = 0; i < length; i++) {
             uint32_t ch = u32[i];
             switch(ch) {
                 case ' ': {
-                    pos += Vector3(spaceWidth, 0.0f, 0.0f);
-                    space = it;
+                    pos.x += spaceWidth;
+                    space = index;
                 } break;
                 case '\t': {
-                    pos += Vector3(spaceWidth * 4, 0.0f, 0.0f);
-                    space = it;
+                    pos.x += spaceWidth * 4;
+                    space = index;
                 } break;
                 case '\r': break;
                 case '\n': {
                     width.push_back(pos.x);
-                    position.push_back(it);
-                    pos = Vector3(0.0f, pos.y - spaceLine, 0.0f);
+                    position.push_back(index);
+                    pos.y -= spaceLine;
                     space = 0;
                 } break;
                 default: {
-                    if(flags & Kerning) {
+                    if(settings.flags & Kerning) {
                         pos.x += requestKerning(ch, previous);
                         previous = ch;
                     }
@@ -230,14 +240,14 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                         continue;
                     }
 
-                    Vector3Vector &shape = data->vertices;
-                    Vector2Vector &uv = data->uvs;
+                    const Vector3Vector &shape = data->vertices;
+                    const Vector2Vector &uv = data->uvs;
 
-                    float x = pos.x + shape[2].x * size;
-                    if((flags & Wrap) && boundaries.x > 0.0f && boundaries.x < x && space > 0 && space < it) {
+                    float x = pos.x + shape[2].x * settings.size;
+                    if((settings.flags & Wrap) && settings.boundaries.x > 0.0f && settings.boundaries.x < x && space > 0 && space < index) {
                         float shift = vertices[space * 4].x;
                         if((shift - spaceWidth) > 0.0f) {
-                            for(uint32_t s = space; s < it; s++) {
+                            for(uint32_t s = space; s < index; s++) {
                                 vertices[s * 4 + 0] -= Vector3(shift, spaceLine, 0.0f);
                                 vertices[s * 4 + 1] -= Vector3(shift, spaceLine, 0.0f);
                                 vertices[s * 4 + 2] -= Vector3(shift, spaceLine, 0.0f);
@@ -245,55 +255,79 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
                             }
                             width.push_back(shift - spaceWidth);
                             position.push_back(space);
-                            pos = Vector3(pos.x - shift, pos.y - spaceLine, 0.0f);
+                            pos.x -= shift;
+                            pos.y -= spaceLine;
                         }
                     }
 
-                    vertices[it * 4 + 0] = pos + shape[0] * size;
-                    vertices[it * 4 + 1] = pos + shape[1] * size;
-                    vertices[it * 4 + 2] = pos + shape[2] * size;
-                    vertices[it * 4 + 3] = pos + shape[3] * size;
+                    vertices[index * 4 + 0] = pos + shape[0] * settings.size;
+                    vertices[index * 4 + 1] = pos + shape[1] * settings.size;
+                    vertices[index * 4 + 2] = pos + shape[2] * settings.size;
+                    vertices[index * 4 + 3] = pos + shape[3] * settings.size;
 
-                    uv0[it * 4 + 0] = uv[0];
-                    uv0[it * 4 + 1] = uv[1];
-                    uv0[it * 4 + 2] = uv[2];
-                    uv0[it * 4 + 3] = uv[3];
+                    uv0[index * 4 + 0] = uv[0];
+                    uv0[index * 4 + 1] = uv[1];
+                    uv0[index * 4 + 2] = uv[2];
+                    uv0[index * 4 + 3] = uv[3];
 
-                    indices[it * 6 + 0] = it * 4 + 0;
-                    indices[it * 6 + 1] = it * 4 + 1;
-                    indices[it * 6 + 2] = it * 4 + 2;
+                    colors[index * 4 + 0] = settings.color;
+                    colors[index * 4 + 1] = settings.color;
+                    colors[index * 4 + 2] = settings.color;
+                    colors[index * 4 + 3] = settings.color;
 
-                    indices[it * 6 + 3] = it * 4 + 0;
-                    indices[it * 6 + 4] = it * 4 + 2;
-                    indices[it * 6 + 5] = it * 4 + 3;
+                    indices[index * 6 + 0] = index * 4 + 0;
+                    indices[index * 6 + 1] = index * 4 + 1;
+                    indices[index * 6 + 2] = index * 4 + 2;
 
-                    pos += Vector3(shape[2].x * size, 0.0f, 0.0f);
-                    it++;
+                    indices[index * 6 + 3] = index * 4 + 0;
+                    indices[index * 6 + 4] = index * 4 + 2;
+                    indices[index * 6 + 5] = index * 4 + 3;
+
+                    pos.x += shape[2].x * settings.size;
+                    index++;
                 } break;
             }
 
         }
 
         width.push_back(pos.x);
-        position.push_back(it);
+        position.push_back(index);
 
-        vertices.resize(it * 4);
-        indices.resize(it * 6);
-        uv0.resize(it * 4);
-        colors.resize(it * 4);
+        vertices.resize(index * 4);
+        indices.resize(index * 6);
+        uv0.resize(index * 4);
+        colors.resize(index * 4);
 
         auto w = width.begin();
         auto p = position.begin();
-        float shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
-        float shiftY = (!(alignment & Top)) ? (boundaries.y - position.size() * spaceLine) / ((alignment & Middle) ? 2 : 1) : 0.0f;
-        for(uint32_t i = 0; i < vertices.size(); i++) {
-            if(uint32_t(i / 4) >= *p) {
+        float shiftX = 0.0f;
+        if(!(settings.alignment & Left)) {
+            shiftX = (settings.boundaries.x - (*w)) / ((settings.alignment & Center) ? 2 : 1);
+        }
+        float shiftY = 0.0f;
+        if(!(settings.alignment & Top)) {
+            shiftY = (settings.boundaries.y - position.size() * spaceLine) / ((settings.alignment & Middle) ? 2 : 1);
+        }
+        for(uint32_t i = 0; i < index - begin; i++) {
+            if(i >= *p) {
                 w++;
                 p++;
-                shiftX = (!(alignment & Left)) ? (boundaries.x - (*w)) / ((alignment & Center) ? 2 : 1) : 0.0f;
+                if(!(settings.alignment & Left)) {
+                    shiftX = (settings.boundaries.x - (*w)) / ((settings.alignment & Center) ? 2 : 1);
+                }
             }
-            vertices[i].x += shiftX;
-            vertices[i].y -= shiftY;
+            int32_t index = (i + begin) * 4;
+            vertices[index + 0].x += shiftX;
+            vertices[index + 0].y -= shiftY;
+
+            vertices[index + 1].x += shiftX;
+            vertices[index + 1].y -= shiftY;
+
+            vertices[index + 2].x += shiftX;
+            vertices[index + 2].y -= shiftY;
+
+            vertices[index + 3].x += shiftX;
+            vertices[index + 3].y -= shiftY;
         }
 
         mesh->recalcBounds();
@@ -304,24 +338,23 @@ void Font::composeMesh(Mesh *mesh, const TString &text, int size, int alignment,
 */
 void Font::loadUserData(const VariantMap &data) {
     clear();
-    {
-        static FT_Library library = nullptr;
-        if(library == nullptr) {
-            FT_Init_FreeType( &library );
-        }
 
-        auto it = data.find(gData);
-        if(it != data.end()) {
-            FT_Face face = reinterpret_cast<FT_Face>(m_face);
-            m_data = (*it).second.toByteArray();
-            FT_Error error = FT_New_Memory_Face(library, m_data.data(), m_data.size(), 0, &face);
-            if(error) {
-                Log(Log::ERR) << "Can't load font. System returned error:" << error;
-                return;
-            }
-            m_useKerning = FT_HAS_KERNING( face );
-            m_face = reinterpret_cast<int32_t *>(face);
+    static FT_Library library = nullptr;
+    if(library == nullptr) {
+        FT_Init_FreeType( &library );
+    }
+
+    auto it = data.find(gData);
+    if(it != data.end()) {
+        FT_Face face = reinterpret_cast<FT_Face>(m_face);
+        m_data = (*it).second.toByteArray();
+        FT_Error error = FT_New_Memory_Face(library, m_data.data(), m_data.size(), 0, &face);
+        if(error) {
+            Log(Log::ERR) << "Can't load font. System returned error:" << error;
+            return;
         }
+        m_useKerning = FT_HAS_KERNING( face );
+        m_face = reinterpret_cast<int32_t *>(face);
     }
 }
 /*!

@@ -40,6 +40,7 @@ Widget *EffectModule::widget(Object *parent) {
 
         Actor *group = Engine::composeActor<Widget>(moduleName, parent);
         m_groupWidget = group->getComponent<Widget>();
+
         RectTransform *rect = m_groupWidget->rectTransform();
         Layout *layout = new Layout;
         layout->setOrientation(Widget::Horizontal);
@@ -52,6 +53,8 @@ Widget *EffectModule::widget(Object *parent) {
         Actor *label = Engine::composeActor<Label>(moduleName, group);
         Label *labelWidget = label->getComponent<Label>();
         labelWidget->setText(moduleName);
+
+        rect->setSize(m_checkBoxWidget->rectTransform()->size());
 
         Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }

@@ -22,6 +22,7 @@ void Splitter::setHandleWidth(int width) {
     Layout *layout = rectTransform()->layout();
     if(layout) {
         layout->setSpacing(width);
+        repaint();
     }
 }
 
@@ -79,6 +80,7 @@ int Splitter::indexOf(Widget *widget) {
 void Splitter::insertWidget(int index, Widget *widget) {
     RectTransform *widgetRect = widget->rectTransform();
     widgetRect->setParentTransform(rectTransform());
+    repaint();
 }
 
 Widget *Splitter::replaceWidget(int index, Widget *widget) {
@@ -92,6 +94,7 @@ Widget *Splitter::replaceWidget(int index, Widget *widget) {
         if(widget) {
             insertWidget(index, widget);
         }
+        repaint();
     }
 
     return result;
@@ -180,6 +183,7 @@ void Splitter::resizeWidget(int index, float delta) {
             size.y = MAX(size.y + delta, 0.0f);
         }
         rect->setSize(size);
+        widget->repaint();
     }
 }
 

@@ -42,10 +42,25 @@ class ENGINE_EXPORT Font : public Resource {
 
     };
 
+    struct Settings {
+        int size = 0;
+
+        int alignment = Alignment::Left | Alignment::Middle;
+
+        int flags = 0;
+
+        Vector4 color;
+
+        Vector2 boundaries;
+
+        Vector2 offset;
+    };
+
     enum Flags {
         Kerning = (1<<0),
         Wrap = (1<<1),
-        Sdf = (1<<2)
+        Sdf = (1<<2),
+        Additive = (1<<3)
     };
 
 public:
@@ -56,7 +71,7 @@ public:
 
     float textWidth(const TString &text, int size, int flags);
 
-    void composeMesh(Mesh *mesh, const TString &text, int size, int alignment, int flags, const Vector2 &boundaries);
+    void composeMesh(Mesh *mesh, const TString &text, const Settings &settings);
 
     void loadUserData(const VariantMap &data) override;
 

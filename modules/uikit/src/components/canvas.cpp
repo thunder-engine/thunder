@@ -4,6 +4,7 @@
 #include "components/widget.h"
 
 #include "resources/texture.h"
+#include "resources/material.h"
 #include "resources/rendertarget.h"
 
 #include "pipelinecontext.h"
@@ -12,16 +13,38 @@
 Canvas::Canvas() :
         m_target(Engine::objectCreate<RenderTarget>("canvasTarget")),
         m_texture(Engine::objectCreate<Texture>("canvasTexture")),
-        m_transform(nullptr) {
+        m_transform(nullptr),
+        m_buffer(nullptr),
+        m_finalMaterial(nullptr),
+        m_dirty(true) {
 
     m_texture->setFormat(Texture::RGBA8);
     m_texture->setFlags(Texture::Render);
 
     m_target->setColorAttachment(0, m_texture);
+    m_target->setClearColor(0.0f);
     m_target->setClearFlags(RenderTarget::ClearColor);
 
     static uint32_t hash = Mathf::hashString("canvas");
     addTagByHash(hash);
+
+    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+    if(mtl) {
+        m_finalMaterial = mtl->createInstance();
+        m_finalMaterial->setTexture("mainTexture", m_texture);
+
+        Material::BlendState state;
+        state.enabled = true;
+        state.sourceColorBlendMode = Material::BlendFactor::One;
+        state.sourceAlphaBlendMode = Material::BlendFactor::One;
+        state.destinationColorBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
+        state.destinationAlphaBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
+        m_finalMaterial->setBlendState(state);
+    }
+}
+
+void Canvas::markDirty() {
+    m_dirty = true;
 }
 
 void Canvas::update(const Vector2 &pos) {
@@ -40,19 +63,28 @@ void Canvas::update(const Vector2 &pos) {
 void Canvas::draw(CommandBuffer *buffer) {
     m_buffer = buffer;
 
-    Matrix4 v;
-    v[14] = -50.0f;
-    buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
+    RenderTarget *target = m_buffer->renderTarget();
+    if(m_dirty) {
+        Matrix4 v;
+        v[14] = -50.0f;
 
-    for(auto it : m_transform->children()) {
-        RectTransform *rect = dynamic_cast<RectTransform *>(it);
-        if(rect) {
-            Widget *widget = rect->widget();
-            if(widget) {
-                widget->draw();
+        m_buffer->setRenderTarget(m_target);
+        m_buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
+
+        for(auto it : m_transform->children()) {
+            RectTransform *rect = dynamic_cast<RectTransform *>(it);
+            if(rect) {
+                Widget *widget = rect->widget();
+                if(widget) {
+                    widget->draw();
+                }
             }
         }
+        m_dirty = false;
     }
+
+    m_buffer->setRenderTarget(target);
+    m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
 }
 
 void Canvas::drawRect(MaterialInstance *material, RectTransform *rect) {
@@ -82,6 +114,10 @@ void Canvas::drawMesh(Mesh *mesh, MaterialInstance *material) {
 
 void Canvas::setSize(int width, int height) {
     if(m_texture) {
+        if(m_texture->width() == width && m_texture->height() == height) {
+            return;
+        }
+
         m_texture->resize(width, height);
     }
 

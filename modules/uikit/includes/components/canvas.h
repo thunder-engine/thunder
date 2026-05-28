@@ -21,6 +21,8 @@ class UIKIT_EXPORT Canvas : public Component {
 public:
     Canvas();
 
+    void markDirty();
+
     void update(const Vector2 &pos);
 
     void draw(CommandBuffer *buffer);
@@ -48,6 +50,10 @@ private:
     RectTransform *m_transform;
 
     CommandBuffer *m_buffer;
+
+    MaterialInstance *m_finalMaterial;
+
+    bool m_dirty;
 
 };
 

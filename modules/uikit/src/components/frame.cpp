@@ -68,6 +68,17 @@ Frame::Frame() :
         m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
     }
 }
+
+Frame::~Frame() {
+    delete m_backgroundImage;
+    delete m_backgroundMesh;
+
+    delete m_imageMaterial;
+    m_imageMaterial = nullptr;
+
+    delete m_frameMaterial;
+    m_frameMaterial = nullptr;
+}
 /*!
     \internal
 */
@@ -160,6 +171,7 @@ void Frame::setCorners(const Vector4 &corners) {
             m_frameMaterial->setVector4(gBorderRadius, &normCorners);
         }
     }
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -185,6 +197,7 @@ void Frame::setBackgroundColor(const Vector4 &color) {
     if(m_frameMaterial) {
         m_frameMaterial->setVector4(gColor, &m_backgroundColor);
     }
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -207,6 +220,7 @@ void Frame::setBorderColor(const Vector4 &color) {
     if(m_frameMaterial) {
         m_frameMaterial->setVector4(gBorderColor, &color);
     }
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -228,6 +242,7 @@ void Frame::setBackgroundImage(Sprite *image) {
         m_backgroundImage = image;
 
         m_dirtyBackground = true;
+        repaint();
     }
 }
 /*!
@@ -243,5 +258,6 @@ void Frame::boundChanged(const Vector2 &size) {
 
         Vector4 normBorders(rectTransform()->border() / size.y);
         m_frameMaterial->setVector4(gBorderWidth, &normBorders);
+        repaint();
     }
 }

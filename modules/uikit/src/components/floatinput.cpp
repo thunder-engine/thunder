@@ -95,6 +95,8 @@ void FloatInput::setSingleStep(float step) {
     if(decreaseBtn) {
         decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
     }
+
+    repaint();
 }
 /*!
     Returns the corners radiuses.

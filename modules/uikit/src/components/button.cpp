@@ -42,6 +42,7 @@ Button::Button() :
         m_iconMaterial(nullptr),
         m_fontSize(14),
         m_rotation(0.0f),
+        m_translated(false),
         m_dirtyIcon(true),
         m_dirtyText(true) {
 
@@ -81,6 +82,7 @@ TString Button::text() const {
 void Button::setText(const TString &text) {
     m_text = text;
     m_dirtyText = true;
+    repaint();
 }
 /*!
     Returns the font which will be used to draw a text.
@@ -103,6 +105,7 @@ void Button::setFont(Font *font) {
         }
 
         m_dirtyText = true;
+        repaint();
     }
 }
 /*!
@@ -118,6 +121,8 @@ void Button::setFontSize(int size) {
     if(m_fontSize != size) {
         m_fontSize = size;
         m_dirtyText = true;
+        repaint();
+
 #ifdef SHARED_DEFINE
         if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_fontSize) + "px");
@@ -140,6 +145,8 @@ void Button::setTextColor(const Vector4 &color) {
     if(m_fontMaterial) {
         m_fontMaterial->setVector4(gColor, &m_textColor);
     }
+    repaint();
+
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_textColor));
@@ -159,6 +166,7 @@ void Button::setIcon(Sprite *icon) {
     if(m_icon != icon) {
         m_icon = icon;
         m_dirtyIcon = true;
+        repaint();
     }
 }
 /*!
@@ -173,6 +181,7 @@ Vector2 Button::iconSize() const {
 void Button::setIconSize(const Vector2 &size) {
     m_iconSize = size;
     m_dirtyIcon = true;
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -223,10 +232,8 @@ void Button::draw() {
     if(m_fontMaterial && !m_text.isEmpty()) {
         if(m_dirtyText && m_font) {
             m_textMesh->setName(actor()->name());
-            m_font->composeMesh(m_textMesh, /*m_translated ? Engine::translate(m_text) : */m_text,
-                                m_fontSize, Alignment::Center | Alignment::Middle, 0, Vector2());
-
-            m_textMesh->setColors(Vector4Vector(m_textMesh->vertices().size(), Vector4(1.0f)));
+            const Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
+            m_font->composeMesh(m_textMesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
             m_fontMaterial->setTexture(gOverride, m_font->page());
 
@@ -296,5 +303,6 @@ void Button::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         Button *p = static_cast<Button *>(ptr);
         p->m_dirtyText = true;
+        p->repaint();
     }
 }

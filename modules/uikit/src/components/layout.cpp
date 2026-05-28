@@ -191,8 +191,6 @@ void Layout::invalidate() {
         Layout *layout = m_rectTransform->m_attachedLayout;
         if(layout) {
             layout->invalidate();
-        } else {
-            layout = nullptr;
         }
     }
 }

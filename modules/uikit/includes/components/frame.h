@@ -22,6 +22,7 @@ class UIKIT_EXPORT Frame : public Widget {
 
 public:
     Frame();
+    ~Frame();
 
     Vector4 corners() const;
     void setCorners(const Vector4 &corners);

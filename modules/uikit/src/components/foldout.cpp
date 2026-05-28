@@ -47,6 +47,7 @@ bool Foldout::isExpanded() const {
 void Foldout::setExpanded(bool expanded) {
     if(m_contentArea) {
         m_contentArea->actor()->setEnabled(expanded);
+        repaint();
     }
 }
 /*!
@@ -75,6 +76,7 @@ void Foldout::setText(const TString &text) {
 
         RectTransform *rect = label->rectTransform();
         rect->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
+        rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
     }
 }
 /*!
@@ -138,6 +140,7 @@ void Foldout::insertRect(int index, RectTransform *content) {
     content->setVerticalPolicy(RectTransform::Fixed);
 
     m_contentArea->layout()->addTransform(content);
+    repaint();
 }
 /*!
     \internal

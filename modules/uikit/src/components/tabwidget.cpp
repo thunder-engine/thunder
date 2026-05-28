@@ -113,6 +113,8 @@ void TabWidget::setCurrentIndex(int index) {
     m_tabBar->blockSignals(true);
     m_tabBar->setCurrentIndex(m_currentIndex);
     m_tabBar->blockSignals(false);
+
+    repaint();
 }
 /*!
     Returns the title of the tab at the specified \a index.
@@ -186,12 +188,13 @@ void TabWidget::setContentArea(Frame *area) {
 
 void TabWidget::updateContentVisibility() {
     int idx = 0;
-    for (auto &tab : m_tabs) {
-        if (tab) {
+    for(auto &tab : m_tabs) {
+        if(tab) {
             tab->actor()->setEnabled(idx == m_currentIndex);
         }
         idx++;
     }
+    repaint();
 }
 
 void TabWidget::onTabClicked(int index) {
@@ -278,6 +281,7 @@ int TabWidget::insertTab(int index, const TString &title, RectTransform *content
     if(m_currentIndex == -1) {
         setCurrentIndex(0);
     }
+    repaint();
 
     return index;
 }

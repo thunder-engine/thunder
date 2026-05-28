@@ -28,6 +28,7 @@ void Slider::update(const Vector2 &pos) {
         if(bar) {
             bar->setProgressColor(MIX(bar->progressColor(), color, m_currentFade));
         }
+        repaint();
     }
 }
 

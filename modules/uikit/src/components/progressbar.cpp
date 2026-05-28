@@ -101,6 +101,7 @@ void ProgressBar::setChunk(Frame *frame) {
         connect(frame, _SIGNAL(destroyed()), this, _SLOT(onReferenceDestroyed()));
         frame->setBackgroundColor(m_progressColor);
     }
+    repaint();
 }
 /*!
     Returns the color of the progress indicator.
@@ -118,6 +119,7 @@ void ProgressBar::setProgressColor(const Vector4 color) {
     if(chunk) {
         chunk->setBackgroundColor(m_progressColor);
     }
+    repaint();
 }
 /*!
     \internal
@@ -157,5 +159,7 @@ void ProgressBar::recalcProgress() {
             progressRect->setMaxAnchors(Vector2(1.0f, factor));
         }
         progressRect->setSize(Vector2());
+
+        repaint();
     }
 }

@@ -17,7 +17,6 @@
 #include <commandbuffer.h>
 
 namespace  {
-    const char *gColor("mainColor");
     const char *gTexture("mainTexture");
     const char *gUseSDF("useSdf");
 
@@ -70,11 +69,8 @@ void Label::draw() {
     if(m_material && !m_text.isEmpty()) {
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
-            m_font->composeMesh(m_mesh,
-                                m_translated ? Engine::translate(m_text) : m_text,
-                                m_size, m_alignment, m_flags, m_meshSize);
-
-            m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
+            const Font::Settings settings = {m_size, m_alignment, m_flags, m_color, m_boundaries};
+            m_font->composeMesh(m_mesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
             m_material->setTexture(gTexture, m_font->page());
 
@@ -140,6 +136,7 @@ void Label::setText(const TString &text) {
     if(m_text != text) {
         m_text = text;
         m_dirty = true;
+        repaint();
     }
 }
 /*!
@@ -163,6 +160,7 @@ void Label::setFont(Font *font) {
         }
 
         m_dirty = true;
+        repaint();
     }
 }
 /*!
@@ -178,6 +176,8 @@ void Label::setFontSize(int size) {
     if(m_size != size) {
         m_size = size;
         m_dirty = true;
+        repaint();
+
 #ifdef SHARED_DEFINE
         if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_size) + "px");
@@ -196,10 +196,9 @@ Vector4 Label::color() const {
 */
 void Label::setColor(const Vector4 &color) {
     m_color = color;
+    m_dirty = true;
+    repaint();
 
-    if(m_material) {
-        m_material->setVector4(gColor, &m_color);
-    }
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
         StyleSheet::setStyleProperty(this, gCssColor, StyleSheet::toColor(m_color));
@@ -219,6 +218,7 @@ void Label::setTranslated(bool enable) {
     if(m_translated != enable) {
         m_translated = enable;
         m_dirty = true;
+        repaint();
     }
 }
 /*!
@@ -238,6 +238,8 @@ void Label::setWordWrap(bool wrap) {
             m_flags &= ~Font::Wrap;
         }
         m_dirty = true;
+        repaint();
+
 #ifdef SHARED_DEFINE
         if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssWhiteSpace, wrap ? "normal" : "nowrap");
@@ -258,6 +260,7 @@ void Label::setAlign(int alignment) {
     if(m_alignment != alignment) {
         m_alignment = alignment;
         m_dirty = true;
+        repaint();
     }
 }
 /*!
@@ -278,6 +281,8 @@ void Label::setKerning(const bool enable) {
             m_flags &= ~Font::Kerning;
         }
         m_dirty = true;
+        repaint();
+
 #ifdef SHARED_DEFINE
         if(!isSubWidget() && !isSignalsBlocked()) {
             StyleSheet::setStyleProperty(this, gCssFontKerning, enable ? "normal" : "none");
@@ -301,6 +306,7 @@ void Label::loadData(const VariantList &data) {
     Component::loadData(data);
 
     m_dirty = true;
+    repaint();
 }
 /*!
     \internal
@@ -308,6 +314,7 @@ void Label::loadData(const VariantList &data) {
 bool Label::event(Event *ev) {
     if(ev->type() == Event::LanguageChange) {
         m_dirty = true;
+        repaint();
     }
     return true;
 }
@@ -317,9 +324,10 @@ bool Label::event(Event *ev) {
 void Label::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    if(m_meshSize != size) {
-        m_meshSize = size;
+    if(m_boundaries != size) {
+        m_boundaries = size;
         m_dirty = true;
+        repaint();
     }
 }
 /*!
@@ -343,5 +351,6 @@ void Label::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         Label *p = static_cast<Label *>(ptr);
         p->m_dirty = true;
+        p->repaint();
     }
 }

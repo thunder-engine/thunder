@@ -8,7 +8,6 @@
 #include "gizmos.h"
 
 namespace {
-    const char *gColor("mainColor");
     const char *gTexture("mainTexture");
     const char *gWeight("weight");
     const char *gUseSDF("useSdf");
@@ -56,8 +55,8 @@ TextRender::~TextRender() {
 */
 Mesh *TextRender::meshToDraw() {
     if(m_dirtyMesh && m_font && !m_text.isEmpty()) {
-        m_font->composeMesh(m_mesh, m_translated ?  Engine::translate(m_text) : m_text, m_size, m_alignment, m_flags, m_boundaries);
-        m_mesh->setColors(Vector4Vector(m_mesh->vertices().size(), Vector4(1.0f)));
+        const Font::Settings settings = {m_size, m_alignment, m_flags, m_color, m_boundaries};
+        m_font->composeMesh(m_mesh, m_translated ?  Engine::translate(m_text) : m_text, settings);
         m_dirtyMesh = false;
     }
 
@@ -137,7 +136,7 @@ Vector4 TextRender::color() const {
 */
 void TextRender::setColor(const Vector4 &color) {
     m_color = color;
-    m_dirtyMaterial = true;
+    m_dirtyMesh = true;
 }
 /*!
     Returns true if text in text render must be translated; othewise returns false.
@@ -242,7 +241,6 @@ MaterialInstance *TextRender::materialInstance(int index) {
                 if(m_font) {
                     it->setTexture(gTexture, m_font->page());
                 }
-                it->setVector4(gColor, &m_color);
                 it->setFloat(gWeight, &m_fontWeight);
                 it->setPriority(m_priority);
                 int sdf = m_flags & Font::Sdf;

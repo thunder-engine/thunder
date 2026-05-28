@@ -728,14 +728,7 @@ void Object::addChild(Object *child, int32_t position) {
 */
 void Object::removeChild(Object *child) {
     PROFILE_FUNCTION();
-    auto it = m_children.begin();
-    while(it != m_children.end()) {
-        if(*it == child) {
-            m_children.erase(it);
-            return;
-        }
-        it++;
-    }
+    m_children.remove(child);
 }
 /*!
     If \a block is true, signals emitted by this object will be discarded (i.e., emitting a signal will not invoke anything connected to it).

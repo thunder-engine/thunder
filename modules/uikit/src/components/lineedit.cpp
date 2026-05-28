@@ -21,7 +21,6 @@
 #define HOLD_TIME 0.1f
 
 namespace {
-    const char *gColor("mainColor");
     const char *gTexture("mainTexture");
     const char *gUseSDF("useSdf");
 
@@ -75,10 +74,8 @@ void LineEdit::draw() {
 
     RectTransform *rect = rectTransform();
     if(m_textDirty && m_font) {
-        m_font->composeMesh(m_textMesh, m_text, m_fontSize,
-                            Alignment::Left | Alignment::Middle, 0, rect->size());
-
-        m_textMesh->setColors(Vector4Vector(m_textMesh->vertices().size(), Vector4(1.0f)));
+        const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, m_textColor, rect->size()};
+        m_font->composeMesh(m_textMesh, m_text, settings);
 
         m_fontMaterial->setTexture(gTexture, m_font->page());
 
@@ -122,6 +119,7 @@ TString LineEdit::text() const {
 void LineEdit::setText(const TString &text) {
     m_text = text;
     m_textDirty = true;
+    repaint();
 
     if(m_cursorPosition == 0) {
         m_cursorPosition = m_text.toUtf32().size();
@@ -149,6 +147,7 @@ void LineEdit::setFont(Font *font) {
         }
 
         m_textDirty = true;
+        repaint();
     }
 }
 /*!
@@ -162,10 +161,8 @@ Vector4 LineEdit::textColor() const {
 */
 void LineEdit::setTextColor(const Vector4 &color) {
     m_textColor = color;
-
-    if(m_fontMaterial) {
-        m_fontMaterial->setVector4(gColor, &m_textColor);
-    }
+    m_textDirty = true;
+    repaint();
 }
 
 void LineEdit::focusIn() {
@@ -262,6 +259,7 @@ void LineEdit::update(const Vector2 &pos) {
             if(m_cursorBlinkCurrent >= m_cursorBlinkRate) {
                 m_cursorBlinkCurrent = 0.0f;
                 m_cursorVisible = !m_cursorVisible;
+                repaint();
             }
         }
     } else {
@@ -269,6 +267,7 @@ void LineEdit::update(const Vector2 &pos) {
             focusOut();
             m_focused = false;
             m_cursorVisible = false;
+            repaint();
         }
     }
 
@@ -277,6 +276,7 @@ void LineEdit::update(const Vector2 &pos) {
     bool hover = isHovered(pos);
     if(m_hovered != hover) {
         m_hovered = hover;
+        repaint();
     }
 
     if(m_hovered) {
@@ -285,6 +285,7 @@ void LineEdit::update(const Vector2 &pos) {
 
             focusIn();
             m_focused = true;
+            repaint();
         }
     }
 }
@@ -327,6 +328,7 @@ void LineEdit::recalcCursor() {
         m_textPosition -= gap;
     }
     m_cursorTransform[12] += m_textPosition;
+    repaint();
 }
 /*!
     Returns a \a position for virtual cursor.
@@ -342,5 +344,6 @@ void LineEdit::fontUpdated(int state, void *ptr) {
     if(state == Resource::Ready) {
         LineEdit *p = static_cast<LineEdit *>(ptr);
         p->m_textDirty = true;
+        p->repaint();
     }
 }
