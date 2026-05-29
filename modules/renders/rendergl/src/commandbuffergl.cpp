@@ -116,7 +116,7 @@ void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 }
 
 void CommandBufferGL::disableScissor() {
-    m_scissorStack.pop(); // Remove current
+    CommandBuffer::disableScissor();
     if(m_scissorStack.empty()) {
         glDisable(GL_SCISSOR_TEST);
     } else {

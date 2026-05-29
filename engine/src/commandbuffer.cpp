@@ -177,5 +177,5 @@ void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t h
     Disables scissor testing.
 */
 void CommandBuffer::disableScissor() {
-
+    m_scissorStack.pop();
 }

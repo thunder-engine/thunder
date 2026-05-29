@@ -160,7 +160,7 @@ void CommandBufferVk::disableScissor() {
 
     VkRect2D scissor = {};
 
-    m_scissorStack.pop(); // Remove current
+    CommandBuffer::disableScissor();
     if(m_scissorStack.empty()) {
         scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
         scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};
