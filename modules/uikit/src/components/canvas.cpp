@@ -3,12 +3,21 @@
 #include "components/recttransform.h"
 #include "components/widget.h"
 
-#include "resources/texture.h"
-#include "resources/material.h"
-#include "resources/rendertarget.h"
+#include <resources/texture.h>
+#include <resources/material.h>
+#include <resources/rendertarget.h>
 
-#include "pipelinecontext.h"
-#include "commandbuffer.h"
+#include <pipelinecontext.h>
+#include <commandbuffer.h>
+
+/*!
+    \class Canvas
+    \brief A rendering surface for UI components.
+
+    Canvas provides an off-screen rendering surface for UI widgets.
+    It renders all child widgets to a texture, which can then be
+    displayed in the scene.
+*/
 
 Canvas::Canvas() :
         m_target(Engine::objectCreate<RenderTarget>("canvasTarget")),
@@ -42,24 +51,34 @@ Canvas::Canvas() :
         m_finalMaterial->setBlendState(state);
     }
 }
+/*!
+    Marks the canvas as dirty, forcing a re-render.
 
+    When marked dirty, the canvas will redraw all child widgets on the next draw call.
+*/
 void Canvas::markDirty() {
     m_dirty = true;
 }
+/*!
+    Updates all child widgets with the given cursor/touch \a position.
 
-void Canvas::update(const Vector2 &pos) {
+    Propagates the update call to all child widgets, setting their canvas reference before updating.
+*/
+void Canvas::update(const Vector2 &position) {
     for(auto it : m_transform->children()) {
         RectTransform *rect = dynamic_cast<RectTransform *>(it);
         if(rect) {
             Widget *widget = rect->widget();
             if(widget) {
                 widget->m_canvas = this;
-                widget->update(pos);
+                widget->update(position);
             }
         }
     }
 }
-
+/*!
+    Draws the canvas and its contents uses command \a buffer to record draw commands into.
+*/
 void Canvas::draw(CommandBuffer *buffer) {
     m_buffer = buffer;
 
@@ -86,7 +105,13 @@ void Canvas::draw(CommandBuffer *buffer) {
     m_buffer->setRenderTarget(target);
     m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
 }
+/*!
+    \brief Draws a rectangle with the given \a material and \a transform.
 
+    Creates a model matrix from the rect's size and position, combines
+    it with the world transform, and draws the default plane mesh.
+    The hash is computed from the transform and size for batching purposes.
+*/
 void Canvas::drawRect(MaterialInstance *material, RectTransform *rect) {
     if(rect) {
         Vector2 size(rect->size());
@@ -107,7 +132,9 @@ void Canvas::drawRect(MaterialInstance *material, RectTransform *rect) {
 
     drawMesh(PipelineContext::defaultPlane(), material);
 }
-
+/*!
+    Draws a \a mesh with the given \a material.
+*/
 void Canvas::drawMesh(Mesh *mesh, MaterialInstance *material) {
     m_buffer->drawMesh(mesh, 0, Material::Translucent, *material);
 }
@@ -126,28 +153,47 @@ void Canvas::setSize(int width, int height) {
         rect->setSize(Vector2(width, height));
     }
 }
+/*!
+    Returns the RectTransform component of the canvas.
 
+    Lazy-initializes and caches the RectTransform reference.
+*/
 RectTransform *Canvas::rectTransform() {
     if(m_transform == nullptr) {
         setRectTransform(dynamic_cast<RectTransform *>(transform()));
     }
     return m_transform;
 }
+/*!
+    Sets the rect \a transform reference.
 
+    Internal method for caching the RectTransform.
+*/
 void Canvas::setRectTransform(RectTransform *transform) {
     if(m_transform != transform) {
         m_transform = transform;
     }
 }
+/*!
+    Sets the clip region (scissor rectangle).
 
-void Canvas::setClipRegion(const Vector4 &rect) {
-    m_buffer->enableScissor(rect.x, rect.y, rect.z, rect.w);
+    Enables scissor testing to restrict rendering to the specified region.
+    Coordinates are in screen space.
+*/
+void Canvas::setClipRegion(const Vector4 &region) {
+    m_buffer->enableScissor(region.x, region.y, region.z, region.w);
 }
+/*!
+    Disables the clip region.
 
+    Turns off scissor testing, allowing rendering to the full screen.
+*/
 void Canvas::disableClip() {
     m_buffer->disableScissor();
 }
-
+/*!
+    \internal
+*/
 void Canvas::composeComponent() {
     Actor *object = Canvas::actor();
     if(object) {

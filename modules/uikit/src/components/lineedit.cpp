@@ -164,15 +164,24 @@ void LineEdit::setTextColor(const Vector4 &color) {
     m_textDirty = true;
     repaint();
 }
-
+/*!
+    \brief Called when the component receives focus.
+    Emits a signal indicating focus has been gained.
+*/
 void LineEdit::focusIn() {
     emitSignal(_SIGNAL(focusIn()));
 }
-
+/*!
+    \brief Called when the component loses focus.
+    Emits a signal indicating focus has been lost.
+*/
 void LineEdit::focusOut() {
     emitSignal(_SIGNAL(focusOut()));
 }
-
+/*!
+    \brief Called when editing is finished (Enter key pressed).
+    Emits a signal indicating editing has completed.
+*/
 void LineEdit::editingFinished() {
     emitSignal(_SIGNAL(editingFinished()));
 }

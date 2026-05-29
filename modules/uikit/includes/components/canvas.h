@@ -23,7 +23,7 @@ public:
 
     void markDirty();
 
-    void update(const Vector2 &pos);
+    void update(const Vector2 &position);
 
     void draw(CommandBuffer *buffer);
 
@@ -36,7 +36,7 @@ public:
     RectTransform *rectTransform();
     void setRectTransform(RectTransform *transform);
 
-    void setClipRegion(const Vector4 &rect);
+    void setClipRegion(const Vector4 &region);
     void disableClip();
 
 private:

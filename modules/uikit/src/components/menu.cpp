@@ -59,6 +59,7 @@ Menu::~Menu() {
 }
 /*!
     Adds a section to the menu with the specified \a text and optional \a icon.
+    Creates a clickable menu item that triggers an action when selected.
 */
 void Menu::addAction(const TString &text, Sprite *icon) {
     MenuItem item;
@@ -70,7 +71,10 @@ void Menu::addAction(const TString &text, Sprite *icon) {
     m_dirtyText = true;
     updateSize();
 }
-
+/*!
+    Adds a separator line to the menu.
+    Creates a visual separator to group related menu items.
+*/
 void Menu::addSeparator() {
     MenuItem item;
     item.type = MenuItem::Separator;
@@ -78,7 +82,10 @@ void Menu::addSeparator() {
 
     updateSize();
 }
-
+/*!
+    Adds a \a submenu item with specified \a text and optional \a icon.
+    Creates a menu item that opens a submenu when hovered or clicked.
+*/
 void Menu::addSubmenu(const TString &text, Menu *submenu, Sprite *icon) {
     MenuItem item;
     item.type = MenuItem::Submenu;
@@ -118,7 +125,9 @@ TString Menu::itemText(int index) {
     }
     return TString();
 }
-
+/*!
+    Updates the \a text of an existing menu item at \a index of menu position.
+*/
 void Menu::setItemText(int index, const TString &text) {
     if(index > -1 && index < m_items.size()) {
         m_items[index].text = text;
@@ -126,14 +135,18 @@ void Menu::setItemText(int index, const TString &text) {
         repaint();
     }
 }
-
+/*!
+    Returns the icon of the item at the specified \a index.
+*/
 Sprite *Menu::itemIcon(int index) {
     if(index > -1 && index < m_items.size()) {
         return m_items[index].icon;
     }
     return nullptr;
 }
-
+/*!
+    Updates the \a icon of an existing menu item at \a index of menu position.
+*/
 void Menu::setItemIcon(int index, Sprite *icon) {
     if(index > -1 && index < m_items.size()) {
         m_items[index].icon = icon;
@@ -164,15 +177,21 @@ void Menu::setFont(Font *font) {
         repaint();
     }
 }
-
+/*!
+    Signal emitted when the menu is about to be shown.
+*/
 void Menu::aboutToShow() {
     emitSignal(_SIGNAL(aboutToShow()));
 }
-
+/*!
+    Signal emitted when the menu is about to be hidden.
+*/
 void Menu::aboutToHide() {
     emitSignal(_SIGNAL(aboutToHide()));
 }
-
+/*!
+    Signal emitted when a menu with \a index item is triggered.
+*/
 void Menu::triggered(int index) {
     emitSignal(_SIGNAL(triggered(int)), index);
 }
@@ -289,10 +308,6 @@ void Menu::composeComponent() {
     Frame::composeComponent();
 
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
-
-    addAction("Test Action #1");
-    addAction("Test Action #2");
-    addAction("Test Action #3");
 }
 /*!
     \internal

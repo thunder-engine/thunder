@@ -125,15 +125,21 @@ bool AbstractButton::isExclusive() const {
 void AbstractButton::setExclusive(bool exclusive) {
     m_exclusive = exclusive;
 }
-
+/*!
+    This signal is emitted when the button is pressed down.
+*/
 void AbstractButton::pressed() {
     emitSignal(_SIGNAL(pressed()));
 }
-
+/*!
+    This signal is emitted when the button is activated (i.e., pressed down then released while the mouse cursor is inside the button).
+*/
 void AbstractButton::clicked() {
     emitSignal(_SIGNAL(clicked()));
 }
-
+/*!
+    This signal is emitted whenever a checkable button changes its state. checked is true if the button is \a checked, or false if the button is unchecked.
+*/
 void AbstractButton::toggled(bool checked) {
     emitSignal(_SIGNAL(toggled(bool)), checked);
 }
@@ -193,7 +199,9 @@ void AbstractButton::checkStateSet() {
         }
     }
 }
-
+/*!
+    \internal
+*/
 void AbstractButton::updateBackgroundColor(const Vector4 &color) {
     m_currentColor = color;
     if(m_backgroundImage) {

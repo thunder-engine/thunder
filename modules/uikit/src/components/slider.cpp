@@ -8,12 +8,23 @@ namespace {
     const char *gKnob("knob");
 }
 
+/*!
+    \class Slider
+    \brief A slider widget for selecting a value from a range.
+
+    Slider provides a typical slider control with a draggable knob and
+    a progress bar background that fills to show the current value.
+    Supports both horizontal and vertical orientations.
+*/
+
 Slider::Slider() :
         m_normalColor(0.008f, 0.467f, 0.741f, 1.0f),
         m_highlightedColor(0.0078f, 0.533f, 0.819f, 1.0f) {
 
 }
-
+/*!
+    \internal
+*/
 void Slider::update(const Vector2 &pos) {
     AbstractSlider::update(pos);
 
@@ -31,16 +42,18 @@ void Slider::update(const Vector2 &pos) {
         repaint();
     }
 }
-
-void Slider::setOrientation(int value) {
-    AbstractSlider::setOrientation(value);
+/*!
+    Sets the \a orientation of the slider.
+*/
+void Slider::setOrientation(int orientation) {
+    AbstractSlider::setOrientation(orientation);
 
     ProgressBar *bar = background();
     if(bar) {
-        bar->setOrientation(value);
+        bar->setOrientation(orientation);
 
         RectTransform *rectBar = bar->rectTransform();
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             rectBar->setSize(Vector2(0.0f, 10.0f));
             rectBar->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
         } else {
@@ -51,11 +64,15 @@ void Slider::setOrientation(int value) {
 
     setValue(m_value);
 }
-
+/*!
+    Returns the background progress bar widget.
+*/
 ProgressBar *Slider::background() const {
     return static_cast<ProgressBar *>(subWidget(gBackground));
 }
-
+/*!
+    Sets the \a background progress bar widget.
+*/
 void Slider::setBackground(ProgressBar *background) {
     setSubWidget(background);
 
@@ -65,7 +82,9 @@ void Slider::setBackground(ProgressBar *background) {
         background->setValue(m_value);
     }
 }
-
+/*!
+    Sets the current \a value of the slider.
+*/
 void Slider::setValue(int value) {
     AbstractSlider::setValue(value);
 
@@ -73,7 +92,7 @@ void Slider::setValue(int value) {
     if(knob) {
         float factor = value != 0 ? static_cast<float>(value) / static_cast<float>(m_maximum-m_minimum) : 0.0f;
         factor = CLAMP(factor, 0.0f, 1.0f);
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             knob->rectTransform()->setAnchors(Vector2(factor, 0.5f), Vector2(factor, 0.5f));
         } else {
             knob->rectTransform()->setAnchors(Vector2(0.5f, factor), Vector2(0.5f, factor));
@@ -85,7 +104,9 @@ void Slider::setValue(int value) {
         bar->setValue(value);
     }
 }
-
+/*!
+    Sets the minimum \a value of the slider.
+*/
 void Slider::setMinimum(int value) {
     AbstractSlider::setMinimum(value);
 
@@ -94,7 +115,9 @@ void Slider::setMinimum(int value) {
         bar->setFrom(value);
     }
 }
-
+/*!
+    Sets the \a maximum value of the slider.
+*/
 void Slider::setMaximum(int value) {
     AbstractSlider::setMaximum(value);
 
@@ -103,7 +126,9 @@ void Slider::setMaximum(int value) {
         bar->setTo(value);
     }
 }
-
+/*!
+    \internal
+*/
 void Slider::composeComponent() {
     AbstractSlider::composeComponent();
 
@@ -115,7 +140,7 @@ void Slider::composeComponent() {
 
     setBackground(bar);
 
-    setOrientation(Horizontal);
+    setOrientation(Widget::Horizontal);
 
     // Add knob
     Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
