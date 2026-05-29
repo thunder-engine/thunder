@@ -135,6 +135,8 @@ protected:
 protected:
     CheckBox *m_checkBoxWidget;
 
+    Widget *m_groupWidget;
+
 };
 
 #endif // EFFECTMODULE_H

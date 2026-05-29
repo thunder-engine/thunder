@@ -43,6 +43,8 @@ public:
 
     virtual void setRenderTarget(RenderTarget *target, uint32_t level = 0);
 
+    RenderTarget *renderTarget();
+
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
 
     virtual void setViewProjection(const Matrix4 &viewProjection);
@@ -84,6 +86,8 @@ protected:
     };
 
     std::stack<ScissorRect> m_scissorStack;
+
+    RenderTarget *m_target;
 
 };
 

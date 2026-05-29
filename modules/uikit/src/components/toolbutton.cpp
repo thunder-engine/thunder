@@ -31,7 +31,7 @@ namespace {
 */
 
 ToolButton::ToolButton() :
-        AbstractButton() {
+        Button() {
 
     connect(this, _SIGNAL(pressed()), this, _SLOT(showMenu()));
 }
@@ -64,10 +64,8 @@ void ToolButton::setMenu(Menu *menu) {
 void ToolButton::showMenu() {
     Menu *menu = ToolButton::menu();
     if(menu) {
-        Frame *back = background();
-        if(back) {
-            back->setCorners(Vector4(0, 0, gCorner, gCorner));
-        }
+        setCorners(Vector4(0, 0, gCorner, gCorner));
+
         RectTransform *rect = menu->rectTransform();
         if(rect) {
             rect->setSize(Vector2(rectTransform()->size().x, rect->size().y));
@@ -82,10 +80,8 @@ void ToolButton::showMenu() {
     Hides the associated popup menu.
 */
 void ToolButton::hideMenu() {
-    Frame *back = background();
-    if(back) {
-        back->setCorners(Vector4(gCorner));
-    }
+    setCorners(Vector4(gCorner));
+
     Menu *menu = ToolButton::menu();
     if(menu) {
         menu->hide();
@@ -96,12 +92,8 @@ void ToolButton::hideMenu() {
     Overrides the composeComponent method to create the tool button component.
 */
 void ToolButton::composeComponent() {
-    AbstractButton::composeComponent();
+    Button::composeComponent();
 
-    Frame *back = background();
-    if(back) {
-        back->rectTransform()->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    }
     // Add icon
     Actor *icon = Engine::composeActor<Image>(gIcon, actor());
     Image *image = icon->getComponent<Image>();
@@ -119,9 +111,9 @@ void ToolButton::composeComponent() {
 
     setMenu(menu);
 
-    menu->addSection("Menu Item 1");
-    menu->addSection("Menu Item 2");
-    menu->addSection("Menu Item 3");
+    menu->addAction("Menu Item 1");
+    menu->addAction("Menu Item 2");
+    menu->addAction("Menu Item 3");
 }
 /*!
     \internal

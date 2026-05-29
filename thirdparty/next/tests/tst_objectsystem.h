@@ -87,8 +87,8 @@ namespace NextSuite {
         const MetaObject* meta = object->metaObject();
 
         ASSERT_TRUE(dynamic_cast<TestObjectEx*>(object) != nullptr);
-        ASSERT_TRUE(meta->methodCount() == 7);
-        ASSERT_TRUE(meta->propertyCount() == 4);
+        ASSERT_EQ(meta->methodCount(), 8);
+        ASSERT_EQ(meta->propertyCount(), 4);
 
         int index = meta->indexOfProperty("slot");
         ASSERT_TRUE(index > -1);

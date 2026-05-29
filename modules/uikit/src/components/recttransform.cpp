@@ -6,6 +6,8 @@
 
 namespace {
     const char *gCssSize("-uikit-size");
+    const char *gCssWidth("width");
+    const char *gCssHeight("height");
     const char *gCssPosition("-uikit-position");
     const char *gCssPivot("-uikit-pivot");
     const char *gCssMinAchors("-uikit-min-anchors");
@@ -85,17 +87,27 @@ void RectTransform::setSize(const Vector2 &size) {
         if(m_attachedLayout) {
             m_attachedLayout->invalidate();
         }
-        setDirty();
-
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) {
             Widget *widget = RectTransform::widget();
             if(widget) {
-                widget->updateStyleProperty(gCssSize, m_size.v, 2);
+                if(m_horizontalPolicy == RectTransform::Fixed && m_verticalPolicy == RectTransform::Fixed) {
+                    widget->updateStyleProperty(gCssSize, m_size.v, 2);
+                    return;
+                }
+                if(m_horizontalPolicy == RectTransform::Fixed) {
+                    widget->updateStyleProperty(gCssWidth, &m_size.x, 1);
+                }
+                if(m_verticalPolicy == RectTransform::Fixed) {
+                    widget->updateStyleProperty(gCssHeight, &m_size.y, 1);
+                }
             }
         }
 #endif
     }
+
+    // This call outside of equality check because of load Foldout sizes issue
+    setDirty();
 }
 /*!
     Returns the pivot point of the RectTransform.
@@ -231,6 +243,7 @@ void RectTransform::setMargin(const Vector4 &margin) {
         if(m_attachedLayout) {
             m_attachedLayout->invalidate();
         }
+
         setDirty();
 
 #ifdef SHARED_DEFINE
@@ -316,6 +329,12 @@ Widget *RectTransform::widget() {
         return m_subscribers.front();
     }
     return nullptr;
+}
+/*!
+    Returns a list of widgets associated with this rect transform
+*/
+std::list<Widget *> &RectTransform::widgets() {
+    return m_subscribers;
 }
 /*!
     Subscribes a \a widget to changes in the RectTransform.
@@ -497,11 +516,22 @@ void RectTransform::cleanDirtySize() const {
         // Change parrent size if needed
         if(m_horizontalPolicy == RectTransform::Preferred || m_verticalPolicy == RectTransform::Preferred) {
             Vector2 hint(sizeHint());
+            bool updated = false;
             if(m_horizontalPolicy == RectTransform::Preferred) {
-                m_size.x = hint.x;
+                if(m_size.x != hint.x) {
+                    m_size.x = hint.x;
+                    updated = true;
+                }
             }
             if(m_verticalPolicy == RectTransform::Preferred) {
-                m_size.y = hint.y;
+                if(m_size.y != hint.y) {
+                    m_size.y = hint.y;
+                    updated = true;
+                }
+            }
+
+            if(updated && m_attachedLayout) {
+                m_attachedLayout->invalidate();
             }
         }
 
@@ -520,6 +550,10 @@ void RectTransform::cleanDirtySize() const {
     // Notify
     for(auto it : m_subscribers) {
         it->boundChanged(m_size);
+    }
+
+    if(!m_subscribers.empty()) {
+        m_subscribers.front()->repaint();
     }
 }
 /*!
@@ -577,10 +611,10 @@ Vector2 RectTransform::sizeHint() const {
 /*!
     Returns the internal scissor area. All content outside of this are will not be rendered.
 */
-Vector4 RectTransform::scissorArea() const {
+Vector4 RectTransform::clipRegion() const {
     cleanDirty();
 
-    Vector4 offsets(m_margin + m_border + m_padding);
+    Vector4 offsets(m_border + m_padding);
 
     return Vector4(m_worldTransform[12] + offsets.w,
                    m_worldTransform[13] + offsets.x,
@@ -623,8 +657,8 @@ void RectTransform::applyStyle() {
     // Size
     Vector2 size(RectTransform::size());
     size = widget->styleBlock2Length(gCssSize, size, pixels);
-    size.x = widget->styleLength("width", size.x, pixels);
-    size.y = widget->styleLength("height", size.y, pixels);
+    size.x = widget->styleLength(gCssWidth, size.x, pixels);
+    size.y = widget->styleLength(gCssHeight, size.y, pixels);
     setSize(size);
 
     // Pivot point

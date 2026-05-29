@@ -1,6 +1,7 @@
 #include "components/image.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/material.h>
@@ -55,7 +56,7 @@ Image::~Image() {
 /*!
     \internal
 */
-void Image::draw(CommandBuffer &buffer) {
+void Image::draw() {
     if(m_dirtyMesh) {
         if(m_sprite) {
             Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
@@ -112,10 +113,11 @@ void Image::draw(CommandBuffer &buffer) {
             }
         }
 
-        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+        Canvas *canvas = Image::canvas();
+        canvas->drawMesh(m_mesh, m_material);
     }
 
-    Widget::draw(buffer);
+    Widget::draw();
 }
 /*!
     Returns an instantiated Material assigned to Image.
@@ -139,6 +141,7 @@ void Image::setMaterial(Material *material) {
         if(material) {
             m_material = material->createInstance();
         }
+        repaint();
     }
 }
 /*!
@@ -166,6 +169,7 @@ void Image::setSprite(Sprite *sprite) {
 
         m_dirtyMaterial = true;
         m_dirtyMesh = true;
+        repaint();
     }
 }
 /*!
@@ -183,6 +187,7 @@ void Image::setTexture(Texture *image) {
         }
 
         m_dirtyMaterial = true;
+        repaint();
     }
 }
 /*!
@@ -197,6 +202,7 @@ Vector4 Image::color() const {
 void Image::setColor(const Vector4 &color) {
     m_color = color;
     m_dirtyMaterial = true;
+    repaint();
 }
 /*!
     Returns a draw mode for the image.
@@ -225,6 +231,7 @@ void Image::boundChanged(const Vector2 &size) {
     if(m_size != size) {
         m_size = size;
         m_dirtyMesh = true;
+        repaint();
     }
 }
 /*!
@@ -262,10 +269,12 @@ void Image::spriteUpdated(int state, void *ptr) {
     switch(state) {
         case Resource::Ready: {
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
+            p->repaint();
         } break;
         case Resource::ToBeDeleted: {
             p->m_sprite = nullptr;
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
+            p->repaint();
         } break;
         default: break;
     }

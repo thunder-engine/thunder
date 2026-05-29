@@ -41,9 +41,9 @@ void GroupWidget::update(const Vector2 &pos) {
     Widget::update(pos);
 
     Vector4 newColor = m_node->color();
-    if(m_header->color() != newColor) {
-        setColor(Vector4(newColor.x, newColor.y, newColor.z, 0.5f));
-        m_header->setColor(newColor);
+    if(m_header->backgroundColor() != newColor) {
+        setBackgroundColor(Vector4(newColor.x, newColor.y, newColor.z, 0.5f));
+        m_header->setBackgroundColor(newColor);
     }
 
     Input::CursorShape shape = Input::CURSOR_ARROW;
@@ -133,7 +133,7 @@ void GroupWidget::update(const Vector2 &pos) {
 void GroupWidget::composeComponent() {
     Frame::composeComponent();
 
-    setColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
+    setBackgroundColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
 
     Actor *header = Engine::composeActor<Frame>("Header", actor());
     if(header) {

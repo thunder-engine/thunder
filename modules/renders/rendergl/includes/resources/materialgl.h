@@ -23,13 +23,15 @@ public:
 private:
     void copyLocalData(uint32_t index, uint32_t program, int32_t instanceLocation);
 
-    static void setBlendState(const Material::BlendState &state);
+    void setBlendState(const Material::BlendState &state) override;
 
-    static void setRasterState(const Material::RasterState &state);
+    static void setupBlendState(const Material::BlendState &state);
 
-    static void setDepthState(const Material::DepthState &state);
+    static void setupRasterState(const Material::RasterState &state);
 
-    static void setStencilState(const Material::StencilState &state);
+    static void setupDepthState(const Material::DepthState &state);
+
+    static void setupStencilState(const Material::StencilState &state);
 
 private:
     Material::BlendState m_glBlendState;

@@ -7,8 +7,9 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
     A_OBJECT(CheckBox, AbstractButton, Components/UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Image *, knobGraphic, CheckBox::knobGraphic, CheckBox::setKnobGraphic, "editor=Component"),
-        A_PROPERTYEX(Vector4, knobColor, CheckBox::knobColor, CheckBox::setKnobColor, "editor=Color")
+        A_PROPERTYEX(Sprite *, indicator, CheckBox::indicator, CheckBox::setIndicator, "editor=Asset"),
+        A_PROPERTYEX(Vector4, indicatorColor, CheckBox::indicatorColor, CheckBox::setIndicatorColor, "editor=Color"),
+        A_PROPERTYEX(Vector2, iconSize, CheckBox::indicatorSize, CheckBox::setIndicatorSize, "css=indicator-size")
     )
     A_NOMETHODS()
     A_NOENUMS()
@@ -16,27 +17,42 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
 public:
     CheckBox();
 
-    Image *knobGraphic() const;
-    void setKnobGraphic(Image *knob);
+    Sprite *indicator() const;
+    void setIndicator(Sprite *icon);
 
-    Vector4 knobColor() const;
-    void setKnobColor(const Vector4 color);
+    Vector4 indicatorColor() const;
+    void setIndicatorColor(const Vector4 &color);
 
-    void setMirrored(bool flag) override;
+    Vector2 indicatorSize() const;
+    void setIndicatorSize(const Vector2 &size);
 
     void setFoldMode(bool fold);
 
-    void setLabel(Label *label) override;
-
-private:
-    void checkStateSet() override;
-
+protected:
     void composeComponent() override;
 
-private:
+    void draw() override;
+
+    void applyStyle() override;
+
+    void boundChanged(const Vector2 &size) override;
+
+protected:
     Vector4 m_knobColor;
+    Vector2 m_knobSize;
+
+    Sprite *m_knobIcon;
+
+    Mesh *m_iconMesh;
+
+    MaterialInstance *m_iconMaterial;
+    MaterialInstance *m_frameMaterial;
+
+    float m_iconOffset;
 
     bool m_foldMode;
+    bool m_switchMode;
+    bool m_dirtyIcon;
 
 };
 

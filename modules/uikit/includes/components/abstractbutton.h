@@ -1,25 +1,19 @@
 #ifndef ABSTRACTBUTTON_H
 #define ABSTRACTBUTTON_H
 
-#include "widget.h"
 #include "frame.h"
-#include "label.h"
-#include "image.h"
 
-class UIKIT_EXPORT AbstractButton : public Widget {
-    A_OBJECT(AbstractButton, Widget, General)
+#include <resources/sprite.h>
+
+class MaterialInstance;
+
+class UIKIT_EXPORT AbstractButton : public Frame {
+    A_OBJECT(AbstractButton, Frame, General)
 
     A_PROPERTIES(
-        A_PROPERTY(TString, text, AbstractButton::text, AbstractButton::setText),
-        A_PROPERTYEX(Sprite *, icon, AbstractButton::icon, AbstractButton::setIcon, "editor=Asset"),
-        A_PROPERTY(Vector2, iconSize, AbstractButton::iconSize, AbstractButton::setIconSize),
         A_PROPERTY(bool, checkable, AbstractButton::isCheckable, AbstractButton::setCheckable),
         A_PROPERTY(bool, checked, AbstractButton::isChecked, AbstractButton::setChecked),
-        A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive),
-        A_PROPERTYEX(Vector4, color, AbstractButton::color, AbstractButton::setColor, "editor=Color"),
-        A_PROPERTYEX(Frame *, background, AbstractButton::background, AbstractButton::setBackground, "editor=Component"),
-        A_PROPERTYEX(Label *, label, AbstractButton::label, AbstractButton::setLabel, "editor=Component"),
-        A_PROPERTYEX(Image *, image, AbstractButton::image, AbstractButton::setImage, "editor=Component")
+        A_PROPERTY(bool, exclusive, AbstractButton::isExclusive, AbstractButton::setExclusive)
     )
     A_METHODS(
         A_SIGNAL(AbstractButton::pressed),
@@ -30,18 +24,7 @@ class UIKIT_EXPORT AbstractButton : public Widget {
 
 public:
     AbstractButton();
-
-    TString text() const;
-    void setText(const TString text);
-
-    Sprite *icon() const;
-    void setIcon(Sprite *icon);
-
-    Vector2 iconSize() const;
-    void setIconSize(const Vector2 &size);
-
-    Vector4 color() const;
-    void setColor(const Vector4 &color);
+    ~AbstractButton();
 
     Vector4 highlightedColor() const;
     void setHighlightedColor(const Vector4 &color);
@@ -58,18 +41,6 @@ public:
     bool isExclusive() const;
     void setExclusive(bool exclusive);
 
-    bool isMirrored() const;
-    virtual void setMirrored(bool mirrored);
-
-    Frame *background() const;
-    void setBackground(Frame *frame);
-
-    Label *label() const;
-    virtual void setLabel(Label *label);
-
-    Image *image() const;
-    virtual void setImage(Image *image);
-
     void setHovered(bool hover, bool instant = false);
 
 public: // signals
@@ -79,27 +50,21 @@ public: // signals
     void toggled(bool checked);
 
 protected:
-    void composeComponent() override;
+    void updateBackgroundColor(const Vector4 &color);
 
     void update(const Vector2 &pos) override;
-
-    void applyStyle() override;
 
     virtual void checkStateSet();
 
 protected:
-    Vector4 m_normalColor;
     Vector4 m_highlightedColor;
     Vector4 m_pressedColor;
-    Vector4 m_textColor;
-
-    Vector2 m_iconSize;
+    Vector4 m_currentColor;
 
     float m_fadeDuration;
     float m_currentFade;
 
     bool m_hovered;
-    bool m_mirrored;
     bool m_checkable;
     bool m_checked;
     bool m_exclusive;

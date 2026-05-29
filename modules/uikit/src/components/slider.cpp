@@ -28,6 +28,7 @@ void Slider::update(const Vector2 &pos) {
         if(bar) {
             bar->setProgressColor(MIX(bar->progressColor(), color, m_currentFade));
         }
+        repaint();
     }
 }
 
@@ -120,7 +121,7 @@ void Slider::composeComponent() {
     Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
     Frame *knob = knobActor->getComponent<Frame>();
     knob->setCorners(Vector4(8.0f));
-    knob->setColor(Vector4(1.0f));
+    knob->setBackgroundColor(Vector4(1.0f));
 
     RectTransform *rectKnob = knob->rectTransform();
     rectKnob->setSize(Vector2(16.0f, 16.0f));

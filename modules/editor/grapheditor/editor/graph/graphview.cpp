@@ -21,6 +21,7 @@
 #include <components/world.h>
 #include <components/camera.h>
 #include <components/recttransform.h>
+#include <components/canvas.h>
 
 #include <pipelinecontext.h>
 #include <pipelinetask.h>
@@ -132,14 +133,15 @@ void GraphView::setWorld(World *scene) {
     Viewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
-    m_view = Engine::composeActor<Widget>("View", m_scene);
+    m_canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
+    m_view = Engine::composeActor<Widget>("View", m_canvas);
 
     Actor *actor = Engine::composeActor<LinksRender>(gLinksRender, m_view);
     m_linksRender = actor->getComponent<LinksRender>();
 
     actor = Engine::composeActor<Frame>(gFrame, m_view);
     m_rubberBand = actor->getComponent<Frame>();
-    m_rubberBand->setColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
+    m_rubberBand->setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
     m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
 
     RectTransform *rect = m_rubberBand->rectTransform();

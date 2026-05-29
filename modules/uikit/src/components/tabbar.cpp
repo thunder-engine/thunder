@@ -1,12 +1,10 @@
 #include "components/tabbar.h"
 
 #include "components/recttransform.h"
-#include "components/frame.h"
 #include "components/button.h"
+#include "components/canvas.h"
 
 #include "resources/stylesheet.h"
-
-#include "commandbuffer.h"
 
 #define NAVI_SIZE 32
 
@@ -55,11 +53,8 @@ int TabBar::insertTab(int index, const TString &title) {
         setSubWidget(button);
 
         button->setText(title);
-
-        Frame *back = button->background();
-        if(back) {
-            back->setCorners(m_tabCornerRadius);
-        }
+        button->setCorners(m_tabCornerRadius);
+        button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
 
         if(m_showClose) {
             createCloseButton(buttonActor);
@@ -174,6 +169,7 @@ void TabBar::setCurrentIndex(int index) {
         idx++;
     }
 
+    repaint();
     currentChanged(m_currentIndex);
 }
 /*!
@@ -265,9 +261,7 @@ int TabBar::indexOf(Button *button) const {
 void TabBar::setTabCornerRadius(const Vector4 &radius) {
     m_tabCornerRadius = radius;
     for(auto it : m_tabs) {
-        if(it->background()) {
-            it->background()->setCorners(m_tabCornerRadius);
-        }
+        it->setCorners(m_tabCornerRadius);
     }
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -286,7 +280,7 @@ Vector4 TabBar::tabCornerRadius() const {
 */
 bool TabBar::isHovered(const Vector2 &pos) {
     RectTransform *rect = rectTransform();
-    Vector4 area = rect->scissorArea();
+    Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
         area.z -= NAVI_SIZE;
@@ -322,30 +316,31 @@ void TabBar::update(const Vector2 &pos) {
 /*!
     \internal
 */
-void TabBar::draw(CommandBuffer &buffer) {
+void TabBar::draw() {
     RectTransform *rect = rectTransform();
-    Vector4 area(rect->scissorArea());
+    Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
-        m_backButton->draw(buffer);
+        m_backButton->draw();
         area.z -= NAVI_SIZE;
     }
 
     if(m_frontButton->isEnabled()) {
-        m_frontButton->draw(buffer);
+        m_frontButton->draw();
     }
 
-    buffer.enableScissor(area.x, area.y, area.z, area.w);
+    Canvas *canvas = TabBar::canvas();
+    canvas->setClipRegion(area);
 
     for(auto it : m_childWidgets) {
         if(it->isSubWidget() && it->actor()->isEnabled() && it->isEnabled()) {
             if(it != m_frontButton && it != m_backButton) {
-                it->draw(buffer);
+                it->draw();
             }
         }
     }
 
-    buffer.disableScissor();
+    canvas->disableClip();
 }
 /*!
     \internal
@@ -359,11 +354,8 @@ void TabBar::composeComponent() {
         setSubWidget(m_frontButton);
         m_frontButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_frontButton->setIconSize(Vector2(16.0f, 8.0f));
+        m_frontButton->setIconRotation(90.0f);
         m_frontButton->setEnabled(false);
-
-        Image *image = m_frontButton->image();
-        RectTransform *imageRect = image->rectTransform();
-        imageRect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
 
         RectTransform *rect = m_frontButton->rectTransform();
         rect->setSize(Vector2(16));
@@ -379,11 +371,8 @@ void TabBar::composeComponent() {
         setSubWidget(m_backButton);
         m_backButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_backButton->setIconSize(Vector2(16.0f, 8.0f));
+        m_backButton->setIconRotation(-90.0f);
         m_backButton->setEnabled(false);
-
-        Image *image = m_backButton->image();
-        RectTransform *imageRect = image->rectTransform();
-        imageRect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
 
         RectTransform *rect = m_backButton->rectTransform();
         rect->setSize(Vector2(16));
@@ -426,18 +415,8 @@ void TabBar::updateTabPositions() {
     for(auto it : m_tabs) {
         RectTransform *rect = it->rectTransform();
         float width = m_tabPadding.y + m_tabPadding.w;
-        Label *label = it->label();
-        if(label) {
-            width += label->textWidth();
-            label->setAlign(Alignment::Middle | Alignment::Left);
-            label->rectTransform()->setPosition(Vector3(m_tabPadding.w, 0.0f, 0.0f));
-        }
 
-        Image *image = it->image();
-        if(image) {
-            width += rect->padding().w;
-            width += it->iconSize().x;
-        }
+        width += it->contentWidth();
 
         if(m_showClose) {
             width += m_tabPadding.w + 16;
@@ -457,6 +436,7 @@ void TabBar::updateTabPositions() {
             m_positionOffset = 0.0f;
             updateTabPositions();
         }
+        repaint();
     }
     if(m_frontButton) {
         m_frontButton->setEnabled(showBackFront);
@@ -477,6 +457,7 @@ void TabBar::createCloseButton(Actor *parent) {
             closeRect->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
             closeRect->setSize(Vector2(16));
             closeRect->blockSignals(false);
+            repaint();
         }
 
         connect(closeBtn, _SIGNAL(clicked()), this, _SLOT(onCloseButtonClicked()));

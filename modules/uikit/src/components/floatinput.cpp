@@ -3,8 +3,6 @@
 #include "components/recttransform.h"
 #include "components/button.h"
 #include "components/lineedit.h"
-#include "components/frame.h"
-#include "components/image.h"
 
 #include <components/actor.h>
 
@@ -97,6 +95,8 @@ void FloatInput::setSingleStep(float step) {
     if(decreaseBtn) {
         decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
     }
+
+    repaint();
 }
 /*!
     Returns the corners radiuses.
@@ -112,22 +112,16 @@ void FloatInput::setCorners(Vector4 corners) {
 
     Button *decreaseBtn = decreaseButton();
     if(decreaseBtn) {
-        Frame *frame = decreaseBtn->background();
-        if(frame) {
-            Vector4 corners = m_cornerRadius;
-            corners.y = corners.z = 0.0f;
-            frame->setCorners(corners);
-        }
+        Vector4 corners = m_cornerRadius;
+        corners.y = corners.z = 0.0f;
+        decreaseBtn->setCorners(corners);
     }
 
     Button *increaseBtn = increaseButton();
     if(increaseBtn) {
-        Frame *frame = increaseBtn->background();
-        if(frame) {
-            Vector4 corners = m_cornerRadius;
-            corners.x = corners.w = 0.0f;
-            frame->setCorners(corners);
-        }
+        Vector4 corners = m_cornerRadius;
+        corners.x = corners.w = 0.0f;
+        increaseBtn->setCorners(corners);
     }
 }
 /*!
@@ -218,24 +212,18 @@ void FloatInput::composeComponent() {
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
 
-    Actor *left = Engine::composeActor<LineEdit>(gDecrease, actor());
+    Actor *left = Engine::composeActor<Button>(gDecrease, actor());
     Button *decreaseBtn = left->getComponent<Button>();
     if(decreaseBtn) {
         connect(decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
 
-        decreaseBtn->setText("");
         decreaseBtn->setIconSize(Vector2(16.0f, 8.0f));
         setDecreaseButton(decreaseBtn);
 
         decreaseBtn->setIcon(arrow);
-        Image *image = decreaseBtn->image();
-        if(image) {
-            RectTransform *rect = image->rectTransform();
-            if(rect) {
-                rect->setRotation(Vector3(0.0f, 0.0f,-90.0f));
-            }
-        }
+        decreaseBtn->setIconRotation(-90.0f);
     }
+
     RectTransform *leftRect = static_cast<RectTransform *>(left->transform());
     leftRect->setSize(Vector2(width, 0.0f));
     leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f, 1.0f));
@@ -246,18 +234,11 @@ void FloatInput::composeComponent() {
     if(increaseBtn) {
         connect(increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
 
-        increaseBtn->setText("");
         increaseBtn->setIconSize(Vector2(16.0f, 8.0f));
         setIncreaseButton(increaseBtn);
 
         increaseBtn->setIcon(arrow);
-        Image *icon = increaseBtn->image();
-        if(icon) {
-            RectTransform *rect = icon->rectTransform();
-            if(rect) {
-                rect->setRotation(Vector3(0.0f, 0.0f, 90.0f));
-            }
-        }
+        increaseBtn->setIconRotation(90.0f);
     }
 
     RectTransform *rightRect = static_cast<RectTransform *>(right->transform());
@@ -265,7 +246,7 @@ void FloatInput::composeComponent() {
     rightRect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f));
     rightRect->setPivot(Vector2(1.0f, 1.0f));
 
-    rectTransform()->setSize(Vector2(100.0f, 30.0f));
+    rectTransform()->setSize(Vector2(100.0f, 20.0f));
 
     setCorners(Vector4(4.0f));
 }

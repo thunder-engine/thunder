@@ -42,7 +42,8 @@ void Sprite::loadUserData(const VariantMap &data) {
 
     auto it = data.find(gTexture);
     if(it != data.end()) {
-        setTexture(Engine::loadResource<Texture>(it->second.toString()));
+        TString ref(it->second.toString());
+        setTexture(Engine::loadResource<Texture>(ref));
     }
 }
 /*!
@@ -56,7 +57,8 @@ VariantMap Sprite::saveUserData() const {
     }
 
     if(m_texture) {
-        result[gTexture] = Engine::reference(m_texture);
+        TString ref(Engine::reference(m_texture));
+        result[gTexture] = ref;
     }
 
     return result;

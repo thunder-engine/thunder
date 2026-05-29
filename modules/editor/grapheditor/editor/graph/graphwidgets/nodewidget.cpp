@@ -40,7 +40,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
     updateName();
 
     if(m_header) {
-        m_header->setColor(m_node->color());
+        m_header->setBackgroundColor(m_node->color());
     }
 
     rectTransform()->setSize(m_node->defaultSize());
@@ -131,7 +131,7 @@ void NodeWidget::update(const Vector2 &pos) {
                     color.y = CLAMP(color.y - 0.25f, 0.0f, 1.0f);
                     color.z = CLAMP(color.z - 0.25f, 0.0f, 1.0f);
                 }
-                setColor(color);
+                setBackgroundColor(color);
             }
 
             if(m_hovered) {
@@ -149,7 +149,7 @@ void NodeWidget::update(const Vector2 &pos) {
 void NodeWidget::composeComponent() {
     Frame::composeComponent();
 
-    setColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
+    setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 1.0f));
     setCorners(8);
 
     Layout *layout = new Layout;

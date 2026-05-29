@@ -60,12 +60,14 @@ void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
 void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
-    RenderTargetGL *t = static_cast<RenderTargetGL *>(target);
-    if(t) {
-        t->bindBuffer(level);
+    CommandBuffer::setRenderTarget(target, level);
+
+    RenderTargetGL *targetGL = static_cast<RenderTargetGL *>(target);
+    if(targetGL) {
+        targetGL->bindBuffer(level);
 
         int32_t x, y, w, h;
-        t->renderArea(x, y, w, h);
+        targetGL->renderArea(x, y, w, h);
 
         bool region = false;
         if(w > 0 || h > 0) {
@@ -73,12 +75,12 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
             region = true;
         }
 
-        int clearFlags = t->clearFlags();
+        int clearFlags = targetGL->clearFlags();
         if(clearFlags) {
             uint32_t flags = 0;
             if(clearFlags & RenderTarget::ClearColor) {
                 flags |= GL_COLOR_BUFFER_BIT;
-                const Vector4 &c = t->clearColor();
+                const Vector4 &c = targetGL->clearColor();
                 glClearColor(c.x, c.y, c.z, c.w);
             }
             if(clearFlags & RenderTarget::ClearDepth) {

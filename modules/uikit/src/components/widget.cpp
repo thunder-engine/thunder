@@ -1,6 +1,7 @@
 #include "components/widget.h"
 
 #include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include "stylesheet.h"
 #include "uisystem.h"
@@ -29,11 +30,14 @@ Widget *Widget::m_focusWidget = nullptr;
 Widget::Widget() :
         m_parent(nullptr),
         m_transform(nullptr),
-        m_subWidget(false) {
+        m_subWidget(false),
+        m_canvas(nullptr) {
 
 }
 
 Widget::~Widget() {
+    repaint();
+
     if(m_transform) {
         m_transform->unsubscribe(this);
     }
@@ -45,8 +49,6 @@ Widget::~Widget() {
     if(m_parent) {
         m_parent->m_childWidgets.remove(this);
     }
-
-    static_cast<UiSystem *>(system())->removeWidget(this);
 }
 /*!
     Returns a textual description of widget style.
@@ -76,14 +78,14 @@ void Widget::addClass(const TString &name) {
 }
 /*!
     \internal
-    Internal method called to draw the widget using the provided command buffer.
+    Internal method called to draw the widget.
 */
-void Widget::draw(CommandBuffer &buffer) {
-    drawSub(buffer);
+void Widget::draw() {
+    drawSub();
 
     for(auto it : m_childWidgets) {
         if(!it->m_subWidget && it->isEnabled() && it->actor()->isEnabled()) {
-            it->draw(buffer);
+            it->draw();
         }
     }
 }
@@ -92,7 +94,7 @@ void Widget::draw(CommandBuffer &buffer) {
 */
 bool Widget::isHovered(const Vector2 &pos) {
     RectTransform *rect = rectTransform();
-    Vector4 area = rect->scissorArea();
+    Vector4 area(rect->clipRegion());
 
     return (pos.x > area.x && pos.x < area.x + area.z && pos.y > area.y && pos.y < area.y + area.w);
 }
@@ -108,12 +110,30 @@ void Widget::update(const Vector2 &pos) {
 }
 /*!
     \internal
+    Marks parent canvas as dirty.
+*/
+void Widget::repaint() {
+    Canvas *canvas = Widget::canvas();
+    if(canvas) {
+        canvas->markDirty();
+    }
+}
+/*!
+    Sets current state of widget to \a enabled or disabled.
+*/
+void Widget::setEnabled(bool enabled) {
+    Component::setEnabled(enabled);
+
+    repaint();
+}
+/*!
+    \internal
     Internal method called to draw the sub widget using the provided command buffer.
 */
-void Widget::drawSub(CommandBuffer &buffer) {
+void Widget::drawSub() {
     for(auto it : m_childWidgets) {
         if(it->m_subWidget && it->isEnabled() && it->actor()->isEnabled()) {
-            it->draw(buffer);
+            it->draw();
         }
     }
 }
@@ -123,11 +143,7 @@ void Widget::drawSub(CommandBuffer &buffer) {
     \sa raise()
 */
 void Widget::lower() {
-    for(auto it : childWidgets()) {
-        it->lower();
-    }
 
-    UiSystem::lowerWidget(this);
 }
 /*!
     Raises this widget to the top of the widget's stack.
@@ -135,11 +151,7 @@ void Widget::lower() {
     \sa lower()
 */
 void Widget::raise() {
-    UiSystem::riseWidget(this);
 
-    for(auto it : childWidgets()) {
-        it->raise();
-    }
 }
 /*!
     Callback to respond to changes in the widget's \a size.
@@ -160,6 +172,8 @@ void Widget::applyStyle() {
     for(auto it : m_childWidgets) {
         it->applyStyle();
     }
+
+    repaint();
 }
 /*!
     Returns the parent Widget.
@@ -183,6 +197,16 @@ RectTransform *Widget::rectTransform() {
     return m_transform;
 }
 /*!
+    Returns the Canvas that is the root node in the given Widget hierarchy.
+*/
+Canvas *Widget::canvas() {
+    if(m_canvas == nullptr && m_parent) {
+        m_canvas = m_parent->canvas();
+    }
+
+    return m_canvas;
+}
+/*!
     Returns true if widget is a part of complex widget; otherwise returns false.
 */
 bool Widget::isSubWidget() const {
@@ -199,7 +223,7 @@ Widget *Widget::focusWidget() {
 */
 Widget *Widget::subWidget(const TString &name) const {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget ) {
+        if(it->m_subWidget) {
             if(it->actor()->name() == name) {
                 return it;
             } else {
@@ -295,16 +319,6 @@ void Widget::composeComponent() {
             setRectTransform(rect);
         }
     }
-}
-/*!
-    \internal
-    Internal method to set the system for the widget, adding it to the render system.
-*/
-void Widget::setSystem(ObjectSystem *system) {
-    Object::setSystem(system);
-
-    UiSystem *render = static_cast<UiSystem *>(system);
-    render->addWidget(this);
 }
 /*!
     \internal
@@ -408,7 +422,9 @@ Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value,
 
     return result;
 }
-
+/*!
+    \internal
+*/
 void Widget::updateStyleProperty(const TString &name, const float *v, int32_t size) {
     if(!isSignalsBlocked() && !m_subWidget) {
         TString data;

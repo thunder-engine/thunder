@@ -1,5 +1,6 @@
 #include "components/frame.h"
 
+#include "components/canvas.h"
 #include "components/recttransform.h"
 
 #include <components/actor.h>
@@ -10,7 +11,6 @@
 #include <resources/material.h>
 #include <resources/stylesheet.h>
 
-#include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <gizmos.h>
 
@@ -18,20 +18,18 @@ namespace {
     const char *gBackgroundColor("backgroundColor");
     const char *gBorderWidth("borderWidth");
     const char *gBorderRadius("borderRadius");
+    const char *gBorderColor("borderColor");
 
-    const char *gTopColor("topColor");
-    const char *gRightColor("rightColor");
-    const char *gBottomColor("bottomColor");
-    const char *gLeftColor("leftColor");
+    const char *gOverride("mainTexture");
+    const char *gColor("mainColor");
 
     const char *gCssBackgroundColor("background-color");
     const char *gCssBorderColor("border-color");
-    const char *gCssBorderTopColor("border-top-color");
-    const char *gCssBorderRightColor("border-right-color");
-    const char *gCssBorderBottomColor("border-bottom-color");
-    const char *gCssBorderLeftColor("border-left-color");
     const char *gCssBorderRadius("border-radius");
-};
+
+    const char *gDefaultSprite(".embedded/DefaultUI.shader");
+    const char *gDefaultFrame(".embedded/Frame.shader");
+}
 
 /*!
     \class Frame
@@ -42,57 +40,84 @@ namespace {
     It is designed to visually group or contain other UI elements, providing a clear separation or visual boundary.
     The frame can have customizable corners, border width, and border color, making it a versatile element for organizing and structuring content within an application.
 */
-
 Frame::Frame() :
         Widget(),
         m_borderRadius(0.0f),
         m_backgroundColor(1.0f, 1.0f, 1.0f, 0.5f),
-        m_topColor(0.8f),
-        m_rightColor(0.8f),
-        m_bottomColor(0.8f),
-        m_leftColor(0.8f),
-        m_mesh(PipelineContext::defaultPlane()),
-        m_material(nullptr) {
+        m_borderColor(0.8f),
+        m_backgroundImage(nullptr),
+        m_backgroundMesh(nullptr),
+        m_imageMaterial(nullptr),
+        m_frameMaterial(nullptr),
+        m_dirtyBackground(true) {
 
-    Material *material = Engine::loadResource<Material>(".embedded/Frame.shader");
-    if(material) {
-        m_material = material->createInstance();
-
-        m_material->setVector4(gBorderRadius, &m_borderRadius);
-        m_material->setVector4(gTopColor, &m_topColor);
-        m_material->setVector4(gRightColor, &m_rightColor);
-        m_material->setVector4(gBottomColor, &m_bottomColor);
-        m_material->setVector4(gLeftColor, &m_leftColor);
-        m_material->setVector4(gBackgroundColor, &m_backgroundColor);
+    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(spriteMaterial) {
+        m_imageMaterial = spriteMaterial->createInstance();
+        m_imageMaterial->setVector4(gColor, &m_backgroundColor);
     }
+
+    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(frameMaterial) {
+        m_frameMaterial = frameMaterial->createInstance();
+
+        Vector4 width(0.0f);
+        m_frameMaterial->setVector4(gBorderWidth, &width);
+        m_frameMaterial->setVector4(gBorderRadius, &m_borderRadius);
+        m_frameMaterial->setVector4(gBorderColor, &m_borderColor);
+        m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
+    }
+}
+
+Frame::~Frame() {
+    delete m_backgroundImage;
+    delete m_backgroundMesh;
+
+    delete m_imageMaterial;
+    m_imageMaterial = nullptr;
+
+    delete m_frameMaterial;
+    m_frameMaterial = nullptr;
 }
 /*!
     \internal
 */
-void Frame::draw(CommandBuffer &buffer) {
-    if(m_material) {
-        RectTransform *rect = rectTransform();
-        Matrix4 m(rect->worldTransform());
+void Frame::draw() {
+    RectTransform *rect = rectTransform();
+    if(m_dirtyBackground) {
+        if(m_backgroundImage) {
+            m_backgroundMesh = Engine::objectCreate<Mesh>();
+            m_backgroundMesh->makeDynamic();
 
-        Vector2 size(rect->size());
-        Matrix4 s;
-        s[0] = size.x;
-        s[5] = size.y;
-        s[12] = size.x * 0.5f;
-        s[13] = size.y * 0.5f;
+            Vector2 size(rect->size());
+            m_backgroundImage->composeMesh(m_backgroundMesh, Sprite::Sliced, size);
 
-        uint32_t hash = rect->hash();
-        Mathf::hashCombine(hash, s[0]);
-        Mathf::hashCombine(hash, s[5]);
-        Mathf::hashCombine(hash, s[12]);
-        Mathf::hashCombine(hash, s[13]);
-
-        m_material->setTransform(m * s, 0, hash);
-
-        buffer.drawMesh(m_mesh, 0, Material::Translucent, *m_material);
+            m_imageMaterial->setTexture(gOverride, m_backgroundImage->texture());
+        }
+        m_dirtyBackground = false;
     }
 
-    Widget::draw(buffer);
+    Canvas *canvas = Frame::canvas();
+    if(m_backgroundImage) {
+        Matrix4 mat(rect->worldTransform());
+
+        const Vector3Vector &verts(m_backgroundMesh->vertices());
+        Vector2 scl(rect->worldScale());
+        mat[12] -= verts[0].x * scl.x;
+        mat[13] -= verts[0].y * scl.y;
+
+        uint32_t hash = rect->hash();
+        Mathf::hashCombine(hash, mat[12]);
+        Mathf::hashCombine(hash, mat[13]);
+
+        m_imageMaterial->setTransform(mat, 0, hash);
+
+        canvas->drawMesh(m_backgroundMesh, m_imageMaterial);
+    } else {
+        canvas->drawRect(m_frameMaterial, rect);
+    }
+
+    Widget::draw();
 }
 /*!
     \internal
@@ -105,33 +130,13 @@ void Frame::applyStyle() {
     // Background color
     auto it = m_styleRules.find(gCssBackgroundColor);
     if(it != m_styleRules.end()) {
-        setColor(StyleSheet::toColor(it->second.second));
+        setBackgroundColor(StyleSheet::toColor(it->second.second));
     }
 
     // Border color
     it = m_styleRules.find(gCssBorderColor);
     if(it != m_styleRules.end()) {
         setBorderColor(StyleSheet::toColor(it->second.second));
-    }
-
-    it = m_styleRules.find(gCssBorderTopColor);
-    if(it != m_styleRules.end()) {
-        setTopColor(StyleSheet::toColor(it->second.second));
-    }
-
-    it = m_styleRules.find(gCssBorderRightColor);
-    if(it != m_styleRules.end()) {
-        setRightColor(StyleSheet::toColor(it->second.second));
-    }
-
-    it = m_styleRules.find(gCssBorderBottomColor);
-    if(it != m_styleRules.end()) {
-        setBottomColor(StyleSheet::toColor(it->second.second));
-    }
-
-    it = m_styleRules.find(gCssBorderLeftColor);
-    if(it != m_styleRules.end()) {
-        setLeftColor(StyleSheet::toColor(it->second.second));
     }
 
     // Border radius
@@ -159,13 +164,14 @@ Vector4 Frame::corners() const {
 */
 void Frame::setCorners(const Vector4 &corners) {
     m_borderRadius = corners;
-    if(m_material) {
+    if(m_frameMaterial) {
         RectTransform *rect = rectTransform();
         if(rect) {
             Vector4 normCorners(m_borderRadius / rect->size().y);
-            m_material->setVector4(gBorderRadius, &normCorners);
+            m_frameMaterial->setVector4(gBorderRadius, &normCorners);
         }
     }
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -176,17 +182,22 @@ void Frame::setCorners(const Vector4 &corners) {
 /*!
     Returns the color of the frame to be drawn.
 */
-Vector4 Frame::color() const {
+Vector4 Frame::backgroundColor() const {
     return m_backgroundColor;
 }
 /*!
     Changes the \a color of the frame to be drawn.
 */
-void Frame::setColor(const Vector4 &color) {
+void Frame::setBackgroundColor(const Vector4 &color) {
     m_backgroundColor = color;
-    if(m_material) {
-        m_material->setVector4(gBackgroundColor, &m_backgroundColor);
+    if(m_frameMaterial) {
+        m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
     }
+
+    if(m_imageMaterial) {
+        m_imageMaterial->setVector4(gColor, &m_backgroundColor);
+    }
+    repaint();
 
 #ifdef SHARED_DEFINE
     if(!isSubWidget() && !isSignalsBlocked()) {
@@ -195,97 +206,44 @@ void Frame::setColor(const Vector4 &color) {
 #endif
 }
 /*!
-    Returns the top border color of the frame.
+    Returns border color of the frame.
 */
-Vector4 Frame::topColor() const {
-    return m_topColor;
-}
-/*!
-    Sets the top border \a color of the frame.
-*/
-void Frame::setTopColor(const Vector4 &color) {
-    m_topColor = color;
-    if(m_material) {
-        m_material->setVector4(gTopColor, &m_topColor);
-    }
-
-#ifdef SHARED_DEFINE
-    if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssBorderTopColor, StyleSheet::toColor(m_topColor));
-    }
-#endif
-}
-/*!
-    Returns the right border color of the frame.
-*/
-Vector4 Frame::rightColor() const {
-    return m_rightColor;
-}
-/*!
-    Sets the right border \a color of the frame.
-*/
-void Frame::setRightColor(const Vector4 &color) {
-    m_rightColor = color;
-    if(m_material) {
-        m_material->setVector4(gRightColor, &m_rightColor);
-    }
-
-#ifdef SHARED_DEFINE
-    if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssBorderRightColor, StyleSheet::toColor(m_rightColor));
-    }
-#endif
-}
-/*!
-    Returns the bottom border color of the frame.
-*/
-Vector4 Frame::bottomColor() const {
-    return m_bottomColor;
-}
-/*!
-    Sets the bottom border \a color of the frame.
-*/
-void Frame::setBottomColor(const Vector4 &color) {
-    m_bottomColor = color;
-    if(m_material) {
-        m_material->setVector4(gBottomColor, &m_bottomColor);
-    }
-
-#ifdef SHARED_DEFINE
-    if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssBorderBottomColor, StyleSheet::toColor(m_bottomColor));
-    }
-#endif
-}
-/*!
-    Returns the left border color of the frame.
-*/
-Vector4 Frame::leftColor() const {
-    return m_leftColor;
-}
-/*!
-    Sets the left border \a color of the frame.
-*/
-void Frame::setLeftColor(const Vector4 &color) {
-    m_leftColor = color;
-    if(m_material) {
-        m_material->setVector4(gLeftColor, &m_leftColor);
-    }
-
-#ifdef SHARED_DEFINE
-    if(!isSubWidget() && !isSignalsBlocked()) {
-        StyleSheet::setStyleProperty(this, gCssBorderLeftColor, StyleSheet::toColor(m_leftColor));
-    }
-#endif
+Vector4 Frame::borderColor() const {
+    return m_borderColor;
 }
 /*!
     Sets the border \a color of the frame.
 */
 void Frame::setBorderColor(const Vector4 &color) {
-    setTopColor(color);
-    setRightColor(color);
-    setBottomColor(color);
-    setLeftColor(color);
+    m_borderColor = color;
+
+    if(m_frameMaterial) {
+        m_frameMaterial->setVector4(gBorderColor, &color);
+    }
+    repaint();
+
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        StyleSheet::setStyleProperty(this, gCssBorderColor, StyleSheet::toColor(m_borderColor));
+    }
+#endif
+}
+/*!
+    Returns background image.
+*/
+Sprite *Frame::backgroundImage() const {
+    return m_backgroundImage;
+}
+/*!
+    Sets background \a image.
+*/
+void Frame::setBackgroundImage(Sprite *image) {
+    if(m_backgroundImage != image) {
+        m_backgroundImage = image;
+
+        m_dirtyBackground = true;
+        repaint();
+    }
 }
 /*!
     Callback method called when the \a size of the frame changed.
@@ -294,11 +252,12 @@ void Frame::setBorderColor(const Vector4 &color) {
 void Frame::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    if(m_material) {
+    if(m_frameMaterial) {
         Vector4 normCorners(m_borderRadius / size.y);
-        m_material->setVector4(gBorderRadius, &normCorners);
+        m_frameMaterial->setVector4(gBorderRadius, &normCorners);
 
         Vector4 normBorders(rectTransform()->border() / size.y);
-        m_material->setVector4(gBorderWidth, &normBorders);
+        m_frameMaterial->setVector4(gBorderWidth, &normBorders);
+        repaint();
     }
 }

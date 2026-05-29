@@ -5,6 +5,7 @@
 #include <components/label.h>
 #include <components/recttransform.h>
 #include <components/checkbox.h>
+#include <components/layout.h>
 
 #include <amath.h>
 
@@ -29,25 +30,36 @@ EffectModule::EffectModule() :
         m_stage(ParticleSpawn),
         m_enabled(true),
         m_blockUpdate(false),
-        m_checkBoxWidget(nullptr) {
+        m_checkBoxWidget(nullptr),
+        m_groupWidget(nullptr) {
 }
 
 Widget *EffectModule::widget(Object *parent) {
-    if(m_checkBoxWidget == nullptr) {
+    if(m_groupWidget == nullptr) {
         TString moduleName = name();
 
-        Actor *function = Engine::composeActor<CheckBox>(moduleName, parent);
+        Actor *group = Engine::composeActor<Widget>(moduleName, parent);
+        m_groupWidget = group->getComponent<Widget>();
+
+        RectTransform *rect = m_groupWidget->rectTransform();
+        Layout *layout = new Layout;
+        layout->setOrientation(Widget::Horizontal);
+        rect->setLayout(layout);
+
+        Actor *function = Engine::composeActor<CheckBox>(moduleName, group);
         m_checkBoxWidget = function->getComponent<CheckBox>();
         m_checkBoxWidget->setChecked(m_enabled);
-        m_checkBoxWidget->setText(moduleName);
-        m_checkBoxWidget->setMirrored(true);
 
-        m_checkBoxWidget->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
+        Actor *label = Engine::composeActor<Label>(moduleName, group);
+        Label *labelWidget = label->getComponent<Label>();
+        labelWidget->setText(moduleName);
+
+        rect->setSize(m_checkBoxWidget->rectTransform()->size());
 
         Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }
 
-    return m_checkBoxWidget;
+    return m_groupWidget;
 }
 
 void EffectModule::setEnabled(bool enabled) {

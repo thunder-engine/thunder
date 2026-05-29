@@ -291,17 +291,7 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         m_instanceBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
-    m_glBlendState = m->m_blendState;
-
-    // Blending
-    m_glBlendState.colorOperation = convertBlendMode(m_glBlendState.colorOperation);
-    m_glBlendState.alphaOperation = convertBlendMode(m_glBlendState.alphaOperation);
-
-    m_glBlendState.sourceColorBlendMode = convertBlendFactor(m_glBlendState.sourceColorBlendMode);
-    m_glBlendState.sourceAlphaBlendMode = convertBlendFactor(m_glBlendState.sourceAlphaBlendMode);
-
-    m_glBlendState.destinationColorBlendMode = convertBlendFactor(m_glBlendState.destinationColorBlendMode);
-    m_glBlendState.destinationAlphaBlendMode = convertBlendFactor(m_glBlendState.destinationAlphaBlendMode);
+    setBlendState(m->m_blendState);
 
     // Depth
     m_glDepthState = m->m_depthState;
@@ -417,7 +407,7 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         rasterState.enabled = false;
     }
 
-    setRasterState(rasterState);
+    setupRasterState(rasterState);
 
     Material::BlendState blendState = m_glBlendState;
     if(layer & Material::Visibility) {
@@ -428,9 +418,9 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
         blendState.destinationAlphaBlendMode = GL_ZERO;
     }
 
-    setBlendState(blendState);
-    setDepthState(m_glDepthState);
-    setStencilState(m_glStencilState);
+    setupBlendState(blendState);
+    setupDepthState(m_glDepthState);
+    setupStencilState(m_glStencilState);
 
     return true;
 }
@@ -471,6 +461,19 @@ void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t
 }
 
 void MaterialInstanceGL::setBlendState(const Material::BlendState &state) {
+    m_glBlendState = state;
+
+    m_glBlendState.colorOperation = convertBlendMode(m_glBlendState.colorOperation);
+    m_glBlendState.alphaOperation = convertBlendMode(m_glBlendState.alphaOperation);
+
+    m_glBlendState.sourceColorBlendMode = convertBlendFactor(m_glBlendState.sourceColorBlendMode);
+    m_glBlendState.sourceAlphaBlendMode = convertBlendFactor(m_glBlendState.sourceAlphaBlendMode);
+
+    m_glBlendState.destinationColorBlendMode = convertBlendFactor(m_glBlendState.destinationColorBlendMode);
+    m_glBlendState.destinationAlphaBlendMode = convertBlendFactor(m_glBlendState.destinationAlphaBlendMode);
+}
+
+void MaterialInstanceGL::setupBlendState(const Material::BlendState &state) {
     static bool enabled = false;
     if(state.enabled) {
         if(!enabled) {
@@ -506,7 +509,7 @@ void MaterialInstanceGL::setBlendState(const Material::BlendState &state) {
 
 }
 
-void MaterialInstanceGL::setRasterState(const Material::RasterState &state) {
+void MaterialInstanceGL::setupRasterState(const Material::RasterState &state) {
     static bool enabled = false;
     if(state.enabled) {
         if(!enabled) {
@@ -527,7 +530,7 @@ void MaterialInstanceGL::setRasterState(const Material::RasterState &state) {
     }
 }
 
-void MaterialInstanceGL::setDepthState(const Material::DepthState &state) {
+void MaterialInstanceGL::setupDepthState(const Material::DepthState &state) {
     static bool enabled = false;
     if(state.enabled) {
         if(!enabled) {
@@ -553,7 +556,7 @@ void MaterialInstanceGL::setDepthState(const Material::DepthState &state) {
     }
 }
 
-void MaterialInstanceGL::setStencilState(const Material::StencilState &state) {
+void MaterialInstanceGL::setupStencilState(const Material::StencilState &state) {
     static bool enabled = false;
     if(state.enabled) {
         if(!enabled) {

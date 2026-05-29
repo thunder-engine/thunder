@@ -42,7 +42,7 @@ void MaterialVk::loadUserData(const VariantMap &data) {
             ++field; // Uniform locations
             ++field; // Attributes
             if(field != fields.end()) {
-                for(auto a : field->toList()) {
+                for(auto &a : field->toList()) {
                     VariantList list = a.toList();
 
                     attributes.push_back({list.back().toInt(), static_cast<uint32_t>(list.front().toInt())});
