@@ -20,7 +20,7 @@ public:
     void setMinimum(int value) override;
     void setMaximum(int value) override;
 
-    void setOrientation(int value) override;
+    void setOrientation(int orientation) override;
 
     int pageStep() const;
     void setPageStep(int page);

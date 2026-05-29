@@ -69,11 +69,15 @@ ProgressBar::~ProgressBar() {
     delete m_frameProgress;
     m_frameProgress = nullptr;
 }
-
+/*!
+    Returns the orientation of the progress bar.
+*/
 int ProgressBar::orientation() const {
     return m_orientation;
 }
-
+/*!
+    Sets the \a orientation of the progress bar.
+*/
 void ProgressBar::setOrientation(int orientation) {
     if(m_orientation != orientation) {
         m_orientation = orientation;

@@ -15,70 +15,106 @@ namespace {
     const char *gSpriteArrow(".embedded/ui.png/Arrow");
 }
 
+/*!
+    \class ScrollBar
+    \brief The ScrollBar class provides a scroll bar widget that allows users to navigate through a range of values.
+    \inmodule Gui
+
+    ScrollBar provides a typical scroll bar with arrow buttons and a draggable knob.
+    Supports both horizontal and vertical orientations.
+*/
+
 ScrollBar::ScrollBar() :
         m_pageStep(2),
         m_singleStep(1) {
 
     m_areaGap = 20.0f;
 }
-
+/*!
+    Sets the current \a value of the scroll bar.
+*/
 void ScrollBar::setValue(int value) {
     AbstractSlider::setValue(value);
 
     recalcKnob();
 }
-
+/*!
+    Sets the minimum \a value of the scroll bar.
+*/
 void ScrollBar::setMinimum(int value) {
     AbstractSlider::setMinimum(value);
 
     recalcKnob();
 }
-
+/*!
+    Sets the maximum \a value of the scroll bar.
+*/
 void ScrollBar::setMaximum(int value) {
     AbstractSlider::setMaximum(value);
 
     recalcKnob();
 }
-
-void ScrollBar::setOrientation(int value) {
-    AbstractSlider::setOrientation(value);
+/*!
+    Sets the \a orientation of the scroll bar.
+*/
+void ScrollBar::setOrientation(int orientation) {
+    AbstractSlider::setOrientation(orientation);
 
     setBackArrow(backArrow());
     setFrontArrow(frontArrow());
 
     recalcKnob();
 }
-
+/*!
+    Returns the page step size.
+    The page step determines how much the value changes when clicking
+*/
 int ScrollBar::pageStep() const {
     return m_pageStep;
 }
-
+/*!
+    Sets the \a page step size.
+    The page step determines how much the value changes when clicking on the track area.
+*/
 void ScrollBar::setPageStep(int page) {
     m_pageStep = page;
 
     recalcKnob();
 }
-
+/*!
+    Returns the single step size.
+*/
 int ScrollBar::singleStep() const {
     return m_singleStep;
 }
-
+/*!
+    Sets the single \a step size.
+    The single step determines how much the value changes when clicking the arrow buttons.
+*/
 void ScrollBar::setSingleStep(int step) {
     m_singleStep = step;
 }
-
+/*!
+    Moves the value backward by one single step.
+*/
 void ScrollBar::stepBack() {
     setValue(m_value - m_singleStep);
 }
-
+/*!
+    Moves the value forward by one single step.
+*/
 void ScrollBar::stepFront() {
     setValue(m_value + m_singleStep);
 }
-
+/*!
+    Returns the back arrow widget.
+*/
 Widget *ScrollBar::backArrow() const {
     return subWidget(gBackArrow);
 }
-
+/*!
+    Sets the back \a arrow widget.
+*/
 void ScrollBar::setBackArrow(Widget *arrow) {
     Button *button = dynamic_cast<Button *>(backArrow());
     if(button) {
@@ -89,7 +125,7 @@ void ScrollBar::setBackArrow(Widget *arrow) {
 
     if(arrow) {
         RectTransform *rect = arrow->rectTransform();
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(0.0f, 0.5f));
             rect->setSize(Vector2(m_areaGap, 0.0f));
             rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0, 1.0f));
@@ -104,18 +140,22 @@ void ScrollBar::setBackArrow(Widget *arrow) {
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepBack()));
 
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             button->setIconRotation(-90.0f);
         } else {
             button->setIconRotation(180.0f);
         }
     }
 }
-
+/*!
+    Returns the front arrow widget.
+*/
 Widget *ScrollBar::frontArrow() const {
     return subWidget(gFrontArrow);
 }
-
+/*!
+    Sets the front \a arrow widget.
+*/
 void ScrollBar::setFrontArrow(Widget *arrow) {
     Button *button = dynamic_cast<Button *>(frontArrow());
     if(button) {
@@ -126,7 +166,7 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
 
     if(arrow) {
         RectTransform *rect = arrow->rectTransform();
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(1.0f, 0.5f));
             rect->setSize(Vector2(m_areaGap, 0.0f));
             rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0, 1.0f));
@@ -140,14 +180,16 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
     button = dynamic_cast<Button *>(arrow);
     if(button) {
         connect(button, _SIGNAL(pressed()), this, _SLOT(stepFront()));
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             button->setIconRotation(90.0f);
         } else {
             button->setIconRotation(0.0f);
         }
     }
 }
-
+/*!
+    \internal
+*/
 void ScrollBar::recalcKnob() {
     Widget *knob = ScrollBar::knob();
     if(knob) {
@@ -163,7 +205,7 @@ void ScrollBar::recalcKnob() {
         factor = CLAMP(factor * (1.0 - pageFactor), 0.0f, 1.0f);
 
         RectTransform *knobRect = knob->rectTransform();
-        if(m_orientation == Horizontal) {
+        if(m_orientation == Widget::Horizontal) {
             float normalGap = m_areaGap / size.x;
             float scaledFactor = normalGap + factor * (1.0f - normalGap * 2.0f);
             float scaledPage = pageFactor * (1.0f - normalGap * 2.0f);
@@ -181,13 +223,17 @@ void ScrollBar::recalcKnob() {
     }
     repaint();
 }
-
+/*!
+    \internal
+*/
 void ScrollBar::boundChanged(const Vector2 &size) {
     AbstractSlider::boundChanged(size);
 
     recalcKnob();
 }
-
+/*!
+    \internal
+*/
 void ScrollBar::update(const Vector2 &pos) {
     bool hovered = m_hovered;
 
@@ -204,7 +250,7 @@ void ScrollBar::update(const Vector2 &pos) {
             RectTransform *knobRect = knob->rectTransform();
 
             Vector2 size(knobRect->size());
-            if(m_orientation == Horizontal) {
+            if(m_orientation == Widget::Horizontal) {
                 knobRect->setSize(Vector2(size.x, m_hovered ? 8.0f : 4.0f));
             } else {
                 knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, size.y));
@@ -213,7 +259,9 @@ void ScrollBar::update(const Vector2 &pos) {
         repaint();
     }
 }
-
+/*!
+    \internal
+*/
 void ScrollBar::composeComponent() {
     AbstractSlider::composeComponent();
 
@@ -225,7 +273,7 @@ void ScrollBar::composeComponent() {
 
     RectTransform *rectKnob = knob->rectTransform();
 
-    if(m_orientation == Horizontal) {
+    if(m_orientation == Widget::Horizontal) {
         rectKnob->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
     } else {
         rectKnob->setAnchors(Vector2(0.5f, 0.0f), Vector2(0.5f, 0.0f));
@@ -248,7 +296,7 @@ void ScrollBar::composeComponent() {
 
     setValue(m_value);
 
-    if(m_orientation == Horizontal) {
+    if(m_orientation == Widget::Horizontal) {
         rectTransform()->setSize(Vector2(100.0f, 20.0f));
     } else {
         rectTransform()->setSize(Vector2(20.0f, 100.0f));

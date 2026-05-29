@@ -5,6 +5,15 @@
 
 #include <input.h>
 
+/*!
+    \class Splitter
+    \brief A splitter widget that allows resizing of child widgets.
+
+    Splitter provides a container that divides its area into resizable panes.
+    Users can drag the splitter handles to adjust the size of adjacent child widgets.
+    Supports both horizontal and vertical orientations.
+*/
+
 Splitter::Splitter() :
         m_savedPosition(0.0f),
         m_index(-1),
@@ -12,11 +21,15 @@ Splitter::Splitter() :
         m_handleWidth(5) {
 
 }
-
+/*!
+    Returns the width (or thickness) of the splitter handle.
+*/
 int Splitter::handleWidth() const {
     return m_handleWidth;
 }
-
+/*!
+    Sets the \a width (or thickness) of the splitter handle.
+*/
 void Splitter::setHandleWidth(int width) {
     m_handleWidth = width;
     Layout *layout = rectTransform()->layout();
@@ -25,11 +38,15 @@ void Splitter::setHandleWidth(int width) {
         repaint();
     }
 }
-
+/*!
+    Returns the current orientation of the splitter.
+*/
 int Splitter::orentation() const {
     return m_orientation;
 }
-
+/*!
+    Sets the \a orientation of the splitter.
+*/
 void Splitter::setOrientation(int orientation) {
     m_orientation = orientation;
     Layout *layout = rectTransform()->layout();
@@ -59,15 +76,21 @@ void Splitter::setOrientation(int orientation) {
         }
     }
 }
-
+/*!
+    Adds a \a widget to the splitter at the end.
+*/
 void Splitter::addWidget(Widget *widget) {
     insertWidget(-1, widget);
 }
-
+/*!
+    Returns the number of child widgets in the splitter.
+*/
 int Splitter::count() {
     return rectTransform()->children().size();
 }
-
+/*!
+    Returns the index of a child \a widget.
+*/
 int Splitter::indexOf(Widget *widget) {
     Layout *layout = rectTransform()->layout();
     if(layout && widget) {
@@ -76,13 +99,17 @@ int Splitter::indexOf(Widget *widget) {
 
     return -1;
 }
-
+/*!
+    Inserts a \a widget at the specified \a index.
+*/
 void Splitter::insertWidget(int index, Widget *widget) {
     RectTransform *widgetRect = widget->rectTransform();
     widgetRect->setParentTransform(rectTransform());
     repaint();
 }
-
+/*!
+    Replaces a \a widget at the specified \a index.
+*/
 Widget *Splitter::replaceWidget(int index, Widget *widget) {
     Widget *result = Splitter::widget(index);
     if(result) {
@@ -99,7 +126,9 @@ Widget *Splitter::replaceWidget(int index, Widget *widget) {
 
     return result;
 }
-
+/*!
+    Returns the widget at the specified \a index.
+*/
 Widget *Splitter::widget(int index) {
     Layout *layout = rectTransform()->layout();
     if(layout) {
@@ -111,7 +140,9 @@ Widget *Splitter::widget(int index) {
 
     return nullptr;
 }
-
+/*!
+    \internal
+*/
 void Splitter::update(const Vector2 &pos) {
     Widget::update(pos);
 
@@ -171,7 +202,9 @@ void Splitter::update(const Vector2 &pos) {
         Input::mouseSetCursor(shape);
     }
 }
-
+/*!
+    \internal
+*/
 void Splitter::resizeWidget(int index, float delta) {
     Widget *widget = Splitter::widget(index);
     if(widget) {
@@ -186,7 +219,9 @@ void Splitter::resizeWidget(int index, float delta) {
         widget->repaint();
     }
 }
-
+/*!
+    \internal
+*/
 void Splitter::childAdded(RectTransform *rect) {
     if(rect) {
         Layout *layout = rectTransform()->layout();
@@ -213,7 +248,9 @@ void Splitter::childAdded(RectTransform *rect) {
         }
     }
 }
-
+/*!
+    \internal
+*/
 void Splitter::composeComponent() {
     Frame::composeComponent();
 
