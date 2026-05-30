@@ -16,9 +16,12 @@ public:
 
     }
 
-    StringList list(const char *path) override {
+    StringList list(const char *path, bool root = false) override {
         AAssetDir *dir = AAssetManager_openDir(glfmAndroidGetActivity()->assetManager, path);
         StringList result;
+        if(root) {
+            result.push_back(path);
+        }
         const char *name = nullptr;
         while((name = AAssetDir_getNextFileName(dir)) != nullptr) {
             result.push_back(name);

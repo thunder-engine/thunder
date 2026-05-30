@@ -220,8 +220,9 @@ void AssetConverterSettings::setVersion(uint32_t version) {
 }
 /*!
     Fixes \a uuid according it's \a type and \a lod level.
+    Optinal parameter can help to \a solve dependecies.
 */
-TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type, int lod) {
+TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type, int lod, bool solve) {
     Uuid result(uuid);
 
     if(!result.isNull()) {
@@ -233,7 +234,7 @@ TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type
     }
 
     TString str(result.toString());
-    if(str != uuid) {
+    if(str != uuid && solve) {
         m_changedUuids.push_back(std::make_pair(uuid, str));
     }
 
@@ -359,7 +360,7 @@ void AssetConverterSettings::setSubItemsDirty() {
     If the sub-item doesn't exist and \a type is provided, a new sub-item is created
     with a generated UUID and the parent's MD5 hash.
 */
-ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, const TString &type) const {
+ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key, const TString &type) {
     auto it = m_subItems.find(key);
     if(it != m_subItems.end()) {
         return it->second.info;
@@ -367,7 +368,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     if(!type.isEmpty()) {
         ResourceSystem::ResourceInfo info;
         info.type = type;
-        info.uuid = Uuid::createUuid().toString();
+        info.uuid = fixUuid(Uuid::createUuid().toString(), info.type, 0, false);
         return info;
     }
     return ResourceSystem::ResourceInfo();
@@ -427,7 +428,7 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
 */
 bool AssetConverterSettings::loadSettings() {
     File meta(source() + "." + gMetaExt);
-    if(meta.open(File::Read)) {
+    if(meta.exists() && meta.open(File::Read)) {
         VariantMap object = Json::load(meta.readAll()).toMap();
         meta.close();
 
@@ -574,7 +575,8 @@ void AssetConverterSettings::saveSettings() {
 }
 
 void AssetConverterSettings::newSettings() {
-    m_info.uuid = Uuid::createUuid().toString();
+    m_info.type = typeName();
+    m_info.uuid = fixUuid(Uuid::createUuid().toString(), m_info.type, 0, false);
     m_info.md5 = TString();
     m_info.id = 0;
 }

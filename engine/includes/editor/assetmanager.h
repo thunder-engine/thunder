@@ -82,8 +82,8 @@ public slots:
 signals:
     void ready();
 
-    void directoryChanged(const QString &path);
-    void fileChanged(const QString &path);
+    void directoryChanged(const TString &path);
+    void fileChanged(const TString &path);
 
     void imported();
     void importStarted(int count, const TString &stage);

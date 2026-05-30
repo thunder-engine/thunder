@@ -115,8 +115,8 @@ bool File::mkPath(const TString &path) {
     return s_handler->mkPath(path.data());
 }
 
-StringList File::list(const TString &path) {
-    return s_handler->list(path.data());
+StringList File::list(const TString &path, bool root) {
+    return s_handler->list(path.data(), root);
 }
 
 bool File::isFile(const TString &path) {

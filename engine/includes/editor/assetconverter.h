@@ -92,7 +92,7 @@ public:
 
     void setSubItemsDirty();
 
-    ResourceSystem::ResourceInfo subItem(const TString &key, const TString &type = TString()) const;
+    ResourceSystem::ResourceInfo subItem(const TString &key, const TString &type = TString());
     void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod = 0);
 
     Variant subItemData(const TString &key) const;
@@ -125,7 +125,7 @@ protected:
 
     void setVersion(uint32_t version);
 
-    TString fixUuid(const TString &uuid, const TString &type, int lod);
+    TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve = true);
 
     static QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
 

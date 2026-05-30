@@ -28,8 +28,11 @@ protected:
         }
     }
 
-    StringList list(const char *path) override {
+    StringList list(const char *path, bool root = false) override {
         StringList result;
+        if(root) {
+            result.push_back(path);
+        }
 
         listFilesRecursive(result, {path});
 
