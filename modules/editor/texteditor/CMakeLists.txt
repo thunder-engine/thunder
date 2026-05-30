@@ -36,8 +36,8 @@ file(GLOB MOC_HEADERS
     "editor/*.h"
 )
 
-QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
+QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
 if (desktop)
     add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_srcFiles} ${UI_HEADERS} ${MOC_SRCS})
@@ -46,9 +46,9 @@ if (desktop)
         next-editor
         engine-editor
         syntaxhighlighting
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

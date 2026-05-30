@@ -33,16 +33,16 @@ if(desktop)
         "converter/*.h"
     )
 	
-    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${RES_SOURCES})
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
-        Qt5::Core
-        Qt5::Gui
+        Qt::Core
+        Qt::Gui
     )
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE

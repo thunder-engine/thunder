@@ -49,7 +49,7 @@ if(desktop)
         "includes/converters/*.h"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
@@ -69,8 +69,7 @@ if(desktop)
         ogg-editor
         vorbis-editor
         vorbisfile-editor
-        Qt5::Core
-        Qt5::Gui
+        Qt::Gui
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE

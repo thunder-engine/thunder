@@ -38,7 +38,7 @@ if(desktop)
         "includes/editor/*.h"
     )
 
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
@@ -51,8 +51,9 @@ if(desktop)
         engine-editor
         glfw-editor
         glad
-        Qt5::Core
-        Qt5::Widgets
+        Qt::Core
+        Qt::Widgets
+        Qt::OpenGL
     )
 
     if(WIN32)

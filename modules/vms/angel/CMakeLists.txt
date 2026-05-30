@@ -52,8 +52,8 @@ if(desktop)
         src/converters/templates.qrc
     )
 
-    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
@@ -67,8 +67,8 @@ if(desktop)
         next-editor
         engine-editor
         angelscript-editor
-        Qt5::Core
-        Qt5::Gui
+        Qt::Core
+        Qt::Gui
     )
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths})

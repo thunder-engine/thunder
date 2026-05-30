@@ -155,9 +155,9 @@ if (desktop)
     target_link_libraries(${EDITOR_NAME} PRIVATE
         next-editor
         engine-editor
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
 
     if(WIN32)

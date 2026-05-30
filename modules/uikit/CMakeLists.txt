@@ -64,9 +64,9 @@ if(desktop)
         )
     endif()
 
-    QT5_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT5_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-    QT5_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
+    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
+    QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
+    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
 
     file(GLOB EDITOR_SOURCES
         "src/converters/*.cpp"
@@ -86,9 +86,9 @@ if(desktop)
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE
