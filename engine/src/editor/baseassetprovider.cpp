@@ -32,18 +32,11 @@ void BaseAssetProvider::init(bool force) {
     ProjectSettings *mgr = ProjectSettings::instance();
     TString resourcePath(ProjectSettings::instance()->resourcePath());
 
-    onDirectoryChangedForce(resourcePath + "/engine/materials",force);
-    onDirectoryChangedForce(resourcePath + "/engine/textures", force);
-    onDirectoryChangedForce(resourcePath + "/engine/meshes",   force);
-    onDirectoryChangedForce(resourcePath + "/engine/pipelines",force);
-    onDirectoryChangedForce(resourcePath + "/engine/fonts",    force);
+    onDirectoryChangedForce(resourcePath + "/engine",force);
 #ifndef BUILDER
-    onDirectoryChangedForce(resourcePath + "/editor/materials",force);
-    onDirectoryChangedForce(resourcePath + "/editor/gizmos",   force);
-    onDirectoryChangedForce(resourcePath + "/editor/meshes",   force);
-    onDirectoryChangedForce(resourcePath + "/editor/textures", force);
+    onDirectoryChangedForce(resourcePath + "/editor",force);
 #endif
-    onDirectoryChangedForce(mgr->contentPath(), force);
+    onDirectoryChangedForce(mgr->contentPath(), force, true); // We need to watch only a project files
 }
 
 void BaseAssetProvider::onFileChanged(const TString &path) {
@@ -73,20 +66,24 @@ void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
 }
 
 void BaseAssetProvider::onDirectoryChanged(const TString &path) {
-    onDirectoryChangedForce(path);
+    onDirectoryChangedForce(path, false, true);
 
     AssetManager::instance()->directoryChanged(path);
 }
 
-void BaseAssetProvider::onDirectoryChangedForce(const TString &path, bool force) {
-    m_dirWatcher->addPath(path);
+void BaseAssetProvider::onDirectoryChangedForce(const TString &path, bool force, bool watch) {
+    if(watch) {
+        m_dirWatcher->addPath(path);
+    }
 
     for(auto &item : File::list(path)) {
         if(Url(item).suffix() == gMetaExt) {
             continue;
         }
         if(File::isDir(item)) {
-            m_dirWatcher->addPath(item);
+            if(watch) {
+                m_dirWatcher->addPath(item);
+            }
         } else {
             onFileChangedForce(item, force);
         }

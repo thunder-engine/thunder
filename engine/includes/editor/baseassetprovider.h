@@ -28,7 +28,7 @@ public: // slots
     void onFileChangedForce(const TString &path, bool force = false);
 
     void onDirectoryChanged(const TString &path);
-    void onDirectoryChangedForce(const TString &path, bool force = false);
+    void onDirectoryChangedForce(const TString &path, bool force = false, bool watch = false);
 
 private:
     FileSystemWatcher *m_dirWatcher;
