@@ -33,7 +33,7 @@ public:
     }
 
 protected:
-    StringList list(const char *path) override {
+    StringList list(const char *path, bool root = false) override {
         char **rc = PHYSFS_enumerateFiles(path);
         char **i;
 

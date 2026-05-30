@@ -131,8 +131,8 @@ void ContentTree::onRendered(const TString &uuid) {
 
     TString path(asset->uuidToPath(uuid));
     QString source = path.contains(dir.absolutePath().toStdString()) ?
-                         dir.relativeFilePath(path.data()) :
-                         (QString(".embedded/") + Url(path).name().data());
+                                    dir.relativeFilePath(path.data()) :
+                                    (QString(".embedded/") + Url(path).name().data());
 
     QObject *item(m_rootItem->findChild<QObject *>(source));
     if(item) {
@@ -250,9 +250,9 @@ void ContentTree::update() {
 
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
-        QString path = QString(ProjectSettings::instance()->contentPath().data()) + "/" + it->objectName();
+        TString path = ProjectSettings::instance()->contentPath() + "/" + qPrintable(it->objectName());
         clean(it);
-        if(!File::exists(path.toStdString())) {
+        if(!File::exists(path)) {
             m_items.remove(reinterpret_cast<quintptr>(it));
             it->setParent(nullptr);
             it->deleteLater();

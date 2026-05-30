@@ -49,7 +49,7 @@ void BaseAssetProvider::init(bool force) {
 void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
 
-    AssetManager::instance()->fileChanged(path.data());
+    AssetManager::instance()->fileChanged(path);
     AssetManager::instance()->reimport();
 }
 
@@ -75,7 +75,7 @@ void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
 void BaseAssetProvider::onDirectoryChanged(const TString &path) {
     onDirectoryChangedForce(path);
 
-    AssetManager::instance()->directoryChanged(path.data());
+    AssetManager::instance()->directoryChanged(path);
 }
 
 void BaseAssetProvider::onDirectoryChangedForce(const TString &path, bool force) {

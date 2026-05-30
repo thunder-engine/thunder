@@ -427,7 +427,7 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
 */
 bool AssetConverterSettings::loadSettings() {
     File meta(source() + "." + gMetaExt);
-    if(meta.open(File::Read)) {
+    if(meta.exists() && meta.open(File::Read)) {
         VariantMap object = Json::load(meta.readAll()).toMap();
         meta.close();
 

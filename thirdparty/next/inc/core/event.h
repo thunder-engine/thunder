@@ -31,6 +31,7 @@ public:
         TimerEvent,
         Destroy,
         LanguageChange,
+        FileSystemWatcher,
         UserType = 100
     };
 

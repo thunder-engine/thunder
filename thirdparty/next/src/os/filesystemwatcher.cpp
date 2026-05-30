@@ -99,17 +99,17 @@ public:
                     paths.remove(dirPath);
                 }
                 TString path(Url(dirPath).absoluteDir());
-                ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::UserType, path));
+                ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::FileSystemWatcher, path));
                 return;
             }
 
-            for(const auto &entry : File::list(dirPath)) {
+            for(const auto &entry : File::list(dirPath, true)) {
                 try {
                     auto currentTime = getLastWriteTime(entry);
                     auto lastTime = lastWriteTime[entry];
 
                     if(currentTime > lastTime) {
-                        ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::UserType, entry));
+                        ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::FileSystemWatcher, entry));
                         lastWriteTime[entry] = currentTime;
                     }
                 } catch (...) {}

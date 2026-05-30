@@ -65,7 +65,7 @@ public:
 
     static bool mkPath(const TString &path);
 
-    static StringList list(const TString &path);
+    static StringList list(const TString &path, bool root = false);
 
     static bool isFile(const TString &path);
 
@@ -86,7 +86,7 @@ public:
 
     virtual void unmount(const char *path) = 0;
 
-    virtual StringList list(const char *path) = 0;
+    virtual StringList list(const char *path, bool root = false) = 0;
 
     virtual bool mkDir(const char *path) = 0;
 
