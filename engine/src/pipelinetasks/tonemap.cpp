@@ -76,8 +76,6 @@ Tonemap::~Tonemap() {
 
 void Tonemap::exec() {
     if(m_resultMaterial) {
-        CommandBuffer *buffer = m_context->buffer();
-
         for(auto it : m_context->culledPostEffectSettings()) {
             Texture *texture = it.first->readValue(gColorGradingLut).value<Texture *>();
             if(texture != m_lutTexture) {
@@ -86,6 +84,7 @@ void Tonemap::exec() {
             }
         }
 
+        CommandBuffer *buffer = m_context->buffer();
         buffer->beginDebugMarker(gTonemap);
 
         buffer->setRenderTarget(m_resultTarget);

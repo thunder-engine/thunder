@@ -85,6 +85,7 @@ void PipelineContext::draw(Camera *camera) {
         m_finalMaterial->setTexture(gTexture, resultTexture());
 
         // Finish
+        m_buffer->flipResult();
         m_buffer->setRenderTarget(m_defaultTarget);
         m_buffer->drawMesh(defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
     }
@@ -129,8 +130,6 @@ void PipelineContext::resize(int32_t width, int32_t height) {
         if(camera) {
             camera->setRatio(float(m_width) / float(m_height));
         }
-
-        m_buffer->setViewport(0, 0, m_width, m_height);
     }
 }
 /*!

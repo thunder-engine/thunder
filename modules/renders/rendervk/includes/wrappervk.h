@@ -20,10 +20,10 @@ public:
 
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    static void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer &buffer);
+    static VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
     static void destroyBuffer(VkBuffer buffer);
 
-    static void allocateMemory(VkMemoryPropertyFlags properties, const VkBuffer &buffer, VkDeviceMemory &memory);
+    static VkDeviceMemory allocateMemory(VkMemoryPropertyFlags properties, const VkBuffer &buffer);
     static void freeMemory(VkDeviceMemory memory);
 
     static void getStagingBuffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory);
@@ -33,6 +33,8 @@ public:
     static VkDescriptorSet createDescriptorSet(const VkDescriptorSetLayout &layout, VkDescriptorPool pool);
 
     static VkPipelineLayout createPipelineLayout(const std::vector<VkDescriptorSetLayout> &layouts);
+
+    static size_t framesInFlight();
 
     static void destroyContext();
 

@@ -5,6 +5,9 @@
 
 #include <vulkan/vulkan.h>
 
+struct Global;
+class CommandBufferVk;
+
 class RenderTargetVk : public RenderTarget {
     A_OBJECT_OVERRIDE(RenderTargetVk, RenderTarget, Resources)
 
@@ -14,6 +17,7 @@ class RenderTargetVk : public RenderTarget {
 
 public:
     RenderTargetVk();
+    ~RenderTargetVk();
 
     void bind(VkCommandBuffer &buffer, uint32_t level);
     void unbind(VkCommandBuffer &buffer);
@@ -23,6 +27,9 @@ public:
     uint32_t colorAttachmentCount() const override { return m_native ? 1 : RenderTarget::colorAttachmentCount(); }
 
     void setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, uint32_t width, uint32_t height);
+
+    VkDescriptorSet globalDescriptorSet(size_t currentFame);
+    void updateGlobalMemory(size_t currentFrame, const Global &global);
 
 private:
     void bindBuffer(VkCommandBuffer &buffer);
@@ -36,13 +43,25 @@ private:
     uint32_t setColorAttachment(uint32_t index, Texture *texture) override;
     void setDepthAttachment(Texture *texture) override;
 
+private:
+    struct GlobalResources {
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+    };
+
+    std::vector<GlobalResources> m_global;
+
     VkRenderPass m_renderPass;
     VkFramebuffer m_frameBuffer;
+
+    VkDescriptorPool m_descriptorPool;
 
     uint32_t m_width;
     uint32_t m_height;
 
     bool m_native;
+    bool m_binded;
 
 };
 

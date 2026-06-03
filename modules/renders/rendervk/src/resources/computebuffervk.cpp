@@ -2,7 +2,6 @@
 
 #include <cstring>
 
-#include "commandbuffervk.h"
 #include "wrappervk.h"
 
 ComputeBufferVk::ComputeBufferVk() :
@@ -48,8 +47,8 @@ void ComputeBufferVk::updateGpu() {
         if(size > m_bufferSize) {
             WrapperVk::destroyBuffer(m_buffer);
 
-            WrapperVk::createBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, m_buffer);
-            WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_buffer, m_memoryBuffer);
+            m_buffer = WrapperVk::createBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+            m_memoryBuffer = WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_buffer);
         }
 
         m_bufferSize = size;

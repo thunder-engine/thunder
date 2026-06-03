@@ -88,7 +88,7 @@ VkImageView TextureVk::vkView() const {
 }
 
 void TextureVk::readPixels(int x, int y, int width, int height) {
-    if(sides() != 0) {
+    if(sides() != 0 && x >= 0 && y >= 0 && x < m_width && y < m_height) {
         bool depth = (TextureVk::format() == Depth);
 
         VkBufferImageCopy region = {};

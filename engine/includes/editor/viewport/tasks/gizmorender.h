@@ -117,7 +117,6 @@ private:
             if(m_showCube) {
                 update();
 
-                buffer->setRenderTarget(m_spriteTarget);
                 Quaternion q(c->transform()->worldQuaternion());
 
                 Transform *t = m_camera->transform();
@@ -126,6 +125,8 @@ private:
 
                 buffer->setViewport(m_width-gNaviCubeSize, m_height-gNaviCubeSize, gNaviCubeSize, gNaviCubeSize);
                 buffer->setViewProjection(m_camera->viewMatrix(), m_camera->projectionMatrix());
+                buffer->setRenderTarget(m_spriteTarget);
+
                 buffer->drawMesh(PipelineContext::defaultCube(), 0, Material::Opaque, *m_cubeMaterial);
 
                 if(m_side != -1) {

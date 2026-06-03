@@ -12,16 +12,20 @@ class CommandBufferVk : public CommandBuffer {
 
 public:
     CommandBufferVk();
+    ~CommandBufferVk();
 
     void begin(VkCommandBuffer buffer);
 
     void end();
 
+    size_t currentFame() const;
+
     VkCommandBuffer nativeBuffer() const;
 
-    RenderTargetVk *currentRenderTarget() const;
+    void suspendBuffer(VkBuffer buffer, VkDeviceMemory memory);
 
-    void suspendDescriptorSet(VkDescriptorPool pool, VkDescriptorSet set);
+    static std::vector<VkDescriptorSetLayoutBinding> &globalLayoutBindings();
+    static VkDescriptorSetLayout globalDescriptorSetLayout();
 
 private:
     void beginDebugMarker(const TString &name) override;
@@ -39,19 +43,19 @@ private:
 
     void disableScissor() override;
 
-protected:
-    RenderTargetVk *m_currentTarget;
+    void flipResult() override;
 
+protected:
     VkCommandBuffer m_commandBuffer;
 
     VkViewport m_viewport;
 
-    static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
     static PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
     static PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;
 
-    std::list<std::pair<VkDescriptorPool, VkDescriptorSet>> m_suspendedSets;
+    std::list<std::pair<VkBuffer, VkDeviceMemory>> m_suspended;
 
+    size_t m_currentFrame;
 };
 
 #endif // COMMANDBUFFERVK_H

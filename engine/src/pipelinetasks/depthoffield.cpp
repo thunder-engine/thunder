@@ -210,8 +210,8 @@ void DepthOfField::exec() {
         m_blurMaterial->setTexture(gRgbMap, m_blurTexture);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blurMaterial);
 
-        buffer->setRenderTarget(m_resultTarget);
         buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
+        buffer->setRenderTarget(m_resultTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_dofMaterial);
 
         buffer->endDebugMarker();

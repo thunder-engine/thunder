@@ -291,7 +291,18 @@ MaterialInstanceGL::MaterialInstanceGL(Material *material) :
         m_instanceBuffer(0) {
 
     MaterialGL *m = static_cast<MaterialGL *>(material);
-    setBlendState(m->m_blendState);
+
+    // Blending
+    m_glBlendState = m->m_blendState;
+
+    m_glBlendState.colorOperation = convertBlendMode(m_glBlendState.colorOperation);
+    m_glBlendState.alphaOperation = convertBlendMode(m_glBlendState.alphaOperation);
+
+    m_glBlendState.sourceColorBlendMode = convertBlendFactor(m_glBlendState.sourceColorBlendMode);
+    m_glBlendState.sourceAlphaBlendMode = convertBlendFactor(m_glBlendState.sourceAlphaBlendMode);
+
+    m_glBlendState.destinationColorBlendMode = convertBlendFactor(m_glBlendState.destinationColorBlendMode);
+    m_glBlendState.destinationAlphaBlendMode = convertBlendFactor(m_glBlendState.destinationAlphaBlendMode);
 
     // Depth
     m_glDepthState = m->m_depthState;
@@ -458,19 +469,6 @@ void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t
     glBufferData(GL_SHADER_STORAGE_BUFFER, gpuBuffer.size(), gpuBuffer.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 #endif
-}
-
-void MaterialInstanceGL::setBlendState(const Material::BlendState &state) {
-    m_glBlendState = state;
-
-    m_glBlendState.colorOperation = convertBlendMode(m_glBlendState.colorOperation);
-    m_glBlendState.alphaOperation = convertBlendMode(m_glBlendState.alphaOperation);
-
-    m_glBlendState.sourceColorBlendMode = convertBlendFactor(m_glBlendState.sourceColorBlendMode);
-    m_glBlendState.sourceAlphaBlendMode = convertBlendFactor(m_glBlendState.sourceAlphaBlendMode);
-
-    m_glBlendState.destinationColorBlendMode = convertBlendFactor(m_glBlendState.destinationColorBlendMode);
-    m_glBlendState.destinationAlphaBlendMode = convertBlendFactor(m_glBlendState.destinationAlphaBlendMode);
 }
 
 void MaterialInstanceGL::setupBlendState(const Material::BlendState &state) {

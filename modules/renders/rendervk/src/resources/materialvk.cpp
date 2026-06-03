@@ -10,7 +10,6 @@
 
 MaterialVk::MaterialVk() :
         m_pipelineLayout(VK_NULL_HANDLE),
-        m_globalDescSetLayout(VK_NULL_HANDLE),
         m_localDescSetLayout(VK_NULL_HANDLE) {
 
 }
@@ -49,6 +48,13 @@ void MaterialVk::loadUserData(const VariantMap &data) {
                 }
 
                 m_attributes[pair.second] = attributes;
+            }
+
+            if(pair.second == FragmentVisibility) {
+                m_layers |= Material::Visibility;
+                if(m_layers & Opaque) {
+                    //m_layers |= Material::Shadowcast;
+                }
             }
         }
     }
@@ -122,10 +128,6 @@ void MaterialVk::destroyPrograms() {
         m_pipelineLayout = VK_NULL_HANDLE;
     }
 
-    if(m_globalDescSetLayout) {
-        vkDestroyDescriptorSetLayout(device, m_globalDescSetLayout, nullptr);
-    }
-
     if(m_localDescSetLayout) {
         vkDestroyDescriptorSetLayout(device, m_localDescSetLayout, nullptr);
     }
@@ -144,10 +146,6 @@ VkPipelineLayout MaterialVk::pipelineLayout() {
 
 VkDescriptorSetLayout MaterialVk::localDescriptorSetLayout() const {
     return m_localDescSetLayout;
-}
-
-VkDescriptorSetLayout MaterialVk::globalDescriptorSetLayout() const {
-    return m_globalDescSetLayout;
 }
 
 bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex) {
@@ -183,7 +181,7 @@ void MaterialVk::buildPipelineLayout() {
     if(m_pipelineLayout == VK_NULL_HANDLE && m_localDescSetLayout == VK_NULL_HANDLE) {
         // Create local descriptor set layout
         m_localLayoutBindings = {{ LOCAL_BIND,
-                              (materialType() == Surface) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                              VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                               1,
                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                               nullptr }};
@@ -201,13 +199,7 @@ void MaterialVk::buildPipelineLayout() {
         // Create global descriptor set layout
         m_localDescSetLayout = WrapperVk::createDescriptorSetLayout(m_localLayoutBindings);
 
-        m_globalLayoutBindings = {
-            { GLOBAL_BIND, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-        };
-
-        m_globalDescSetLayout = WrapperVk::createDescriptorSetLayout(m_globalLayoutBindings);
-
-        m_pipelineLayout = WrapperVk::createPipelineLayout({m_localDescSetLayout, m_globalDescSetLayout});
+        m_pipelineLayout = WrapperVk::createPipelineLayout({m_localDescSetLayout, CommandBufferVk::globalDescriptorSetLayout()});
     }
 }
 
@@ -383,13 +375,7 @@ void MaterialVk::removeInstance(MaterialInstanceVk *instance) {
 MaterialInstanceVk::MaterialInstanceVk(Material *material) :
         MaterialInstance(material),
         m_descriptorPool(VK_NULL_HANDLE),
-        m_globalDescriptorSet(VK_NULL_HANDLE),
-        m_localDescriptorSet(VK_NULL_HANDLE),
-        m_suspendDescriptorSet(VK_NULL_HANDLE),
-        m_globalBuffer(VK_NULL_HANDLE),
-        m_localBuffer(VK_NULL_HANDLE),
-        m_globalMemory(VK_NULL_HANDLE),
-        m_localMemory(VK_NULL_HANDLE) {
+        m_localSize(0) {
 
 }
 
@@ -406,13 +392,13 @@ MaterialInstanceVk::~MaterialInstanceVk() {
     }
 }
 
-void MaterialInstanceVk::updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, VkDescriptorSet set, VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size) {
+void MaterialInstanceVk::updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, uint32_t currentFrame) {
     VkDevice device = WrapperVk::device();
 
     for(auto &binding : bindings) {
         VkWriteDescriptorSet descriptorWrite = {};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = set;
+        descriptorWrite.dstSet = m_local[currentFrame].descriptorSet;
         descriptorWrite.dstBinding = binding.binding;
         descriptorWrite.dstArrayElement = 0;
         descriptorWrite.descriptorType = binding.descriptorType;
@@ -420,27 +406,37 @@ void MaterialInstanceVk::updateDescriptors(const std::vector<VkDescriptorSetLayo
 
         if(binding.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
            binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-            if(buffer == nullptr) {
-                VkBufferUsageFlags flags = (binding.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) ?
-                                                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-                WrapperVk::createBuffer(size, flags, buffer);
-                WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffer, memory);
-            }
 
             VkDescriptorBufferInfo bufferInfo = {};
-            bufferInfo.buffer = buffer;
+            bufferInfo.buffer = m_local[currentFrame].buffer;
             bufferInfo.offset = 0;
             bufferInfo.range = VK_WHOLE_SIZE;
 
             descriptorWrite.pBufferInfo = &bufferInfo;
 
             vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
-        } else {
-            TextureVk *t = static_cast<TextureVk *>(texture(cmd, binding.binding));
+        }
+    }
 
-            VkDescriptorImageInfo imageInfo = {};
+    m_local[currentFrame].dirtyInstance = false;
+}
+
+void MaterialInstanceVk::updateTextures(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, uint32_t currentFrame) {
+    VkDevice device = WrapperVk::device();
+
+    for(auto &binding : bindings) {
+        if(binding.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+            VkWriteDescriptorSet descriptorWrite = {};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = m_local[currentFrame].descriptorSet;
+            descriptorWrite.dstBinding = binding.binding;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = binding.descriptorType;
+            descriptorWrite.descriptorCount = 1;
+
+            TextureVk *t = static_cast<TextureVk *>(texture(cmd, binding.binding));
             if(t) {
+                VkDescriptorImageInfo imageInfo = {};
                 t->attributes(imageInfo);
                 descriptorWrite.pImageInfo = &imageInfo;
 
@@ -448,25 +444,19 @@ void MaterialInstanceVk::updateDescriptors(const std::vector<VkDescriptorSetLayo
             }
         }
     }
+
+    m_local[currentFrame].dirtyTextures = false;
 }
 
 void MaterialInstanceVk::destroyDescriptors() {
     VkDevice device = WrapperVk::device();
 
-    if(m_localBuffer) {
-        vkDestroyBuffer(device, m_localBuffer, nullptr);
-        m_localBuffer = VK_NULL_HANDLE;
+    for(uint32_t i = 0; i < m_local.size(); i++) {
+        vkDestroyBuffer(device, m_local[i].buffer, nullptr);
+        vkFreeMemory(device, m_local[i].memory, nullptr);
+        vkFreeDescriptorSets(device, m_descriptorPool, 1, &m_local[i].descriptorSet);
     }
-
-    if(m_localMemory) {
-        vkFreeMemory(device, m_localMemory, nullptr);
-        m_localMemory = VK_NULL_HANDLE;
-    }
-
-    if(m_localDescriptorSet) {
-        vkFreeDescriptorSets(device, m_descriptorPool, 1, &m_localDescriptorSet);
-        m_localDescriptorSet = VK_NULL_HANDLE;
-    }
+    m_local.clear();
 
     if(m_descriptorPool) {
         vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
@@ -474,65 +464,68 @@ void MaterialInstanceVk::destroyDescriptors() {
     }
 }
 
-bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, const Global &global) {
+bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame) {
     MaterialVk *materialVk = static_cast<MaterialVk *>(m_material);
 
     VkCommandBuffer cmd = buffer.nativeBuffer();
 
-    if(materialVk->bind(cmd, buffer.currentRenderTarget(), layer, surfaceType())) {
-        VkDeviceSize globalSize = sizeof(global);
-
-        const ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
-
-        VkDevice device = WrapperVk::device();
-
+    if(materialVk->bind(cmd, static_cast<RenderTargetVk *>(buffer.renderTarget()), layer, surfaceType())) {
+        size_t swapChainCount = WrapperVk::framesInFlight();
         if(m_descriptorPool == VK_NULL_HANDLE) {
-            size_t swapChainCount = 1;//swapChainImageCount();
             std::vector<VkDescriptorPoolSize> poolSize;
-            for(auto &binding : materialVk->globalLayoutBindings()) {
-                poolSize.push_back({ binding.descriptorType, (uint32_t)swapChainCount });
-            }
             for(auto &binding : materialVk->localLayoutBindings()) {
                 poolSize.push_back({ binding.descriptorType, (uint32_t)swapChainCount });
             }
-            m_descriptorPool = WrapperVk::createDescriptorPool(poolSize, poolSize.size());
+            m_descriptorPool = WrapperVk::createDescriptorPool(poolSize, swapChainCount);
         }
 
-        // Global descriptor pool
-        if(m_globalDescriptorSet == VK_NULL_HANDLE) {
-            m_globalDescriptorSet = WrapperVk::createDescriptorSet(materialVk->globalDescriptorSetLayout(), m_descriptorPool);
-            updateDescriptors(materialVk->globalLayoutBindings(), buffer, m_globalDescriptorSet, m_globalBuffer, m_globalMemory, globalSize);
-        }
-
-        // Local descriptor pool
-        if(m_suspendDescriptorSet) {
-            buffer.suspendDescriptorSet(m_descriptorPool, m_suspendDescriptorSet);
-            m_suspendDescriptorSet = VK_NULL_HANDLE;
-        }
-
-        if(m_localDescriptorSet == VK_NULL_HANDLE) {
-            VkDescriptorSet localDescriptorSet = WrapperVk::createDescriptorSet(materialVk->localDescriptorSetLayout(), m_descriptorPool);
-            updateDescriptors(materialVk->localLayoutBindings(), buffer, localDescriptorSet, m_localBuffer, m_localMemory, localBuffer.size());
-            m_localDescriptorSet = localDescriptorSet;
-        }
-
-        void *dst = nullptr;
-        vkMapMemory(device, m_globalMemory, 0, globalSize, 0, &dst);
-            memcpy(dst, &global, globalSize);
-        vkUnmapMemory(device, m_globalMemory);
-
+        const ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
         if(!localBuffer.empty()) {
+
             VkDeviceSize size = localBuffer.size();
 
+            VkDevice device = WrapperVk::device();
+            if(size > m_localSize || m_local.empty()) {
+                m_localSize = size;
+
+                for(uint32_t i = 0; i < m_local.size(); i++) {
+                    buffer.suspendBuffer(m_local[i].buffer, m_local[i].memory);
+                    m_local[i].buffer = VK_NULL_HANDLE;
+                    m_local[i].memory = VK_NULL_HANDLE;
+                }
+                m_local.resize(swapChainCount);
+
+                for(uint32_t i = 0; i < swapChainCount; i++) {
+                    if(m_local[i].buffer == VK_NULL_HANDLE) {
+                        m_local[i].buffer = WrapperVk::createBuffer(m_localSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+                        m_local[i].memory = WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_local[i].buffer);
+
+                        m_local[i].dirtyInstance = true;
+                    }
+
+                    if(m_local[i].descriptorSet == VK_NULL_HANDLE) {
+                        m_local[i].descriptorSet = WrapperVk::createDescriptorSet(materialVk->localDescriptorSetLayout(), m_descriptorPool);
+                    }
+                }
+            }
+
+            if(m_local[currentFrame].dirtyInstance) {
+                updateDescriptors(materialVk->localLayoutBindings(), currentFrame);
+            }
+
+            if(m_local[currentFrame].dirtyTextures) {
+                updateTextures(materialVk->localLayoutBindings(), buffer, currentFrame);
+            }
+
             void *dst = nullptr;
-            vkMapMemory(device, m_localMemory, 0, size, 0, &dst);
+            vkMapMemory(device, m_local[currentFrame].memory, 0, size, 0, &dst);
                 memcpy(dst, localBuffer.data(), size);
-            vkUnmapMemory(device, m_localMemory);
+            vkUnmapMemory(device, m_local[currentFrame].memory);
         }
 
         const std::vector<VkDescriptorSet> sets = {
-            m_localDescriptorSet,
-            m_globalDescriptorSet
+            m_local[currentFrame].descriptorSet,
+            globalDescriptorSet
         };
 
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materialVk->pipelineLayout(), 0, sets.size(), sets.data(), 0, nullptr);
@@ -546,9 +539,10 @@ void MaterialInstanceVk::textureUpdated(int state, void *object) {
     if(state == Resource::ToBeUpdated) {
         MaterialInstanceVk *instance = reinterpret_cast<MaterialInstanceVk *>(object);
 
-        if(instance && instance->m_localDescriptorSet) {
-            instance->m_suspendDescriptorSet = instance->m_localDescriptorSet;
-            instance->m_localDescriptorSet = VK_NULL_HANDLE;
+        if(instance) {
+            for(auto &it : instance->m_local) {
+                it.dirtyTextures = true;
+            }
         }
     }
 }

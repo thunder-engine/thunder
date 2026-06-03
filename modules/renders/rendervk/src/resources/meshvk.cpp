@@ -2,15 +2,13 @@
 
 #include <cstring>
 
-#include "commandbuffervk.h"
-
 #include "wrappervk.h"
 
 MeshVk::MeshVk() :
         m_indicesBuffer(VK_NULL_HANDLE),
         m_verticesBuffer(VK_NULL_HANDLE),
-        m_memoryIndicesBuffer(VK_NULL_HANDLE),
-        m_memoryVerticesBuffer(VK_NULL_HANDLE),
+        m_indicesMemory(VK_NULL_HANDLE),
+        m_verticesMemory(VK_NULL_HANDLE),
         m_indicesSize(0),
         m_verticesSize(0),
         m_uvSize(0),
@@ -88,18 +86,18 @@ void MeshVk::updateGpu() {
 
             if(size > m_indicesSize) {
                 WrapperVk::destroyBuffer(m_indicesBuffer);
-                WrapperVk::freeMemory(m_memoryIndicesBuffer);
+                WrapperVk::freeMemory(m_indicesMemory);
 
-                WrapperVk::createBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, m_indicesBuffer);
-                WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_indicesBuffer, m_memoryIndicesBuffer);
+                m_indicesBuffer = WrapperVk::createBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+                m_indicesMemory = WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_indicesBuffer);
             }
 
             m_indicesSize = size;
 
             void *dst = nullptr;
-            vkMapMemory(device, m_memoryIndicesBuffer, 0, m_indicesSize, 0, &dst);
+            vkMapMemory(device, m_indicesMemory, 0, m_indicesSize, 0, &dst);
                 memcpy(dst, v.data(), m_indicesSize);
-            vkUnmapMemory(device, m_memoryIndicesBuffer);
+            vkUnmapMemory(device, m_indicesMemory);
         }
     }
 
@@ -118,14 +116,14 @@ void MeshVk::updateGpu() {
                    m_normalsSize + m_tangentsSize + m_weightsSize + m_bonesSize)) {
 
             WrapperVk::destroyBuffer(m_verticesBuffer);
-            WrapperVk::freeMemory(m_memoryVerticesBuffer);
+            WrapperVk::freeMemory(m_verticesMemory);
 
-            WrapperVk::createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_verticesBuffer);
-            WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_verticesBuffer, m_memoryVerticesBuffer);
+            m_verticesBuffer = WrapperVk::createBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            m_verticesMemory = WrapperVk::allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_verticesBuffer);
         }
 
         uint8_t *dst = nullptr;
-        vkMapMemory(device, m_memoryVerticesBuffer, 0, size, 0, reinterpret_cast<void **>(&dst));
+        vkMapMemory(device, m_verticesMemory, 0, size, 0, reinterpret_cast<void **>(&dst));
             m_verticesSize = sizeof(Vector3) * vCount;
             memcpy(dst, vertices().data(), m_verticesSize);
             dst += m_verticesSize;
@@ -159,7 +157,7 @@ void MeshVk::updateGpu() {
                 m_bonesSize = sizeof(Vector4) * vCount;
                 memcpy(dst, bones().data(), m_bonesSize);
             }
-        vkUnmapMemory(device, m_memoryVerticesBuffer);
+        vkUnmapMemory(device, m_verticesMemory);
     }
 }
 
@@ -170,11 +168,11 @@ void MeshVk::destroyGpu() {
     m_indicesBuffer = nullptr;
     m_verticesBuffer = nullptr;
 
-    WrapperVk::freeMemory(m_memoryIndicesBuffer);
-    WrapperVk::freeMemory(m_memoryVerticesBuffer);
+    WrapperVk::freeMemory(m_indicesMemory);
+    WrapperVk::freeMemory(m_verticesMemory);
 
-    m_memoryIndicesBuffer = nullptr;
-    m_memoryVerticesBuffer = nullptr;
+    m_indicesMemory = nullptr;
+    m_verticesMemory = nullptr;
 
     m_indicesSize = 0;
     m_verticesSize = 0;

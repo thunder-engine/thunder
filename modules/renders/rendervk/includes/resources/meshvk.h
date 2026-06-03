@@ -27,8 +27,8 @@ public:
     VkBuffer m_indicesBuffer;
     VkBuffer m_verticesBuffer;
 
-    VkDeviceMemory m_memoryIndicesBuffer;
-    VkDeviceMemory m_memoryVerticesBuffer;
+    VkDeviceMemory m_indicesMemory;
+    VkDeviceMemory m_verticesMemory;
 
     size_t m_indicesSize;
     size_t m_verticesSize;

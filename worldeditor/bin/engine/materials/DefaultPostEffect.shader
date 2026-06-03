@@ -38,12 +38,14 @@ layout(location = 0) out vec2 _uv0;
 
 void main(void) {
     vec4 pos = vec4(vertex * 2.0, 1.0);
-    #ifdef VULKAN
+    if(flipResult()) {
         pos.y = -pos.y;
-    #endif
+    }
     _uv0 = uv0;
     gl_Position = pos;
 }
 ]]></vertex>
-    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false" />
+    <pass type="PostProcess" twoSided="true" lightModel="Unlit" wireFrame="false">
+        <blend op="Add" dst="OneMinusSourceAlpha" src="One" />
+    </pass>
 </shader>

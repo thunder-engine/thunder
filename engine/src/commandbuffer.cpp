@@ -15,7 +15,8 @@ static bool s_Inited = false;
     It provides methods for issuing rendering commands, setting global parameters, and managing textures.
 */
 
-CommandBuffer::CommandBuffer() {
+CommandBuffer::CommandBuffer() :
+        m_target(nullptr) {
     uint32_t size = Texture::maxTextureSize();
     m_global.params.x = 1.0f / (float)size;
 }
@@ -23,6 +24,7 @@ CommandBuffer::CommandBuffer() {
 void CommandBuffer::begin() {
     m_global.params.y = Timer::time();
     m_global.params.z = Timer::deltaTime();
+    m_global.params.w = 0.0f;
 }
 /*!
     Dispatches a compute \a shader with the specified workgroup dimensions.
@@ -141,6 +143,13 @@ void CommandBuffer::beginDebugMarker(const TString &name) {
     Ends the current debug marker.
 */
 void CommandBuffer::endDebugMarker() {
+
+}
+/*!
+    Filps the result of rendering.
+    \note This is RHI specific function for Vulkan.
+*/
+void CommandBuffer::flipResult() {
 
 }
 /*!

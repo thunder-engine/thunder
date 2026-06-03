@@ -23,8 +23,6 @@ public:
 private:
     void copyLocalData(uint32_t index, uint32_t program, int32_t instanceLocation);
 
-    void setBlendState(const Material::BlendState &state) override;
-
     static void setupBlendState(const Material::BlendState &state);
 
     static void setupRasterState(const Material::RasterState &state);

@@ -64,6 +64,8 @@ public:
     virtual void beginDebugMarker(const TString &name);
     virtual void endDebugMarker();
 
+    virtual void flipResult();
+
     static Vector4 idToColor(uint32_t id);
 
     static bool isInited();

@@ -19,29 +19,34 @@ public:
     MaterialInstanceVk(Material *material);
     ~MaterialInstanceVk() override;
 
-    bool bind(CommandBufferVk &buffer, uint32_t layer, const Global &global);
+    bool bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame);
 
     void destroyDescriptors();
 
 private:
     void overrideTexture(int32_t binding, Texture *texture) override;
 
-    void updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, VkDescriptorSet set, VkBuffer &buffer, VkDeviceMemory &memory, VkDeviceSize size);
+    void updateDescriptors(const std::vector<VkDescriptorSetLayoutBinding> &bindings, uint32_t currentFrame);
+
+    void updateTextures(const std::vector<VkDescriptorSetLayoutBinding> &bindings, CommandBufferVk &cmd, uint32_t currentFrame);
 
     static void textureUpdated(int state, void *object);
 
 private:
     VkDescriptorPool m_descriptorPool;
+    VkDeviceSize m_localSize;
 
-    VkDescriptorSet m_globalDescriptorSet;
-    VkDescriptorSet m_localDescriptorSet;
-    VkDescriptorSet m_suspendDescriptorSet;
+    struct LocalResources {
+        VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
 
-    VkBuffer m_globalBuffer;
-    VkBuffer m_localBuffer;
+        bool dirtyInstance = true;
 
-    VkDeviceMemory m_globalMemory;
-    VkDeviceMemory m_localMemory;
+        bool dirtyTextures = true;
+    };
+
+    std::vector<LocalResources> m_local;
 };
 
 class MaterialVk : public Material {
@@ -49,6 +54,7 @@ class MaterialVk : public Material {
 
     A_NOPROPERTIES()
     A_NOMETHODS()
+    A_NOENUMS()
 
     enum ShaderType {
         VertexStatic      = 1,
@@ -78,10 +84,8 @@ public:
 
     VkPipelineLayout pipelineLayout();
 
-    VkDescriptorSetLayout globalDescriptorSetLayout() const;
     VkDescriptorSetLayout localDescriptorSetLayout() const;
 
-    const std::vector<VkDescriptorSetLayoutBinding> &globalLayoutBindings() { return m_globalLayoutBindings; }
     const std::vector<VkDescriptorSetLayoutBinding> &localLayoutBindings() { return m_localLayoutBindings; }
 
     void removeInstance(MaterialInstanceVk *instance);
@@ -107,15 +111,13 @@ private:
 
     std::map<uint16_t, ByteArray> m_shaderSources;
 
-    std::vector<VkDescriptorSetLayoutBinding> m_globalLayoutBindings;
     std::vector<VkDescriptorSetLayoutBinding> m_localLayoutBindings;
+
+    std::list<MaterialInstanceVk *> m_instances;
 
     VkPipelineLayout m_pipelineLayout;
 
-    VkDescriptorSetLayout m_globalDescSetLayout;
     VkDescriptorSetLayout m_localDescSetLayout;
-
-    std::list<MaterialInstanceVk *> m_instances;
 
 };
 

@@ -15,9 +15,12 @@ PFN_vkCmdBeginDebugUtilsLabelEXT CommandBufferVk::vkCmdBeginDebugUtilsLabelEXT;
 PFN_vkCmdEndDebugUtilsLabelEXT CommandBufferVk::vkCmdEndDebugUtilsLabelEXT;
 
 CommandBufferVk::CommandBufferVk() :
-        m_currentTarget(nullptr),
         m_commandBuffer(VK_NULL_HANDLE) {
     PROFILE_FUNCTION();
+
+}
+
+CommandBufferVk::~CommandBufferVk() {
 
 }
 
@@ -25,6 +28,7 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
     PROFILE_FUNCTION();
 
     m_commandBuffer = buffer;
+    m_currentFrame = (m_currentFrame + 1) % WrapperVk::framesInFlight();
 
     CommandBuffer::begin();
 
@@ -38,10 +42,11 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
         }
     }
 
-    for(auto it : m_suspendedSets) {
-        vkFreeDescriptorSets(device, it.first, 1, &it.second);
+    for(auto it : m_suspended) {
+        vkDestroyBuffer(device, it.first, nullptr);
+        vkFreeMemory(device, it.second, nullptr);
     }
-    m_suspendedSets.clear();
+    m_suspended.clear();
 
     vkResetCommandBuffer(m_commandBuffer, 0);
 
@@ -58,14 +63,19 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
 void CommandBufferVk::end() {
     PROFILE_FUNCTION();
 
-    if(m_currentTarget) {
-        m_currentTarget->unbind(m_commandBuffer);
-        m_currentTarget = nullptr;
+    RenderTargetVk *targetVk = static_cast<RenderTargetVk *>(m_target);
+    if(targetVk) {
+        targetVk->unbind(m_commandBuffer);
+        targetVk = nullptr;
     }
 
     if(vkEndCommandBuffer(m_commandBuffer) != VK_SUCCESS) {
         aError() << "failed to record command buffer!";
     }
+}
+
+size_t CommandBufferVk::currentFame() const {
+    return m_currentFrame;
 }
 
 void CommandBufferVk::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
@@ -84,7 +94,7 @@ void CommandBufferVk::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
         MeshVk *meshVk = static_cast<MeshVk *>(mesh);
 
         MaterialInstanceVk &instanceVk = static_cast<MaterialInstanceVk &>(instance);
-        if(instanceVk.bind(*this, layer, m_global)) {
+        if(instanceVk.bind(*this, layer, static_cast<RenderTargetVk *>(m_target)->globalDescriptorSet(m_currentFrame), m_currentFrame)) {
             meshVk->bind(m_commandBuffer);
 
             if(meshVk->indices().empty()) {
@@ -104,13 +114,17 @@ void CommandBufferVk::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
 void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
     PROFILE_FUNCTION();
 
-    if(m_currentTarget) {
-        m_currentTarget->unbind(m_commandBuffer);
+    RenderTargetVk *targetVk = static_cast<RenderTargetVk *>(m_target);
+    if(targetVk) {
+        targetVk->unbind(m_commandBuffer);
     }
 
-    m_currentTarget = static_cast<RenderTargetVk *>(target);
-    if(m_currentTarget) {
-        m_currentTarget->bind(m_commandBuffer, level);
+    CommandBuffer::setRenderTarget(target, level);
+
+    targetVk = static_cast<RenderTargetVk *>(m_target);
+    if(targetVk) {
+        targetVk->bind(m_commandBuffer, level);
+        targetVk->updateGlobalMemory(m_currentFrame, m_global);
     }
 }
 
@@ -118,12 +132,23 @@ VkCommandBuffer CommandBufferVk::nativeBuffer() const {
     return m_commandBuffer;
 }
 
-RenderTargetVk *CommandBufferVk::currentRenderTarget() const {
-    return m_currentTarget;
+void CommandBufferVk::suspendBuffer(VkBuffer buffer, VkDeviceMemory memory) {
+    if(buffer != VK_NULL_HANDLE && memory != VK_NULL_HANDLE) {
+        m_suspended.push_back(std::make_pair(buffer, memory));
+    }
 }
 
-void CommandBufferVk::suspendDescriptorSet(VkDescriptorPool pool, VkDescriptorSet set) {
-    m_suspendedSets.push_back(std::make_pair(pool, set));
+std::vector<VkDescriptorSetLayoutBinding> &CommandBufferVk::globalLayoutBindings() {
+    static std::vector<VkDescriptorSetLayoutBinding> s_globalLayoutBindings;
+    s_globalLayoutBindings = {
+        { GLOBAL_BIND, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+    };
+    return s_globalLayoutBindings;
+}
+
+VkDescriptorSetLayout CommandBufferVk::globalDescriptorSetLayout() {
+    static VkDescriptorSetLayout s_globalDescSetLayout = WrapperVk::createDescriptorSetLayout(globalLayoutBindings());
+    return s_globalDescSetLayout;
 }
 
 void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -171,6 +196,10 @@ void CommandBufferVk::disableScissor() {
     }
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
+}
+
+void CommandBufferVk::flipResult() {
+    m_global.params.w = 1.0f;
 }
 
 void CommandBufferVk::beginDebugMarker(const TString &name) {

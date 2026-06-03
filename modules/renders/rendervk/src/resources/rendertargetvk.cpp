@@ -3,14 +3,32 @@
 #include "resources/texturevk.h"
 
 #include "wrappervk.h"
+#include "commandbuffervk.h"
 
 RenderTargetVk::RenderTargetVk() :
         m_renderPass(VK_NULL_HANDLE),
         m_frameBuffer(VK_NULL_HANDLE),
+        m_descriptorPool(VK_NULL_HANDLE),
         m_width(1),
         m_height(1),
-        m_native(false) {
+        m_native(false),
+        m_binded(false) {
 
+}
+
+RenderTargetVk::~RenderTargetVk() {
+    VkDevice device = WrapperVk::device();
+    for(auto it : m_global) {
+        vkDestroyBuffer(device, it.buffer, nullptr);
+        vkFreeMemory(device, it.memory, nullptr);
+        vkFreeDescriptorSets(device, m_descriptorPool, 1, &it.descriptorSet);
+    }
+    m_global.clear();
+
+    if(m_descriptorPool) {
+        vkDestroyDescriptorPool(device, m_descriptorPool, nullptr);
+        m_descriptorPool = VK_NULL_HANDLE;
+    }
 }
 
 void RenderTargetVk::bind(VkCommandBuffer &buffer, uint32_t level) {
@@ -37,9 +55,10 @@ void RenderTargetVk::bind(VkCommandBuffer &buffer, uint32_t level) {
 }
 
 void RenderTargetVk::unbind(VkCommandBuffer &buffer) {
-    vkCmdEndRenderPass(buffer);
-
-    // move layouts
+    if(m_binded) {
+        vkCmdEndRenderPass(buffer);
+        m_binded = false;
+    }
 }
 
 VkRenderPass RenderTargetVk::renderPass() const {
@@ -57,22 +76,23 @@ void RenderTargetVk::setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, ui
 }
 
 void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
+    if(m_binded) {
+        return;
+    }
     uint32_t count = colorAttachmentCount();
 
     std::vector<VkClearValue> clearValues;
     clearValues.reserve(count + 1);
 
     int32_t flags = clearFlags();
-    if(m_native || flags & RenderTarget::ClearColor) {
+    if(m_native || flags != 0) {
         for(uint32_t i = 0; i < count; i++) {
             VkClearValue value;
             value.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 
             clearValues.push_back(value);
         }
-    }
 
-    if(m_native || flags & RenderTarget::ClearDepth) {
         VkClearValue value;
         value.depthStencil = { 1.0f, 0 };
         clearValues.push_back(value);
@@ -96,6 +116,8 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
 
     // move layouts
     vkCmdBeginRenderPass(buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    m_binded = true;
 }
 
 bool RenderTargetVk::updateBuffer(uint32_t level) {
@@ -118,7 +140,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
     }
 
     if(m_frameBuffer == nullptr) {
-        bool clearOnBind = (clearFlags() != 0);
+        bool clearColor = (clearFlags() & ClearColor);
 
         VkDevice device = WrapperVk::device();
 
@@ -132,7 +154,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
 
         VkAttachmentDescription description;
         description.samples = VK_SAMPLE_COUNT_1_BIT;
-        description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+        description.loadOp = clearColor ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
         description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -148,7 +170,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
                 attachments.push_back(imageInfo.imageView);
 
                 description.format = t->vkFormat();
-                description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : t->initialLayout();
+                description.initialLayout = clearColor ? VK_IMAGE_LAYOUT_UNDEFINED : t->initialLayout();
                 description.finalLayout = t->finalLayout();
             }
 
@@ -171,10 +193,11 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
             d->attributes(imageInfo);
             attachments.push_back(imageInfo.imageView);
 
+            bool clearDepth = (clearFlags() & ClearDepth);
             description.format = d->vkFormat();
-            description.loadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.stencilLoadOp = clearOnBind ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            description.initialLayout = clearOnBind ? VK_IMAGE_LAYOUT_UNDEFINED : d->initialLayout();
+            description.loadOp = clearDepth ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.stencilLoadOp = clearDepth ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+            description.initialLayout = clearDepth ? VK_IMAGE_LAYOUT_UNDEFINED : d->initialLayout();
             description.finalLayout = d->finalLayout();
 
             attachmentDescriptions.push_back(description);
@@ -284,4 +307,58 @@ void RenderTargetVk::setDepthAttachment(Texture *texture) {
         switchState(ToBeUpdated);
         RenderTarget::setDepthAttachment(texture);
     }
+}
+
+void RenderTargetVk::updateGlobalMemory(size_t currentFrame, const Global &global) {
+    VkDevice device = WrapperVk::device();
+
+    if(m_global.empty()) {
+        if(m_descriptorPool == VK_NULL_HANDLE) {
+            size_t swapChainCount = WrapperVk::framesInFlight();
+            std::vector<VkDescriptorPoolSize> poolSize;
+            for(auto &binding : CommandBufferVk::globalLayoutBindings()) {
+                poolSize.push_back({ binding.descriptorType, (uint32_t)swapChainCount });
+            }
+            m_descriptorPool = WrapperVk::createDescriptorPool(poolSize, swapChainCount);
+        }
+
+        size_t swapChainCount = WrapperVk::framesInFlight();
+        m_global.resize(swapChainCount);
+
+        uint32_t flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        for(uint32_t i = 0; i < swapChainCount; i++) {
+            m_global[i].buffer = WrapperVk::createBuffer(sizeof(Global), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+            m_global[i].memory = WrapperVk::allocateMemory(flags, m_global[i].buffer);
+            m_global[i].descriptorSet = WrapperVk::createDescriptorSet(CommandBufferVk::globalDescriptorSetLayout(), m_descriptorPool);
+
+            for(auto &binding : CommandBufferVk::globalLayoutBindings()) {
+                VkWriteDescriptorSet descriptorWrite = {};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = m_global[i].descriptorSet;
+                descriptorWrite.dstBinding = binding.binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = binding.descriptorType;
+                descriptorWrite.descriptorCount = 1;
+
+                VkDescriptorBufferInfo bufferInfo = {};
+                bufferInfo.buffer = m_global[i].buffer;
+                bufferInfo.offset = 0;
+                bufferInfo.range = VK_WHOLE_SIZE;
+
+                descriptorWrite.pBufferInfo = &bufferInfo;
+
+                vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+            }
+        }
+    }
+
+    VkDeviceSize globalSize = sizeof(Global);
+    void *dst = nullptr;
+    vkMapMemory(device, m_global[currentFrame].memory, 0, globalSize, 0, &dst);
+        memcpy(dst, &global, globalSize);
+    vkUnmapMemory(device, m_global[currentFrame].memory);
+}
+
+VkDescriptorSet RenderTargetVk::globalDescriptorSet(size_t currentFame) {
+    return m_global[currentFame].descriptorSet;
 }
