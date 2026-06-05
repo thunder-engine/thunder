@@ -5,8 +5,6 @@
 
 #include "components/renderable.h"
 
-#include "resources/mesh.h"
-
 /*!
     \class PipelineTask
     \brief A base class for all render tasks.

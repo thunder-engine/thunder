@@ -32,7 +32,7 @@ Canvas::Canvas() :
 
     m_target->setColorAttachment(0, m_texture);
     m_target->setClearColor(0.0f);
-    m_target->setClearFlags(RenderTarget::ClearColor);
+    m_target->setFlags(RenderTarget::ClearColor);
 
     static uint32_t hash = Mathf::hashString("canvas");
     addTagByHash(hash);
@@ -41,14 +41,6 @@ Canvas::Canvas() :
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_finalMaterial->setTexture("mainTexture", m_texture);
-
-        Material::BlendState state;
-        state.enabled = true;
-        state.sourceColorBlendMode = Material::BlendFactor::One;
-        state.sourceAlphaBlendMode = Material::BlendFactor::One;
-        state.destinationColorBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
-        state.destinationAlphaBlendMode = Material::BlendFactor::OneMinusSourceAlpha;
-        m_finalMaterial->setBlendState(state);
     }
 }
 /*!
@@ -87,8 +79,8 @@ void Canvas::draw(CommandBuffer *buffer) {
         Matrix4 v;
         v[14] = -50.0f;
 
-        m_buffer->setRenderTarget(m_target);
         m_buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
+        m_buffer->setRenderTarget(m_target);
 
         for(auto it : m_transform->children()) {
             RectTransform *rect = dynamic_cast<RectTransform *>(it);

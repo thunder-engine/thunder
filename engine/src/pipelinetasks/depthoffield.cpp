@@ -104,10 +104,10 @@ DepthOfField::DepthOfField() :
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
     m_downTarget->setColorAttachment(0, m_downTexture);
-    m_downTarget->setClearFlags(RenderTarget::ClearColor);
+    m_downTarget->setFlags(RenderTarget::ClearColor);
 
     m_blurTarget->setColorAttachment(0, m_blurTexture);
-    m_blurTarget->setClearFlags(RenderTarget::ClearColor);
+    m_blurTarget->setFlags(RenderTarget::ClearColor);
 
     m_outputs.push_back(std::make_pair(m_resultTexture->name(), m_resultTexture));
 }
@@ -210,8 +210,8 @@ void DepthOfField::exec() {
         m_blurMaterial->setTexture(gRgbMap, m_blurTexture);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_blurMaterial);
 
-        buffer->setRenderTarget(m_resultTarget);
         buffer->setViewport(0, 0, m_resultTexture->width(), m_resultTexture->height());
+        buffer->setRenderTarget(m_resultTarget);
         buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_dofMaterial);
 
         buffer->endDebugMarker();

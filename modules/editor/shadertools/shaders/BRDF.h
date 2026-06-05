@@ -108,7 +108,11 @@ vec3 closestPointOnSegment(vec3 a, vec3 b, vec3 p) {
 }
 // Shadow map functions
 float getShadowSample(sampler2D map, vec2 coord, float t) {
-    return step(t, texture(map, coord).x);
+    float depth = texture(map, coord).x;
+#ifdef VULKAN
+    depth = depth * 0.5f + 0.5f;
+#endif
+    return step(t, depth);
 }
 
 float getShadowSampleLinear(sampler2D map, vec2 coord, float t) {

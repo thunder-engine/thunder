@@ -41,6 +41,14 @@ float farClipPlane() {
     return g.cameraAndParams[1].y;
 }
 
+float shadowPageSize() {
+    return g.cameraAndParams[2].x;
+}
+
+vec2 screenSizeNorm() {
+    return g.cameraAndParams[1].zw;
+}
+
 float time() {
     return g.cameraAndParams[2].y;
 }
@@ -49,12 +57,8 @@ float deltaTime() {
     return g.cameraAndParams[2].z;
 }
 
-float shadowPageSize() {
-    return g.cameraAndParams[2].x;
-}
-
-vec2 screenSizeNorm() {
-    return g.cameraAndParams[1].zw;
+bool flipResult() {
+    return g.cameraAndParams[2].w > 0.0f;
 }
 
 vec2 screenSize() {

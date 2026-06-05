@@ -37,7 +37,7 @@ public:
 
         m_outlineTarget->setColorAttachment(0, m_outlineMap);
         m_outlineTarget->setDepthAttachment(m_outlineDepth);
-        m_outlineTarget->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
+        m_outlineTarget->setFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
 
         Material *material = Engine::loadResource<Material>(".embedded/outline.shader");
         if(material) {

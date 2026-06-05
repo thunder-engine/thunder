@@ -132,17 +132,20 @@ uint32_t WrapperVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pr
     return 0;
 }
 
-void WrapperVk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer &buffer) {
+VkBuffer WrapperVk::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage) {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+    VkBuffer buffer;
     VkResult result = vkCreateBuffer(s_device, &bufferInfo, nullptr, &buffer);
     if(result != VK_SUCCESS) {
         aError() << "failed to crate buffer!";
     }
+
+    return buffer;
 }
 
 void WrapperVk::destroyBuffer(VkBuffer buffer) {
@@ -151,7 +154,7 @@ void WrapperVk::destroyBuffer(VkBuffer buffer) {
     }
 }
 
-void WrapperVk::allocateMemory(VkMemoryPropertyFlags properties, const VkBuffer &buffer, VkDeviceMemory &memory) {
+VkDeviceMemory WrapperVk::allocateMemory(VkMemoryPropertyFlags properties, const VkBuffer &buffer) {
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(s_device, buffer, &memRequirements);
 
@@ -160,13 +163,15 @@ void WrapperVk::allocateMemory(VkMemoryPropertyFlags properties, const VkBuffer 
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
+    VkDeviceMemory memory;
     VkResult result = vkAllocateMemory(s_device, &allocInfo, nullptr, &memory);
-
     if(result != VK_SUCCESS) {
         aError() << "failed to allocate memory!";
     }
 
     vkBindBufferMemory(s_device, buffer, memory, 0);
+
+    return memory;
 }
 
 void WrapperVk::freeMemory(VkDeviceMemory memory) {
@@ -184,8 +189,8 @@ void WrapperVk::getStagingBuffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMe
         destroyBuffer(stagingBuffer);
         freeMemory(stagingMemory);
 
-        createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, stagingBuffer);
-        allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
+        stagingBuffer = createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+        stagingMemory = allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer);
 
         bufferSize = size;
     }
@@ -256,6 +261,10 @@ VkPipelineLayout WrapperVk::createPipelineLayout(const std::vector<VkDescriptorS
     }
 
     return result;
+}
+
+size_t WrapperVk::framesInFlight() {
+    return 2;
 }
 
 void WrapperVk::destroyContext() {

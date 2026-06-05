@@ -22,6 +22,10 @@ class Bloom : public PipelineTask {
 
         Texture *blurTempTexture = nullptr;
 
+        MaterialInstance *blurMaterialV = nullptr;
+
+        MaterialInstance *blurMaterialH = nullptr;
+
         float blurPoints[MAX_SAMPLES];
 
         int32_t steps;
@@ -50,8 +54,6 @@ private:
     MaterialInstance *m_thresholdMaterial = nullptr;
 
     MaterialInstance *m_downMaterial = nullptr;
-
-    MaterialInstance *m_blurMaterial = nullptr;
 
     Texture *m_dirtTexture = nullptr;
 

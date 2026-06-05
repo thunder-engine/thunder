@@ -51,7 +51,7 @@ GBuffer::GBuffer() :
         }
     }
 
-    m_gbuffer->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
+    m_gbuffer->setFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
 }
 
 void GBuffer::exec() {

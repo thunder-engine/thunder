@@ -11,10 +11,10 @@ class ENGINE_EXPORT RenderTarget : public Resource {
     A_NOPROPERTIES()
     A_NOMETHODS()
 
-    enum ClearFlags {
-        DoNothing = 0,
-        ClearColor,
-        ClearDepth
+    enum Flags {
+        ClearColor = (1<<0),
+        ClearDepth = (1<<1),
+        Atlas = (1<<2)
     };
 
     A_NOENUMS()
@@ -31,14 +31,17 @@ public:
     Texture *depthAttachment() const;
     virtual void setDepthAttachment(Texture *texture);
 
-    int clearFlags() const;
-    void setClearFlags(int flags);
+    int flags() const;
+    void setFlags(int flags);
 
     const Vector4 &clearColor() const;
     void setClearColor(const Vector4 &color);
 
     void renderArea(int32_t &x, int32_t &y, int32_t &width, int32_t &height) const;
     void setRenderArea(int32_t x, int32_t y, int32_t width, int32_t height);
+
+    int32_t tileIndex() const;
+    void setTileIndex(int32_t index);
 
 protected:
     void switchState(Resource::State state) override;
@@ -51,7 +54,7 @@ private:
 
     Texture *m_depth;
 
-    int m_clearFlags;
+    int m_flags;
 
     int m_clearX;
 
@@ -60,6 +63,8 @@ private:
     int m_clearWidth;
 
     int m_clearHeigh;
+
+    int m_currentTile;
 
 };
 

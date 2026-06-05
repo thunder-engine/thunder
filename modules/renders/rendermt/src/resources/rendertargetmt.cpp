@@ -42,7 +42,7 @@ MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
             desc->setLevel(m_currentLevel);
             desc->setTexture(handle);
             desc->setClearColor(MTL::ClearColor(0.0, 0.0, 0.0, 0.0));
-            desc->setLoadAction((clearFlags() & ClearColor) ? MTL::LoadActionClear : MTL::LoadActionLoad);
+            desc->setLoadAction((flags() & ClearColor) ? MTL::LoadActionClear : MTL::LoadActionLoad);
             desc->setStoreAction(MTL::StoreActionStore);
 
             m_descriptor->colorAttachments()->setObject(desc, i);
@@ -56,7 +56,7 @@ MTL::RenderPassDescriptor *RenderTargetMt::nativeHandle() {
         MTL::RenderPassDepthAttachmentDescriptor *desc = MTL::RenderPassDepthAttachmentDescriptor::alloc()->init();
         desc->setLevel(m_currentLevel);
         desc->setTexture(handle);
-        desc->setLoadAction((clearFlags() & ClearDepth) ? MTL::LoadActionClear : MTL::LoadActionLoad);
+        desc->setLoadAction((flags() & ClearDepth) ? MTL::LoadActionClear : MTL::LoadActionLoad);
         desc->setStoreAction(MTL::StoreActionStore);
 
         m_descriptor->setDepthAttachment(desc);

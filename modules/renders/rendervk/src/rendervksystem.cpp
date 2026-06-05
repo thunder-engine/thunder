@@ -26,8 +26,6 @@ QVulkanInstance s_QInstance;
 
 const int MAX_RESOLUTION = 8192;
 
-static int32_t registered = 0;
-
 RenderVkSystem::RenderVkSystem(Engine *engine) :
         RenderSystem(),
         m_engine(engine),
@@ -35,46 +33,40 @@ RenderVkSystem::RenderVkSystem(Engine *engine) :
 
     PROFILE_FUNCTION();
 
-    if(registered == 0) {
-        WrapperVk::createInstance();
-        WrapperVk::selectPhysicalDevice();
+    WrapperVk::createInstance();
+    WrapperVk::selectPhysicalDevice();
 
-        System *system = Engine::resourceSystem();
+    System *system = Engine::resourceSystem();
 
-        TextureVk::registerClassFactory(system);
-        RenderTargetVk::registerClassFactory(system);
-        MaterialVk::registerClassFactory(system);
-        MeshVk::registerClassFactory(system);
-        ComputeBufferVk::registerClassFactory(system);
-        ComputeShaderVk::registerClassFactory(system);
+    TextureVk::registerClassFactory(system);
+    RenderTargetVk::registerClassFactory(system);
+    MaterialVk::registerClassFactory(system);
+    MeshVk::registerClassFactory(system);
+    ComputeBufferVk::registerClassFactory(system);
+    ComputeShaderVk::registerClassFactory(system);
 
-        CommandBufferVk::registerClassFactory(m_engine);
-    }
-    ++registered;
+    CommandBufferVk::registerClassFactory(m_engine);
 }
 
 RenderVkSystem::~RenderVkSystem() {
     PROFILE_FUNCTION();
 
-    --registered;
-    if(registered == 0) {
-        System *system = Engine::resourceSystem();
+    System *system = Engine::resourceSystem();
 
-        TextureVk::unregisterClassFactory(system);
-        RenderTargetVk::unregisterClassFactory(system);
-        MaterialVk::unregisterClassFactory(system);
-        MeshVk::unregisterClassFactory(system);
-        ComputeBufferVk::unregisterClassFactory(system);
-        ComputeShaderVk::unregisterClassFactory(system);
+    TextureVk::unregisterClassFactory(system);
+    RenderTargetVk::unregisterClassFactory(system);
+    MaterialVk::unregisterClassFactory(system);
+    MeshVk::unregisterClassFactory(system);
+    ComputeBufferVk::unregisterClassFactory(system);
+    ComputeShaderVk::unregisterClassFactory(system);
 
-        CommandBufferVk::unregisterClassFactory(m_engine);
+    CommandBufferVk::unregisterClassFactory(m_engine);
 
-        WrapperVk::destroyContext();
+    WrapperVk::destroyContext();
 
 #if defined(SHARED_DEFINE)
-        s_QInstance.destroy();
+    s_QInstance.destroy();
 #endif
-    }
 }
 
 /*!

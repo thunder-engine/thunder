@@ -15,8 +15,6 @@ ThunderVulkanWindow::ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *sys
         m_status(StatusUninitialized) {
 
     setSurfaceType(QSurface::VulkanSurface);
-
-    m_system->setCurrentSurface(m_surface);
 }
 
 void ThunderVulkanWindow::exposeEvent(QExposeEvent *) {
@@ -29,9 +27,9 @@ bool ThunderVulkanWindow::event(QEvent *e) {
     switch(e->type()) {
         case QEvent::UpdateRequest: {
             if(isVisible()) {
+                m_system->setCurrentSurface(m_surface);
                 if(m_surface.beginFrame(width(), height())) {
                     m_viewport->onDraw();
-
                     m_surface.endFrame();
                 }
 

@@ -8,7 +8,11 @@ class CommandBufferGL : public CommandBuffer {
 
 public:
     CommandBufferGL();
+    ~CommandBufferGL();
 
+    static void setObjectName(int32_t type, int32_t id, const TString &name);
+
+protected:
     void dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
     void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;
@@ -24,9 +28,6 @@ public:
     void beginDebugMarker(const TString &name) override;
     void endDebugMarker() override;
 
-    static void setObjectName(int32_t type, int32_t id, const TString &name);
-
-protected:
     void setViewProjection(const Matrix4 &viewProjection) override;
 
     void updateGlobal();

@@ -12,6 +12,12 @@ CommandBufferGL::CommandBufferGL():
     PROFILE_FUNCTION();
 }
 
+CommandBufferGL::~CommandBufferGL() {
+    if(m_globalBuffer) {
+        glDeleteBuffers(1, &m_globalBuffer);
+    }
+}
+
 void CommandBufferGL::dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) {
 #ifndef THUNDER_MOBILE
     PROFILE_FUNCTION();
@@ -75,7 +81,7 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
             region = true;
         }
 
-        int clearFlags = targetGL->clearFlags();
+        int clearFlags = targetGL->flags();
         if(clearFlags) {
             uint32_t flags = 0;
             if(clearFlags & RenderTarget::ClearColor) {

@@ -301,8 +301,6 @@ public:
 
     void setTransform(const Matrix4 &transform, uint32_t uuid, uint32_t hash);
 
-    virtual void setBlendState(const Material::BlendState &state);
-
     int32_t finalPriority() const;
 
     int32_t priority() const;

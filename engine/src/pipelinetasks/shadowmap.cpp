@@ -74,7 +74,8 @@ void ShadowMap::lightUpdate(BaseLight *light, int count) {
     RenderTarget *shadowTarget = requestShadowTiles(light->uuid(), 0, x.data(), y.data(), w.data(), h.data(), count);
     CommandBuffer *buffer = m_context->buffer();
     buffer->setRenderTarget(shadowTarget);
-    for(int32_t i = 0; i < count; i++) {
+    for(int32_t i = count - 1; i >= 0; i--) {
+        shadowTarget->setTileIndex(i);
         tiles[i] = Vector4(static_cast<float>(x[i]) / m_shadowAtlasSize,
                            static_cast<float>(y[i]) / m_shadowAtlasSize,
                            static_cast<float>(w[i]) / m_shadowAtlasSize,
@@ -101,6 +102,7 @@ void ShadowMap::lightUpdate(BaseLight *light, int count) {
         instance->setVector4(uniTiles, tiles.data(), count);
         instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
+    shadowTarget->setTileIndex(-1);
 }
 
 void ShadowMap::cleanShadowCache() {
@@ -166,7 +168,7 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
 
         target = Engine::objectCreate<RenderTarget>();
         target->setDepthAttachment(map);
-        target->setClearFlags(RenderTarget::ClearDepth);
+        target->setFlags(RenderTarget::ClearDepth | RenderTarget::Atlas);
 
         AtlasNode *root = new AtlasNode;
 
