@@ -2,6 +2,8 @@
 
 #include "resources/texturevk.h"
 
+#include <cstring>
+
 #include "wrappervk.h"
 #include "commandbuffervk.h"
 
