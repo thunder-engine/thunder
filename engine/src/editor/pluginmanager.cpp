@@ -34,7 +34,7 @@ PluginManager::PluginManager() :
 #ifdef Q_OS_MACOS
     m_renderName = TString("RenderMT"); // Default
 #else
-    m_renderName = TString("RenderVK"); // Default
+    m_renderName = TString("RenderGL"); // Default
 #endif
 
     if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
