@@ -81,7 +81,7 @@ void CommandBufferGL::setRenderTarget(RenderTarget *target, uint32_t level) {
             region = true;
         }
 
-        int clearFlags = targetGL->clearFlags();
+        int clearFlags = targetGL->flags();
         if(clearFlags) {
             uint32_t flags = 0;
             if(clearFlags & RenderTarget::ClearColor) {

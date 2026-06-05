@@ -124,7 +124,9 @@ void CommandBufferVk::setRenderTarget(RenderTarget *target, uint32_t level) {
     targetVk = static_cast<RenderTargetVk *>(m_target);
     if(targetVk) {
         targetVk->bind(m_commandBuffer, level);
-        targetVk->updateGlobalMemory(m_currentFrame, m_global);
+        if(!(targetVk->flags() & RenderTarget::Atlas)) {
+            targetVk->updateGlobalMemory(m_currentFrame, m_global);
+        }
     }
 }
 
@@ -155,6 +157,10 @@ void CommandBufferVk::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
     PROFILE_FUNCTION();
 
     CommandBuffer::setViewport(x, y, width, height);
+
+    if(m_target && m_target->flags() & RenderTarget::Atlas && m_target->tileIndex() >= 0) {
+        static_cast<RenderTargetVk *>(m_target)->updateGlobalMemory(m_currentFrame, m_global);
+    }
 
     m_viewport.x = (float)x;
     m_viewport.y = (float)y;

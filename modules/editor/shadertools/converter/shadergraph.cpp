@@ -776,7 +776,7 @@ Texture *ShaderGraph::preview(GraphNode *node) {
 
         data.target = Engine::objectCreate<RenderTarget>(name + "_rt");
         data.target->setColorAttachment(0, data.texture);
-        data.target->setClearFlags(RenderTarget::ClearColor);
+        data.target->setFlags(RenderTarget::ClearColor);
 
         data.material = Engine::objectCreate<Material>();
 

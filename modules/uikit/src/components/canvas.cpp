@@ -32,7 +32,7 @@ Canvas::Canvas() :
 
     m_target->setColorAttachment(0, m_texture);
     m_target->setClearColor(0.0f);
-    m_target->setClearFlags(RenderTarget::ClearColor);
+    m_target->setFlags(RenderTarget::ClearColor);
 
     static uint32_t hash = Mathf::hashString("canvas");
     addTagByHash(hash);

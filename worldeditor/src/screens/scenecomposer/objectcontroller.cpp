@@ -71,7 +71,7 @@ public:
 
         m_resultTarget->setColorAttachment(0, m_resultTexture);
         m_resultTarget->setDepthAttachment(m_depth);
-        m_resultTarget->setClearFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
+        m_resultTarget->setFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
     }
 
     void exec() override {

@@ -104,10 +104,10 @@ DepthOfField::DepthOfField() :
     m_resultTarget->setColorAttachment(0, m_resultTexture);
 
     m_downTarget->setColorAttachment(0, m_downTexture);
-    m_downTarget->setClearFlags(RenderTarget::ClearColor);
+    m_downTarget->setFlags(RenderTarget::ClearColor);
 
     m_blurTarget->setColorAttachment(0, m_blurTexture);
-    m_blurTarget->setClearFlags(RenderTarget::ClearColor);
+    m_blurTarget->setFlags(RenderTarget::ClearColor);
 
     m_outputs.push_back(std::make_pair(m_resultTexture->name(), m_resultTexture));
 }

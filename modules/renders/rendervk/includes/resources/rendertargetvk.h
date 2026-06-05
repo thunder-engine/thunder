@@ -28,7 +28,7 @@ public:
 
     void setNativeHandle(VkRenderPass pass, VkFramebuffer buffer, uint32_t width, uint32_t height);
 
-    VkDescriptorSet globalDescriptorSet(size_t currentFame);
+    VkDescriptorSet globalDescriptorSet(size_t currentFrame);
     void updateGlobalMemory(size_t currentFrame, const Global &global);
 
 private:

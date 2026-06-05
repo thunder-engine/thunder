@@ -53,7 +53,7 @@ void MaterialVk::loadUserData(const VariantMap &data) {
             if(pair.second == FragmentVisibility) {
                 m_layers |= Material::Visibility;
                 if(m_layers & Opaque) {
-                    //m_layers |= Material::Shadowcast;
+                    m_layers |= Material::Shadowcast;
                 }
             }
         }
@@ -71,7 +71,7 @@ void MaterialVk::switchState(State state) {
     }
 }
 
-VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetVk *target) {
+VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint32_t layer, RenderTargetVk *target) {
     switch(state()) {
         case ToBeUpdated: {
             for(uint16_t v = VertexStatic; v < VertexLast; v++) {
@@ -95,13 +95,13 @@ VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint16_t fragment, RenderTar
 
     uint32_t index = target->uuid();
     Mathf::hashCombine(index, vertex);
-    Mathf::hashCombine(index, fragment);
+    Mathf::hashCombine(index, layer);
 
     auto it = m_pipelines.find(index);
     if(it != m_pipelines.end()) {
         return it->second;
     } else {
-        VkPipeline pipeline = buildPipeline(vertex, fragment, target);
+        VkPipeline pipeline = buildPipeline(vertex, layer, target);
         if(pipeline) {
             m_pipelines[index] = pipeline;
             return pipeline;
@@ -149,12 +149,7 @@ VkDescriptorSetLayout MaterialVk::localDescriptorSetLayout() const {
 }
 
 bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex) {
-    uint16_t type = FragmentDefault;
-    if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
-        type = FragmentVisibility;
-    }
-
-    VkPipeline pipeline = getPipeline(vertex, type, target);
+    VkPipeline pipeline = getPipeline(vertex, layer, target);
     if(pipeline) {
         vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -203,18 +198,23 @@ void MaterialVk::buildPipelineLayout() {
     }
 }
 
-VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *target) {
-    VkShaderModule vertex = m_shaders[v];
-    VkShaderModule fragment = m_shaders[f];
+VkPipeline MaterialVk::buildPipeline(uint32_t vertex, uint32_t layer, RenderTargetVk *target) {
+    uint16_t fragment = FragmentDefault;
+    if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
+        fragment = FragmentVisibility;
+    }
 
-    if(vertex == nullptr || fragment == nullptr) {
+    VkShaderModule vertexShader = m_shaders[vertex];
+    VkShaderModule fragmentShader = m_shaders[fragment];
+
+    if(vertexShader == nullptr || fragmentShader == nullptr) {
         return VK_NULL_HANDLE;
     }
 
     std::vector<VkVertexInputBindingDescription> vertexInputBindings;
     std::vector<VkVertexInputAttributeDescription> vertexAttributes;
 
-    std::vector<Attribute> &attributes = m_attributes[v];
+    std::vector<Attribute> &attributes = m_attributes[vertex];
 
     vertexInputBindings.resize(attributes.size());
     vertexAttributes.resize(attributes.size());
@@ -236,13 +236,13 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertex;
+    vertShaderStageInfo.module = vertexShader;
     vertShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
     fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragment;
+    fragShaderStageInfo.module = fragmentShader;
     fragShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
@@ -268,8 +268,15 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
     VkPipelineRasterizationStateCreateInfo rasterizationState = {};
     rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationState.cullMode = doubleSided() ? VK_CULL_MODE_NONE :
-                                                  ((m_materialType == LightFunction) ? VK_CULL_MODE_FRONT_BIT : VK_CULL_MODE_BACK_BIT);
+    rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
+    if(m_materialType == LightFunction || layer & Shadowcast) {
+        rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
+    }
+
+    if(doubleSided() || (layer & Material::Visibility)) {
+        rasterizationState.cullMode = VK_CULL_MODE_NONE;
+    }
+
     rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizationState.lineWidth = 1.0f;
 
@@ -290,7 +297,7 @@ VkPipeline MaterialVk::buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *tar
                                                VK_COLOR_COMPONENT_A_BIT;
 
     BlendState blendState = m_blendState;
-    if(f == FragmentVisibility) {
+    if(fragment == FragmentVisibility) {
         blendState.sourceColorBlendMode = Material::One;
         blendState.sourceAlphaBlendMode = Material::One;
 
@@ -481,19 +488,15 @@ bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, VkDescrip
 
         const ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
         if(!localBuffer.empty()) {
-
             VkDeviceSize size = localBuffer.size();
-
-            VkDevice device = WrapperVk::device();
             if(size > m_localSize || m_local.empty()) {
-                m_localSize = size;
-
                 for(uint32_t i = 0; i < m_local.size(); i++) {
                     buffer.suspendBuffer(m_local[i].buffer, m_local[i].memory);
                     m_local[i].buffer = VK_NULL_HANDLE;
                     m_local[i].memory = VK_NULL_HANDLE;
                 }
                 m_local.resize(swapChainCount);
+                m_localSize = size;
 
                 for(uint32_t i = 0; i < swapChainCount; i++) {
                     if(m_local[i].buffer == VK_NULL_HANDLE) {
@@ -518,6 +521,7 @@ bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, VkDescrip
             }
 
             void *dst = nullptr;
+            VkDevice device = WrapperVk::device();
             vkMapMemory(device, m_local[currentFrame].memory, 0, size, 0, &dst);
                 memcpy(dst, localBuffer.data(), size);
             vkUnmapMemory(device, m_local[currentFrame].memory);

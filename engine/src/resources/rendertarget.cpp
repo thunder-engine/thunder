@@ -8,11 +8,12 @@
 
 RenderTarget::RenderTarget() :
         m_depth(nullptr),
-        m_clearFlags(DoNothing),
+        m_flags(0),
         m_clearX(0),
         m_clearY(0),
         m_clearWidth(0),
-        m_clearHeigh(0) {
+        m_clearHeigh(0),
+        m_currentTile(-1) {
 
 }
 
@@ -59,16 +60,16 @@ void RenderTarget::setDepthAttachment(Texture *texture) {
     m_depth = texture;
 }
 /*!
-    Returns clear buffers startegy used on render target bind.
+    Returns assigned flags for this render target.
 */
-int RenderTarget::clearFlags() const {
-    return m_clearFlags;
+int RenderTarget::flags() const {
+    return m_flags;
 }
 /*!
-    Sets clear buffers startegy on bind using clear \a flags.
+    Sets a \a flags for this render target.
 */
-void RenderTarget::setClearFlags(int flags) {
-    m_clearFlags = flags;
+void RenderTarget::setFlags(int flags) {
+    m_flags = flags;
 }
 /*!
     Returns color that will be used to clear attached targets.
@@ -105,6 +106,18 @@ void RenderTarget::setRenderArea(int32_t x, int32_t y, int32_t width, int32_t he
     m_clearY = y;
     m_clearWidth = width;
     m_clearHeigh = height;
+}
+/*!
+    Returns current tile index.
+*/
+int32_t RenderTarget::tileIndex() const {
+    return m_currentTile;
+}
+/*!
+    Sets a tile \a index required to setup global shader settings on some RHI's
+*/
+void RenderTarget::setTileIndex(int32_t index) {
+    m_currentTile = index;
 }
 /*!
     \internal

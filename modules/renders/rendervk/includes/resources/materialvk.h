@@ -91,14 +91,14 @@ public:
     void removeInstance(MaterialInstanceVk *instance);
 
 protected:
-    VkPipeline getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetVk *target);
+    VkPipeline getPipeline(uint16_t vertex, uint32_t layer, RenderTargetVk *target);
 
     void destroyPrograms();
 
     VkShaderModule buildShader(const ByteArray &src);
 
     void buildPipelineLayout();
-    VkPipeline buildPipeline(uint32_t v, uint32_t f, RenderTargetVk *target);
+    VkPipeline buildPipeline(uint32_t vertex, uint32_t layer, RenderTargetVk *target);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 

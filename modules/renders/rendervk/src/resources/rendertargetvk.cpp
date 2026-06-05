@@ -84,7 +84,7 @@ void RenderTargetVk::bindBuffer(VkCommandBuffer &buffer) {
     std::vector<VkClearValue> clearValues;
     clearValues.reserve(count + 1);
 
-    int32_t flags = clearFlags();
+    int32_t flags = RenderTargetVk::flags();
     if(m_native || flags != 0) {
         for(uint32_t i = 0; i < count; i++) {
             VkClearValue value;
@@ -140,7 +140,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
     }
 
     if(m_frameBuffer == nullptr) {
-        bool clearColor = (clearFlags() & ClearColor);
+        bool clearColor = (RenderTargetVk::flags() & ClearColor);
 
         VkDevice device = WrapperVk::device();
 
@@ -193,7 +193,7 @@ bool RenderTargetVk::updateBuffer(uint32_t level) {
             d->attributes(imageInfo);
             attachments.push_back(imageInfo.imageView);
 
-            bool clearDepth = (clearFlags() & ClearDepth);
+            bool clearDepth = (RenderTargetVk::flags() & ClearDepth);
             description.format = d->vkFormat();
             description.loadOp = clearDepth ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
             description.stencilLoadOp = clearDepth ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -312,9 +312,15 @@ void RenderTargetVk::setDepthAttachment(Texture *texture) {
 void RenderTargetVk::updateGlobalMemory(size_t currentFrame, const Global &global) {
     VkDevice device = WrapperVk::device();
 
+    size_t swapChainCount = WrapperVk::framesInFlight();
+    size_t index = currentFrame;
+    if(flags() & Atlas) {
+        index += tileIndex() * swapChainCount;
+        swapChainCount *= 32;
+    }
+
     if(m_global.empty()) {
         if(m_descriptorPool == VK_NULL_HANDLE) {
-            size_t swapChainCount = WrapperVk::framesInFlight();
             std::vector<VkDescriptorPoolSize> poolSize;
             for(auto &binding : CommandBufferVk::globalLayoutBindings()) {
                 poolSize.push_back({ binding.descriptorType, (uint32_t)swapChainCount });
@@ -322,7 +328,6 @@ void RenderTargetVk::updateGlobalMemory(size_t currentFrame, const Global &globa
             m_descriptorPool = WrapperVk::createDescriptorPool(poolSize, swapChainCount);
         }
 
-        size_t swapChainCount = WrapperVk::framesInFlight();
         m_global.resize(swapChainCount);
 
         uint32_t flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -354,11 +359,15 @@ void RenderTargetVk::updateGlobalMemory(size_t currentFrame, const Global &globa
 
     VkDeviceSize globalSize = sizeof(Global);
     void *dst = nullptr;
-    vkMapMemory(device, m_global[currentFrame].memory, 0, globalSize, 0, &dst);
+    vkMapMemory(device, m_global[index].memory, 0, globalSize, 0, &dst);
         memcpy(dst, &global, globalSize);
-    vkUnmapMemory(device, m_global[currentFrame].memory);
+    vkUnmapMemory(device, m_global[index].memory);
 }
 
-VkDescriptorSet RenderTargetVk::globalDescriptorSet(size_t currentFame) {
-    return m_global[currentFame].descriptorSet;
+VkDescriptorSet RenderTargetVk::globalDescriptorSet(size_t currentFrame) {
+    size_t index = currentFrame;
+    if(flags() & Atlas) {
+        index += tileIndex() * WrapperVk::framesInFlight();
+    }
+    return m_global[index].descriptorSet;
 }

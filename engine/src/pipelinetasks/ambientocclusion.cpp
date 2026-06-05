@@ -65,7 +65,7 @@ AmbientOcclusion::AmbientOcclusion() :
     m_blurTexture->setFlags(Texture::Render);
 
     m_blurTarget->setColorAttachment(0, m_blurTexture);
-    m_blurTarget->setClearFlags(RenderTarget::ClearColor);
+    m_blurTarget->setFlags(RenderTarget::ClearColor);
     m_blurTarget->setClearColor(Vector4(1.0f));
 
     {
