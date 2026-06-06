@@ -39,10 +39,7 @@ AbstractButton::AbstractButton() :
 }
 
 AbstractButton::~AbstractButton() {
-    delete m_imageMaterial;
-    delete m_frameMaterial;
 
-    delete m_backgroundMesh;
 }
 /*!
     \internal
