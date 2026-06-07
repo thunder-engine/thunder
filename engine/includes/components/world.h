@@ -59,6 +59,7 @@ public: // signals
     void graphUpdated();
 
 private:
+    void addScene(Scene *scene);
     void addChild(Object *child, int32_t position = -1) override;
 
 private:
