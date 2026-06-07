@@ -32,11 +32,13 @@ void BaseAssetProvider::init(bool force) {
     ProjectSettings *mgr = ProjectSettings::instance();
     TString resourcePath(ProjectSettings::instance()->resourcePath());
 
+    bool watch = true;
     onDirectoryChangedForce(resourcePath + "/engine",force);
 #ifndef BUILDER
     onDirectoryChangedForce(resourcePath + "/editor",force);
+    watch = false;
 #endif
-    onDirectoryChangedForce(mgr->contentPath(), force, true); // We need to watch only a project files
+    onDirectoryChangedForce(mgr->contentPath(), force, watch); // We need to watch only a project files in editor.
 }
 
 void BaseAssetProvider::onFileChanged(const TString &path) {
