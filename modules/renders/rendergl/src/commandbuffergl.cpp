@@ -3,6 +3,7 @@
 #include "agl.h"
 
 #include "resources/meshgl.h"
+#include "resources/texturegl.h"
 #include "resources/materialgl.h"
 #include "resources/rendertargetgl.h"
 #include "resources/computeshadergl.h"
@@ -147,6 +148,24 @@ void CommandBufferGL::setObjectName(int32_t type, int32_t id, const TString &nam
 #ifndef THUNDER_MOBILE
     glObjectLabel(type, id, name.size(), name.data());
 #endif
+}
+
+void CommandBufferGL::bindTexture(uint32_t index, TextureGL *texture) {
+    if(texture) {
+        uint32_t handle = texture->nativeHandle();
+
+        if(handle != m_textures[index]) {
+            uint32_t textureType = (texture->depth() > 1) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
+            if(texture->isCubemap()) {
+                textureType = GL_TEXTURE_CUBE_MAP;
+            }
+
+            glActiveTexture(GL_TEXTURE0 + index);
+            glBindTexture(textureType, handle);
+
+            m_textures[index] = handle;
+        }
+    }
 }
 
 void CommandBufferGL::setViewProjection(const Matrix4 &viewProjection) {

@@ -3,6 +3,8 @@
 
 #include <commandbuffer.h>
 
+class TextureGL;
+
 class CommandBufferGL : public CommandBuffer {
     A_OBJECT_OVERRIDE(CommandBufferGL, CommandBuffer, System)
 
@@ -11,6 +13,8 @@ public:
     ~CommandBufferGL();
 
     static void setObjectName(int32_t type, int32_t id, const TString &name);
+
+    void bindTexture(uint32_t index, TextureGL *texture);
 
 protected:
     void dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
@@ -34,6 +38,8 @@ protected:
 
 protected:
     uint32_t m_globalBuffer;
+
+    uint32_t m_textures[32];
 
 };
 
