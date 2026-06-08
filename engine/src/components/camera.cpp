@@ -28,8 +28,15 @@ Camera::Camera() :
         m_screen(false),
         m_dirty(true) {
 
+    static uint32_t hash = Mathf::hashString("cameras");
+    addTagByHash(hash);
 }
 
+Camera::~Camera() {
+    if(s_currentCamera == this) {
+        s_currentCamera = nullptr;
+    }
+}
 /*!
     Returns view matrix for the camera.
 */
@@ -259,21 +266,15 @@ void Camera::setScreenSpace(bool mode) {
 */
 Camera *Camera::current() {
     if(s_currentCamera == nullptr || !s_currentCamera->isEnabled() || !s_currentCamera->actor()->isEnabled()) {
-        s_currentCamera = nullptr;
-        for(auto it : Engine::world()->findChildren<Camera *>()) {
-            if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                s_currentCamera = it;
-                break;
-            }
-        }
+        s_currentCamera = findActiveCamera(Engine::world());
 
         if(s_currentCamera == nullptr) {
-            static Camera *reserveCamera = nullptr;
-            if(reserveCamera == nullptr) {
-                Actor *cameraActor = Engine::composeActor<Camera>("ReserveCamera", Engine::world());
-                reserveCamera = cameraActor->getComponent<Camera>();
+            static Camera *fallbackCamera = nullptr;
+            if(fallbackCamera == nullptr) {
+                Actor *cameraActor = Engine::composeActor<Camera>("FallbackCamera", nullptr);
+                fallbackCamera = cameraActor->getComponent<Camera>();
             }
-            s_currentCamera = reserveCamera;
+            s_currentCamera = fallbackCamera;
             s_currentCamera->actor()->setEnabled(true);
             s_currentCamera->setEnabled(true);
         }
@@ -287,7 +288,24 @@ Camera *Camera::current() {
 void Camera::setCurrent(Camera *current) {
     s_currentCamera = current;
 }
-
+/*!
+    Returns a first active camera in the \a world
+*/
+Camera *Camera::findActiveCamera(World *world) {
+    static uint32_t hash = Mathf::hashString("cameras");
+    for(auto scene : world->scenes()) {
+        for(auto it : scene->getObjectsInGroupByHash(hash)) {
+            Camera *camera = static_cast<Camera *>(it);
+            if(camera->isEnabled() && camera->actor()->isEnabled()) { // Get first active Camera
+                return camera;
+            }
+        }
+    }
+    return nullptr;
+}
+/*!
+    Returns a set of frustum planes.
+*/
 Frustum Camera::frustum() const {
     Transform *t = transform();
 

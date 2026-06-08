@@ -30,6 +30,7 @@ class ENGINE_EXPORT Camera : public Component {
 
 public:
     Camera();
+    ~Camera();
 
     Matrix4 viewMatrix() const;
     Matrix4 projectionMatrix() const;
@@ -66,6 +67,8 @@ public:
     static Camera *current();
     static void setCurrent(Camera *current);
 
+    static Camera *findActiveCamera(World *world);
+
     Vector3 project(const Vector3 &worldSpace) const;
     Vector3 unproject(const Vector3 &screenSpace) const;
 
@@ -100,6 +103,8 @@ private:
     bool m_ortho;
 
     bool m_screen;
+
+    bool m_main;
 
     mutable bool m_dirty;
 

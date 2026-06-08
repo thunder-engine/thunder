@@ -174,13 +174,7 @@ void Viewport::onDraw() {
         Engine::renderSystem()->setPipelineContext(m_pipelineContext);
 
         if(m_gameView) {
-            for(auto it : m_world->findChildren<Camera *>()) {
-                if(it->isEnabled() && it->actor()->isEnabled()) { // Get first active Camera
-                    Camera::setCurrent(it);
-                    break;
-                }
-            }
-
+            Camera::setCurrent(Camera::findActiveCamera(Engine::world()));
             Engine::update(m_world);
 
             if(!m_gamePaused && isFocused()) {
@@ -217,7 +211,9 @@ void Viewport::onDraw() {
                 m_controller->update();
             }
             onCursorSet(instance.mouseCursor());
-            instance.update();
+            if(!m_gameView) {
+                instance.update();
+            }
         }
 
         if(m_screenInProgress && m_color) {
