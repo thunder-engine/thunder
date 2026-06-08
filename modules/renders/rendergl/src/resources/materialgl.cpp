@@ -11,11 +11,6 @@
 
 const uint32_t gMaxUBO = 65536;
 
-namespace  {
-    const char *gInstanceData("InstanceData");
-    const char *gGlobalData("Global");
-};
-
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
@@ -47,7 +42,7 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     switchState(ToBeUpdated);
 }
 
-uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) {
+uint32_t MaterialGL::getProgram(uint32_t type, int32_t &global, int32_t &local) {
     switch(state()) {
         case ToBeUpdated: {
             for(auto it : m_programs) {
@@ -55,7 +50,7 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
             }
             m_programs.clear();
 
-            for(uint16_t v = Static; v < VertexLast; v++) {
+            for(uint16_t v = VertexStatic; v < VertexLast; v++) {
                 auto itv = m_shaderSources.find(v);
                 if(itv != m_shaderSources.end()) {
                     for(uint16_t f = FragmentDefault; f < FragmentLast; f++) {
@@ -66,11 +61,24 @@ uint32_t MaterialGL::getProgram(uint16_t type, int32_t &global, int32_t &local) 
 
                             std::vector<uint32_t> shaders = {vertex, fragment};
 
-                            uint32_t program = buildProgram(shaders, v);
-                            m_programs[v * f] = program;
+                            uint32_t hash = v;
+                            Mathf::hashCombine(hash, f);
+
+                            uint32_t program = buildProgram(shaders);
+                            m_programs[hash] = program;
+
                             #ifdef THUNDER_MOBILE
-                            m_globals[v * f] = glGetUniformBlockIndex(program, gGlobalData);
-                            m_locals[v * f] = glGetUniformBlockIndex(program, gInstanceData);
+                            int32_t global = glGetUniformBlockIndex(program, "Global");
+                            if(global > -1) {
+                                m_globals[hash] = global;
+                                glUniformBlockBinding(program, global, global);
+                            }
+
+                            int32_t instanceData = glGetUniformBlockIndex(program, "InstanceData");
+                            if(instanceData > -1) {
+                                m_locals[hash] = instanceData;
+                                glUniformBlockBinding(program, instanceData, instanceData);
+                            }
                             #endif
                         }
                     }
@@ -137,7 +145,7 @@ uint32_t MaterialGL::buildShader(uint16_t type, const TString &src) {
     return shader;
 }
 
-uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders, uint16_t vertex) {
+uint32_t MaterialGL::buildProgram(const std::vector<uint32_t> &shaders) {
     uint32_t result = glCreateProgram();
     if(result) {
 #ifndef THUNDER_MOBILE
@@ -345,9 +353,12 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     MaterialGL *material = static_cast<MaterialGL *>(m_material);
 
+    uint32_t hash = (m_surfaceType + 1);
+    Mathf::hashCombine(hash, type);
+
     int32_t globalLocation = -1;
     int32_t instanceLocation = -1;
-    uint32_t program = material->getProgram((m_surfaceType + 1) * type, globalLocation, instanceLocation);
+    uint32_t program = material->getProgram(hash, globalLocation, instanceLocation);
     if(!program) {
         return false;
     }
@@ -359,10 +370,6 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     }
 
     if(globalLocation > -1 && index == 0) {
-        if(globalBuffer == 0) {
-            glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, globalBuffer);
-            glUniformBlockBinding(program, globalLocation, globalLocation);
-        }
         static uint32_t currentGlobal = 0;
         if(globalBuffer != currentGlobal) {
             glBindBufferBase(GL_UNIFORM_BUFFER, globalLocation, globalBuffer);
@@ -377,11 +384,13 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
 
     static uint32_t instanceBuffer = 0;
     if(instanceBuffer != m_instanceBuffer) {
+        if(instanceLocation > -1) {
 #ifdef THUNDER_MOBILE
-        glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
+            glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
 #else
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, instanceLocation, m_instanceBuffer);
 #endif
+        }
         instanceBuffer = m_instanceBuffer;
     }
 
@@ -444,18 +453,16 @@ void MaterialInstanceGL::copyLocalData(uint32_t index, uint32_t program, int32_t
         if(m_instanceBuffer == 0) {
             glGenBuffers(1, &m_instanceBuffer);
 
-            int blockSize = -1;
+            int blockSize = 0;
             glGetActiveUniformBlockiv(program, instanceLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 
             glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
             glBufferData(GL_UNIFORM_BUFFER, blockSize, nullptr, GL_DYNAMIC_DRAW);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, instanceLocation, m_instanceBuffer);
-            glUniformBlockBinding(program, instanceLocation, instanceLocation);
         }
 
         uint32_t offset = index * gMaxUBO;
         int gpuBufferSize = MIN(gpuBuffer.size() - offset, gMaxUBO);
+
         glBindBuffer(GL_UNIFORM_BUFFER, m_instanceBuffer);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, gpuBufferSize, &gpuBuffer[offset]);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
