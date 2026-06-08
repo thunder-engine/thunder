@@ -395,23 +395,8 @@ bool MaterialInstanceGL::bind(CommandBufferGL *buffer, uint32_t layer, uint32_t 
     }
 
     uint8_t i = 0;
-
-    static uint32_t textures[32];
     for(auto &it : material->textures()) {
-        Texture *tex = texture(*buffer, it.binding);
-        if(tex) {
-            uint32_t handle = static_cast<TextureGL *>(tex)->nativeHandle();
-            if(handle != textures[i]) {
-                uint32_t textureType = (tex->depth() > 1) ? GL_TEXTURE_3D : GL_TEXTURE_2D;
-                if(tex->isCubemap()) {
-                    textureType = GL_TEXTURE_CUBE_MAP;
-                }
-
-                glActiveTexture(GL_TEXTURE0 + i);
-                glBindTexture(textureType, handle);
-                textures[i] = handle;
-            }
-        }
+        buffer->bindTexture(i, static_cast<TextureGL *>(texture(*buffer, it.binding)));
         i++;
     }
 
