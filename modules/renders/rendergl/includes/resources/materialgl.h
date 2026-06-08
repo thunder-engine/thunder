@@ -64,14 +64,14 @@ class MaterialGL : public Material {
 public:
     void loadUserData(const VariantMap &data) override;
 
-    uint32_t getProgram(uint16_t type, int32_t &global, int32_t &local);
+    uint32_t getProgram(uint32_t type, int32_t &global, int32_t &local);
 
     Textures &textures() { return m_textures; }
 
 protected:
     uint32_t buildShader(uint16_t type, const TString &src = TString());
 
-    uint32_t buildProgram(const std::vector<uint32_t> &shaders, uint16_t vertex);
+    uint32_t buildProgram(const std::vector<uint32_t> &shaders);
 
     bool checkShader(uint32_t shader);
     bool checkProgram(uint32_t program);
