@@ -11,6 +11,8 @@
 #include "components/image.h"
 #include "components/label.h"
 #include "components/lineedit.h"
+#include "components/listview.h"
+#include "components/listviewdelegate.h"
 #include "components/menu.h"
 #include "components/progressbar.h"
 #include "components/recttransform.h"
@@ -66,6 +68,11 @@ UiSystem::UiSystem() :
     TabBar::registerClassFactory(this);
     TabWidget::registerClassFactory(this);
 
+    AbstractScrollArea::registerClassFactory(this);
+    AbstractItemView::registerClassFactory(this);
+    ListView::registerClassFactory(this);
+    ListViewDelegate::registerClassFactory(this);
+
     GuiLayer::registerClassFactory(this);
 
     UiLoader::registerClassFactory(this);
@@ -106,6 +113,12 @@ UiSystem::~UiSystem() {
     Foldout::unregisterClassFactory(this);
     TabBar::unregisterClassFactory(this);
     TabWidget::unregisterClassFactory(this);
+
+    AbstractScrollArea::unregisterClassFactory(this);
+    AbstractItemView::unregisterClassFactory(this);
+    ListView::unregisterClassFactory(this);
+
+    GuiLayer::unregisterClassFactory(this);
 
     UiLoader::unregisterClassFactory(this);
 

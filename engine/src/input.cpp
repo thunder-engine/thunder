@@ -130,6 +130,12 @@ bool Input::isMouseButtonUp(int button) {
     return s_pPlatform->mouseReleased(button);
 }
 /*!
+    Returns true in case of the \a button is double clicked; otherwise returns false.
+*/
+bool Input::isMouseButtonDoubleClick(int button) {
+    return s_pPlatform->mouseButtonDoubleClick(button);
+}
+/*!
     Returns the number of connected joysticks.
 */
 uint32_t Input::joystickCount() {

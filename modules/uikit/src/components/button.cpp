@@ -65,6 +65,10 @@ Button::Button() :
 }
 
 Button::~Button() {
+    if(m_font) {
+        m_font->unsubscribe(this);
+    }
+
     delete m_textMesh;
 
     delete m_iconMaterial;

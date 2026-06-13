@@ -253,10 +253,10 @@ void Frame::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
     if(m_frameMaterial) {
-        Vector4 normCorners(m_borderRadius / size.y);
+        Vector4 normCorners(m_borderRadius / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderRadius, &normCorners);
 
-        Vector4 normBorders(rectTransform()->border() / size.y);
+        Vector4 normBorders(rectTransform()->border() / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderWidth, &normBorders);
         repaint();
     }

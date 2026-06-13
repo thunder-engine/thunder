@@ -6,8 +6,36 @@
 #include "stylesheet.h"
 
 #include <components/actor.h>
+#include <input.h>
 
 Widget *Widget::m_focusWidget = nullptr;
+
+KeyEvent::KeyEvent(int keyCode, bool isPressed, bool isRepeat) :
+    m_keyCode(keyCode),
+    m_isPressed(isPressed),
+    m_isRepeat(isRepeat) {
+
+}
+
+int KeyEvent::keyCode() const {
+    return m_keyCode;
+}
+bool KeyEvent::isPressed() const {
+    return m_isPressed;
+}
+bool KeyEvent::isRepeat() const {
+    return m_isRepeat;
+}
+
+bool KeyEvent::isShiftPressed() const {
+    return Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
+}
+bool KeyEvent::isControlPressed() const {
+    return Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL);
+}
+bool KeyEvent::isAltPressed() const {
+    return Input::isKey(Input::KEY_LEFT_ALT) || Input::isKey(Input::KEY_RIGHT_ALT);
+}
 
 /*!
     \module Gui
@@ -285,10 +313,11 @@ void Widget::onHierarchyUpdated() {
     Actor *object = actor();
     if(object) {
         m_childWidgets.clear();
+        static const TString type("Widget");
         for(auto it : object->getChildren()) {
             Actor *childActor = dynamic_cast<Actor *>(it);
             if(childActor) {
-                for(auto widgetIt : childActor->components("Widget")) {
+                for(auto widgetIt : childActor->components(type)) {
                     Widget *widget = static_cast<Widget *>(widgetIt);
                     widget->m_parent = this;
                     m_childWidgets.push_back(widget);
@@ -432,5 +461,84 @@ void Widget::updateStyleProperty(const TString &name, const float *v, int32_t si
         }
         data.removeLast();
         StyleSheet::setStyleProperty(this, name, data);
+    }
+}
+/*!
+    \internal
+*/
+void Widget::dispatchKeyEvent(KeyEvent *event) {
+    if(focusWidget() == this) {
+        if (event->isPressed()) {
+            onKeyPress(event);
+        } else {
+            onKeyRelease(event);
+        }
+        return;
+    }
+
+    for(auto child : m_childWidgets) {
+        child->dispatchKeyEvent(event);
+    }
+}
+
+void Widget::dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizontal) {
+    if(!isHovered(pos)) {
+        for(auto child : m_childWidgets) {
+            child->dispatchMouseWheelEvent(pos, delta, horizontal);
+        }
+        return;
+    }
+
+    Vector2 localPos = rectTransform()->mapFromGlobal(pos.x, pos.y);
+    if(onMouseWheel(delta, horizontal)) {
+        return;
+    }
+
+    for(auto child : m_childWidgets) {
+        child->dispatchMouseWheelEvent(pos, delta, horizontal);
+    }
+}
+
+void Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button) {
+    if(!isHovered(pos)) {
+        for(auto child : m_childWidgets) {
+            child->dispatchMouseEvent(pos, type, button);
+        }
+        return;
+    }
+
+    Vector2 localPos(pos);
+    RectTransform *rect = rectTransform();
+    if(rect) {
+        localPos = rect->mapFromGlobal(pos.x, pos.y);
+        localPos.y = rect->size().y - localPos.y;
+    }
+
+    switch(type) {
+        case Event::MouseDown:
+            if (onMouseDown((int)localPos.x, (int)localPos.y)) {
+                return;
+            }
+            break;
+        case Event::MouseUp:
+            if(onMouseUp((int)localPos.x, (int)localPos.y)) {
+                return;
+            }
+            break;
+        case Event::MouseMove:
+            if(onMouseMove((int)localPos.x, (int)localPos.y)) {
+                return;
+            }
+            break;
+        case Event::MouseDoubleClick:
+            if(onMouseDoubleClick((int)localPos.x, (int)localPos.y)) {
+                return;
+            }
+            break;
+        default: break;
+    }
+
+    for(auto child : m_childWidgets) {
+        child->dispatchMouseEvent(pos, type, button);
     }
 }

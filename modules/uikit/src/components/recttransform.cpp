@@ -93,12 +93,9 @@ void RectTransform::setSize(const Vector2 &size) {
             if(widget) {
                 if(m_horizontalPolicy == RectTransform::Fixed && m_verticalPolicy == RectTransform::Fixed) {
                     widget->updateStyleProperty(gCssSize, m_size.v, 2);
-                    return;
-                }
-                if(m_horizontalPolicy == RectTransform::Fixed) {
+                } else if(m_horizontalPolicy == RectTransform::Fixed) {
                     widget->updateStyleProperty(gCssWidth, &m_size.x, 1);
-                }
-                if(m_verticalPolicy == RectTransform::Fixed) {
+                } else if(m_verticalPolicy == RectTransform::Fixed) {
                     widget->updateStyleProperty(gCssHeight, &m_size.y, 1);
                 }
             }
@@ -496,9 +493,7 @@ void RectTransform::cleanDirtySize() const {
             if(parentRect) {
                 parentSize = parentRect->size();
 
-                Vector4 padding(parentRect->padding());
                 Vector4 border(parentRect->border());
-                parentSize -= Vector2(padding.y + padding.w, padding.x + padding.z);
                 parentSize -= Vector2(border.y + border.w, border.x + border.z);
             }
 
@@ -617,7 +612,7 @@ Vector4 RectTransform::clipRegion() const {
     Vector4 offsets(m_border + m_padding);
 
     return Vector4(m_worldTransform[12] + offsets.w,
-                   m_worldTransform[13] + offsets.x,
+                   m_worldTransform[13] + offsets.z,
                    (m_size.x - (offsets.y + offsets.w)) * m_worldScale.x,
                    (m_size.y - (offsets.x + offsets.z)) * m_worldScale.y);
 }

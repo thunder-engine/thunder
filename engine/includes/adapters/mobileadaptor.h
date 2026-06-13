@@ -38,6 +38,7 @@ public:
     bool mouseButton(int button) const override;
     bool mousePressed(int button) const override;
     bool mouseReleased(int button) const override;
+    bool mouseButtonDoubleClick(int button) const override;
 
     void mouseLockCursor(bool lock) override;
 
@@ -50,6 +51,12 @@ public:
     Vector4 joystickThumbs(int) const override;
 
 public:
+    static std::unordered_map<int32_t, int32_t> s_keys;
+    static std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> s_touches;
+    static std::unordered_map<int32_t, int32_t> s_touchDoubleClick;
+    static uint64_t s_lastTouchTime;
+    static int32_t s_lastTouchButton;
+
     static Vector4 s_thumbs;
     static Vector4 s_mousePosition;
     static Vector4 s_oldMousePosition;

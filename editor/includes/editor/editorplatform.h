@@ -58,6 +58,7 @@ protected:
     bool mouseButton(int) const override;
     bool mousePressed(int) const override;
     bool mouseReleased(int) const override;
+    bool mouseButtonDoubleClick(int) const override;
 
     Vector4 mousePosition() const override;
     void mouseLockCursor(bool lock) override;
@@ -75,8 +76,9 @@ protected:
     void syncConfiguration(VariantMap &map) const override;
 
 protected:
-    QHash<int32_t, int32_t> m_keys;
-    QHash<int32_t, int32_t> m_mouseButtons;
+    std::unordered_map<int32_t, int32_t> m_keys;
+    std::unordered_map<int32_t, int32_t> m_mouseButtons;
+    std::unordered_map<int32_t, int32_t> m_mouseDoubleClick;
 
     QSize m_screenSize;
 

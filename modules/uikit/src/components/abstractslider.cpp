@@ -153,8 +153,6 @@ void AbstractSlider::update(const Vector2 &pos) {
                 int newValue = round(MIX(m_minimum, m_maximum, f));
                 if(newValue != m_value) {
                     setValue(newValue);
-
-                    valueChanged(newValue);
                 }
             }
         }

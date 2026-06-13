@@ -10,6 +10,24 @@ class StyleSheet;
 
 class Canvas;
 
+class KeyEvent {
+public:
+    KeyEvent(int keyCode, bool isPressed, bool isRepeat = false);
+
+    int keyCode() const;
+    bool isPressed() const;
+    bool isRepeat() const;
+
+    bool isShiftPressed() const;
+    bool isControlPressed() const;
+    bool isAltPressed() const;
+
+private:
+    int m_keyCode;
+    bool m_isPressed;
+    bool m_isRepeat;
+};
+
 class UIKIT_EXPORT Widget : public Component {
     A_OBJECT(Widget, Component, Components/UI)
 
@@ -62,6 +80,17 @@ public:
 
     void setEnabled(bool enable) override;
 
+    virtual bool onMouseDown(int x, int y) { return false; }
+    virtual bool onMouseUp(int x, int y) { return false; }
+    virtual bool onMouseMove(int x, int y) { return false; }
+    virtual bool onMouseDoubleClick(int x, int y) { return false; }
+    virtual bool onMouseWheel(int delta, bool horizontal) { return false; }
+    virtual bool onKeyPress(KeyEvent *event) { return false; }
+    virtual bool onKeyRelease(KeyEvent *event) { return false; }
+
+    Widget *subWidget(const TString &name) const;
+    void setSubWidget(Widget *widget);
+
 public: // slots
     void lower();
 
@@ -80,12 +109,13 @@ protected:
 
     void composeComponent() override;
 
+    void dispatchKeyEvent(KeyEvent *event);
+    void dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button);
+    void dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizontal);
+
     float styleLength(const TString &key, float value, bool &pixels);
     Vector2 styleBlock2Length(const TString &property, const Vector2 &value, bool &pixels);
     Vector4 styleBlock4Length(const TString &property, const Vector4 &value, bool &pixels);
-
-    Widget *subWidget(const TString &name) const;
-    void setSubWidget(Widget *widget);
 
     static void setFocusWidget(Widget *widget);
 
@@ -104,7 +134,6 @@ private:
 
 private:
     friend class RectTransform;
-    //friend class UiLoader;
     friend class Canvas;
     friend class StyleSheet;
 

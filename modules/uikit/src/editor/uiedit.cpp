@@ -17,6 +17,7 @@
 #include "components/canvas.h"
 #include "components/uiloader.h"
 #include "components/recttransform.h"
+#include "components/listview.h"
 
 #include "actions/pastewidget.h"
 #include "actions/createwidget.h"
@@ -25,6 +26,62 @@
 #include "actions/changeproperty.h"
 
 #include "widgetcontroller.h"
+
+#include <abstractitemmodel.h>
+
+class TestModel : public AbstractItemModel {
+public:
+    TestModel() {
+        m_sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
+        m_list = {"0 editor/viewport/cameracontroller.h",
+                  "1 editor/viewport/cameracontroller.h",
+                  "2 editor/viewport/cameracontroller.h",
+                  "3 editor/viewport/cameracontroller.h",
+                  "4 editor/viewport/cameracontroller.h",
+                  "5 editor/viewport/cameracontroller.h",
+                  "6 editor/viewport/cameracontroller.h",
+                  "7 editor/viewport/cameracontroller.h",
+                  "8 editor/viewport/cameracontroller.h",
+                  "9 editor/viewport/cameracontroller.h"};
+    }
+
+private:
+    int rowCount(const ModelIndex &parent = ModelIndex()) const override {
+        return m_list.size();
+    }
+
+    int columnCount(const ModelIndex &parent = ModelIndex()) const override {
+        return 1;
+    }
+
+    ModelIndex index(int row, int column, const ModelIndex &parent = ModelIndex()) const override {
+        return createIndex(row, column, row);
+    }
+
+    ModelIndex parent(const ModelIndex &index) const override {
+        return ModelIndex();
+    }
+
+    Variant data(const ModelIndex &index, int role = 0) const override {
+        if(!index.isValid()) {
+            return Variant();
+        }
+
+        switch(role) {
+            case DisplayRole: return *std::next(m_list.begin(), index.row());
+            case DecorationRole: return Variant::fromValue(m_sprite);
+            default: break;
+        }
+
+        return Variant();
+    }
+
+private:
+    StringList m_list;
+
+    Sprite *m_sprite = nullptr;
+
+};
 
 namespace {
     const char *gUi("ui");
@@ -202,6 +259,14 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
 
         m_loader->fromBuffer(loadFile.readAll());
         loadFile.close();
+
+        Actor *actor = dynamic_cast<Actor *>(m_loader->actor()->find("ListView"));
+        if(actor) {
+            ListView *list = actor->getComponent<ListView>();
+            if(list) {
+                list->setModel(new TestModel);
+            }
+        }
     }
 }
 

@@ -12,6 +12,7 @@
 
 #include "engine.h"
 #include "input.h"
+#include "timer.h"
 
 #ifdef __ANDROID__
     #include "handlers/androidfilehandler.h"
@@ -68,8 +69,12 @@ protected:
 
 static GLFMDisplay *s_display = nullptr;
 
-static std::unordered_map<int32_t, int32_t> s_keys;
-static std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> s_touches;
+std::unordered_map<int32_t, int32_t> MobileAdaptor::s_keys;
+std::unordered_map<int32_t, std::pair<uint32_t, Vector4>> MobileAdaptor::s_touches;
+
+uint64_t MobileAdaptor::s_lastTouchTime = 0;
+int32_t MobileAdaptor::s_lastTouchButton = -1;
+std::unordered_map<int32_t, int32_t> MobileAdaptor::s_touchDoubleClick;
 
 static TString s_inputString;
 
@@ -248,11 +253,26 @@ bool onTouch(GLFMDisplay *, int touch, GLFMTouchPhase phase, double x, double y)
             default: break;
         }
 
-        s_touches[index] = std::make_pair(state, pos);
+        MobileAdaptor::s_touches[index] = std::make_pair(state, pos);
     } else {
-        auto it = s_touches.find(touch);
-        if(it != s_touches.end()) {
-            s_touches.erase(it);
+        auto it = MobileAdaptor::s_touches.find(touch);
+        if(it != MobileAdaptor::s_touches.end()) {
+            MobileAdaptor::s_touches.erase(it);
+        }
+    }
+
+    if(phase == GLFMTouchPhaseBegan) {
+        uint64_t currentTime = Timer::time();
+        int key = touch | Input::MOUSE_LEFT;
+
+        if (MobileAdaptor::s_lastTouchButton == touch &&
+            (currentTime - MobileAdaptor::s_lastTouchTime) < 300) {
+            MobileAdaptor::s_touchDoubleClick[key] = PRESS;
+            MobileAdaptor::s_lastTouchTime = 0;
+            MobileAdaptor::s_lastTouchButton = -1;
+        } else {
+            MobileAdaptor::s_lastTouchTime = currentTime;
+            MobileAdaptor::s_lastTouchButton = touch;
         }
     }
 #endif
@@ -268,7 +288,7 @@ bool onKey(GLFMDisplay *, GLFMKeyCode keyCode, GLFMKeyAction action, int) {
         default: break;
     }
 
-    s_keys[keyToInput(keyCode)] = state;
+    MobileAdaptor::s_keys[keyToInput(keyCode)] = state;
 
     return true;
 }
@@ -327,7 +347,7 @@ bool MobileAdaptor::init() {
 void MobileAdaptor::update() {
     s_inputString.clear();
 
-    for(auto &it : s_keys) {
+    for(auto &it : MobileAdaptor::s_keys) {
         switch(it.second) {
             case RELEASE: it.second = NONE; break;
             case PRESS: it.second = REPEAT; break;
@@ -335,16 +355,24 @@ void MobileAdaptor::update() {
         }
     }
 
-    auto it = s_touches.begin();
-    while(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.begin();
+    while(it != MobileAdaptor::s_touches.end()) {
         if(it->second.first == RELEASE) {
-            it = s_touches.erase(it);
+            it = MobileAdaptor::s_touches.erase(it);
         } else {
             if(it->second.first == PRESS) {
                 it->second.first = REPEAT;
             }
 
             ++it;
+        }
+    }
+
+    for(auto &it : s_touchDoubleClick) {
+        switch(it.second) {
+        case RELEASE: it.second = NONE; break;
+        case PRESS: it.second = REPEAT; break;
+        default: break;
         }
     }
 
@@ -386,24 +414,24 @@ uint32_t MobileAdaptor::screenHeight() const {
 }
 
 bool MobileAdaptor::key(Input::KeyCode code) const {
-    auto it = s_keys.find(code);
-    if(it != s_keys.end()) {
+    auto it = MobileAdaptor::s_keys.find(code);
+    if(it != MobileAdaptor::s_keys.end()) {
         return it->second == PRESS || it->second == REPEAT;
     }
     return false;
 }
 
 bool MobileAdaptor::keyPressed(Input::KeyCode code) const {
-    auto it = s_keys.find(code);
-    if(it != s_keys.end()) {
+    auto it = MobileAdaptor::s_keys.find(code);
+    if(it != MobileAdaptor::s_keys.end()) {
         return it->second == PRESS;
     }
     return false;
 }
 
 bool MobileAdaptor::keyReleased(Input::KeyCode code) const {
-    auto it = s_keys.find(code);
-    if(it != s_keys.end()) {
+    auto it = MobileAdaptor::s_keys.find(code);
+    if(it != MobileAdaptor::s_keys.end()) {
         return it->second == RELEASE;
     }
     return false;
@@ -432,25 +460,33 @@ float MobileAdaptor::mouseScrollDelta() const {
 }
 
 bool MobileAdaptor::mouseButton(int button) const {
-    auto it = s_touches.find(button);
-    if(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.find(button);
+    if(it != MobileAdaptor::s_touches.end()) {
         return it->second.first == PRESS || it->second.first == REPEAT;
     }
     return false;
 }
 
 bool MobileAdaptor::mousePressed(int button) const {
-    auto it = s_touches.find(button);
-    if(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.find(button);
+    if(it != MobileAdaptor::s_touches.end()) {
         return it->second.first == PRESS;
     }
     return false;
 }
 
 bool MobileAdaptor::mouseReleased(int button) const {
-    auto it = s_touches.find(button);
-    if(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.find(button);
+    if(it != MobileAdaptor::s_touches.end()) {
         return it->second.first == RELEASE;
+    }
+    return false;
+}
+
+bool MobileAdaptor::mouseButtonDoubleClick(int button) const {
+    auto it = s_touchDoubleClick.find(button);
+    if(it != s_touchDoubleClick.end()) {
+        return it->second == PRESS;
     }
     return false;
 }
@@ -461,7 +497,7 @@ void MobileAdaptor::mouseLockCursor(bool lock) {
 
 uint32_t MobileAdaptor::touchCount() const {
     int result = 0;
-    for(auto it : s_touches) {
+    for(auto it : MobileAdaptor::s_touches) {
         if(it.second.first != NONE) {
             result++;
         }
@@ -470,16 +506,16 @@ uint32_t MobileAdaptor::touchCount() const {
 }
 
 uint32_t MobileAdaptor::touchState(int index) const {
-    auto it = s_touches.find(index | Input::MOUSE_LEFT);
-    if(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.find(index | Input::MOUSE_LEFT);
+    if(it != MobileAdaptor::s_touches.end()) {
         return it->second.first;
     }
     return 0;
 }
 
 Vector4 MobileAdaptor::touchPosition(int index) const {
-    auto it = s_touches.find(index | Input::MOUSE_LEFT);
-    if(it != s_touches.end()) {
+    auto it = MobileAdaptor::s_touches.find(index | Input::MOUSE_LEFT);
+    if(it != MobileAdaptor::s_touches.end()) {
         return it->second.second;
     }
     return Vector4();
@@ -494,7 +530,7 @@ uint32_t MobileAdaptor::joystickCount() const {
 }
 
 uint32_t MobileAdaptor::joystickButtons(int index) const {
-    return s_keys[index];
+    return MobileAdaptor::s_keys[index];
 }
 
 Vector4 MobileAdaptor::joystickThumbs(int) const {

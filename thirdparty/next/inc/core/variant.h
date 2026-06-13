@@ -28,6 +28,7 @@
 #include <amath.h>
 #include <astring.h>
 #include <metatype.h>
+#include <modelindex.h>
 
 class Variant;
 
@@ -77,6 +78,8 @@ public:
     Variant(const Quaternion &value);
     Variant(const Matrix3 &value);
     Variant(const Matrix4 &value);
+
+    Variant(const ModelIndex &value);
 
     Variant(uint32_t type, void *copy);
 

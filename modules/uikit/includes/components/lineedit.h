@@ -25,6 +25,7 @@ class UIKIT_EXPORT LineEdit : public Frame {
 
 public:
     LineEdit();
+    ~LineEdit();
 
     TString text() const;
     void setText(const TString &text);

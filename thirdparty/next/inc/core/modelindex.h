@@ -16,41 +16,44 @@
     limitations under the License.
 */
 
-#ifndef EVENT_H
-#define EVENT_H
-
-#include <stdint.h>
+#ifndef MODELINDEX_H
+#define MODELINDEX_H
 
 #include <global.h>
+#include <stdint.h>
 
-class NEXT_LIBRARY_EXPORT Event {
+class AbstractItemModel;
+
+class NEXT_LIBRARY_EXPORT ModelIndex {
 public:
-    enum Type {
-        Invalid = 0,
-        MethodCall,
-        TimerEvent,
-        Destroy,
-        LanguageChange,
-        FileSystemWatcher,
-        MouseDown,
-        MouseUp,
-        MouseMove,
-        MouseDoubleClick,
-        MouseWheel,
-        KeyEvent,
-        UserType = 100
-    };
+    ModelIndex();
 
-public:
-    Event(uint32_t type);
+    bool isValid() const;
 
-    virtual ~Event();
+    int row() const;
 
-    uint32_t type() const;
+    int column() const;
 
-protected:
-    uint32_t m_type;
+    const AbstractItemModel *model() const;
+
+    ModelIndex parent() const;
+
+    uint32_t internalId() const;
+
+    bool operator==(const ModelIndex &other) const;
+    bool operator!=(const ModelIndex &other) const;
+
+private:
+    friend class AbstractItemModel;
+
+    const AbstractItemModel *m_model;
+
+    int m_row;
+
+    int m_column;
+
+    uint32_t m_uuid;
 
 };
 
-#endif // EVENT_H
+#endif // MODELINDEX_H

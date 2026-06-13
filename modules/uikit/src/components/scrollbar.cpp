@@ -28,7 +28,7 @@ ScrollBar::ScrollBar() :
         m_pageStep(2),
         m_singleStep(1) {
 
-    m_areaGap = 20.0f;
+    m_areaGap = 16.0f;
 }
 /*!
     Sets the current \a value of the scroll bar.
@@ -127,12 +127,12 @@ void ScrollBar::setBackArrow(Widget *arrow) {
         RectTransform *rect = arrow->rectTransform();
         if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(0.0f, 0.5f));
-            rect->setSize(Vector2(m_areaGap, 0.0f));
             rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0, 1.0f));
+            rect->setSize(Vector2(m_areaGap, 0.0f));
         } else {
             rect->setPivot(Vector2(0.5f, 1.0f));
-            rect->setSize(Vector2(0.0f, m_areaGap));
             rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0, 1.0f));
+            rect->setSize(Vector2(0.0f, m_areaGap));
         }
     }
 
@@ -168,12 +168,12 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
         RectTransform *rect = arrow->rectTransform();
         if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(1.0f, 0.5f));
-            rect->setSize(Vector2(m_areaGap, 0.0f));
             rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0, 1.0f));
+            rect->setSize(Vector2(m_areaGap, 0.0f));
         } else {
             rect->setPivot(Vector2(0.5f, 0.0f));
-            rect->setSize(Vector2(0.0f, m_areaGap));
             rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0, 0.0f));
+            rect->setSize(Vector2(0.0f, m_areaGap));
         }
     }
 
@@ -198,8 +198,10 @@ void ScrollBar::recalcKnob() {
 
         int scrollingRange = m_maximum - m_minimum;
 
-        float pageFactor = m_pageStep != 0 ? static_cast<float>(m_pageStep) / static_cast<float>(scrollingRange) : 1.0f;
-        pageFactor = CLAMP(pageFactor, 0.0f, 1.0f);
+        float pageFactor = 1.0f;
+        if (scrollingRange != 0 && m_pageStep != 0) {
+            pageFactor = CLAMP(static_cast<float>(m_pageStep) / static_cast<float>(scrollingRange + m_pageStep), 0.0f, 1.0f);
+        }
 
         float factor = m_value != 0 ? static_cast<float>(m_value - m_minimum) / static_cast<float>(scrollingRange) : 0.0f;
         factor = CLAMP(factor * (1.0 - pageFactor), 0.0f, 1.0f);
@@ -211,14 +213,14 @@ void ScrollBar::recalcKnob() {
             float scaledPage = pageFactor * (1.0f - normalGap * 2.0f);
             knobRect->setPivot(Vector2(0.0f, 0.5f));
             knobRect->setAnchors(Vector2(scaledFactor, 0.5f), Vector2(scaledFactor, 0.5f));
-            knobRect->setSize(Vector2(MIX(0.0f, size.x, scaledPage), m_hovered ? 8.0f : 4.0f));
+            knobRect->setSize(Vector2(MIX(0.0f, size.x, scaledPage), 8.0f));
         } else {
             float normalGap = m_areaGap / size.y;
             float scaledFactor = normalGap + factor * (1.0f - normalGap * 2.0f);
             float scaledPage = pageFactor * (1.0f - normalGap * 2.0f);
             knobRect->setPivot(Vector2(0.5f, 1.0f));
             knobRect->setAnchors(Vector2(0.5f, 1.0f - scaledFactor), Vector2(0.5f, 1.0f - scaledFactor));
-            knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, MIX(0.0f, size.y, scaledPage)));
+            knobRect->setSize(Vector2(8.0f, MIX(0.0f, size.y, scaledPage)));
         }
     }
     repaint();
@@ -235,29 +237,7 @@ void ScrollBar::boundChanged(const Vector2 &size) {
     \internal
 */
 void ScrollBar::update(const Vector2 &pos) {
-    bool hovered = m_hovered;
-
     AbstractSlider::update(pos);
-
-    if(hovered != m_hovered) {
-        Widget *knob = ScrollBar::knob();
-        if(knob) {
-            Frame *frame = dynamic_cast<Frame *>(knob);
-            if(frame) {
-                frame->setCorners(m_hovered ? Vector4(5.0f) : Vector4(0.0f));
-            }
-
-            RectTransform *knobRect = knob->rectTransform();
-
-            Vector2 size(knobRect->size());
-            if(m_orientation == Widget::Horizontal) {
-                knobRect->setSize(Vector2(size.x, m_hovered ? 8.0f : 4.0f));
-            } else {
-                knobRect->setSize(Vector2(m_hovered ? 8.0f : 4.0f, size.y));
-            }
-        }
-        repaint();
-    }
 }
 /*!
     \internal
@@ -268,7 +248,7 @@ void ScrollBar::composeComponent() {
     // Add knob
     Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
     Frame *knob = knobActor->getComponent<Frame>();
-    knob->setCorners(Vector4(0.0f));
+    knob->setCorners(Vector4(5.0f));
     knob->setBackgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 
     RectTransform *rectKnob = knob->rectTransform();

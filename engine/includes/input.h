@@ -193,6 +193,7 @@ public:
     static bool isMouseButton(int button);
     static bool isMouseButtonDown(int button);
     static bool isMouseButtonUp(int button);
+    static bool isMouseButtonDoubleClick(int button);
 
     static Vector4 mousePosition();
     static Vector4 mouseDelta();

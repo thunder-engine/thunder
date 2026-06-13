@@ -3,6 +3,7 @@
 #include <QStandardPaths>
 #include <QMouseEvent>
 #include <QGuiApplication>
+#include <QDateTime>
 
 #include <engine.h>
 #include <json.h>
@@ -180,18 +181,26 @@ void EditorPlatform::update() {
     m_inputString.clear();
 
     for(auto &it : m_keys) {
-        switch(it) {
-            case RELEASE: it = NONE; break;
-            case PRESS: it = REPEAT; break;
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
             default: break;
         }
     }
 
     for(auto &it : m_mouseButtons) {
-        switch(it) {
-            case RELEASE: it = NONE; break;
-            case PRESS: it = REPEAT; break;
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
             default: break;
+        }
+    }
+
+    for(auto &it : m_mouseDoubleClick) {
+        switch(it.second) {
+        case RELEASE: it.second = NONE; break;
+        case PRESS: it.second = REPEAT; break;
+        default: break;
         }
     }
 
@@ -209,11 +218,11 @@ void EditorPlatform::reset() {
     m_mouseDelta = Vector4();
 
     for(auto &it : m_keys) {
-        it = NONE;
+        it.second = NONE;
     }
 
     for(auto &it : m_mouseButtons) {
-        it = NONE;
+        it.second = NONE;
     }
 }
 
@@ -222,15 +231,18 @@ bool EditorPlatform::isActive() const {
 }
 
 bool EditorPlatform::key(Input::KeyCode code) const {
-    return (m_keys.value(code) > RELEASE);
+    auto it = m_keys.find(code);
+    return (it != m_keys.end() && it->second > RELEASE);
 }
 
 bool EditorPlatform::keyPressed(Input::KeyCode code) const {
-    return (m_keys.value(code) == PRESS);
+    auto it = m_keys.find(code);
+    return (it != m_keys.end() && it->second == PRESS);
 }
 
 bool EditorPlatform::keyReleased(Input::KeyCode code) const {
-    return (m_keys.value(code) == RELEASE);
+    auto it = m_keys.find(code);
+    return (it != m_keys.end() && it->second == RELEASE);
 }
 
 TString EditorPlatform::inputString() const {
@@ -238,15 +250,23 @@ TString EditorPlatform::inputString() const {
 }
 
 bool EditorPlatform::mouseButton(int button) const {
-    return (m_mouseButtons.value(button | 0x10000000) > RELEASE);
+    auto it = m_mouseButtons.find(button | 0x10000000);
+    return (it != m_mouseButtons.end() && it->second > RELEASE);
 }
 
 bool EditorPlatform::mousePressed(int button) const {
-    return (m_mouseButtons.value(button | 0x10000000) == PRESS);
+    auto it = m_mouseButtons.find(button | 0x10000000);
+    return (it != m_mouseButtons.end() && it->second == PRESS);
 }
 
 bool EditorPlatform::mouseReleased(int button) const {
-    return (m_mouseButtons.value(button | 0x10000000) == RELEASE);
+    auto it = m_mouseButtons.find(button | 0x10000000);
+    return (it != m_mouseButtons.end() && it->second == RELEASE);
+}
+
+bool EditorPlatform::mouseButtonDoubleClick(int button) const {
+    auto it = m_mouseDoubleClick.find(button | 0x10000000);
+    return (it != m_mouseDoubleClick.end() && it->second == PRESS);
 }
 
 uint32_t EditorPlatform::screenWidth() const { return m_screenSize.width(); }
@@ -289,6 +309,23 @@ void EditorPlatform::setMouseButtons(int button, int state) {
     }
 
     m_mouseButtons[btn] = state;
+
+    if(state == PRESS) {
+        static QPoint lastPos;
+        static qint64 lastTime = 0;
+
+        QPoint currentPos = QPoint(m_mousePosition.x, m_screenSize.height() - m_mousePosition.y);
+        qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+        if(lastTime > 0 && (currentTime - lastTime) < 300 &&
+            (currentPos - lastPos).manhattanLength() < 20) {
+            m_mouseDoubleClick[btn] = PRESS;
+            lastTime = 0;
+        } else {
+            lastPos = currentPos;
+            lastTime = currentTime;
+        }
+    }
 }
 
 void EditorPlatform::setKeys(QKeyEvent *ev, bool release) {

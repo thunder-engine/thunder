@@ -119,7 +119,8 @@ void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
     }
 
     CommandBuffer::enableScissor(x, y, width, height);
-    glScissor(x, y, width, height);
+    ScissorRect rect = m_scissorStack.top();
+    glScissor(rect.x, rect.y, rect.width, rect.height);
 }
 
 void CommandBufferGL::disableScissor() {

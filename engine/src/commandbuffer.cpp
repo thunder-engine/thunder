@@ -4,6 +4,8 @@
 #include "components/transform.h"
 #include "timer.h"
 
+#include <algorithm>
+
 static bool s_Inited = false;
 
 /*!
@@ -181,7 +183,23 @@ void CommandBuffer::setCameraProperties(Camera *camera) {
     Parameters \a width and \a height scissor dimensions.
 */
 void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
-    m_scissorStack.push({x, y, width, height});
+    ScissorRect rect{x, y, width, height};
+
+    if(!m_scissorStack.empty()) {
+        const ScissorRect &parent = m_scissorStack.top();
+
+        int32_t left = std::max(rect.x, parent.x);
+        int32_t bottom = std::max(rect.y, parent.y);
+        int32_t right = std::min(rect.x + rect.width, parent.x + parent.width);
+        int32_t top = std::min(rect.y + rect.height, parent.y + parent.height);
+
+        rect.x = left;
+        rect.y = bottom;
+        rect.width = std::max(0, right - left);
+        rect.height = std::max(0, top - bottom);
+    }
+
+    m_scissorStack.push(rect);
 }
 /*!
     Disables scissor testing.
