@@ -37,8 +37,6 @@ void CommandBuffer::dispatchCompute(ComputeInstance &shader, int32_t groupsX, in
     A_UNUSED(groupsZ);
 }
 /*!
-    \fn void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance)
-
     Draws a \a mesh with the specified \a sub mesh index with assigned material \a instance, and rendering \a layer.
 */
 void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) {
@@ -48,6 +46,7 @@ void CommandBuffer::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialI
     A_UNUSED(instance);
 }
 /*!
+    \fn RenderTarget *renderTarget()
     Returns render target for subsequent rendering commands.
 */
 RenderTarget *CommandBuffer::renderTarget() {
@@ -102,7 +101,7 @@ void CommandBuffer::setViewProjection(const Matrix4 &viewProjection) {
     m_global.cameraWorldToScreen = viewProjection;
 }
 /*!
-     Sets a global \a texture based on its \a name.
+    Sets a global \a texture based on its \a name.
 */
 void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
     PROFILE_FUNCTION();
@@ -121,7 +120,7 @@ void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
     m_textures.push_back(item);
 }
 /*!
-     Retrieves a global texture based on its \a name.
+    Retrieves a global texture based on its \a name.
 */
 Texture *CommandBuffer::texture(const TString &name) const {
     PROFILE_FUNCTION();
@@ -155,7 +154,7 @@ void CommandBuffer::flipResult() {
 /*!
     Sets the viewport dimensions.
     Parameters \a x and \a y represents viewport coordinates.
-    \a width and \a height viewport dimensions.
+    Parameters \a width and \a height viewport dimensions.
 */
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
     m_global.cameraParams.z = 1.0f / (float)width;
@@ -177,7 +176,7 @@ void CommandBuffer::setCameraProperties(Camera *camera) {
 /*!
     Enables scissor testing with the specified parameters.
     Parameters \a x and \a y represents scissor coordinates.
-    \a width and \a height scissor dimensions.
+    Parameters \a width and \a height scissor dimensions.
 */
 void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
     m_scissorStack.push({x, y, width, height});

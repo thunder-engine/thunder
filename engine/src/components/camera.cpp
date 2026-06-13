@@ -289,6 +289,8 @@ void Camera::setCurrent(Camera *current) {
     s_currentCamera = current;
 }
 /*!
+    \fn Camera *findActiveCamera(World *world)
+
     Returns a first active camera in the \a world
 */
 Camera *Camera::findActiveCamera(World *world) {

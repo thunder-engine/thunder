@@ -27,7 +27,7 @@ public:
 
     void draw(CommandBuffer *buffer);
 
-    void drawRect(MaterialInstance *material, RectTransform *rect);
+    void drawRect(MaterialInstance *material, RectTransform *transform);
 
     void drawMesh(Mesh *mesh, MaterialInstance *material);
 

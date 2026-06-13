@@ -35,7 +35,9 @@ Armature::~Armature() {
         m_bindPose->unsubscribe(this);
     }
 }
-
+/*!
+    Add material \a instance to upload updated skeletal data to GPU
+*/
 void Armature::addInstance(MaterialInstance *instance) {
     if(instance) {
         instance->setSkinSize(m_bones.size() * M4X3_SIZE + HEADER_SIZE);
@@ -47,7 +49,9 @@ void Armature::addInstance(MaterialInstance *instance) {
         }
     }
 }
-
+/*!
+    Remove material \a instance to stop uploading data to GPU
+*/
 void Armature::removeInstance(MaterialInstance *instance) {
     m_instances.remove(instance);
 }
@@ -95,8 +99,6 @@ Pose *Armature::bindPose() const {
     return m_bindPose;
 }
 /*!
-    \fn void Armature::setBindPose(Pose *pose)
-
     Sets a bind (initial) \a pose of the bone structure.
 */
 void Armature::setBindPose(Pose *pose) {

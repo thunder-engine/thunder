@@ -180,7 +180,7 @@ bool TabBar::tabsClosable() const {
 }
 /*!
     Sets whether tabs can be closed by the user.
-    \param \a closable True if tabs can be closed, false otherwise.
+    Use parameter \a closable true if tabs can be closed, false otherwise.
 */
 void TabBar::setTabsClosable(bool closable) {
     m_showClose = closable;
@@ -256,7 +256,7 @@ int TabBar::indexOf(Button *button) const {
     return -1;
 }
 /*!
-    Sets the corner radius for tabs.
+    Sets the corner \a radius for tabs.
 */
 void TabBar::setTabCornerRadius(const Vector4 &radius) {
     m_tabCornerRadius = radius;

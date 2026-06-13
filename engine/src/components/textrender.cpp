@@ -85,8 +85,6 @@ Font *TextRender::font() const {
     return m_font;
 }
 /*!
-    \fn void TextRender::setFont(Font *font)
-
     Sets the new \a font asset used to render a text.
 */
 void TextRender::setFont(Font *font) {

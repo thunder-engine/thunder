@@ -4,7 +4,6 @@
 #include "components/canvas.h"
 
 #include "stylesheet.h"
-#include "uisystem.h"
 
 #include <components/actor.h>
 

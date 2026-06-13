@@ -1,7 +1,5 @@
 #include "components/world.h"
 
-#include "components/actor.h"
-#include "components/scene.h"
 #include "resources/map.h"
 
 #include <algorithm>
@@ -11,10 +9,10 @@
     \brief A root object in the scene graph hierarchy.
     \inmodule Components
 
-    \note A scene object creating automatically by the engine.
+    \note A World object creating automatically by the engine.
     Only one World instance can be created in the game.
-    A scene object must be set as a parent for other game hierarchies to show them on the screen.
-    The main scene graph object can be retrieved using Engine::sceneGraph()
+    A World object must be set as a parent for other game hierarchies to show them on the screen.
+    The main scene graph object can be retrieved using Engine::world()
 */
 
 World::World() :
@@ -161,6 +159,8 @@ void World::setRayCastHandler(RayCastCallback callback, System *system) {
     m_rayCastSystem = system;
 }
 /*!
+    \fn std::list<Scene *> &scenes()
+
     Returns list of all scenes.
 */
 std::list<Scene *> &World::scenes() {

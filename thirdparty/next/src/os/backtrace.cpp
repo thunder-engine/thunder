@@ -72,6 +72,24 @@ void signalHandler(int sig) {
 }
 #endif
 
+/*!
+    \class Backtrace
+    \brief Utilities for capturing and reporting native backtraces.
+    \since Next 1.0
+    \inmodule OS
+
+    `Backtrace` provides a small set of helpers to install a crash handler
+    that logs a stack backtrace on fatal signals/exceptions and to obtain
+    a programmatic backtrace for diagnostic purposes.
+*/
+
+/*!
+    Install platform-specific crash handlers that log backtraces.
+
+    After calling this function, unhandled exceptions or fatal signals
+    (such as SIGSEGV) will be intercepted and a human-readable backtrace
+    will be written to the application log.
+*/
 void Backtrace::installCrashHandler() {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(exceptionHandler);
@@ -82,6 +100,17 @@ void Backtrace::installCrashHandler() {
     signal(SIGILL, signalHandler);
 #endif
 }
+
+
+/*!
+    Install crash handlers that log a backtrace on fatal errors.
+
+    Capture a stack backtrace as a list of human-readable frames.
+
+    The \a skipFrames parameter omits the specified number of initial
+    frames (useful to remove the getBacktrace() call itself and the
+    crash handler frames). Returns a `StringList` of frame descriptions.
+*/
 
 #ifdef _WIN32
 StringList Backtrace::getBacktrace(uint32_t skipFrames) {

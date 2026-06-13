@@ -115,7 +115,7 @@ static Engine *m_instance = nullptr;
 */
 
 /*!
-    \fn template<typename T> T *loadResource(const String &path)
+    \fn template<typename T> T *loadResource(const TString &path)
 
     Returns an instance of type T for loading resource by the provided \a path.
     \note In case of resource was loaded previously this function will return the same instance.
