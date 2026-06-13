@@ -219,6 +219,8 @@ void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
 }
 /*!
+    \fn TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve)
+
     Fixes \a uuid according it's \a type and \a lod level.
     Optinal parameter can help to \a solve dependecies.
 */
@@ -354,6 +356,8 @@ void AssetConverterSettings::setSubItemsDirty() {
     }
 }
 /*!
+    \fn ResourceSystem::ResourceInfo subItem(const TString &key, const TString &type)
+
     Returns the resource information for a sub-item identified by \a key.
 
     This method retrieves the ResourceInfo associated with the given sub-item key.
@@ -374,7 +378,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     return ResourceSystem::ResourceInfo();
 }
 /*!
-    Sets a sub-item with \a name, \a info.
+    Sets a sub-item with \a name, \a info and \a lod level.
 */
 void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod) {
     if(!name.isEmpty() && !info.uuid.isEmpty()) {

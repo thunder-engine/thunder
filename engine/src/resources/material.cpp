@@ -1,8 +1,6 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
-#include "components/transform.h"
-
 #include "commandbuffer.h"
 
 #include <cstring>
@@ -184,6 +182,10 @@ void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int
 }
 /*!
     Sets the \a transform matrix.
+    The update is performed only when the \a hash value differs from the currently stored transformation hash.
+
+    A \a uuid used to generate an identifying color.
+    If zero, no color embedding is performed.
 */
 void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uint32_t hash) {
     if(hash != m_transformHash) {
@@ -386,8 +388,6 @@ int Material::layers() const {
     return m_layers;
 }
 /*!
-    \fn int Material::priority() const
-
     Returns rendering priority for the material.
     This parameter is used alpha rendering sorting
 */

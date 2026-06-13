@@ -57,6 +57,7 @@ Menu::Menu() :
 Menu::~Menu() {
     delete m_textMesh;
 }
+
 /*!
     Adds a section to the menu with the specified \a text and optional \a icon.
     Creates a clickable menu item that triggers an action when selected.

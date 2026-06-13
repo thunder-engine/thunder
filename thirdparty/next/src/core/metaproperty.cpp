@@ -1,19 +1,19 @@
 /*
     This file is part of Thunder Next.
 
-    Thunder Next is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+    Copyright 2008-2026 Evgeniy Prikazchikov
 
-    Thunder Next is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    Copyright: 2008-2025 Evgeniy Prikazchikov
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 #include "core/metaproperty.h"
@@ -40,7 +40,7 @@
     Callback which contain address to setter method of property.
 */
 /*!
-    \fn template<typename T> void MetaProperty::write(void *object, const T &value) const
+    \fn template<typename T> void write(void *object, const T &value) const
 
     Tries to write a \a value with type T to provided \a object.
 */
@@ -73,8 +73,6 @@ const MetaType MetaProperty::type() const {
     return MetaType(m_table->type);
 }
 /*!
-    \fn Variant MetaProperty::read(const void *object) const
-
     Returns the value as Variant which contain current property of provided \a object.
 */
 Variant MetaProperty::read(const void *object) const {
@@ -87,8 +85,6 @@ Variant MetaProperty::read(const void *object) const {
     return Variant();
 }
 /*!
-    \fn void MetaProperty::write(void *object, const Variant &value) const
-
     Tries to write a \a value as Variant to provided \a object.
 */
 void MetaProperty::write(void *object, const Variant &value) const {

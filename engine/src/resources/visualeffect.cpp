@@ -152,8 +152,6 @@ void VisualEffect::setCapacity(int capacity) {
     m_capacity = capacity;
 }
 /*!
-    \fn bool VisualEffect::local() const
-
     Returns true if particles are in local space, false otherwise.
 */
 bool VisualEffect::local() const {
@@ -420,7 +418,7 @@ void VisualEffect::loadUserData(const VariantMap &data) {
 void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator> &operations) {
     operations.clear();
 
-    for(auto it : list) {
+    for(auto &it : list) {
         VariantList fields = it.value<VariantList>();
 
         Operator op;
@@ -434,7 +432,7 @@ void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator>
         op.resultOffset = (*field).toInt();
         field++;
 
-        for(Variant arg : (*field).value<VariantList>()) {
+        for(Variant &arg : (*field).value<VariantList>()) {
             VariantList argFields = arg.value<VariantList>();
 
             auto argField = argFields.begin();
@@ -498,7 +496,7 @@ void VisualEffect::loadRenderables(const VariantList &list) {
     }
     m_renderables.clear();
 
-    for(auto it : list) {
+    for(auto &it : list) {
         VariantList renderableFields = it.value<VariantList>();
 
         auto field = renderableFields.begin();

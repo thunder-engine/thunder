@@ -1,19 +1,19 @@
 /*
     This file is part of Thunder Next.
 
-    Thunder Next is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+    Copyright 2008-2026 Evgeniy Prikazchikov
 
-    Thunder Next is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with Thunder Next.  If not, see <http://www.gnu.org/licenses/>.
+        http://www.apache.org/licenses/LICENSE-2.0
 
-    Copyright: 2008-2025 Evgeniy Prikazchikov
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 #include "core/url.h"
@@ -50,8 +50,6 @@ bool Url::operator== (const Url &right) const {
     return m_url == right.m_url;
 }
 /*!
-    \fn TString Url::scheme() const
-
     Returns the scheme of the URI. If an empty string is returned, this means the scheme is undefined and the URI is then relative.
 */
 TString Url::scheme() const {
@@ -59,8 +57,6 @@ TString Url::scheme() const {
     return TString(m_result[2]);
 }
 /*!
-    \fn TString Url::host() const
-
     Returns the host of the URI if it is defined; otherwise an empty string is returned.
 */
 TString Url::host() const {
@@ -68,8 +64,6 @@ TString Url::host() const {
     return TString(m_result[4]);
 }
 /*!
-    \fn TString Url::path() const
-
     Returns the path of the URI.
 */
 TString Url::path() const {
@@ -77,8 +71,6 @@ TString Url::path() const {
     return TString(m_result[5]);
 }
 /*!
-    \fn TString Url::query() const
-
     Returns the query string of the URI if there's a query string, or an empty result if not.
 */
 TString Url::query() const {
@@ -86,8 +78,6 @@ TString Url::query() const {
     return TString(m_result[7]);
 }
 /*!
-    \fn TString Url::fragment() const
-
     Returns the fragment of the URI.
 */
 TString Url::fragment() const {
@@ -95,8 +85,6 @@ TString Url::fragment() const {
     return TString(m_result[9]);
 }
 /*!
-    \fn TString Url::dir() const
-
     Returns a directory of URI path.
 */
 TString Url::dir() const {
@@ -109,8 +97,6 @@ TString Url::dir() const {
     return TString();
 }
 /*!
-    \fn TString Url::absoluteDir() const
-
     Returns the absolute dir path of the URI.
 */
 TString Url::absoluteDir() const {
@@ -122,8 +108,6 @@ TString Url::absoluteDir() const {
     return preffix + host() + dir();
 }
 /*!
-    \fn TString Url::name() const
-
     Returns a file name in the URI path.
 */
 TString Url::name() const {
@@ -136,8 +120,6 @@ TString Url::name() const {
     return str;
 }
 /*!
-    \fn TString Url::baseName() const
-
     Returns a base name of file in the URI path.
 */
 TString Url::baseName() const {
@@ -150,8 +132,6 @@ TString Url::baseName() const {
     return str;
 }
 /*!
-    \fn TString Url::suffix() const
-
     Returns a file name suffix name of file in the URI path.
 */
 TString Url::suffix() const {
@@ -164,8 +144,6 @@ TString Url::suffix() const {
     return TString();
 }
 /*!
-    \fn TString Url::completeSuffix() const
-
     Returns a file suffix in the URI path.
 */
 TString Url::completeSuffix() const {

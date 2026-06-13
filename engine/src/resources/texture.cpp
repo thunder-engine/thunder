@@ -341,8 +341,6 @@ void Texture::setFlags(int flags) {
     }
 }
 /*!
-    \fn int Texture::compress() const
-
     Returns compression method.
 */
 int Texture::compress() const {

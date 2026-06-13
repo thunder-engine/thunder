@@ -51,6 +51,7 @@ AABBox Renderable::bound() {
 }
 /*!
     Returns true if current renderable fails \a frustum culling test; otherwise returns true;
+    Parameter \a viewProjection used to project bounding box to screen space for LOD calculation.
 */
 bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection) {
     AABBox bb(bound());

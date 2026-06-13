@@ -11,6 +11,7 @@ namespace {
 /*!
     \class Slider
     \brief A slider widget for selecting a value from a range.
+    \inmodule Gui
 
     Slider provides a typical slider control with a draggable knob and
     a progress bar background that fills to show the current value.
@@ -116,7 +117,7 @@ void Slider::setMinimum(int value) {
     }
 }
 /*!
-    Sets the \a maximum value of the slider.
+    Sets the maximum \a value of the slider.
 */
 void Slider::setMaximum(int value) {
     AbstractSlider::setMaximum(value);
