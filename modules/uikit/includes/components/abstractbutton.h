@@ -3,8 +3,6 @@
 
 #include "frame.h"
 
-#include <resources/sprite.h>
-
 class MaterialInstance;
 
 class UIKIT_EXPORT AbstractButton : public Frame {

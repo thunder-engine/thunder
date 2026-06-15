@@ -3,7 +3,7 @@
 
 #include "widget.h"
 
-#include <resources/sprite.h>
+#include <sprite.h>
 
 class Mesh;
 class MaterialInstance;
