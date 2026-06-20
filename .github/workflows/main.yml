@@ -15,7 +15,7 @@ on:
     - '.travis.yml'
 
 env:
-  QT_VERSION: 5.15.2
+  QT_VERSION: 6.7.3
   QTCREATOR_VERSION: 13.0.1
   VERSION: 2026.3
   THUNDER_RELEASE: ${{ startsWith(github.ref, 'refs/tags/2') }}
@@ -158,7 +158,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version 6.7.2 qtbase qt5compat qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version 6.7.3 qtbase qt5compat qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Install OpenSSL
@@ -259,9 +259,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - qt_version: 5.15.2
-          qt_version_major: 5
-        - qt_version: 6.7.2
+        - qt_version: 6.7.3
           qt_version_major: 6
     
     env:
@@ -303,13 +301,13 @@ jobs:
     - name: Upload Editor To Sign
       id: upload-windows-sign
       uses: actions/upload-artifact@v4
-      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
       with:
         path: release/install-root/sdk/${{ env.VERSION }}/windows/x86_64/bin/WorldEditor.exe
 
     - name: Sign Editor
       uses: signpath/github-action-submit-signing-request@v1
-      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true' && matrix.qt_version_major == 5
+      if: github.repository == 'thunder-engine/thunder' && needs.version.outputs.release == 'true'
       with:
         api-token: '${{secrets.SIGNPATH_API_TOKEN}}'
         organization-id: '43ba02b9-3691-4230-a433-40cd139ade27'
@@ -324,7 +322,6 @@ jobs:
         7z a -t7z ThunderEngine-windows-x64.7z release/install-root
     
     - name: Upload Thunder
-      if: matrix.qt_version_major == 5
       uses: actions/upload-artifact@v4
       with:
         name: ThunderEngine-windows-x64.7z
