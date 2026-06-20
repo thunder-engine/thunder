@@ -25,5 +25,6 @@ Project {
 
         cpp.defines: [ "HAS_SYNTAX_RESOURCE", "SyntaxHighlighting_VERSION_MAJOR=5", "SyntaxHighlighting_VERSION_MINOR=57" ]
         cpp.includePaths: syntaxhighlighting.incPaths
+        cpp.cxxLanguageVersion: syntaxhighlighting.languageVersion
     }
 }
