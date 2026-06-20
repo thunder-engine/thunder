@@ -75,7 +75,7 @@ jobs:
         
     - name: Install Qt
       run: |
-        sudo ./build/install-qt.sh --version ${QT_VERSION} --toolchain gcc_64 qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
+        sudo ./build/install-qt.sh --version 5.12.2 qtbase qtsvg qtimageformats qttools qtxmlpatterns qtdeclarative icu | tee -a $GITHUB_PATH
         sudo ./build/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
   
     - name: Setup Qbs
