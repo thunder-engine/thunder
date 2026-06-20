@@ -8,6 +8,7 @@
 /*!
     \class Splitter
     \brief A splitter widget that allows resizing of child widgets.
+    \inmodule Gui
 
     Splitter provides a container that divides its area into resizable panes.
     Users can drag the splitter handles to adjust the size of adjacent child widgets.

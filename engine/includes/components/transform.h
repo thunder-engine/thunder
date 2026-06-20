@@ -1,7 +1,7 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "component.h"
+#include <component.h>
 
 #include <mutex>
 

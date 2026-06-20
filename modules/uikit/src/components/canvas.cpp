@@ -13,6 +13,7 @@
 /*!
     \class Canvas
     \brief A rendering surface for UI components.
+    \inmodule Gui
 
     Canvas provides an off-screen rendering surface for UI widgets.
     It renders all child widgets to a texture, which can then be
@@ -104,22 +105,22 @@ void Canvas::draw(CommandBuffer *buffer) {
     it with the world transform, and draws the default plane mesh.
     The hash is computed from the transform and size for batching purposes.
 */
-void Canvas::drawRect(MaterialInstance *material, RectTransform *rect) {
-    if(rect) {
-        Vector2 size(rect->size());
+void Canvas::drawRect(MaterialInstance *material, RectTransform *transform) {
+    if(transform) {
+        Vector2 size(transform->size());
         Matrix4 s;
         s[0] = size.x;
         s[5] = size.y;
         s[12] = size.x * 0.5f;
         s[13] = size.y * 0.5f;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = transform->hash();
         Mathf::hashCombine(hash, s[0]);
         Mathf::hashCombine(hash, s[5]);
         Mathf::hashCombine(hash, s[12]);
         Mathf::hashCombine(hash, s[13]);
 
-        material->setTransform(rect->worldTransform() * s, 0, hash);
+        material->setTransform(transform->worldTransform() * s, 0, hash);
     }
 
     drawMesh(PipelineContext::defaultPlane(), material);
@@ -167,7 +168,7 @@ void Canvas::setRectTransform(RectTransform *transform) {
     }
 }
 /*!
-    Sets the clip region (scissor rectangle).
+    Sets the clip \a region (scissor rectangle).
 
     Enables scissor testing to restrict rendering to the specified region.
     Coordinates are in screen space.

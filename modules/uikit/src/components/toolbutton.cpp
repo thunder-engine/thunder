@@ -2,7 +2,6 @@
 
 #include "components/recttransform.h"
 #include <components/image.h>
-#include "components/frame.h"
 #include <components/menu.h>
 
 #include <components/actor.h>
@@ -15,7 +14,7 @@
 namespace {
     const char *gIcon("icon");
 
-    const char *gMenuFrame = "menu-frame";
+    const char *gMenuFrame("menu-frame");
 
     const float gCorner = 4.0f;
 };

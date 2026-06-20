@@ -60,12 +60,16 @@ void RenderTarget::setDepthAttachment(Texture *texture) {
     m_depth = texture;
 }
 /*!
+    \fn int flags()
+
     Returns assigned flags for this render target.
 */
 int RenderTarget::flags() const {
     return m_flags;
 }
 /*!
+    \fn void setFlags(int flags)
+
     Sets a \a flags for this render target.
 */
 void RenderTarget::setFlags(int flags) {
@@ -114,6 +118,8 @@ int32_t RenderTarget::tileIndex() const {
     return m_currentTile;
 }
 /*!
+    \fn void setTileIndex(int32_t index)
+
     Sets a tile \a index required to setup global shader settings on some RHI's
 */
 void RenderTarget::setTileIndex(int32_t index) {

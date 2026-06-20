@@ -136,7 +136,7 @@ bool TabWidget::tabsClosable() const {
 }
 /*!
     Sets whether tabs can be closed by the user.
-    \param \a closable True if tabs can be closed, false otherwise.
+    Use parameter \a closeable true if tabs can be closed, false otherwise.
 */
 void TabWidget::setTabsClosable(bool closeable) {
     m_tabBar->setTabsClosable(closeable);

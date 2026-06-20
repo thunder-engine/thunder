@@ -1,11 +1,9 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "engine.h"
-#include "system.h"
-#include "scene.h"
-
-class Camera;
+#include <engine.h>
+#include <system.h>
+#include <scene.h>
 
 typedef bool (*RayCastCallback)(System *system, World *graph, const Ray &ray, float maxDistance, Ray::Hit *hit);
 
