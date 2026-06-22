@@ -206,10 +206,11 @@ TString AssetManager::pathToLocal(const TString &source) const {
 }
 
 void AssetManager::getChangedUUIDs() {
+    uint32_t current = 0;
     StringList currentStr = m_projectManager->projectSdk().split('.');
-    uint32_t currentMajor = currentStr.front().toInt();
-    uint32_t currentMinor = currentStr.back().toInt();
-    uint32_t current = VERSION_CHECK(currentMajor, currentMinor);
+    if(currentStr.size() >= 2) {
+        current = VERSION_CHECK(currentStr.front().toInt(), currentStr.back().toInt());
+    }
 
     StringList targetStr = TString(SDK_VERSION).split('.');
     uint32_t targetMajor = targetStr.front().toInt();
