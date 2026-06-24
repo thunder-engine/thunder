@@ -115,7 +115,7 @@ HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
     connect(ui->treeView, SIGNAL(dragLeave(QDragLeaveEvent*)), this, SLOT(onDragLeave(QDragLeaveEvent*)));
     connect(ui->treeView, SIGNAL(drop(QDropEvent*)), this, SLOT(onDrop(QDropEvent*)));
 
-    connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &HierarchyBrowser::onSelectionChanged);
+    connect(ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &HierarchyBrowser::onModelSelectionChanged);
 
     ui->treeView->header()->moveSection(2, 0);
     ui->treeView->header()->moveSection(3, 1);
@@ -182,12 +182,12 @@ void expandToIndex(const QModelIndex &index, QTreeView *view) {
     }
 }
 
-void HierarchyBrowser::onObjectsSelected(const Object::ObjectList &objects) {
+void HierarchyBrowser::onSelectionChanged() {
     blockSignals(true);
     QItemSelectionModel *select = ui->treeView->selectionModel();
     QAbstractItemModel *model = ui->treeView->model();
     select->select(QModelIndex(), QItemSelectionModel::Clear);
-    for(auto object : objects) {
+    for(auto object : m_currentEditor->selected()) {
         QModelIndexList list = model->match(model->index(0, 0), Qt::UserRole,
                                             QString::number(object->uuid()),
                                             -1, Qt::MatchExactly | Qt::MatchRecursive);
@@ -351,7 +351,7 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
     drag->exec(supportedActions, Qt::MoveAction);
 }
 
-void HierarchyBrowser::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
+void HierarchyBrowser::onModelSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
     if(selected.indexes().isEmpty()) {
         emit objectsSelected({}, false);
     }
@@ -444,16 +444,7 @@ bool HierarchyBrowser::eventFilter(QObject *obj, QEvent *event) {
         switch(keyEvent->key()) {
             case Qt::Key_Delete: {
                 if(m_currentEditor) {
-                    Object::ObjectList list;
-                    QItemSelectionModel *select = ui->treeView->selectionModel();
-                    foreach(QModelIndex it, select->selectedRows()) {
-                        Object *object = Engine::findObject(m_filter->mapToSource(it).internalId());
-                        if(object) {
-                            list.push_back(object);
-                        }
-                    }
-
-                    m_currentEditor->onObjectsDeleted(list);
+                    m_currentEditor->onSelectionDeleted();
                 }
             } break;
             case Qt::Key_F2: {

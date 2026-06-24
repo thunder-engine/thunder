@@ -31,9 +31,9 @@ private slots:
 
     void onUpdated() override;
 
-    void onObjectCreate(TString type) override;
+    void onObjectCreate(const TString &type) override;
     void onObjectsSelected(Object::ObjectList objects, bool force) override;
-    void onObjectsDeleted(Object::ObjectList objects) override;
+    void onSelectionDeleted() override;
     void onObjectsChanged(const Object::ObjectList &objects, const TString &propertyName, const Variant &value) override;
 
     void onCutAction() override;
@@ -57,6 +57,8 @@ private:
     StringList suffixes() const override;
     StringList componentGroups() const override;
     TString assetType() const override;
+
+    Object::ObjectList selected() const override;
 
     void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
 

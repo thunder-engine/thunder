@@ -2,7 +2,6 @@
 #define DOCUMENTMODEL_H
 
 #include <QObject>
-#include <QMap>
 
 #include <object.h>
 
@@ -27,7 +26,7 @@ public:
 signals:
     void updated();
 
-    void objectsSelected(const Object::ObjectList &items);
+    void selectionChanaged();
 
 public slots:
     void closeFile(AssetEditor *editor);

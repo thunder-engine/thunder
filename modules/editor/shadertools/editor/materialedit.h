@@ -57,6 +57,8 @@ private:
     StringList suffixes() const override;
     TString assetType() const override;
 
+    Object::ObjectList selected() const override;
+
 private:
     ShaderCodeDialog m_codeDlg;
 

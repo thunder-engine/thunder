@@ -398,12 +398,7 @@ void GraphView::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphView::reselect() {
-    Object::ObjectList selected = m_controller->selected();
-    if(selected.empty()) {
-        emit objectsSelected({graph()});
-    } else {
-        emit objectsSelected(selected);
-    }
+    emit selectionChanged();
 }
 
 void GraphView::showMenu() {
@@ -423,6 +418,10 @@ bool GraphView::isPasteActionAvailable() const {
 
 UndoStack *GraphView::undoRedo() const {
     return m_editor->undoRedo();
+}
+
+Object::ObjectList GraphView::selected() const {
+    return m_controller->selected();
 }
 
 void GraphView::onCutAction() {

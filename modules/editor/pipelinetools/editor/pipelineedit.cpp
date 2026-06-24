@@ -73,7 +73,7 @@ PipelineEdit::PipelineEdit() :
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
 
-    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &PipelineEdit::objectsSelected);
+    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &PipelineEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -167,4 +167,8 @@ void PipelineEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
+}
+
+Object::ObjectList PipelineEdit::selected() const {
+    return ui->schemeWidget->selected();
 }

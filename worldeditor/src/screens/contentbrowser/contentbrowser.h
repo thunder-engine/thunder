@@ -35,7 +35,7 @@ public:
     QWidget *commitRevert();
 
 signals:
-    void assetsSelected(const Object::ObjectList &settings);
+    void assetsSelected(Object *settings);
     void openEditor(const TString &path);
 
 protected:

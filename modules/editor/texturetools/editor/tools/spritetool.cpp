@@ -33,6 +33,10 @@ void SpriteTool::setSettings(TextureImportSettings *settings) {
     m_item.setSettings(m_settings);
 }
 
+Object::ObjectList SpriteTool::selected() {
+    return {&m_item};
+}
+
 void SpriteTool::beginControl() {
     m_savedPoint = m_currentPoint;
 
@@ -210,11 +214,11 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
             }
 
             if(key.isEmpty()) {
-                m_controller->objectsSelected({});
+                m_controller->selectionChanged();
                 m_controller->undoRedo()->push(new SelectSprite("", m_controller));
             } else {
                 m_item.setKey(key);
-                m_controller->objectsSelected({&m_item});
+                m_controller->selectionChanged();
                 m_controller->undoRedo()->push(new SelectSprite(key, m_controller));
             }
         } else if(!isDrag) {

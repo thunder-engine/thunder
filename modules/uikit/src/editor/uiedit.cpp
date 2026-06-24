@@ -70,8 +70,8 @@ UiEdit::UiEdit() :
     }
 
     connect(m_controller, &WidgetController::copied, this, &UiEdit::copyPasteChanged);
-    connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::objectsSelected);
-    connect(m_controller, &WidgetController::objectsSelected, this, &UiEdit::copyPasteChanged);
+    connect(m_controller, &WidgetController::selectionChanged, this, &UiEdit::selectionChanged);
+    connect(m_controller, &WidgetController::selectionChanged, this, &UiEdit::copyPasteChanged);
     connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
 
     m_widgetMenu.addAction(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
@@ -109,6 +109,10 @@ TString UiEdit::assetType() const {
     return "UI Document";
 }
 
+Object::ObjectList UiEdit::selected() const {
+    return m_controller->selected();
+}
+
 void UiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     m_undoRedo->push(new ParentWidget(objects, parent, position, m_controller));
 }
@@ -116,14 +120,14 @@ void UiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int
 void UiEdit::onActivated() {
     emit objectsHierarchyChanged(m_scene);
 
-    emit objectsSelected(m_controller->selected());
+    emit selectionChanged();
 }
 
 void UiEdit::onUpdated() {
     emit updated();
 }
 
-void UiEdit::onObjectCreate(TString type) {
+void UiEdit::onObjectCreate(const TString &type) {
     m_undoRedo->push(new CreateWidget(type, m_scene, m_controller));
 }
 
@@ -131,7 +135,8 @@ void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
     m_controller->onSelectActor(objects);
 }
 
-void UiEdit::onObjectsDeleted(Object::ObjectList objects) {
+void UiEdit::onSelectionDeleted() {
+    Object::ObjectList objects = m_controller->selected();
     for(auto it : objects) {
         if(it == m_controller->root()->actor()) {
             return;
@@ -169,7 +174,7 @@ void UiEdit::onPasteAction() {
 }
 
 void UiEdit::onWidgetDelete() {
-    onObjectsDeleted(m_controller->selected());
+    onSelectionDeleted();
 }
 
 void UiEdit::onWidgetDuplicate() {

@@ -96,7 +96,7 @@ ParticleEdit::ParticleEdit() :
 
     Object::connect(graph, _SIGNAL(effectUpdated()), m_proxy, _SLOT(onUpdateTemplate()));
 
-    connect(ui->graph, &GraphView::objectsSelected, this, &ParticleEdit::objectsSelected);
+    connect(ui->graph, &GraphView::selectionChanged, this, &ParticleEdit::selectionChanged);
 
     ui->graph->setEditor(this);
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
@@ -297,4 +297,8 @@ void ParticleEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
+}
+
+Object::ObjectList ParticleEdit::selected() const {
+    return ui->graph->selected();
 }

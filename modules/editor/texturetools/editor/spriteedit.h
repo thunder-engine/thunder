@@ -25,8 +25,6 @@ public:
 
     void onUpdateTemplate();
 
-
-
 private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &) override;
@@ -39,6 +37,8 @@ private:
     void changeEvent(QEvent *event) override;
 
     bool isModified() const override;
+
+    Object::ObjectList selected() const override;
 
     static void resourceUpdated(int state, void *ptr);
 

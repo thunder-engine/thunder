@@ -13,6 +13,8 @@ public:
 
     void setSettings(TextureImportSettings *settings);
 
+    Object::ObjectList selected();
+
 protected:
     void update(bool pivot, bool local, bool snap) override;
 

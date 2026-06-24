@@ -43,7 +43,7 @@ SpriteEdit::SpriteEdit() :
     ui->viewport->init(); // must be called after all options set
     ui->viewport->setGridEnabled(false);
 
-    connect(m_controller, &SpriteController::objectsSelected, this, &SpriteEdit::objectsSelected);
+    connect(m_controller, &SpriteController::selectionChanged, this, &SpriteEdit::selectionChanged);
     connect(m_controller, &SpriteController::updated, this, &SpriteEdit::updated);
 
     Camera *camera = m_controller->camera();
@@ -79,6 +79,10 @@ bool SpriteEdit::isModified() const {
         return m_settings.front()->isModified();
     }
     return false;
+}
+
+Object::ObjectList SpriteEdit::selected() const {
+    return m_controller->selected();
 }
 
 void SpriteEdit::loadAsset(AssetConverterSettings *settings) {

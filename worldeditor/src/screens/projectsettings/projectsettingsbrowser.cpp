@@ -19,7 +19,7 @@ ProjectSettingsBrowser::~ProjectSettingsBrowser() {
 }
 
 void ProjectSettingsBrowser::init() {
-    ui->projectWidget->onObjectsSelected({ProjectSettings::instance()});
+    ui->projectWidget->onObjectSelected({ProjectSettings::instance()});
 }
 
 void ProjectSettingsBrowser::onSettingsUpdated(const Object::ObjectList &list, const TString &property, Variant value) {

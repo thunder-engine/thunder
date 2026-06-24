@@ -24,7 +24,7 @@ signals:
 public slots:
     virtual void onUpdated() = 0;
 
-    virtual void onObjectsSelected(const Object::ObjectList &objects) = 0;
+    virtual void onSelectionChanged() = 0;
     virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) = 0;
 
 };

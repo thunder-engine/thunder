@@ -84,14 +84,14 @@ void TimelineEdit::onUpdated() {
 
 }
 
-void TimelineEdit::onObjectsSelected(const Object::ObjectList &objects) {
+void TimelineEdit::onSelectionChanged() {
     if(m_timerId) {
         killTimer(m_timerId);
         m_timerId   = 0;
     }
 
     Animator *result = nullptr;
-    for(auto object : objects) {
+    for(auto object : m_editor->selected()) {
         result = findAnimator(object);
         if(result) {
             break;
