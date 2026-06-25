@@ -32,6 +32,8 @@ public:
 
     virtual StringList suffixes() const = 0;
 
+    virtual TString assetType() const = 0;
+
     virtual StringList componentGroups() const;
 
     virtual QMenu *hierarchyContextMenu(Object *object);
@@ -74,6 +76,8 @@ public slots:
     virtual void onPasteAction();
 
     virtual void onNewAsset();
+    virtual void onOpenAsset();
+
     virtual void onSave();
     virtual void onSaveAs();
 

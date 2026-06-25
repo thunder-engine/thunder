@@ -10,13 +10,13 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QDir>
-#include <QFileDialog>
 #include <QStandardPaths>
 #include <QMimeData>
 
 #include "config.h"
 
 #include <global.h>
+#include <filedialog.h>
 
 #include "contenttree.h"
 #include "commitrevert.h"
@@ -518,17 +518,23 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
 }
 
 void ContentBrowser::importAsset() {
-    QStringList files = QFileDialog::getOpenFileNames(this,
-                                                      tr("Select files to import"),
-                                                      QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-                                                      tr("All (*.*)") );
+    FileDialog dialog;
+    dialog.setDirectory(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation).toStdString());
+    dialog.setWindowTitle("Select files to import");
+    dialog.setMode(FileDialog::OpenFiles);
+    dialog.addFilter("All", { "*.*" });
+
+    StringList files;
+    if(dialog.exec()) {
+        files = dialog.getSelectedFiles();
+    }
 
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
     TString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
 
     foreach(auto &it, files) {
-        AssetManager::instance()->import(it.toStdString(), target);
+        AssetManager::instance()->import(it, target);
     }
 }
 

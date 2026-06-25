@@ -43,7 +43,7 @@ public:
 public slots:
     void onOpenEditor(const TString &path);
 
-    void onOpenProject(const QString &path);
+    void onOpenProject(const TString &path);
 
 signals:
     void readBuildLogs(QString log);

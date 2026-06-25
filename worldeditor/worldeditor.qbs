@@ -20,7 +20,8 @@ Project {
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
-        "../thirdparty/next/inc/anim"
+        "../thirdparty/next/inc/anim",
+        "../thirdparty/next/inc/os",
     ]
 
     QtGuiApplication {

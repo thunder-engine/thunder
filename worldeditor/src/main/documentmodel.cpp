@@ -8,7 +8,7 @@
 #include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 
-#include <os/aprocess.h>
+#include <aprocess.h>
 
 DocumentModel::DocumentModel() {
     for(auto &it : PluginManager::instance()->extensions("editor")) {
@@ -47,6 +47,13 @@ void DocumentModel::newFile(AssetEditor *editor) {
     if(editor->checkSave()) {
         closeFile(editor);
         editor->onNewAsset();
+    }
+}
+
+void DocumentModel::openFile(AssetEditor *editor) {
+    if(editor->checkSave()) {
+        closeFile(editor);
+        editor->onOpenAsset();
     }
 }
 

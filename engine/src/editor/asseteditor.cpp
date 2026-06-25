@@ -1,17 +1,19 @@
 #include "editor/asseteditor.h"
 
 #include <QMessageBox>
-#include <QFileDialog>
 
 #include <url.h>
+#include <filedialog.h>
 
 #include "editor/projectsettings.h"
+#include "editor/assetmanager.h"
 #include "editor/undostack.h"
 
 AssetEditor::AssetEditor() :
         m_undoRedo(new UndoStack) {
 
 }
+
 AssetEditor::~AssetEditor() {
 
 }
@@ -19,6 +21,28 @@ AssetEditor::~AssetEditor() {
 void AssetEditor::onNewAsset() {
     m_settings.clear();
     m_undoRedo->clear();
+}
+
+void AssetEditor::onOpenAsset() {
+    FileDialog dialog;
+
+    dialog.setMode(FileDialog::OpenFile);
+    dialog.setWindowTitle(TString("Save ") + assetType());
+
+    StringList list;
+    for(auto &it : suffixes()) {
+        list.push_back(TString("*.") + it);
+    }
+
+    dialog.addFilter(assetType(), list);
+    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+
+    if(dialog.exec()) {
+        TString path(dialog.getSelectedFile());
+        if(!path.isEmpty()) {
+            loadAsset(AssetManager::instance()->fetchSettings(path));
+        }
+    }
 }
 
 void AssetEditor::loadAsset(AssetConverterSettings *settings) {
@@ -55,6 +79,10 @@ bool AssetEditor::isPasteActionAvailable() const {
 
 AssetEditor *AssetEditor::createInstance() {
     return nullptr;
+}
+
+StringList AssetEditor::suffixes() const {
+    return StringList();
 }
 
 std::list<AssetConverterSettings *> &AssetEditor::openedDocuments() {
@@ -130,30 +158,26 @@ void AssetEditor::onSaveAs() {
     }
 
     TString assetType(m_settings.front()->typeName());
-
-    std::map<TString, StringList> dictionary;
+    StringList list;
     for(auto &it : suffixes()) {
-        dictionary[assetType].push_back(it);
+        list.push_back(TString("*.") + it);
     }
 
-    StringList filter;
-    for(auto &it : dictionary) {
-        TString item = it.first + " (";
-        for(auto &suffix : it.second) {
-            item += TString("*.") + suffix;
-        }
-        item += ")";
-        filter.push_back(item);
-    }
+    FileDialog dialog;
 
-    QString path(QFileDialog::getSaveFileName(nullptr, QString("Save ") + assetType.data(),
-                                              ProjectSettings::instance()->contentPath().data(), TString::join(filter, ";;").data()));
-    if(!path.isEmpty()) {
-        Url info(path.toStdString());
+    dialog.setMode(FileDialog::SaveFile);
+    dialog.setWindowTitle(TString("Save ") + assetType);
+    dialog.addFilter(assetType, list);
+
+    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+
+    if(dialog.exec()) {
+        TString path(dialog.getSelectedFile());
+        Url info(path);
         if(info.suffix().isEmpty()) {
-            path += QString(".") + dictionary.begin()->second.front().data();
+            path += TString(".") + AssetEditor::suffixes().front();
         }
-        saveAsset(path.toStdString());
+        saveAsset(path);
     }
 }
 

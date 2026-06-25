@@ -48,6 +48,7 @@ private:
     void cleanModified() const override;
 
     StringList suffixes() const override;
+    TString assetType() const override;
 
     Ui::TextEdit *ui;
 };

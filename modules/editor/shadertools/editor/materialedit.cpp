@@ -161,6 +161,10 @@ StringList MaterialEdit::suffixes() const {
     return {"mtl"}; // Only mtl format represented as node graph to edit
 }
 
+TString MaterialEdit::assetType() const {
+    return "Material";
+}
+
 void MaterialEdit::onActivated() {
     ui->schemeWidget->reselect();
 }

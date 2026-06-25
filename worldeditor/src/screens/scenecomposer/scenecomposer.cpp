@@ -2,7 +2,6 @@
 #include "ui_scenecomposer.h"
 
 #include <QMenu>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QWidgetAction>
 #include <QFormLayout>
@@ -13,6 +12,7 @@
 #include <log.h>
 #include <json.h>
 #include <bson.h>
+#include <filedialog.h>
 #include <engine.h>
 #include <components/actor.h>
 #include <components/world.h>
@@ -493,6 +493,10 @@ StringList SceneComposer::componentGroups() const {
     return {"Actor", "Components"};
 }
 
+TString SceneComposer::assetType() const {
+    return "Scene";
+}
+
 void SceneComposer::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     m_undoRedo->push(new ParentObjects(objects, parent, position, m_controller));
 }
@@ -856,14 +860,22 @@ void SceneComposer::saveScene(const TString &path, Scene *scene) {
 
 void SceneComposer::saveSceneAs(Scene *scene) {
     if(scene) {
-        QString path = QFileDialog::getSaveFileName(nullptr, tr("Save Scene"),
-                                                    ProjectSettings::instance()->contentPath().data(),
-                                                    "Map (*.map)");
+        FileDialog dialog;
+        dialog.setDirectory(ProjectSettings::instance()->contentPath());
+        dialog.setWindowTitle("Save Scene");
+        dialog.setMode(FileDialog::SaveFile);
+        dialog.addFilter("Map", { TString("*.map") });
+
+        TString path;
+        if(dialog.exec()) {
+            path = dialog.getSelectedFile();
+        }
+
         if(!path.isEmpty()) {
-            Url info(path.toStdString());
+            Url info(path);
             scene->setName(info.baseName());
-            saveScene(path.toStdString(), scene);
-            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path.toStdString());
+            saveScene(path, scene);
+            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
             m_sceneSettings[scene->uuid()] = settings;
         }
     }

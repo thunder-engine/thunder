@@ -5,11 +5,7 @@
 #include <syntaxhighlighter.h>
 #include <theme.h>
 
-#include <QApplication>
-#include <QDebug>
 #include <QFile>
-#include <QFileDialog>
-#include <QFontDatabase>
 #include <QMenu>
 #include <QPainter>
 #include <QPalette>
@@ -383,8 +379,6 @@ void TextWidget::paintEvent(QPaintEvent *event) {
             continue;
         }
         if(r.bottom() >= er.top() && r.top() <= er.bottom()) {
-            QTextBlockFormat blockFormat = block.blockFormat();
-
             QVector<QTextLayout::FormatRange> selections;
 
             int blpos = block.position();

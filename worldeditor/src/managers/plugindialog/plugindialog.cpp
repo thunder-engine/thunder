@@ -1,4 +1,5 @@
-#include <QFileDialog>
+#include "plugindialog.h"
+
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QMouseEvent>
@@ -7,7 +8,7 @@
 
 #include "ui_plugindialog.h"
 
-#include "plugindialog.h"
+#include <filedialog.h>
 
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
@@ -168,14 +169,17 @@ PluginDialog::~PluginDialog() {
 }
 
 void PluginDialog::on_loadButton_clicked() {
-    QDir dir = QDir(QDir::currentPath());
-    QString path = QFileDialog::getOpenFileName(this,
-                                                tr("Please select Thunder Engine Mod"),
-                                                dir.absolutePath(),
-                                                tr("Mods (*.dll *.mod)") );
-    if(!path.isEmpty()) {
-        PluginManager *model = PluginManager::instance();
-        model->loadPlugin(dir.relativeFilePath(path).toStdString());
+    FileDialog dialog;
+    dialog.setDirectory(ProjectSettings::instance()->pluginsPath());
+    dialog.setWindowTitle("Please select Thunder Engine Plugin");
+    dialog.setMode(FileDialog::OpenFile);
+    dialog.addFilter("Plugins", { "*.dll" });
+
+    if(dialog.exec()) {
+        TString path = dialog.getSelectedFile();
+        if(!path.isEmpty()) {
+            PluginManager::instance()->loadPlugin(path);
+        }
     }
 }
 

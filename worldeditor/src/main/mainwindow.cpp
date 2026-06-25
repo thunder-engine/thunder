@@ -1,14 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QFile>
 #include <QSettings>
-#include <QFileDialog>
 #include <QApplication>
 #include <QMessageBox>
 
 #include <json.h>
 #include <timer.h>
 #include <log.h>
+#include <filedialog.h>
 
 #include <editor/asseteditor.h>
 
@@ -213,17 +214,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    m_documentModel->newFile(m_mainEditor);
-
-    m_currentEditor->undoRedo()->clear();
+    m_documentModel->newFile(m_currentEditor);
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Open Scene"),
-                                                m_projectSettings->contentPath().data(), "*.map");
-    if(!path.isEmpty()) {
-        m_documentModel->openFile(path.toStdString());
-    }
+    m_documentModel->openFile(m_currentEditor);
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -292,9 +287,9 @@ void MainWindow::setGameMode(bool mode) {
     Engine::setGameMode(mode);
 }
 
-void MainWindow::onOpenProject(const QString &path) {
-    ProjectModel::addProject(path.toStdString());
-    m_projectSettings->init(path.toStdString());
+void MainWindow::onOpenProject(const TString &path) {
+    ProjectModel::addProject(path);
+    m_projectSettings->init(path);
     m_projectSettings->loadSettings();
 
     PluginManager::instance()->init(m_engine);
@@ -459,22 +454,27 @@ void MainWindow::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible
 }
 
 void MainWindow::on_actionSave_Workspace_triggered() {
-    QString path = QFileDialog::getSaveFileName(this,
-                                               tr("Save Workspace"),
-                                               "workspaces",
-                                               tr("Workspaces (*.ws)") );
-    if(path.length() > 0) {
-        QFile file(path);
-        if(file.open(QFile::WriteOnly)) {
-            QVariantMap layout;
-            layout[gWindows] = ui->toolWidget->saveState();
+    FileDialog dialog;
+    dialog.setDirectory(ProjectSettings::instance()->templatePath() + "/workspaces");
+    dialog.setWindowTitle("Save Workspace");
+    dialog.setMode(FileDialog::SaveFile);
+    dialog.addFilter("Workspaces", { "*.ws" });
 
-            QByteArray data;
-            QDataStream ds(&data, QFile::WriteOnly);
-            ds << layout;
+    if(dialog.exec()) {
+        TString path = dialog.getSelectedFile();
+        if(!path.isEmpty()) {
+            QFile file(path.data());
+            if(file.open(QFile::WriteOnly)) {
+                QVariantMap layout;
+                layout[gWindows] = ui->toolWidget->saveState();
 
-            file.write(data);
-            file.close();
+                QByteArray data;
+                QDataStream ds(&data, QFile::WriteOnly);
+                ds << layout;
+
+                file.write(data);
+                file.close();
+            }
         }
     }
 }
@@ -588,12 +588,16 @@ void MainWindow::onCopyPasteChanged() {
 
 void MainWindow::on_menuFile_aboutToShow() {
     QString name;
-    if(m_currentEditor && m_currentEditor != m_mainEditor) {
+    QString type;
+    if(m_currentEditor) {
         AssetConverterSettings *settings = m_currentEditor->openedDocuments().front();
         name = QString(" \"%1\"").arg(settings->source().data());
+        type = QString(" %1").arg(settings->typeName().data());
 
         ui->actionSave_As->setEnabled(m_currentEditor->allowSaveAs());
     }
+    ui->actionNew->setText(tr("New%1").arg(type));
+    ui->actionOpen->setText(tr("Open%1").arg(type));
     ui->actionSave->setText(tr("Save%1").arg(name));
     ui->actionSave_As->setText(tr("Save%1 As...").arg(name));
 }
@@ -631,22 +635,25 @@ void MainWindow::on_actionExit_triggered() {
 }
 
 void MainWindow::build(QString platform) {
-    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Select Target Directory"),
-                                                    "",
-                                                    QFileDialog::ShowDirsOnly |
-                                                    QFileDialog::DontResolveSymlinks);
+    FileDialog dialog;
+    dialog.setDirectory("");
+    dialog.setWindowTitle("Select Target Directory");
+    dialog.setMode(FileDialog::OpenDirectory);
 
-    if(!dir.isEmpty()) {
-        QStringList args;
-        args << "-s" << m_projectSettings->projectPath().data() << "-t" << dir;
+    if(dialog.exec()) {
+        TString dir = dialog.getSelectedFile();
+        if(!dir.isEmpty()) {
+            QStringList args;
+            args << "-s" << m_projectSettings->projectPath().data() << "-t" << dir.data();
 
-        if(!platform.isEmpty()) {
-            args << "-p" << platform;
-        }
+            if(!platform.isEmpty()) {
+                args << "-p" << platform;
+            }
 
-        m_builder->start("Builder", args);
-        if(!m_builder->waitForStarted()) {
-            aError() << qPrintable(m_builder->errorString());
+            m_builder->start("Builder", args);
+            if(!m_builder->waitForStarted()) {
+                aError() << qPrintable(m_builder->errorString());
+            }
         }
     }
 }

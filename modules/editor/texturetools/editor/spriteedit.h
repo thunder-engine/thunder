@@ -34,6 +34,7 @@ private:
     bool allowSaveAs() const override { return false; }
 
     StringList suffixes() const override;
+    TString assetType() const override;
 
     void changeEvent(QEvent *event) override;
 

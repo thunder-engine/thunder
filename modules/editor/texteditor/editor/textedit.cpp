@@ -76,6 +76,10 @@ StringList TextEdit::suffixes() const {
     return {"cpp", "h", "as", "txt", "json", "html", "htm", "xml", "shader", "vert", "frag"};
 }
 
+TString TextEdit::assetType() const {
+    return "Text Document";
+}
+
 void TextEdit::on_actionFind_triggered() {
     ui->findWidget->show();
     ui->lineFind->setFocus();

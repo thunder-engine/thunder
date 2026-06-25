@@ -1,10 +1,9 @@
 #include "pathedit.h"
 #include "ui_pathedit.h"
 
-#include <QFileDialog>
-
 #include <file.h>
 #include <url.h>
+#include <filedialog.h>
 
 #include <editor/projectsettings.h>
 
@@ -32,23 +31,22 @@ void PathEdit::setData(const Variant &data) {
 void PathEdit::onFileDialog() {
     Url url(m_path);
 
-    QString path;
-    QString dir(url.dir().isEmpty() ? ProjectSettings::instance()->contentPath().data() : url.absoluteDir().data());
+    FileDialog dialog;
+    dialog.setDirectory(url.dir().isEmpty() ? ProjectSettings::instance()->contentPath() : url.absoluteDir());
 
     if(!m_file) {
-        path = QFileDialog::getExistingDirectory(dynamic_cast<QWidget *>(parent()),
-                                                 tr("Open Directory"),
-                                                 dir,
-                                                 QFileDialog::ShowDirsOnly);
+        dialog.setWindowTitle("Open Directory");
+        dialog.setMode(FileDialog::OpenDirectory);
     } else {
-        path = QFileDialog::getOpenFileName(dynamic_cast<QWidget *>(parent()),
-                                            tr("Select File"),
-                                            dir,
-                                            tr("All Files (*)"));
+        dialog.setWindowTitle("Select File");
+        dialog.setMode(FileDialog::OpenFile);
     }
 
-    if(path.length() > 0) {
-        setData(TString(path.toStdString()));
+    if(dialog.exec()) {
+        TString path(dialog.getSelectedFile());
+        if(!path.isEmpty()) {
+            setData(path);
+        }
     }
 }
 

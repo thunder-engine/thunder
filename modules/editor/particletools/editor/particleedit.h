@@ -59,6 +59,7 @@ private:
     void saveAsset(const TString &path) override;
 
     StringList suffixes() const override;
+    TString assetType() const override;
 
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *event) override;

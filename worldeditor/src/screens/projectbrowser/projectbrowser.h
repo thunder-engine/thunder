@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include <astring.h>
+
 namespace Ui {
     class ProjectBrowser;
 }
@@ -14,7 +16,7 @@ public:
     explicit ProjectBrowser(QWidget *parent = nullptr);
     ~ProjectBrowser();
 
-    QString projectPath() const { return m_projectPath; }
+    TString projectPath() const { return m_projectPath; }
 
 private:
     void onNewProject();
@@ -28,7 +30,7 @@ private:
 private:
     Ui::ProjectBrowser *ui;
 
-    QString m_projectPath;
+    TString m_projectPath;
 };
 
 #endif // PROJECTBROWSER_H
