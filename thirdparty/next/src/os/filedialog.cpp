@@ -191,15 +191,14 @@ bool FileDialogPrivate::execWindowsDirectory() {
 #include <objc/objc.h>
 #include <objc/objc-runtime.h>
 
-bool FileDialog::Impl::execMacOS() {
-    // Используем Objective-C через runtime
+bool FileDialogPrivate::execMacOS() {
     Class panelClass;
     id panel;
 
-    if (mode == SaveFile) {
+    if(m_mode == FileDialog::SaveFile) {
         panelClass = objc_getClass("NSSavePanel");
         panel = objc_msgSend(panelClass, sel_getUid("savePanel"));
-    } else if (mode == OpenDirectory) {
+    } else if(m_mode == FileDialog::OpenDirectory) {
         panelClass = objc_getClass("NSOpenPanel");
         panel = objc_msgSend(panelClass, sel_getUid("openPanel"));
         objc_msgSend(panel, sel_getUid("setCanChooseDirectories:"), YES);
@@ -210,37 +209,32 @@ bool FileDialog::Impl::execMacOS() {
         objc_msgSend(panel, sel_getUid("setCanChooseDirectories:"), NO);
         objc_msgSend(panel, sel_getUid("setCanChooseFiles:"), YES);
 
-        if (mode == OpenFiles) {
+        if(m_mode == FileDialog::OpenFiles) {
             objc_msgSend(panel, sel_getUid("setAllowsMultipleSelection:"), YES);
         }
     }
 
-    // Заголовок окна
-    if (!windowTitle.empty()) {
-        NSString* title = objc_msgSend(objc_getClass("NSString"),
-                                       sel_getUid("stringWithUTF8String:"), windowTitle.toStdString().c_str());
+    if(!m_windowTitle.isEmpty()) {
+        NSString *title = objc_msgSend(objc_getClass("NSString"), sel_getUid("stringWithUTF8String:"), m_windowTitle.data());
         objc_msgSend(panel, sel_getUid("setTitle:"), title);
     }
 
-    // Начальная директория
-    if (!initialDir.empty()) {
+    if(!m_initialDir.isEmpty()) {
         NSString* path = objc_msgSend(objc_getClass("NSString"),
-                                      sel_getUid("stringWithUTF8String:"), initialDir.toStdString().c_str());
+                                      sel_getUid("stringWithUTF8String:"), m_initialDir.data());
         NSURL* url = objc_msgSend(objc_getClass("NSURL"),
                                   sel_getUid("fileURLWithPath:"), path);
         objc_msgSend(panel, sel_getUid("setDirectoryURL:"), url);
     }
 
-    // Фильтры
-    if (!filters.empty()) {
-        NSMutableArray* allowedTypes = objc_msgSend(objc_getClass("NSMutableArray"),
-                                                    sel_getUid("array"));
+    if(!m_filters.isEmpty()) {
+        NSMutableArray* allowedTypes = objc_msgSend(objc_getClass("NSMutableArray"), sel_getUid("array"));
 
-        for (const auto& filter : filters) {
-            for (const auto& ext : filter.extensions) {
-                if (!ext.empty()) {
+        for(const auto& filter : m_filters) {
+            for(const auto& ext : filter.extensions) {
+                if(!ext.empty()) {
                     std::string extStr = ext.toStdString();
-                    if (!extStr.empty() && extStr[0] == '.') {
+                    if(!extStr.empty() && extStr[0] == '.') {
                         extStr = extStr.substr(1);
                     }
                     NSString* extNSString = objc_msgSend(objc_getClass("NSString"),
@@ -250,19 +244,18 @@ bool FileDialog::Impl::execMacOS() {
             }
         }
 
-        if (objc_msgSend(allowedTypes, sel_getUid("count")) > 0) {
+        if(objc_msgSend(allowedTypes, sel_getUid("count")) > 0) {
             objc_msgSend(panel, sel_getUid("setAllowedFileTypes:"), allowedTypes);
         }
     }
 
-    // Запускаем диалог
     NSInteger result = (NSInteger)objc_msgSend(panel, sel_getUid("runModal"));
 
-    if (result == NSModalResponseOK) {
+    if(result == NSModalResponseOK) {
         id urls = objc_msgSend(panel, sel_getUid("URLs"));
         NSUInteger count = (NSUInteger)objc_msgSend(urls, sel_getUid("count"));
 
-        for (NSUInteger i = 0; i < count; i++) {
+        for(NSUInteger i = 0; i < count; i++) {
             id url = objc_msgSend(urls, sel_getUid("objectAtIndex:"), i);
             id path = objc_msgSend(url, sel_getUid("path"));
             const char* cpath = objc_msgSend(path, sel_getUid("UTF8String"));
@@ -280,24 +273,23 @@ bool FileDialog::Impl::execMacOS() {
 #include <unistd.h>
 #include <cstdlib>
 
-bool FileDialog::Impl::execLinux() {
-    // Инициализируем GTK при первом вызове
+bool FileDialogPrivate::execLinux() {
     static bool gtkInitialized = false;
-    if (!gtkInitialized) {
+    if(!gtkInitialized) {
         gtk_init(nullptr, nullptr);
         gtkInitialized = true;
     }
 
-    GtkWidget* dialog;
+    GtkWidget *dialog;
     GtkFileChooserAction action;
-    const char* buttonText;
+    const char *buttonText;
 
-    switch (mode) {
-    case SaveFile:
+    switch(m_mode) {
+    case FileDialog::SaveFile:
         action = GTK_FILE_CHOOSER_ACTION_SAVE;
         buttonText = "_Save";
         break;
-    case OpenDirectory:
+    case FileDialog::OpenDirectory:
         action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
         buttonText = "_Open";
         break;
@@ -308,7 +300,7 @@ bool FileDialog::Impl::execLinux() {
     }
 
     dialog = gtk_file_chooser_dialog_new(
-        windowTitle.empty() ? nullptr : windowTitle.toStdString().c_str(),
+        m_windowTitle.isEmpty() ? nullptr : m_windowTitle.data(),
         nullptr,
         action,
         "_Cancel", GTK_RESPONSE_CANCEL,
@@ -316,64 +308,55 @@ bool FileDialog::Impl::execLinux() {
         nullptr
         );
 
-    // Настройка множественного выбора
-    if (mode == OpenFiles) {
+    if(m_mode == FileDialog::OpenFiles) {
         gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
     }
 
-    // Установка начальной директории
-    if (!initialDir.empty()) {
-        gtk_file_chooser_set_current_folder(
-            GTK_FILE_CHOOSER(dialog),
-            initialDir.toStdString().c_str()
-            );
+    if(!m_initialDir.isEmpty()) {
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), m_initialDir.data());
     }
 
-    // Установка фильтров
-    GtkFileFilter* allFilter = nullptr;
-    for (const auto& filter : filters) {
+    GtkFileFilter *allFilter = nullptr;
+    for(const auto &filter : m_filters) {
         GtkFileFilter* gtkFilter = gtk_file_filter_new();
-        gtk_file_filter_set_name(gtkFilter, filter.name.toStdString().c_str());
+        gtk_file_filter_set_name(gtkFilter, filter.name.data());
 
-        for (const auto& ext : filter.extensions) {
+        for(const auto &ext : filter.extensions) {
             std::string pattern = "*" + ext.toStdString();
             gtk_file_filter_add_pattern(gtkFilter, pattern.c_str());
         }
 
-        if (filter.extensions.empty()) {
+        if(filter.extensions.empty()) {
             gtk_file_filter_add_pattern(gtkFilter, "*");
         }
 
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), gtkFilter);
 
-        if (filter.name == "All Files" || filter.extensions.empty()) {
+        if(filter.name == "All Files" || filter.extensions.empty()) {
             allFilter = gtkFilter;
         }
     }
 
-    // Если нет фильтров, добавляем "All Files"
-    if (filters.empty()) {
-        GtkFileFilter* gtkFilter = gtk_file_filter_new();
+    if(m_filters.empty()) {
+        GtkFileFilter *gtkFilter = gtk_file_filter_new();
         gtk_file_filter_set_name(gtkFilter, "All Files");
         gtk_file_filter_add_pattern(gtkFilter, "*");
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), gtkFilter);
         allFilter = gtkFilter;
     }
 
-    // Устанавливаем фильтр по умолчанию
-    if (allFilter) {
+    if(allFilter) {
         gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), allFilter);
     }
 
-    // Показываем диалог
     int response = gtk_dialog_run(GTK_DIALOG(dialog));
 
-    if (response == GTK_RESPONSE_ACCEPT) {
-        GSList* filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+    if(response == GTK_RESPONSE_ACCEPT) {
+        GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
 
-        for (GSList* iter = filenames; iter != nullptr; iter = iter->next) {
-            char* filename = (char*)iter->data;
-            selectedFiles.push_back(TString(filename));
+        for(GSList *iter = filenames; iter != nullptr; iter = iter->next) {
+            char *filename = (char*)iter->data;
+            m_selectedFiles.push_back(TString(filename));
             g_free(filename);
         }
 
