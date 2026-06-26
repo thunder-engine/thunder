@@ -77,20 +77,17 @@ Product {
                 if(qbs.targetOS.contains("linux")) {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                        list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                         list.push(libPrefix + libs[it] + libPostfix + "." + Qt.core.versionMajor)
                     }
 
-                    list.push("libicudata.so.56", "libicudata.so.56.1")
-                    list.push("libicui18n.so.56", "libicui18n.so.56.1")
-                    list.push("libicuuc.so.56", "libicuuc.so.56.1")
+                    list.push("libicudata.so.73", "libicudata.so.73.2")
+                    list.push("libicui18n.so.73", "libicui18n.so.73.2")
+                    list.push("libicuuc.so.73", "libicuuc.so.73.2")
 
                     list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                     list.push(libPrefix + "DBus" + libPostfix + "." + Qt.core.versionMajor)
 
                     list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
-                    list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor)
                     list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
