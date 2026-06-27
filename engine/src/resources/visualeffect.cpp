@@ -304,7 +304,7 @@ inline void ceilOp(float *ret, int retSize, const float *arg, int argSize) {
     }
 }
 
-inline void makeOp(float *ret, int retSize, std::array<const float *, 3> &arg, std::array<int, 3> &argSize) {
+inline void makeOp(float *ret, int retSize, std::array<const float *, 3> &arg) {
     if(retSize == 16) {
         const Vector3 *t = reinterpret_cast<const Vector3 *>(arg[0]);
         const Vector3 *r = reinterpret_cast<const Vector3 *>(arg[1]);
@@ -336,7 +336,7 @@ void VisualEffect::apply(std::vector<Operator> &operations, Buffers &buffers, in
         std::array<const float *, 3> arg = {ret, ret, ret};
         std::array<int, 3> size = {1, 1, 1};
 
-        for(int a = 0; a < it.arguments.size(); a++) {
+        for(size_t a = 0; a < it.arguments.size(); a++) {
             const Argument &argument = it.arguments[a];
             size[a] = argument.size;
 
@@ -362,7 +362,7 @@ void VisualEffect::apply(std::vector<Operator> &operations, Buffers &buffers, in
             case Max: maxOp(ret, it.resultSize, arg, size); break;
             case Floor: floorOp(ret, it.resultSize, arg[0], size[0]); break;
             case Ceil: ceilOp(ret, it.resultSize, arg[0], size[0]); break;
-            case Make: makeOp(ret, it.resultSize, arg, size); break;
+            case Make: makeOp(ret, it.resultSize, arg); break;
             default: break;
         }
     }

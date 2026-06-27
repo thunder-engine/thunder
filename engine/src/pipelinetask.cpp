@@ -34,7 +34,7 @@ void PipelineTask::setContext(PipelineContext *context) {
     This method can be used to analyze a scene graphs for the provided \a world.
 */
 void PipelineTask::analyze(World *world) {
-
+    A_UNUSED(world);
 }
 /*!
     Executes the rendering commands associated with this pipeline task.
@@ -66,7 +66,7 @@ int PipelineTask::inputCount() const {
     Returns by \a index a name of input.
 */
 TString PipelineTask::inputName(int index) const {
-    if(index < m_inputs.size()) {
+    if(index < static_cast<int>(m_inputs.size())) {
         return m_inputs[index];
     }
     return TString();
@@ -97,7 +97,7 @@ TString PipelineTask::outputName(int index) const {
     Returns by \a index a result of task as a render texture.
 */
 Texture *PipelineTask::output(int index) {
-    if(index < m_outputs.size()) {
+    if(index < static_cast<int>(m_outputs.size())) {
         return m_outputs[index].second;
     }
     return nullptr;

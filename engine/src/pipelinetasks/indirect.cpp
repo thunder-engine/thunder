@@ -58,6 +58,7 @@ DeferredIndirect::DeferredIndirect() :
 }
 
 void DeferredIndirect::analyze(World *world) {
+    A_UNUSED(world);
     Camera *camera = Camera::current();
     if(camera) {
         Vector4 color(camera->color());

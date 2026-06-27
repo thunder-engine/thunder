@@ -14,14 +14,17 @@ int Motion::duration() const {
 }
 
 Vector4 Motion::valueVector4(float time) const {
+    A_UNUSED(time);
     return Vector4();
 }
 
 Quaternion Motion::valueQuaternion(float time) const {
+    A_UNUSED(time);
     return Quaternion();
 }
 
 TString Motion::valueString(float time) const {
+    A_UNUSED(time);
     return TString();
 }
 /*!
@@ -179,7 +182,7 @@ Variant AnimationTrack::AnimationTrack::toVariant() const {
         key.push_back(it.m_position);
         key.push_back(it.m_type);
 
-        for(int32_t i = 0; i < it.m_value.size(); i++) {
+        for(size_t i = 0; i < it.m_value.size(); i++) {
             key.push_back(it.m_value[i]);
             if(it.m_type == AnimationCurve::KeyFrame::Cubic) {
                 key.push_back(it.m_leftTangent[i]);

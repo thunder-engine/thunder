@@ -245,6 +245,7 @@ public:
     }
 
     static TString spvToMetal(std::vector<uint32_t> spv, SpirVConverter::Inputs &inputs, EShLanguage stage) {
+        A_UNUSED(stage);
         spirv_cross::CompilerMSL msl(spv);
 
         spirv_cross::CompilerMSL::Options options;

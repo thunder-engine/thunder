@@ -2,6 +2,7 @@
 #define FILELOGHANDLER_H
 
 #include <mutex>
+#include <cstring>
 
 #include <log.h>
 #include <engine.h>

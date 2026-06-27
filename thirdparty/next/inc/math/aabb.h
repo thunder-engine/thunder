@@ -32,6 +32,7 @@ class NEXT_LIBRARY_EXPORT AABBox {
 public:
     AABBox();
     AABBox(const Vector3 &center, const Vector3 &extent);
+    AABBox(const AABBox&) = default;
 
     AABBox &operator=(const AABBox &value);
 

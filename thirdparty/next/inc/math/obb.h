@@ -29,6 +29,7 @@ public:
     OBBox();
     OBBox(const Vector3 &center, const Vector3 &extent);
     OBBox(const Vector3 &center, const Vector3 &extent, const Quaternion &rotation);
+    OBBox(const OBBox&) = default;
 
     OBBox &operator=(const OBBox &value);
 

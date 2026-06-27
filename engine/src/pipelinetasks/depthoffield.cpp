@@ -124,6 +124,7 @@ DepthOfField::~DepthOfField() {
 }
 
 void DepthOfField::analyze(World *world) {
+    A_UNUSED(world);
     // Focus Distance
     Camera *camera = Camera::current();
     float focal  = camera->focalDistance();

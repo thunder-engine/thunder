@@ -51,6 +51,7 @@ void Translucent::setInput(int index, Texture *texture) {
 }
 
 void Translucent::analyze(World *world) {
+    A_UNUSED(world);
     Renderable::GroupList list;
     Renderable::filterByLayer(m_context->culledRenderables(), list, Material::Translucent);
 

@@ -121,63 +121,56 @@ void MaterialInstance::setSkinSize(uint32_t size) {
     Sets a boolean parameter with optional array support.
     Parameter \a name specifies a name of the boolean parameter.
     Parameter \a value pointer to the boolean value or array of boolean values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setBool(const TString &name, const bool *value, int32_t count) {
+void MaterialInstance::setBool(const TString &name, const bool *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a integer parameter with optional array support.
     Parameter \a name specifies a name of the integer parameter.
     Parameter \a value pointer to the integer value or array of integer values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setInteger(const TString &name, const int32_t *value, int32_t count) {
+void MaterialInstance::setInteger(const TString &name, const int32_t *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a float parameter with optional array support.
     Parameter \a name specifies a name of the float parameter.
     Parameter \a value pointer to the float value or array of float values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setFloat(const TString &name, const float *value, int32_t count) {
+void MaterialInstance::setFloat(const TString &name, const float *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a Vector2 parameter with optional array support.
     Parameter \a name specifies a name of the Vector2 parameter.
     Parameter \a value pointer to the Vector2 value or array of Vector2 values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector2(const TString &name, const Vector2 *value, int32_t count) {
+void MaterialInstance::setVector2(const TString &name, const Vector2 *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a Vector3 parameter with optional array support.
     Parameter \a name specifies a name of the Vector3 parameter.
     Parameter \a value pointer to the Vector3 value or array of Vector3 values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector3(const TString &name, const Vector3 *value, int32_t count) {
+void MaterialInstance::setVector3(const TString &name, const Vector3 *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a Vector4 parameter with optional array support.
     Parameter \a name specifies a name of the Vector4 parameter.
     Parameter \a value pointer to the Vector4 value or array of Vector4 values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setVector4(const TString &name, const Vector4 *value, int32_t count) {
+void MaterialInstance::setVector4(const TString &name, const Vector4 *value) {
     setBufferValue(name, value);
 }
 /*!
     Sets a Matrix4 parameter with optional array support.
     Parameter \a name specifies a name of the Matrix4 parameter.
     Parameter \a value pointer to the Matrix4 value or array of Matrix4 values.
-    Parameter \a count a number of elements in the array.
 */
-void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value, int32_t count) {
+void MaterialInstance::setMatrix4(const TString &name, const Matrix4 *value) {
     setBufferValue(name, value);
 }
 /*!

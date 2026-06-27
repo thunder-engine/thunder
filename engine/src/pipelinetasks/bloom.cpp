@@ -83,6 +83,7 @@ Bloom::~Bloom() {
 }
 
 void Bloom::analyze(World *world) {
+    A_UNUSED(world);
     float threshold = PostProcessSettings::defaultValue(gBloomThreshold).toFloat();
     float intensity = PostProcessSettings::defaultValue(gBloomIntensity).toFloat();
     float dirtIntensity = PostProcessSettings::defaultValue(gBloomDirtIntensity).toFloat();

@@ -45,6 +45,8 @@
 namespace  {
     const char *gBackgroundColor("Viewport/Background_Color");
     const char *gIsolationColor("Viewport/Isolation_Color");
+
+    static const char *gMimeComponent("text/component");
 }
 
 class ViewportRaycast : public PipelineTask {

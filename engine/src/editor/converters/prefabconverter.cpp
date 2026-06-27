@@ -135,11 +135,11 @@ Variant PrefabConverter::readJson(const TString &data, AssetConverterSettings *s
 
     bool update = false;
     switch(settings->currentVersion()) {
-        case 0: update |= toVersion1(result);
-        case 1: update |= toVersion2(result);
-        case 2: update |= toVersion3(result);
-        case 3: update |= toVersion4(result);
-        case 4: update |= toVersion5(result);
+        case 0: update |= toVersion1(result); [[fallthrough]];
+        case 1: update |= toVersion2(result); [[fallthrough]];
+        case 2: update |= toVersion3(result); [[fallthrough]];
+        case 3: update |= toVersion4(result); [[fallthrough]];
+        case 4: update |= toVersion5(result); [[fallthrough]];
         default: break;
     }
 
@@ -190,14 +190,17 @@ bool PrefabConverter::toVersion1(Variant &variant) {
 }
 
 bool PrefabConverter::toVersion2(Variant &variant) {
+    A_UNUSED(variant);
     return false;
 }
 
 bool PrefabConverter::toVersion3(Variant &variant) {
+    A_UNUSED(variant);
     return false;
 }
 
 bool PrefabConverter::toVersion4(Variant &variant) {
+    A_UNUSED(variant);
     return false;
 }
 

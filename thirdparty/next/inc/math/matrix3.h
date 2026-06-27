@@ -27,6 +27,7 @@ class Vector4;
 class NEXT_LIBRARY_EXPORT Matrix3 {
 public:
     Matrix3();
+    Matrix3(const Matrix3&) = default;
 
     Matrix3 &operator=(const Matrix3 &value);
 

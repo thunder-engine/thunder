@@ -39,6 +39,7 @@ public:
 public:
     Ray();
     Ray(const Vector3 &position, const Vector3 &direction);
+    Ray(const Ray&) = default;
 
     Ray &operator=(const Ray &value);
 

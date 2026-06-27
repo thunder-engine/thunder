@@ -131,7 +131,7 @@ void DirectLight::cleanDirty() {
         //    bias[lod] *= 1.0f / (planeDistance[lod] * biasModifier);
         //}
 
-        m_materialInstance->setMatrix4(uniMatrix, matrix, MAX_LODS);
+        m_materialInstance->setMatrix4(uniMatrix, matrix);
         m_materialInstance->setVector4(uniBias, &bias);
         m_materialInstance->setVector4(uniPlaneDistance, &planeDistance);
     }

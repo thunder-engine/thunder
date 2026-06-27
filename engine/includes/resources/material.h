@@ -286,16 +286,16 @@ public:
 
     void setSkinSize(uint32_t size);
 
-    void setBool(const TString &name, const bool *value, int32_t count = 1);
+    void setBool(const TString &name, const bool *value);
 
-    void setInteger(const TString &name, const int32_t *value, int32_t count = 1);
+    void setInteger(const TString &name, const int32_t *value);
 
-    void setFloat(const TString &name, const float *value, int32_t count = 1);
-    void setVector2(const TString &name, const Vector2 *value, int32_t count = 1);
-    void setVector3(const TString &name, const Vector3 *value, int32_t count = 1);
-    void setVector4(const TString &name, const Vector4 *value, int32_t count = 1);
+    void setFloat(const TString &name, const float *value);
+    void setVector2(const TString &name, const Vector2 *value);
+    void setVector3(const TString &name, const Vector3 *value);
+    void setVector4(const TString &name, const Vector4 *value);
 
-    void setMatrix4(const TString &name, const Matrix4 *value, int32_t count = 1);
+    void setMatrix4(const TString &name, const Matrix4 *value);
 
     void setTexture(const TString &name, Texture *texture);
 

@@ -44,7 +44,7 @@ void Armature::addInstance(MaterialInstance *instance) {
         m_instances.push_back(instance);
 
         // make cache dirty
-        for(auto it : m_bones) {
+        for(auto &it : m_bones) {
             it.second = 0;
         }
     }
