@@ -29,6 +29,9 @@
 #if defined(__APPLE__)
 #  include <mach/clock.h>
 #  include <mach/mach.h>
+
+# include <dirent.h>
+# include <sys/stat.h>
 #endif
 
 #if defined(HAVE_GETRANDOM)
