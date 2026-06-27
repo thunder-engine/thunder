@@ -23,7 +23,6 @@
 #include <list>
 #include <vector>
 #include <memory>
-#include <cstring>
 
 #include <global.h>
 #include <amath.h>
@@ -115,13 +114,7 @@ public:
 
         if(m_data.type < MetaType::STRING) {
             if(m_data.type == type) {
-                if constexpr (std::is_trivially_copyable_v<T>) {
-                    T result;
-                    memcpy(&result, &m_data.ptr, sizeof(T));
-                    return result;
-                } else {
-                    return *reinterpret_cast<const T *>(&m_data.ptr);
-                }
+                return *reinterpret_cast<const T *>(&m_data.ptr);
             } else if(canConvert(type)) {
                 T result;
                 MetaType::convert(&m_data.ptr, m_data.type, &result, type);
