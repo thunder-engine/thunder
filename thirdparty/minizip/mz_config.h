@@ -2,7 +2,11 @@
 #define MZ_CONFIG_H
 
 // Define to 1 if you have the <dirent.h> header file.
-#define HAVE_DIRENT_H 1
+#if defined(__APPLE__)
+#  define HAVE_DIRENT_H 1
+#else
+#  define HAVE_DIRENT_H 0
+#endif
 
 // Define to 1 if you have the <sys/dirent.h> header file.
 #define HAVE_SYS_DIRENT_H 0
