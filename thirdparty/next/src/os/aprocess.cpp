@@ -423,15 +423,17 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
         close(STDERR_FILENO);
 
         int nullfd = open("/dev/null", O_RDWR);
-        if (nullfd != -1) {
+        if(nullfd != -1) {
             dup2(nullfd, STDIN_FILENO);
             dup2(nullfd, STDOUT_FILENO);
             dup2(nullfd, STDERR_FILENO);
             close(nullfd);
         }
 
-        if (!workingDirectory.isEmpty()) {
-            chdir(workingDirectory.data());
+        if(!workingDirectory.isEmpty()) {
+            if(chdir(workingDirectory.data()) == -1) {
+                return false;
+            }
         }
 
         std::vector<char*> args;

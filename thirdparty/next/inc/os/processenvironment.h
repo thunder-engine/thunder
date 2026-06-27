@@ -26,6 +26,9 @@
 
 class NEXT_LIBRARY_EXPORT ProcessEnvironment {
 public:
+    ProcessEnvironment() = default;
+    ProcessEnvironment(const ProcessEnvironment&) = default;
+
     ProcessEnvironment &operator=(const ProcessEnvironment &other);
 
     void insert(const TString &key, const TString &variable);

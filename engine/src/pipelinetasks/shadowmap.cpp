@@ -99,7 +99,7 @@ void ShadowMap::lightUpdate(BaseLight *light, int count) {
 
     auto instance = light->material();
     if(instance) {
-        instance->setVector4(uniTiles, tiles.data(), count);
+        instance->setVector4(uniTiles, tiles.data());
         instance->setTexture(shadowMap, shadowTarget->depthAttachment());
     }
     shadowTarget->setTileIndex(-1);

@@ -33,23 +33,6 @@
 
 #include "shaderbuilder.h"
 
-namespace {
-    const char *gUser("user");
-    const char *gValue("value");
-
-    const char *gType("type");
-
-    const char *gModel("model");
-    const char *gSide("side");
-    const char *gWireFrame("wireframe");
-
-    const char *gDepthWrite("depthwrite");
-
-    const char *gBlend("blend");
-    const char *gDepth("depth");
-    const char *gStencil("stencil");
-};
-
 std::map<uint32_t, Vector4> ShaderNode::m_portColors = {
     { MetaType::INVALID, Vector4(0.6f, 0.6f, 0.6f, 1.0f) },
     { MetaType::INTEGER, Vector4(0.22f, 0.46, 0.11f, 1.0f) },

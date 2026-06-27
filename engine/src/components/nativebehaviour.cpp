@@ -64,5 +64,5 @@ bool NativeBehaviour::isStarted() const {
     \internal
 */
 void NativeBehaviour::setStarted(bool started) {
-    m_started = true;
+    m_started = started;
 }

@@ -37,7 +37,6 @@ static const char *gApplication("");
 #endif
 static const char *gMimeContent("text/content");
 static const char *gMimeObject("text/object");
-static const char *gMimeComponent("text/component");
 
 #endif // CONFIG_H
 

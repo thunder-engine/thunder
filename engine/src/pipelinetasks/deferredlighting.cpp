@@ -123,6 +123,7 @@ void DeferredLighting::exec() {
 }
 
 void DeferredLighting::setInput(int index, Texture *texture) {
+    A_UNUSED(index);
     m_lightPass->setColorAttachment(0, texture);
 
     m_outputs.front().second = texture;

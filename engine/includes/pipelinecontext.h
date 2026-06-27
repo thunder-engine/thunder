@@ -63,7 +63,7 @@ public:
 
     std::list<std::pair<const PostProcessSettings *, float> > &culledPostEffectSettings();
 
-    void frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out, AABBox *box = nullptr);
+    void frustumCulling(const Frustum &frustum, const RenderList &in, RenderList &out);
 
     void setPipeline(Pipeline *pipeline);
     void insertRenderTask(PipelineTask *task, PipelineTask *before = nullptr);

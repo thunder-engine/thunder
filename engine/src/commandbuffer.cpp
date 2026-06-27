@@ -157,6 +157,8 @@ void CommandBuffer::flipResult() {
     Parameters \a width and \a height viewport dimensions.
 */
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+    A_UNUSED(x);
+    A_UNUSED(y);
     m_global.cameraParams.z = 1.0f / (float)width;
     m_global.cameraParams.w = 1.0f / (float)height;
 }

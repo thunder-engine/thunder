@@ -75,6 +75,7 @@ void GBuffer::exec() {
 }
 
 void GBuffer::analyze(World *world) {
+    A_UNUSED(world);
     Renderable::GroupList list;
     Renderable::filterByLayer(m_context->culledRenderables(), list, Material::Opaque);
 

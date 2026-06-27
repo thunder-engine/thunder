@@ -86,7 +86,7 @@ AmbientOcclusion::AmbientOcclusion() :
                 scale = MIX(0.1f, 1.0f, scale * scale);
                 samplesKernel[i] *= scale;
             }
-            m_occlusion->setVector3("samplesKernel", samplesKernel, KERNEL_SIZE);
+            m_occlusion->setVector3("samplesKernel", samplesKernel);
             m_occlusion->setTexture("noiseMap", m_noiseTexture);
 
             m_occlusion->setFloat("radius", &m_radius);
@@ -115,6 +115,7 @@ AmbientOcclusion::~AmbientOcclusion() {
 }
 
 void AmbientOcclusion::analyze(World *world) {
+    A_UNUSED(world);
     float radius = PostProcessSettings::defaultValue(gAmbientRadius).toFloat();
     float bias = PostProcessSettings::defaultValue(gAmbientBias).toFloat();
     float power = PostProcessSettings::defaultValue(gAmbientPower).toFloat();

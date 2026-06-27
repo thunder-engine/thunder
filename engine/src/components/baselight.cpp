@@ -142,7 +142,7 @@ void BaseLight::cleanDirty() {
     if(m_materialInstance) {
         Vector4 bias;
         m_materialInstance->setVector4(uniBias, &bias);
-        m_materialInstance->setMatrix4(uniMatrix, matrix, SIDES);
+        m_materialInstance->setMatrix4(uniMatrix, matrix);
     }
 
     m_dirty = false;

@@ -34,6 +34,7 @@ public:
 
 protected:
     StringList list(const char *path, bool root = false) override {
+        A_UNUSED(root);
         char **rc = PHYSFS_enumerateFiles(path);
         char **i;
 

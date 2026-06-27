@@ -53,6 +53,7 @@ void AntiAliasing::exec() {
 }
 
 void AntiAliasing::setInput(int index, Texture *texture) {
+    A_UNUSED(index);
     if(m_enabled) {
         if(m_resultMaterial) {
             m_resultMaterial->setTexture("rgbMap", texture);
