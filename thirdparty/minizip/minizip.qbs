@@ -4,9 +4,7 @@ Project {
     property stringList srcFiles: {
         var sources = [
             "ioapi.c",
-            "miniunz.c",
             "mztools.c",
-            "unzip.c",
             "zip.c"
         ];
         if(qbs.targetOS.contains("windows")) {
