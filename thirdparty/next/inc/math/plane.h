@@ -26,6 +26,7 @@ public:
     Plane();
     Plane(const Vector3 &pos, const Vector3 &norm);
     Plane(const Vector3 &v1, const Vector3 &v2, const Vector3 &v3);
+    Plane(const Plane&) = default;
 
     Plane &operator=(const Plane &value);
 

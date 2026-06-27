@@ -150,7 +150,6 @@ void ProjectSettings::saveSettings() {
         TString name = property.name();
         Variant value = property.read(this);
 
-        MetaType type = MetaType::table(value.userType());
         if(value.type() == QMetaType::QVariantList) {
             // Just skip the list type for now
         } else {
