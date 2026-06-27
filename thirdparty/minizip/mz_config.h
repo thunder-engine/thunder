@@ -18,7 +18,11 @@
 #define HAVE_STDINT_H 1
 
 // Define to 1 if DIR* is defined.
-#define HAVE_PDIR 0
+#if defined(__APPLE__)
+#  define HAVE_PDIR 1
+#else
+#  define HAVE_PDIR 0
+#endif
 
 // Define to 1 if fseeko() is defined.
 #define HAVE_FSEEKO 0
