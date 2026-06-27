@@ -7,7 +7,7 @@
 #include <editor/assetmanager.h>
 #include <editor/nativecodebuilder.h>
 
-#include <minizip/zip.h>
+#include <compat/zip.h>
 
 #include <QCoreApplication>
 

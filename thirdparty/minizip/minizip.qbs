@@ -3,12 +3,22 @@ Project {
 
     property stringList srcFiles: {
         var sources = [
-            "ioapi.c",
-            "mztools.c",
-            "zip.c"
+            "compat/ioapi.c",
+            "compat/unzip.c",
+            "compat/zip.c",
+            "mz_zip.c",
+            "mz_os.c",
+            "mz_strm.c",
+            "mz_strm_buf.c",
+            "mz_strm_mem.c",
+            "mz_crypt.c"
         ];
         if(qbs.targetOS.contains("windows")) {
-            sources.push("../minizip/iowin32.c")
+            sources.push("mz_os_win32.c")
+            sources.push("mz_strm_os_win32.c")
+        } else {
+            sources.push("mz_os_posix.c")
+            sources.push("mz_strm_os_posix.c")
         }
 
         return sources;

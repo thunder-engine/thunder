@@ -61,11 +61,17 @@
 - Version: 0.11.24
 - License: Public Domain
 
+## minzip-ng
+
+- Link: https://github.com/zlib-ng/minizip-ng
+- Version: 4.2.1
+- License: Zlib
+
 ## next
 
 - Link: https://github.com/eprikazchikov/platformnext
 - Version: 1.0
-- License: MIT
+- License: Apache 2.0
 
 ## physfs
 

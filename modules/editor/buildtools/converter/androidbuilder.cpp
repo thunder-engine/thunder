@@ -8,7 +8,7 @@
 #include <file.h>
 #include <url.h>
 
-#include <minizip/zip.h>
+#include <compat/zip.h>
 
 namespace {
     const char *gAndroidJava("Builder/Android/Java_Path");
