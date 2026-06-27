@@ -16,7 +16,9 @@ Project {
         if(qbs.targetOS.contains("windows")) {
             sources.push("mz_os_win32.c")
             sources.push("mz_strm_os_win32.c")
-        } else {
+        }
+
+        if(qbs.targetOS.contains("linux")) {
             sources.push("mz_os_posix.c")
             sources.push("mz_strm_os_posix.c")
         }
