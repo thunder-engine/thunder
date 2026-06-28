@@ -64,6 +64,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
+            cpp.dynamicLibraries: ["objc"]
         }
 
         Properties {

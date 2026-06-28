@@ -195,71 +195,84 @@ bool FileDialogPrivate::execMacOS() {
     Class panelClass;
     id panel;
 
+    // Определяем типы для каста objc_msgSend под разные сигнатуры
+    typedef id (*msgSendClass)(Class, SEL);
+    typedef id (*msgSendClassChar)(Class, SEL, const char*);
+
+    typedef id (*msgSendId)(id, SEL);
+    typedef id (*msgSendIdId)(id, SEL, id);
+    typedef id (*msgSendIdChar)(id, SEL, const char*);
+    typedef void (*msgSendIdBool)(id, SEL, bool);
+    typedef long (*msgSendIdReturnsInt)(id, SEL);
+    typedef unsigned long (*msgSendIdReturnsUInt)(id, SEL);
+    typedef id (*msgSendIdUInt)(id, SEL, unsigned long);
+    typedef const char* (*msgSendIdReturnsChar)(id, SEL);
+
     if(m_mode == FileDialog::SaveFile) {
         panelClass = objc_getClass("NSSavePanel");
-        panel = objc_msgSend(panelClass, sel_getUid("savePanel"));
+        panel = ((msgSendClass)objc_msgSend)(panelClass, sel_getUid("savePanel"));
     } else if(m_mode == FileDialog::OpenDirectory) {
         panelClass = objc_getClass("NSOpenPanel");
-        panel = objc_msgSend(panelClass, sel_getUid("openPanel"));
-        objc_msgSend(panel, sel_getUid("setCanChooseDirectories:"), YES);
-        objc_msgSend(panel, sel_getUid("setCanChooseFiles:"), NO);
+        panel = ((msgSendClass)objc_msgSend)(panelClass, sel_getUid("openPanel"));
+        ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setCanChooseDirectories:"), YES);
+        ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setCanChooseFiles:"), NO);
     } else {
         panelClass = objc_getClass("NSOpenPanel");
-        panel = objc_msgSend(panelClass, sel_getUid("openPanel"));
-        objc_msgSend(panel, sel_getUid("setCanChooseDirectories:"), NO);
-        objc_msgSend(panel, sel_getUid("setCanChooseFiles:"), YES);
+        panel = ((msgSendClass)objc_msgSend)(panelClass, sel_getUid("openPanel"));
+        ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setCanChooseDirectories:"), NO);
+        ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setCanChooseFiles:"), YES);
 
         if(m_mode == FileDialog::OpenFiles) {
-            objc_msgSend(panel, sel_getUid("setAllowsMultipleSelection:"), YES);
+            ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setAllowsMultipleSelection:"), YES);
         }
     }
 
     if(!m_windowTitle.isEmpty()) {
-        NSString *title = objc_msgSend(objc_getClass("NSString"), sel_getUid("stringWithUTF8String:"), m_windowTitle.data());
-        objc_msgSend(panel, sel_getUid("setTitle:"), title);
+        id title = ((msgSendIdChar)objc_msgSend)((id)objc_getClass("NSString"), sel_getUid("stringWithUTF8String:"), m_windowTitle.data());
+        ((msgSendIdId)objc_msgSend)(panel, sel_getUid("setTitle:"), title);
     }
 
     if(!m_initialDir.isEmpty()) {
-        NSString* path = objc_msgSend(objc_getClass("NSString"),
-                                      sel_getUid("stringWithUTF8String:"), m_initialDir.data());
-        NSURL* url = objc_msgSend(objc_getClass("NSURL"),
-                                  sel_getUid("fileURLWithPath:"), path);
-        objc_msgSend(panel, sel_getUid("setDirectoryURL:"), url);
+        id path = ((msgSendIdChar)objc_msgSend)((id)objc_getClass("NSString"),
+                                                        sel_getUid("stringWithUTF8String:"), m_initialDir.data());
+        id url = ((msgSendIdId)objc_msgSend)((id)objc_getClass("NSURL"),
+                                                  sel_getUid("fileURLWithPath:"), path);
+        ((msgSendIdId)objc_msgSend)(panel, sel_getUid("setDirectoryURL:"), url);
     }
 
-    if(!m_filters.isEmpty()) {
-        NSMutableArray* allowedTypes = objc_msgSend(objc_getClass("NSMutableArray"), sel_getUid("array"));
+    if(!m_filters.empty()) {
+        id allowedTypes = ((msgSendClass)objc_msgSend)(objc_getClass("NSMutableArray"), sel_getUid("array"));
 
         for(const auto& filter : m_filters) {
             for(const auto& ext : filter.extensions) {
-                if(!ext.empty()) {
+                if(!ext.isEmpty()) {
                     std::string extStr = ext.toStdString();
                     if(!extStr.empty() && extStr[0] == '.') {
                         extStr = extStr.substr(1);
                     }
-                    NSString* extNSString = objc_msgSend(objc_getClass("NSString"),
-                                                         sel_getUid("stringWithUTF8String:"), extStr.c_str());
-                    objc_msgSend(allowedTypes, sel_getUid("addObject:"), extNSString);
+                    id extNSString = ((msgSendIdChar)objc_msgSend)((id)objc_getClass("NSString"),
+                                                                           sel_getUid("stringWithUTF8String:"), extStr.c_str());
+                    ((msgSendIdId)objc_msgSend)(allowedTypes, sel_getUid("addObject:"), extNSString);
                 }
             }
         }
 
-        if(objc_msgSend(allowedTypes, sel_getUid("count")) > 0) {
-            objc_msgSend(panel, sel_getUid("setAllowedFileTypes:"), allowedTypes);
+        if(((msgSendIdReturnsUInt)objc_msgSend)(allowedTypes, sel_getUid("count")) > 0) {
+            ((msgSendIdId)objc_msgSend)(panel, sel_getUid("setAllowedFileTypes:"), allowedTypes);
         }
     }
 
-    NSInteger result = (NSInteger)objc_msgSend(panel, sel_getUid("runModal"));
+    long result = ((msgSendIdReturnsInt)objc_msgSend)(panel, sel_getUid("runModal"));
 
-    if(result == NSModalResponseOK) {
-        id urls = objc_msgSend(panel, sel_getUid("URLs"));
-        NSUInteger count = (NSUInteger)objc_msgSend(urls, sel_getUid("count"));
+    if(result == 1) {
+        id urls = ((msgSendId)objc_msgSend)(panel, sel_getUid("URLs"));
+        long count = ((msgSendIdReturnsUInt)objc_msgSend)(urls, sel_getUid("count"));
 
-        for(NSUInteger i = 0; i < count; i++) {
-            id url = objc_msgSend(urls, sel_getUid("objectAtIndex:"), i);
-            id path = objc_msgSend(url, sel_getUid("path"));
-            const char* cpath = objc_msgSend(path, sel_getUid("UTF8String"));
-            selectedFiles.push_back(TString(cpath));
+        for(long i = 0; i < count; i++) {
+            id url = ((msgSendIdUInt)objc_msgSend)(urls, sel_getUid("objectAtIndex:"), i);
+            id path = ((msgSendId)objc_msgSend)(url, sel_getUid("path"));
+            const char *cpath = ((msgSendIdReturnsChar)objc_msgSend)(path, sel_getUid("UTF8String"));
+            m_selectedFiles.push_back(TString(cpath));
         }
         return true;
     }
