@@ -73,7 +73,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("linux")
-            cpp.dynamicLibraries: ["gtk-3"]
+            cpp.dynamicLibraries: outer.concat(["gtk-3"])
         }
 
         Group {
