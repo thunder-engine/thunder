@@ -67,7 +67,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
-            cpp.dynamicLibraries: ["objc"]
+            cpp.dynamicLibraries: outer.concat(["objc"])
             cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
         }
 
