@@ -38,7 +38,7 @@ Product {
                 files.push("**/*.dll")
             }
         } else if(qbs.targetOS.contains("linux")) {
-            files.push("**/*.so")
+            files.push("**/*")
         } else {
             files.push("*")
         }
@@ -89,6 +89,12 @@ Product {
 
                     list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
                     list.push(libPrefix + "XcbQpa" + libPostfix + "." + Qt.core.versionMajor)
+
+                    list.push(libPrefix + "WaylandClient" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "WaylandClient" + libPostfix + "." + Qt.core.versionMajor)
+
+                    list.push(libPrefix + "WaylandEglClientHwIntegration" + libPostfix + "." + Qt.core.versionMajor + "." + Qt.core.versionMinor + "." + Qt.core.versionPatch)
+                    list.push(libPrefix + "WaylandEglClientHwIntegration" + libPostfix + "." + Qt.core.versionMajor)
                 } else {
                     for(var it in libs) {
                         list.push(libPrefix + libs[it] + libPostfix)

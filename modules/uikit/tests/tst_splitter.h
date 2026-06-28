@@ -10,10 +10,10 @@ namespace UikitSuite {
     };
 
     TEST_F(SplitterTest, AddWidgets) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
-        Actor* actor = Engine::composeActor<Splitter>("Test");
+        Actor *actor = Engine::composeActor<Splitter>("Test");
         Splitter* splitter = actor->getComponent<Splitter>();
         if (splitter) {
             Actor* actorFrame1 = Engine::composeActor<Frame>("Frame1");
@@ -37,7 +37,7 @@ namespace UikitSuite {
     }
 
     TEST_F(SplitterTest, InsertWidget) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* actor = Engine::composeActor<Splitter>("Test");
@@ -63,7 +63,7 @@ namespace UikitSuite {
     }
 
     TEST_F(SplitterTest, ReplaceWidget) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* actor = Engine::composeActor<Splitter>("Test");
@@ -91,7 +91,7 @@ namespace UikitSuite {
     }
 
     TEST_F(SplitterTest, AddChild) {
-        Engine engine("");
+        Engine engine;
         engine.addModule(new UiKit(&engine));
 
         Actor* actor = Engine::composeActor<Splitter>("Test");
