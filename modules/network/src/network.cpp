@@ -1,9 +1,5 @@
 #include "network.h"
 
-#include <cstring>
-
-#include "objects/webrequest.h"
-
 #ifdef SHARED_DEFINE
 Module *moduleCreate(Engine *engine) {
     return new Network(engine);
@@ -21,7 +17,6 @@ static const char *meta = \
 Network::Network(Engine *engine) :
         Module(engine) {
 
-    WebRequest::declareMetaType();
 }
 
 Network::~Network() {

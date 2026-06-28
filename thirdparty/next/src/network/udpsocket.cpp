@@ -1,6 +1,20 @@
 #include "udpsocket.h"
 
 #include "networkaddress.h"
+#include "amath.h"
+
+#ifdef PLATFORM_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <fcntl.h>
+#endif
 
 bool UdpSocket::bind(const NetworkAddress &address) {
     m_socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);

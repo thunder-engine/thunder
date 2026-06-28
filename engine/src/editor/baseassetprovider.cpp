@@ -34,10 +34,11 @@ void BaseAssetProvider::init(bool force) {
 
     bool watch = false;
     onDirectoryChangedForce(resourcePath + "/engine", force);
-#ifndef BUILDER
-    onDirectoryChangedForce(resourcePath + "/editor", force);
-    watch = true;
-#endif
+    if(mgr->targetPath().isEmpty()) { // Skip for Builder
+        onDirectoryChangedForce(resourcePath + "/editor", force);
+        watch = true;
+    }
+
     onDirectoryChangedForce(mgr->contentPath(), force, watch); // We need to watch only a project files in editor.
 }
 

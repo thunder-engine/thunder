@@ -1,11 +1,9 @@
 #ifndef NETWORKADDRESS_H
 #define NETWORKADDRESS_H
 
-#include <cstdint>
+#include <astring.h>
 
-#include <network.h>
-
-class NETWORK_EXPORT NetworkAddress {
+class NEXT_LIBRARY_EXPORT NetworkAddress {
 public:
     NetworkAddress();
 

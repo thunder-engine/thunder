@@ -11,16 +11,12 @@ Project {
 
     property stringList incPaths: [
         "includes",
-        "includes/objects",
-        "includes/utils",
-        "../../common",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",
-        "../../thirdparty/ssl/include",
         "../../engine/includes",
         "../../engine/includes/resources",
-        "../../engine/includes/editor",
+        "../../engine/includes/editor"
     ]
 
     DynamicLibrary {
@@ -35,24 +31,10 @@ Project {
 
         cpp.defines: ["SHARED_DEFINE", "NETWORK_LIBRARY"]
         cpp.includePaths: network.incPaths
-        cpp.staticLibraries: [ "ssl", "crypto" ]
+        cpp.staticLibraries: [ ]
         cpp.cxxLanguageVersion: network.languageVersion
         cpp.cxxStandardLibrary: network.standardLibrary
         cpp.minimumMacosVersion: network.osxVersion
-
-        Properties {
-            condition: qbs.targetOS.contains("windows")
-            cpp.dynamicLibraries: outer.concat([
-                "Ws2_32", "Crypt32", "Advapi32", "User32"
-            ])
-            cpp.libraryPaths: [ "../../thirdparty/ssl/lib" ]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("darwin")
-            cpp.sonamePrefix: "@executable_path/plugins"
-            cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
-        }
 
         Group {
             name: "Install Dynamic network"

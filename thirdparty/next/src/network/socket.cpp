@@ -2,6 +2,19 @@
 
 #include "networkaddress.h"
 
+#ifdef PLATFORM_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <fcntl.h>
+#endif
+
 Socket::Socket() :
         m_socket(0) {
 

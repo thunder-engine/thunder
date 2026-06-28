@@ -3,7 +3,7 @@
 
 #include "socket.h"
 
-class NETWORK_EXPORT UdpSocket : public Socket {
+class NEXT_LIBRARY_EXPORT UdpSocket : public Socket {
 public:
     bool bind(const NetworkAddress &address) override;
 

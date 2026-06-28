@@ -3,11 +3,9 @@
 
 #include <url.h>
 
-#include <network.h>
-
 class TcpSocket;
 
-class NETWORK_EXPORT WebRequest {
+class NEXT_LIBRARY_EXPORT WebRequest {
     A_GENERIC(WebRequest)
 
     A_METHODS(
