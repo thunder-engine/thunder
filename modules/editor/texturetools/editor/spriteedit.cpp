@@ -149,6 +149,10 @@ StringList SpriteEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_converter)->suffixes();
 }
 
+TString SpriteEdit::assetType() const {
+    return "Sprite";
+}
+
 void SpriteEdit::onUpdateTemplate() {
     if(!m_settings.empty()) {
         m_converter->convertTexture(static_cast<TextureImportSettings *>(m_settings.front()));

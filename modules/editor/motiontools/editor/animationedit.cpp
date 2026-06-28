@@ -87,6 +87,10 @@ StringList AnimationEdit::suffixes() const {
     return result;
 }
 
+TString AnimationEdit::assetType() const {
+    return "Animation";
+}
+
 void AnimationEdit::onAddVariable(QAction *action) {
     TString name;
     Variant value;

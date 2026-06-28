@@ -105,6 +105,10 @@ StringList UiEdit::componentGroups() const {
     return {"Actor", "Components/UI"};
 }
 
+TString UiEdit::assetType() const {
+    return "UI Document";
+}
+
 void UiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     m_undoRedo->push(new ParentWidget(objects, parent, position, m_controller));
 }

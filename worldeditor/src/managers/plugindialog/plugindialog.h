@@ -3,8 +3,6 @@
 
 #include <QDialog>
 
-#include <engine.h>
-
 class PluginManager;
 class QSortFilterProxyModel;
 

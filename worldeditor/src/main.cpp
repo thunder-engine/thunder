@@ -48,9 +48,9 @@ int main(int argc, char *argv[]) {
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
-    QString project;
+    TString project;
     if(argc > 1) {
-        project = QApplication::arguments().at(1);
+        project = QApplication::arguments().at(1).toStdString();
     } else {
         ProjectBrowser browser;
         if(browser.exec() == QDialog::Accepted) {

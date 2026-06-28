@@ -25,7 +25,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -67,7 +67,7 @@
        <item>
         <spacer name="leftSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -108,7 +108,7 @@
        <item>
         <spacer name="righghtSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -134,7 +134,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -392,10 +392,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;New Scene</string>
+    <string>&amp;New</string>
    </property>
    <property name="toolTip">
-    <string>New Scene</string>
+    <string>New</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -420,10 +420,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Open Scene</string>
+    <string>&amp;Open</string>
    </property>
    <property name="toolTip">
-    <string>Open Scene</string>
+    <string>Open</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>

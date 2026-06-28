@@ -18,6 +18,7 @@ Project {
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
+        "../thirdparty/next/inc/os",
         "../thirdparty/physfs/src",
         "../thirdparty/glfw/include",
         "../thirdparty/glfm/include",

@@ -31,7 +31,7 @@
 namespace {
     const char *gMeshRender("MeshRender");
     const char *gDirectLight("DirectLight");
-};
+}
 
 class PipelineProxy : public Object {
     A_OBJECT(PipelineProxy, Object, Proxy)
@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    PipelineEdit *m_editor = nullptr;;
+    PipelineEdit *m_editor = nullptr;
 };
 
 PipelineEdit::PipelineEdit() :
@@ -104,6 +104,10 @@ void PipelineEdit::writeSettings() {
 
 StringList PipelineEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_builder)->suffixes();
+}
+
+TString PipelineEdit::assetType() const {
+    return "Pipeline";
 }
 
 void PipelineEdit::onActivated() {

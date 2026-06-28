@@ -10,14 +10,28 @@ Project {
         "src/analytics/*.cpp"
     ]
 
-    property stringList incPaths: [
-        "inc",
-        "inc/core",
-        "inc/math",
-        "inc/anim",
-        "inc/analytics",
-        "inc/os"
-    ]
+    property stringList incPaths: {
+            var sources = [
+                "inc",
+                "inc/core",
+                "inc/math",
+                "inc/anim",
+                "inc/analytics",
+                "inc/os"
+            ];
+            if(qbs.targetOS.contains("linux")) {
+                sources.push("/usr/include/gtk-3.0")
+                sources.push("/usr/include/glib-2.0")
+                sources.push("/usr/include/pango-1.0")
+                sources.push("/usr/include/atk-1.0")
+                sources.push("/usr/include/gdk-pixbuf-2.0")
+                sources.push("/usr/include/harfbuzz")
+                sources.push("/usr/include/cairo")
+                sources.push("/usr/lib/x86_64-linux-gnu/glib-2.0/include")
+            }
+
+            return sources;
+        }
 
     DynamicLibrary {
         name: "next-editor"
@@ -29,6 +43,7 @@ Project {
         }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
+        Depends { name: "pkgconfig"; required: qbs.targetOS.contains("linux") }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "NEXT_LIBRARY"]
@@ -49,6 +64,12 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
+            cpp.dynamicLibraries: ["objc"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.dynamicLibraries: ["gtk-3"]
         }
 
         Group {

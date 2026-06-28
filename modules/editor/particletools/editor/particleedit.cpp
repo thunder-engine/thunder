@@ -151,6 +151,10 @@ StringList ParticleEdit::suffixes() const {
     return result;
 }
 
+TString ParticleEdit::assetType() const {
+    return "Visual Effect";
+}
+
 void ParticleEdit::onActivated() {
     ui->graph->reselect();
 }

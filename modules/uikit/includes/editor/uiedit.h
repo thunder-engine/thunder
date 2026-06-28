@@ -56,6 +56,7 @@ private:
 
     StringList suffixes() const override;
     StringList componentGroups() const override;
+    TString assetType() const override;
 
     void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
 

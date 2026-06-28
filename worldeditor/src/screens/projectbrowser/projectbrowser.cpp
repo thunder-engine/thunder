@@ -5,10 +5,10 @@
 #include "editor/projectsettings.h"
 
 #include <QKeyEvent>
-#include <QFileDialog>
 
 #include <file.h>
 #include <url.h>
+#include <filedialog.h>
 
 #include "config.h"
 
@@ -31,14 +31,23 @@ ProjectBrowser::~ProjectBrowser() {
 }
 
 void ProjectBrowser::onNewProject() {
-    m_projectPath = QFileDialog::getSaveFileName(this, tr("Create New Project"),
-                                                 ProjectSettings::instance()->myProjectsPath().data(), (TString("*") + gProjectExt).data());
+    FileDialog dialog;
+    dialog.setDirectory(ProjectSettings::instance()->myProjectsPath());
+    dialog.setWindowTitle("Create New Project");
+    dialog.setMode(FileDialog::SaveFile);
+    dialog.addFilter("Project Files", { TString("*") + gProjectExt });
+
+    m_projectPath.clear();
+    if(dialog.exec()) {
+        m_projectPath = dialog.getSelectedFile();
+    }
+
     if(!m_projectPath.isEmpty()) {
-        Url info(m_projectPath.toStdString());
+        Url info(m_projectPath);
         if(info.suffix().isEmpty()) {
             m_projectPath += gProjectExt;
         }
-        File file(m_projectPath.toStdString());
+        File file(m_projectPath);
         if(file.open(File::Write)) {
             file.close();
 
@@ -48,8 +57,17 @@ void ProjectBrowser::onNewProject() {
 }
 
 void ProjectBrowser::onImportProject() {
-    m_projectPath = QFileDialog::getOpenFileName(this, tr("Import Existing Project"),
-                                                 ProjectSettings::instance()->myProjectsPath().data(), (TString("*") + gProjectExt).data());
+    FileDialog dialog;
+    dialog.setDirectory(ProjectSettings::instance()->myProjectsPath());
+    dialog.setWindowTitle("Import Existing Project");
+    dialog.setMode(FileDialog::OpenFile);
+    dialog.addFilter("Project Files", { TString("*") + gProjectExt });
+
+    m_projectPath.clear();
+    if(dialog.exec()) {
+        m_projectPath = dialog.getSelectedFile();
+    }
+
     if(!m_projectPath.isEmpty()) {
         done(QDialog::Accepted);
     }
@@ -63,7 +81,7 @@ void ProjectBrowser::onOpenProject() {
 }
 
 void ProjectBrowser::onProjectSelected(const QModelIndex &index) {
-    m_projectPath = ui->listView->model()->data(index, Qt::EditRole).toString();
+    m_projectPath = ui->listView->model()->data(index, Qt::EditRole).toString().toStdString();
     if(!m_projectPath.isEmpty()) {
         done(QDialog::Accepted);
     }

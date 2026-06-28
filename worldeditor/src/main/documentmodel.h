@@ -18,6 +18,7 @@ public:
     void addEditor(AssetEditor *editor);
 
     void newFile(AssetEditor *editor);
+    void openFile(AssetEditor *editor);
 
     AssetEditor *openFile(const TString &path);
 

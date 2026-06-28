@@ -55,6 +55,7 @@ private:
     void changeEvent(QEvent *event) override;
 
     StringList suffixes() const override;
+    TString assetType() const override;
 
 private:
     ShaderCodeDialog m_codeDlg;
