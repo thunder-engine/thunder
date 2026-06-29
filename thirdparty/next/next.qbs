@@ -7,7 +7,8 @@ Project {
         "src/core/*.cpp",
         "src/math/*.cpp",
         "src/anim/*.cpp",
-        "src/analytics/*.cpp"
+        "src/analytics/*.cpp",
+        "src/network/*.cpp"
     ]
 
     property stringList incPaths: {
@@ -17,7 +18,9 @@ Project {
                 "inc/math",
                 "inc/anim",
                 "inc/analytics",
-                "inc/os"
+                "inc/network",
+                "inc/os",
+                "../ssl/include"
             ];
             if(qbs.targetOS.contains("linux")) {
                 sources.push("/usr/include/gtk-3.0")
@@ -43,13 +46,12 @@ Project {
         }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
-        Depends { name: "pkgconfig"; required: qbs.targetOS.contains("linux") }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "NEXT_LIBRARY"]
         cpp.includePaths: next.incPaths
         cpp.libraryPaths: [ ]
-        cpp.dynamicLibraries: [ ]
+        cpp.dynamicLibraries: [ "ssl", "crypto" ]
         cpp.cxxLanguageVersion: next.languageVersion
         cpp.cxxStandardLibrary: next.standardLibrary
         cpp.minimumMacosVersion: next.osxVersion
@@ -57,19 +59,21 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.dynamicLibraries: outer.concat([
-                "Shell32"
+                "Shell32", "Ws2_32", "Crypt32", "Advapi32", "User32"
             ])
+            cpp.libraryPaths: [ "../../thirdparty/ssl/lib" ]
         }
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.sonamePrefix: "@executable_path"
-            cpp.dynamicLibraries: ["objc"]
+            cpp.dynamicLibraries: outer.concat(["objc"])
+            cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
         }
 
         Properties {
             condition: qbs.targetOS.contains("linux")
-            cpp.dynamicLibraries: ["gtk-3"]
+            cpp.dynamicLibraries: outer.concat(["gtk-3"])
         }
 
         Group {

@@ -42,6 +42,14 @@
 
 #define A_UNUSED(a) (void)a
 
+#if defined(_WIN32)
+    #define PLATFORM_WINDOWS
+#elif defined(__APPLE__)
+    #define PLATFORM_MAC
+#else
+    #define PLATFORM_LINUX
+#endif
+
 typedef float areal;
 
 #endif // GLOBAL_H

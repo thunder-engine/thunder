@@ -5,7 +5,7 @@
 
 typedef struct ssl_st SSL;
 
-class NETWORK_EXPORT TcpSocket : public Socket {
+class NEXT_LIBRARY_EXPORT TcpSocket : public Socket {
 public:
     TcpSocket(bool ssl);
 

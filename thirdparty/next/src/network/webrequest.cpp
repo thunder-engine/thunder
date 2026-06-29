@@ -2,6 +2,8 @@
 
 #include "tcpsocket.h"
 
+#include <cstdint>
+
 enum State {
     Initial = 0,
     Connecting,
