@@ -138,6 +138,9 @@ public:
     static TString fromWString(const std::wstring &in);
     static TString fromUtf32(const std::u32string &in);
 
+    static TString fromByteArray(const ByteArray &data, bool lineBreaks = false);
+    ByteArray toByteArray() const;
+
     TString arg(const TString &arg1) const;
     TString arg(const TString &arg1, const TString &arg2) const;
     TString arg(const TString &arg1, const TString &arg2, const TString &arg3) const;

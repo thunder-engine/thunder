@@ -615,6 +615,156 @@ std::u32string TString::toUtf32() const {
     return result;
 }
 /*!
+    Encodes a ByteArray \a data into a Base64 string.
+    If \a lineBreaks is true, line breaks are added every 76 characters.
+    \sa toByteArray()
+*/
+TString TString::fromByteArray(const ByteArray &data, bool lineBreaks) {
+    if(data.empty()) {
+        return TString();
+    }
+
+    const unsigned char *input = data.data();
+    size_t inputLen = data.size();
+
+    size_t outputLen = ((inputLen + 2) / 3) * 4;
+    if(lineBreaks) {
+        outputLen += (outputLen / 76) * 2; // \r\n
+    }
+
+    std::string output;
+    output.reserve(outputLen);
+
+    size_t i = 0;
+    size_t linePos = 0;
+
+    static const char BASE64_CHARS[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789+/";
+
+    while(i < inputLen) {
+        unsigned char byte1 = input[i];
+        unsigned char byte2 = (i + 1 < inputLen) ? input[i + 1] : 0;
+        unsigned char byte3 = (i + 2 < inputLen) ? input[i + 2] : 0;
+
+        output.push_back(BASE64_CHARS[byte1 >> 2]);
+        output.push_back(BASE64_CHARS[((byte1 & 0x03) << 4) | (byte2 >> 4)]);
+
+        if(i + 1 < inputLen) {
+            output.push_back(BASE64_CHARS[((byte2 & 0x0F) << 2) | (byte3 >> 6)]);
+        } else {
+            output.push_back('=');
+        }
+
+        if(i + 2 < inputLen) {
+            output.push_back(BASE64_CHARS[byte3 & 0x3F]);
+        } else {
+            output.push_back('=');
+        }
+
+        i += 3;
+        linePos += 4;
+
+        if(lineBreaks && linePos >= 76 && i < inputLen) {
+            output.push_back('\r');
+            output.push_back('\n');
+            linePos = 0;
+        }
+    }
+
+    return TString(output);
+}
+
+bool isBase64Char(char ch) {
+    return (ch >= 'A' && ch <= 'Z') ||
+           (ch >= 'a' && ch <= 'z') ||
+           (ch >= '0' && ch <= '9') ||
+           ch == '+' || ch == '/' ||
+           ch == '=';
+}
+
+unsigned char base64DecodeChar(char ch) {
+    if (ch >= 'A' && ch <= 'Z') return ch - 'A';
+    if (ch >= 'a' && ch <= 'z') return ch - 'a' + 26;
+    if (ch >= '0' && ch <= '9') return ch - '0' + 52;
+    if (ch == '+') return 62;
+    if (ch == '/') return 63;
+    return 64; // Invalid
+}
+/*!
+    Decodes a Base64 string into a ByteArray.
+    \sa fromByteArray()
+*/
+ByteArray TString::toByteArray() const {
+    if (m_data.empty()) {
+        return ByteArray();
+    }
+
+    std::string clean;
+    clean.reserve(m_data.length());
+
+    for(size_t i = 0; i < m_data.length(); ++i) {
+        char ch = m_data[i];
+        if (ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n') {
+            clean.push_back(ch);
+        }
+    }
+
+    if(clean.empty()) {
+        return ByteArray();
+    }
+
+    if(clean.length() % 4 != 0) {
+        return ByteArray();
+    }
+
+    for(size_t i = 0; i < clean.length(); ++i) {
+        char ch = clean[i];
+        if (ch != '=' && !isBase64Char(ch)) {
+            return ByteArray();
+        }
+    }
+
+    int padding = 0;
+    if(clean.length() >= 2 && clean[clean.length() - 1] == '=') {
+        padding++;
+    }
+    if(clean.length() >= 3 && clean[clean.length() - 2] == '=') {
+        padding++;
+    }
+
+    size_t outputLen = (clean.length() / 4) * 3 - padding;
+    ByteArray output;
+    output.reserve(outputLen);
+
+    const char *data = clean.c_str();
+    size_t len = clean.length();
+
+    for (size_t i = 0; i < len; i += 4) {
+        unsigned char c1 = base64DecodeChar(data[i]);
+        unsigned char c2 = base64DecodeChar(data[i + 1]);
+        unsigned char c3 = (i + 2 < len && data[i + 2] != '=') ? base64DecodeChar(data[i + 2]) : 0;
+        unsigned char c4 = (i + 3 < len && data[i + 3] != '=') ? base64DecodeChar(data[i + 3]) : 0;
+
+        if(c1 > 63 || c2 > 63 || c3 > 63 || c4 > 63) {
+            return ByteArray();
+        }
+
+        output.push_back((c1 << 2) | (c2 >> 4));
+
+        if(i + 2 < len && data[i + 2] != '=') {
+            output.push_back(((c2 & 0x0F) << 4) | (c3 >> 2));
+        }
+
+        if(i + 3 < len && data[i + 3] != '=') {
+            output.push_back(((c3 & 0x03) << 6) | c4);
+        }
+    }
+
+    return output;
+}
+/*!
     Returns a copy of this string with the lowest-numbered place-marker %1 replaced by string \a arg1.
 */
 TString TString::arg(const TString &arg1) const {
