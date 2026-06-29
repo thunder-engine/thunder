@@ -12,11 +12,18 @@
 
 #include "angelsystem.h"
 #include "components/angelbehaviour.h"
+#include "resources/angelscript.h"
 
 #include <editor/projectsettings.h>
+#include <editor/assetmanager.h>
 
 #define DATA    "Data"
 #define GET     "get_"
+
+namespace {
+    const char *g_persistentUUID("{00000000-0101-0000-0000-000000000000}");
+    const char *g_assetPath("/AngelBinary");
+}
 
 static QHash<uint32_t, QImage> itemIcons = {
     {AngelClassMapModel::AngelItem::Module,     QImage()},
@@ -98,6 +105,21 @@ void AngelBuilder::init() {
 
 bool AngelBuilder::buildProject() {
     if(m_outdated) {
+        AssetManager *assetMgr = AssetManager::instance();
+        ProjectSettings *project = ProjectSettings::instance();
+
+        if(m_sources.empty()) {
+            File::remove(project->importPath() + "/" + g_persistentUUID);
+            assetMgr->unregisterAsset(project->contentPath() + g_assetPath);
+            assetMgr->dumpBundle();
+
+            m_system->unloadAll(false);
+
+            buildSuccessful(true);
+            m_outdated = false;
+            return true;
+        }
+
         asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
 
         QFile base(":/Behaviour.txt");
@@ -117,13 +139,13 @@ bool AngelBuilder::buildProject() {
 
         int code = mod->Build();
         if(code >= 0) {
-            TString destination = ProjectSettings::instance()->importPath() + "/" + persistentUUID();
+            TString destination = project->importPath() + "/" + g_persistentUUID;
 
             File dst(destination.data());
             if(dst.open(File::Write)) {
-                AngelScript *serial = Engine::loadResource<AngelScript>(persistentUUID());
+                AngelScript *serial = Engine::loadResource<AngelScript>(g_persistentUUID);
                 if(serial == nullptr) {
-                    serial = Engine::objectCreate<AngelScript>(persistentUUID());
+                    serial = Engine::objectCreate<AngelScript>(g_persistentUUID);
                 }
 
                 serial->m_array.clear();
@@ -132,6 +154,12 @@ bool AngelBuilder::buildProject() {
 
                 dst.write(Bson::save( Engine::toVariant(serial) ));
                 dst.close();
+
+                ResourceSystem::ResourceInfo info;
+                info.uuid = g_persistentUUID;
+                info.type = "AngelScript";
+
+                assetMgr->registerAsset(project->contentPath() + g_assetPath, info);
             }
 
             m_classModel->update(m_scriptEngine);
@@ -139,18 +167,6 @@ bool AngelBuilder::buildProject() {
             // Do the hot reload
             if(m_system->init()) {
                 m_system->reload();
-
-                // We need to copy list
-                Object::ObjectList list = AngelSystem::invalidObjects();
-                for(auto it : list) {
-                    TString type(it->typeName());
-                    const MetaObject *meta = m_system->getMetaObject(type);
-                    if(meta) {
-                        Variant v = Engine::toVariant(it);
-                        delete it;
-                        Engine::toObject(v);
-                    }
-                }
             }
         }
 
@@ -168,14 +184,6 @@ QAbstractItemModel *AngelBuilder::classMap() const {
 
 AssetConverterSettings *AngelBuilder::createSettings() {
     return new AngelScriptImportSettings(this);
-}
-
-const TString AngelBuilder::persistentAsset() const {
-    return "AngelBinary";
-}
-
-const TString AngelBuilder::persistentUUID() const {
-    return "{00000000-0101-0000-0000-000000000000}";
 }
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
@@ -244,8 +252,6 @@ void AngelClassMapModel::update(asIScriptEngine *engine) {
 }
 
 void AngelClassMapModel::exportType(asITypeInfo *info, AngelItem type) {
-
-
     static QStringList dropList = {"opCast", "opImplCast", "set_"};
     static QHash<QString, QString> replaceMap = { {"opAssign",    "operator ="},
                                                   {"opAddAssign", "operator +="},

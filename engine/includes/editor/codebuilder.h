@@ -13,9 +13,6 @@ public:
 
     virtual bool buildProject() = 0;
 
-    virtual const TString persistentAsset() const;
-    virtual const TString persistentUUID() const;
-
     virtual StringList platforms() const;
 
     TString project() const;

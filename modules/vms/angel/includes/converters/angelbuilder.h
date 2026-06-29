@@ -6,8 +6,6 @@
 
 #include <codebuilder.h>
 
-#include "resources/angelscript.h"
-
 class asSMessageInfo;
 class asIScriptEngine;
 class asITypeInfo;
@@ -85,9 +83,6 @@ protected:
     QAbstractItemModel *classMap() const override;
 
     AssetConverterSettings *createSettings() override;
-
-    const TString persistentAsset() const override;
-    const TString persistentUUID() const override;
 
     TString templatePath() const override { return ":/templates/AngelBehaviour.as"; }
 

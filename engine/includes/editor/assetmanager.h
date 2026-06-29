@@ -72,6 +72,11 @@ public:
 
     void getChangedUUIDs();
 
+    void registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info);
+    TString unregisterAsset(const TString &source);
+
+    void dumpBundle();
+
 public slots:
     void reimport();
 
@@ -130,14 +135,9 @@ protected:
     bool m_force;
 
 protected:
-    void dumpBundle();
-
     void convert(AssetConverterSettings *settings);
 
     TString pathToLocal(const TString &source) const;
-
-    void registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info);
-    TString unregisterAsset(const TString &source);
 
 };
 

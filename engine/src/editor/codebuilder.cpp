@@ -139,14 +139,6 @@ void CodeBuilder::copyTempalte(const TString &src, const TString &dst) {
     }
 }
 
-const TString CodeBuilder::persistentAsset() const {
-    return "";
-}
-
-const TString CodeBuilder::persistentUUID() const {
-    return "";
-}
-
 StringList CodeBuilder::platforms() const {
     return StringList();
 }

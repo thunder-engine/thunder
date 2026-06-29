@@ -578,13 +578,6 @@ void AssetManager::onPerform() {
                         emit importFinished();
                     }
                 }
-
-                TString uuid(it->persistentUUID());
-                TString asset(it->persistentAsset());
-                if(!uuid.isEmpty() && !asset.isEmpty()) {
-                    m_indices[asset] = {gPersistent, uuid};
-                    m_paths[uuid] = asset;
-                }
             }
         }
 
@@ -598,7 +591,7 @@ void AssetManager::onPerform() {
 
         auto tmp = m_indices;
         for(auto &index : tmp) {
-            if(!File::exists(m_projectManager->importPath() + "/" + index.second.uuid) && index.second.type != gPersistent) {
+            if(index.second.uuid.isEmpty() || (!File::exists(m_projectManager->importPath() + "/" + index.second.uuid) && index.second.type != gPersistent)) {
                 m_indices.erase(m_indices.find(index.first));
             }
         }
@@ -707,14 +700,15 @@ void AssetManager::registerAsset(const TString &source, const ResourceSystem::Re
 }
 
 TString AssetManager::unregisterAsset(const TString &source) {
-    auto it = m_indices.find(source);
+    TString path = pathToLocal(source);
+    auto it = m_indices.find(path);
     if(it != m_indices.end()) {
-        auto path = m_paths.find(it->second.uuid);
-        if(path != m_paths.end() && !path->second.isEmpty()) {
+        auto pathIt = m_paths.find(it->second.uuid);
+        if(pathIt != m_paths.end() && !pathIt->second.isEmpty()) {
             TString uuid(it->second.uuid);
 
             m_indices.erase(it);
-            m_paths.erase(path);
+            m_paths.erase(pathIt);
 
             return uuid;
         }
