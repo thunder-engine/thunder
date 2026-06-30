@@ -65,7 +65,7 @@ public:
 
     static bool mkPath(const TString &path);
 
-    static StringList list(const TString &path, bool root = false);
+    static StringList list(const TString &path, bool recursive = true);
 
     static bool isFile(const TString &path);
 

@@ -22,19 +22,18 @@ public:
     }
 
 protected:
-    void listFilesRecursive(StringList &list, const std::filesystem::path &path) {
-        for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
-            list.push_back(TString(entry.path().string()).replace('\\', '/'));
-        }
-    }
-
-    StringList list(const char *path, bool root = false) override {
+    StringList list(const char *path, bool recursive) override {
         StringList result;
-        if(root) {
-            result.push_back(path);
-        }
 
-        listFilesRecursive(result, {path});
+        if(recursive) {
+            for(const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
+                result.push_back(TString(entry.path().string()).replace('\\', '/'));
+            }
+        } else {
+            for(const auto &entry : std::filesystem::directory_iterator(path)) {
+                result.push_back(TString(entry.path().string()).replace('\\', '/'));
+            }
+        }
 
         return result;
     }
