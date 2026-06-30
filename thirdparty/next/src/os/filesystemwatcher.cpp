@@ -8,23 +8,31 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+
 class FileSystemWatcherEvent : public Event {
 public:
-    FileSystemWatcherEvent(uint32_t type, const TString &path) :
-            Event(type),
-            m_path(path) {
+    enum {
+        Added,
+        Modified,
+        Removed
+    };
+
+    FileSystemWatcherEvent(uint32_t action, const TString &path) :
+        Event(FileSystemWatcher),
+        m_path(path),
+        m_action(action) {
 
     }
 
     TString m_path;
-
+    uint32_t m_action;
 };
 
 class FileSystemWatcherPrivate {
 public:
     FileSystemWatcherPrivate(FileSystemWatcher *ptr) :
-            running(false),
-            p_ptr(ptr) {
+        running(false),
+        p_ptr(ptr) {
 
     }
 
@@ -98,18 +106,26 @@ public:
                     paths.remove(dirPath);
                 }
                 TString path(Url(dirPath).absoluteDir());
-                ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::FileSystemWatcher, path));
+                ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(FileSystemWatcherEvent::Removed, path));
                 return;
             }
 
-            for(const auto &entry : File::list(dirPath, true)) {
+            StringList list = File::list(dirPath);
+            list.push_front(dirPath);
+            for(const auto &entry : list) {
                 try {
                     auto currentTime = getLastWriteTime(entry);
                     auto lastTime = lastWriteTime[entry];
 
                     if(currentTime > lastTime) {
-                        ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(Event::FileSystemWatcher, entry));
+                        uint32_t action = FileSystemWatcherEvent::Modified;
+
+                        auto it = lastWriteTime.find(entry);
+                        if(it == lastWriteTime.end()) {
+                            action = FileSystemWatcherEvent::Added;
+                        }
                         lastWriteTime[entry] = currentTime;
+                        ObjectSystem::notify(p_ptr, new FileSystemWatcherEvent(action, entry));
                     }
                 } catch (...) {}
             }

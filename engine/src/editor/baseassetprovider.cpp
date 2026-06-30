@@ -69,7 +69,11 @@ void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
 }
 
 void BaseAssetProvider::onDirectoryChanged(const TString &path) {
-    onDirectoryChangedForce(path, false, true);
+    for(auto &item : File::list(path, false)) {
+        if(File::isFile(item)) {
+            onFileChangedForce(item, false);
+        }
+    }
 
     AssetManager::instance()->directoryChanged(path);
 }
@@ -80,14 +84,7 @@ void BaseAssetProvider::onDirectoryChangedForce(const TString &path, bool force,
     }
 
     for(auto &item : File::list(path)) {
-        if(Url(item).suffix() == gMetaExt) {
-            continue;
-        }
-        if(File::isDir(item)) {
-            if(watch) {
-                m_dirWatcher->addPath(item);
-            }
-        } else {
+        if(File::isFile(item)) {
             onFileChangedForce(item, force);
         }
     }
