@@ -5,9 +5,11 @@
 
 #include <editor/assetmanager.h>
 #include <editor/asseteditor.h>
+#include <editor/assetconverter.h>
 #include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 
+#include <url.h>
 #include <aprocess.h>
 
 DocumentModel::DocumentModel() {
@@ -74,7 +76,7 @@ AssetEditor *DocumentModel::openFile(const TString &path) {
         }
     }
 
-    Url info(path.toStdString());
+    Url info(path);
 
     auto e = m_editors.find(info.suffix().toLower());
     if(e != m_editors.end()) {

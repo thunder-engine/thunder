@@ -6,7 +6,7 @@
 #include <components/camera.h>
 #include <components/actor.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 #include <editor/editorplatform.h>
 #include <gizmos.h>
 #include <input.h>

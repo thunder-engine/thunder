@@ -1,7 +1,7 @@
 #ifndef NODEGROUP_H
 #define NODEGROUP_H
 
-#include <editor/graph/graphnode.h>
+#include <graph/graphnode.h>
 
 class NODEGRAPH_EXPORT NodeGroup : public GraphNode {
     A_OBJECT(NodeGroup, GraphNode, Graph)

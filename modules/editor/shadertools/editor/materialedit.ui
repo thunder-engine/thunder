@@ -98,13 +98,13 @@
   <customwidget>
    <class>Viewport</class>
    <extends>QWidget</extends>
-   <header>editor/viewport/viewport.h</header>
+   <header>viewport/viewport.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>GraphView</class>
    <extends>QWidget</extends>
-   <header>editor/graph/graphview.h</header>
+   <header>graph/graphview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

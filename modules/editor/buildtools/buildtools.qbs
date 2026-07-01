@@ -15,7 +15,7 @@ Project {
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
@@ -31,6 +31,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "editor" }
         Depends { name: "minizip" }
         Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["gui"]; }

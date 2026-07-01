@@ -3,8 +3,8 @@
 
 #include <resources/material.h>
 
-#include <editor/graph/graphnode.h>
-#include <editor/graph/abstractnodegraph.h>
+#include <graph/graphnode.h>
+#include <graph/abstractnodegraph.h>
 
 class ShaderRootNode : public GraphNode {
     A_OBJECT(ShaderRootNode, GraphNode, Graph)

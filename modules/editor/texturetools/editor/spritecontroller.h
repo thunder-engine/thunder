@@ -1,7 +1,7 @@
 #ifndef SPRITECONTROLLER_H
 #define SPRITECONTROLLER_H
 
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 
 #include "../converter/textureconverter.h"
 

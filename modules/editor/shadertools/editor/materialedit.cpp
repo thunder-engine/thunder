@@ -17,7 +17,7 @@
 
 #include <resources/mesh.h>
 
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 #include <editor/undostack.h>
 
 #include <global.h>

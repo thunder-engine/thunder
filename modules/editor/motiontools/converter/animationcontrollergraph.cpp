@@ -5,6 +5,8 @@
 #include "statelink.h"
 #include "animationbuilder.h"
 
+#include <url.h>
+
 #include <resources/animationstatemachine.h>
 #include <pugixml.hpp>
 

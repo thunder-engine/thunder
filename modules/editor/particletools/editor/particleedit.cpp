@@ -7,7 +7,7 @@
 
 #include <global.h>
 
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 
 #include <components/world.h>
 #include <components/scene.h>

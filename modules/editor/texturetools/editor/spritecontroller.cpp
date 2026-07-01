@@ -4,8 +4,8 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include <editor/viewport/handles.h>
-#include <editor/viewport/handletools.h>
+#include <viewport/handles.h>
+#include <viewport/handletools.h>
 
 #include <input.h>
 

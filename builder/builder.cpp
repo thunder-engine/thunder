@@ -1,6 +1,8 @@
 #include "builder.h"
 
 #include <log.h>
+#include <url.h>
+#include <file.h>
 #include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>

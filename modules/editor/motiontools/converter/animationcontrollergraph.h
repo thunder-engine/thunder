@@ -1,7 +1,7 @@
 #ifndef ANIMATIONCONTROLLERGRAPH_H
 #define ANIMATIONCONTROLLERGRAPH_H
 
-#include <editor/graph/abstractnodegraph.h>
+#include <graph/abstractnodegraph.h>
 
 class AnimationControllerGraph : public AbstractNodeGraph {
     A_OBJECT(AnimationControllerGraph, AbstractNodeGraph, Editor)

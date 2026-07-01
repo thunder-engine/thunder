@@ -1,18 +1,18 @@
 #ifndef GRAPHVIEW_H
 #define GRAPHVIEW_H
 
-#include <editor/viewport/viewport.h>
-
-#include <editor/graph/abstractnodegraph.h>
+#include <viewport/viewport.h>
 #include <editor/asseteditor.h>
+
+#include <graph/abstractnodegraph.h>
 
 class QMenu;
 
+class AbstractNodeGraph;
 class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
-class Canvas;
 
 class NODEGRAPH_EXPORT GraphView : public Viewport {
     Q_OBJECT

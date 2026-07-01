@@ -17,6 +17,7 @@ Project {
         "../engine/includes",
         "../engine/includes/resources",
         "../engine/includes/components",
+        "../editor/includes",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -33,6 +34,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
 
         property bool isBundle: qbs.targetOS.contains("darwin") && bundle.isBundle

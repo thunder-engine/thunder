@@ -10,6 +10,8 @@
 #include <QMouseEvent>
 
 #include <log.h>
+#include <url.h>
+#include <file.h>
 #include <json.h>
 #include <bson.h>
 #include <filedialog.h>
@@ -147,12 +149,12 @@ SceneComposer::SceneComposer(QWidget *parent) :
         btn->setProperty("checkred", true);
         btn->setCheckable(true);
         btn->setAutoExclusive(true);
-        btn->setIcon(QIcon(it->icon().c_str()));
-        btn->setObjectName(it->name().c_str());
-        btn->setProperty(gComponent, it->component().c_str());
-        QString cut = it->shortcut().c_str();
+        btn->setIcon(QIcon(it->icon().data()));
+        btn->setObjectName(it->name().data());
+        btn->setProperty(gComponent, it->component().data());
+        QString cut = it->shortcut().data();
         btn->setShortcut(QKeySequence(cut));
-        btn->setToolTip(QString(it->toolTip().c_str()) + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
+        btn->setToolTip(QString(it->toolTip().data()) + (!cut.isEmpty() ? (" (" + cut + ")") : ""));
 
         if(it->component() != "Transform") {
             btn->hide();

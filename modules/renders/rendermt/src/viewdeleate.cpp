@@ -5,7 +5,7 @@
 #include <timer.h>
 
 #if defined(SHARED_DEFINE)
-#include "editor/viewport/viewport.h"
+#include "viewport/viewport.h"
 #endif
 
 ViewDelegate::ViewDelegate(RenderMtSystem *system, Viewport *viewport) :

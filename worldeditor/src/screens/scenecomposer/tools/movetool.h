@@ -14,11 +14,11 @@ public:
     QLineEdit *snapWidget() override;
 
 protected:
-    std::string icon() const override;
-    std::string name() const override;
+    TString icon() const override;
+    TString name() const override;
 
-    std::string toolTip() const override;
-    std::string shortcut() const override;
+    TString toolTip() const override;
+    TString shortcut() const override;
 
 private:
     std::list<Vector3> m_positions;

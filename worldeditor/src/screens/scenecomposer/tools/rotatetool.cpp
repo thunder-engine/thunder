@@ -9,7 +9,7 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include "../objectcontroller.h"
 
@@ -99,25 +99,25 @@ QLineEdit *RotateTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name().c_str());
+        m_snapEditor->setObjectName(name().data());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-std::string RotateTool::icon() const {
+TString RotateTool::icon() const {
     return ":/Images/editor/Rotate.png";
 }
 
-std::string RotateTool::name() const {
+TString RotateTool::name() const {
     return "Rotate";
 }
 
-std::string RotateTool::toolTip() const {
+TString RotateTool::toolTip() const {
     return QObject::tr("Select and Rotate objects").toStdString();
 }
 
-std::string RotateTool::shortcut() const {
+TString RotateTool::shortcut() const {
     return "Shift+R";
 }

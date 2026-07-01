@@ -1,7 +1,7 @@
 #ifndef ENTRYSTATE_H
 #define ENTRYSTATE_H
 
-#include <editor/graph/statenode.h>
+#include <graph/statenode.h>
 
 class EntryState : public StateNode {
     A_OBJECT(EntryState, StateNode, Graph)

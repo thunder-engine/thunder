@@ -8,7 +8,7 @@
 #include <pipelinecontext.h>
 #include <resources/rendertarget.h>
 
-#include <editor/graph/nodegroup.h>
+#include <graph/nodegroup.h>
 #include <editor/projectsettings.h>
 #include <editor/nativecodebuilder.h>
 
