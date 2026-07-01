@@ -245,6 +245,18 @@ void AngelSystem::reload() {
         for(auto it : m_objectList) {
             static_cast<AngelBehaviour *>(it)->awakeObject();
         }
+
+        // We need to copy list
+        Object::ObjectList list = AngelSystem::invalidObjects();
+        for(auto it : list) {
+            TString type(it->typeName());
+            const MetaObject *meta = getMetaObject(type);
+            if(meta) {
+                Variant v = Engine::toVariant(it);
+                delete it;
+                Engine::toObject(v);
+            }
+        }
     } else {
         aError() << __FUNCTION__ << "Filed to load a script";
     }

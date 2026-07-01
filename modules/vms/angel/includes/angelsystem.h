@@ -32,6 +32,7 @@ public:
     int threadPolicy() const override;
 
     void reload();
+    void unloadAll(bool reload);
 
     void registerClasses(asIScriptEngine *engine);
 
@@ -47,8 +48,6 @@ public:
 
 protected:
     bool isBehaviour(asITypeInfo *info) const;
-
-    void unloadAll(bool reload);
 
     void bindMetaType(asIScriptEngine *engine, const MetaType::Table &table);
     void bindMetaObject(asIScriptEngine *engine, const TString &name, const MetaObject *meta);

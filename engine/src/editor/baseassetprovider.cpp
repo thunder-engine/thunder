@@ -101,7 +101,7 @@ void BaseAssetProvider::removeResource(const TString &source) {
 
     Engine::unloadResource(source);
 
-    TString uuid = asset->unregisterAsset(source);
+    TString uuid = asset->unregisterAsset(src);
     if(!uuid.isEmpty()) {
         File::remove(project->importPath() + "/" + uuid);
         File::remove(project->iconPath() + "/" + uuid + ".png");
@@ -110,14 +110,11 @@ void BaseAssetProvider::removeResource(const TString &source) {
     File::remove(src + "." + gMetaExt);
     File::remove(src);
 
-    CodeBuilder *builder = nullptr;
     BuilderSettings *settings = dynamic_cast<BuilderSettings *>(asset->fetchSettings(src));
     if(settings) {
-        builder = settings->builder();
-    }
-    if(builder) {
-        builder->rescanSources(project->contentPath());
-        if(!builder->isEmpty()) {
+        CodeBuilder *builder = settings->builder();
+        if(builder) {
+            builder->rescanSources(project->contentPath());
             builder->makeOutdated();
             builder->buildProject();
         }
