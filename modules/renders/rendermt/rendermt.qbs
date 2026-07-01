@@ -10,9 +10,10 @@ Project {
 
     property stringList incPaths: [
         "includes",
+        "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
-        "../../../engine/includes",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
@@ -37,6 +38,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "glfw-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
