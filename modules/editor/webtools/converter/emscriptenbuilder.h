@@ -1,7 +1,6 @@
 #ifndef EMSCRIPTENBUILDER_H
 #define EMSCRIPTENBUILDER_H
 
-#include <editor/assetconverter.h>
 #include <editor/nativecodebuilder.h>
 
 class EmscriptenBuilder : public NativeCodeBuilder {

@@ -18,14 +18,14 @@ Project {
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/spirvcross/src",
         "../../../thirdparty/pugixml/src",
         "../../../thirdparty/glsl",
-        "../../../modules/editor/grapheditor",
+        "../../../modules/editor/grapheditor/editor",
         "../../../modules/uikit/includes"
     ]
 
@@ -41,6 +41,7 @@ Project {
         Depends { name: "spirvcross" }
         Depends { name: "graph-editor" }
         Depends { name: "uikit-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 

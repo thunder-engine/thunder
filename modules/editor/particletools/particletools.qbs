@@ -18,13 +18,13 @@ Project {
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/pugixml/src",
-        "../../../modules/editor/grapheditor",
-        "../../../modules/uikit/includes"
+        "../../../modules/editor/grapheditor/editor",
+        "../../../modules/uikit/includes",
     ]
 
     DynamicLibrary {
@@ -37,6 +37,7 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
         Depends { name: "uikit-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 

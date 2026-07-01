@@ -1,7 +1,7 @@
 #ifndef AUDIOCONVERTER_H
 #define AUDIOCONVERTER_H
 
-#include <assetconverter.h>
+#include <editor/assetconverter.h>
 
 #include <vorbis/vorbisenc.h>
 

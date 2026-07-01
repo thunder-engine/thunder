@@ -15,7 +15,7 @@ Project {
         "editor",
         "../../../engine/includes",
         "../../../engine/includes/resources",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
@@ -30,6 +30,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "editor" }
         Depends { name: "syntaxhighlighting" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false

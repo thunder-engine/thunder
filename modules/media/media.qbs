@@ -10,11 +10,10 @@ Project {
 
     property stringList incPaths: [
         "includes",
-        "../../common",
         "../../engine/includes",
         "../../engine/includes/resources",
         "../../engine/includes/components",
-        "../../engine/includes/editor",
+        "../../editor/includes",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",
@@ -40,6 +39,7 @@ Project {
         Depends { name: "ogg-editor" }
         Depends { name: "vorbis-editor" }
         Depends { name: "vorbisfile-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 

@@ -8,7 +8,7 @@
 #include <components/actor.h>
 #include <components/transform.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include "../objectcontroller.h"
 
@@ -70,25 +70,25 @@ QLineEdit *MoveTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name().c_str());
+        m_snapEditor->setObjectName(name().data());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-std::string MoveTool::icon() const {
+TString MoveTool::icon() const {
     return ":/Images/editor/Move.png";
 }
 
-std::string MoveTool::name() const {
+TString MoveTool::name() const {
     return "Move";
 }
 
-std::string MoveTool::toolTip() const {
+TString MoveTool::toolTip() const {
     return QObject::tr("Select and Move objects").toStdString();
 }
 
-std::string MoveTool::shortcut() const {
+TString MoveTool::shortcut() const {
     return "Shift+T";
 }

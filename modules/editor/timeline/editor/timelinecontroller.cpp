@@ -4,6 +4,7 @@
 #include <components/actor.h>
 
 #include <editor/assetmanager.h>
+#include <editor/assetconverter.h>
 
 bool compareTracks(const AnimationTrack &first, const AnimationTrack &second) {
     if(first.path() == second.path()) {

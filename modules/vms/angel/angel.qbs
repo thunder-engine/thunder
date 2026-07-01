@@ -13,14 +13,13 @@ Project {
 
     property stringList incPaths: [
         "includes",
-        "../../../common",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/angelscript/include",
         "../../../thirdparty/angelscript/modules"
     ]
@@ -40,6 +39,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "angelscript-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QAbstractItemModel>
 
-#include <codebuilder.h>
+#include <editor/codebuilder.h>
 
 class asSMessageInfo;
 class asIScriptEngine;

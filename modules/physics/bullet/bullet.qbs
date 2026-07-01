@@ -12,14 +12,13 @@ Project {
         "includes",
         "includes/resources",
         "includes/components",
-        "../../../common",
-        "../../../thirdparty/next/inc",
-        "../../../thirdparty/next/inc/math",
-        "../../../thirdparty/next/inc/core",
         "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
+        "../../../thirdparty/next/inc",
+        "../../../thirdparty/next/inc/math",
+        "../../../thirdparty/next/inc/core",
         "../../../thirdparty/bullet/src"
     ]
 
@@ -37,6 +36,7 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "editor" }
         Depends { name: "bullet3" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false

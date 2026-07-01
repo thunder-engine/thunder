@@ -1,8 +1,8 @@
 #ifndef TEXTURECONVERTER_H
 #define TEXTURECONVERTER_H
 
-#include <resources/texture.h>
-#include <resources/sprite.h>
+#include <texture.h>
+#include <sprite.h>
 
 #include <editor/assetconverter.h>
 

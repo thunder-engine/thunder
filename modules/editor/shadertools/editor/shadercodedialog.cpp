@@ -1,10 +1,9 @@
 #include "shadercodedialog.h"
 #include "ui_shadercodedialog.h"
 
-#include <pluginmanager.h>
-
 #include <QPlainTextEdit>
 
+#include <editor/pluginmanager.h>
 #include <editor/asseteditor.h>
 
 #include "../converter/shaderbuilder.h"

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <editor/graph/graphnode.h>
+#include <graph/graphnode.h>
 
 class NODEGRAPH_EXPORT GraphLink : public Object {
     A_OBJECT(GraphLink, Object, Graph)

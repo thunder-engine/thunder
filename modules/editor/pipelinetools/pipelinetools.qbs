@@ -17,10 +17,11 @@ Project {
         "../../../engine/includes",
         "../../../engine/includes/resources",
         "../../../engine/includes/components",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../modules/editor/grapheditor"
+        "../../../modules/editor/grapheditor/editor"
     ]
 
     DynamicLibrary {
@@ -32,6 +33,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "graph-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 

@@ -3,7 +3,7 @@
 
 #include <QOpenGLWindow>
 
-#include <editor/viewport/viewport.h>
+#include <viewport/viewport.h>
 
 class OpenGLWindow : public QOpenGLWindow {
     Q_OBJECT

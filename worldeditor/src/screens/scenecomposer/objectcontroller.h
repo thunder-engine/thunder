@@ -5,7 +5,7 @@
 
 #include <object.h>
 #include <editor/undostack.h>
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 
 #include "tools/selecttool.h"
 

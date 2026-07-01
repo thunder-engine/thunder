@@ -1,7 +1,7 @@
 #ifndef STATELINK_H
 #define STATELINK_H
 
-#include <editor/graph/abstractnodegraph.h>
+#include <graph/abstractnodegraph.h>
 #include <resources/animationstatemachine.h>
 
 #include "animationcontrollergraph.h"
