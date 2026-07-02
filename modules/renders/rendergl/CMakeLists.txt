@@ -14,6 +14,7 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
+    "../../../editor/includes"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
