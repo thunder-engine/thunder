@@ -34,7 +34,7 @@ public:
     UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
 signals:
-    void objectsSelected(Object::ObjectList);
+    void selectionChanged();
 
     void updated();
 

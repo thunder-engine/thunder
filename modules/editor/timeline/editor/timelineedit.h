@@ -38,7 +38,7 @@ public:
 private slots:
     void onUpdated() override;
 
-    void onObjectsSelected(const Object::ObjectList &objects) override;
+    void onSelectionChanged() override;
 
     void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override;
 

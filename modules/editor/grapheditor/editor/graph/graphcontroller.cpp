@@ -56,6 +56,9 @@ Object::ObjectList GraphController::selected() {
             result.push_back(m_graph->link(it));
         }
     }
+    if(result.empty()) {
+        return {m_graph};
+    }
     return result;
 }
 
@@ -78,7 +81,6 @@ void GraphController::selectNodes(const std::list<int32_t> &nodes) {
     m_selectedLinks.clear();
     composeLinks();
 
-    Object::ObjectList list;
     for(auto it : nodes) {
         GraphNode *node = m_graph->node(it);
         if(node) {
@@ -86,16 +88,10 @@ void GraphController::selectNodes(const std::list<int32_t> &nodes) {
             if(widget) {
                 widget->setSelected(true);
             }
-
-            list.push_back(node);
         }
     }
 
-    if(list.empty()) {
-        emit m_view->objectsSelected({m_graph});
-    } else {
-        emit m_view->objectsSelected(list);
-    }
+    emit m_view->selectionChanged();
 }
 
 void GraphController::selectLinks(const std::list<int32_t> &links) {
@@ -113,15 +109,7 @@ void GraphController::selectLinks(const std::list<int32_t> &links) {
     m_selectedLinks = links;
     composeLinks();
 
-    Object::ObjectList list;
-    for(auto it : links) {
-        GraphLink *graphLink = m_graph->link(it);
-        if(graphLink) {
-            list.push_back(graphLink);
-        }
-    }
-
-    emit m_view->objectsSelected(list);
+    emit m_view->selectionChanged();
 }
 
 void GraphController::composeLinks() {

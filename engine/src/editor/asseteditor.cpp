@@ -181,7 +181,7 @@ void AssetEditor::onSaveAs() {
     }
 }
 
-void AssetEditor::onObjectCreate(TString type) {
+void AssetEditor::onObjectCreate(const TString &type) {
     A_UNUSED(type);
 }
 
@@ -190,8 +190,8 @@ void AssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
     A_UNUSED(force);
 }
 
-void AssetEditor::onObjectsDeleted(Object::ObjectList objects) {
-    A_UNUSED(objects);
+void AssetEditor::onSelectionDeleted() {
+
 }
 
 void AssetEditor::onUpdated() {
@@ -257,4 +257,8 @@ VariantMap AssetEditor::saveState() {
 
 void AssetEditor::restoreState(const VariantMap &data) {
     A_UNUSED(data);
+}
+
+Object::ObjectList AssetEditor::selected() const {
+    return Object::ObjectList();
 }

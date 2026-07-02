@@ -313,10 +313,10 @@ void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
         m_toolButtons.front()->click();
     }
 
-    emit objectsSelected(objects);
+    emit selectionChanged();
 }
 
-void SceneComposer::onObjectCreate(TString type) {
+void SceneComposer::onObjectCreate(const TString &type) {
     Prefab *prefab = m_controller->isolatedPrefab();
     Object *parent = Engine::world()->activeScene();
     if(prefab) {
@@ -399,7 +399,7 @@ void SceneComposer::onSetActiveScene() {
 }
 
 void SceneComposer::onRepickSelected() {
-    emit objectsSelected(m_controller->selected());
+    emit selectionChanged();
 }
 
 void SceneComposer::backupScenes() {
@@ -422,7 +422,7 @@ void SceneComposer::backupScenes() {
 void SceneComposer::restoreBackupScenes() {
     if(!m_backupScenes.empty()) {
         emit objectsHierarchyChanged(nullptr);
-        emit objectsSelected({});
+        emit selectionChanged();
 
         Engine::world()->unloadAll();
         Engine::resourceSystem()->processEvents();
@@ -497,6 +497,10 @@ TString SceneComposer::assetType() const {
     return "Scene";
 }
 
+Object::ObjectList SceneComposer::selected() const {
+    return m_controller->selected();
+}
+
 void SceneComposer::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     m_undoRedo->push(new ParentObjects(objects, parent, position, m_controller));
 }
@@ -511,7 +515,7 @@ void SceneComposer::onScreenshot(QImage image) {
 void SceneComposer::onActivated() {
     emit objectsHierarchyChanged(m_controller->isolatedPrefab() ? m_isolationWorld : Engine::world());
 
-    emit objectsSelected(m_controller->selected());
+    emit selectionChanged();
 }
 
 void SceneComposer::onRemoveScene() {
@@ -624,15 +628,15 @@ void SceneComposer::onCreateActor() {
 }
 
 void SceneComposer::onActorDelete() {
-    onObjectsDeleted(m_controller->selected());
+    onSelectionDeleted();
 }
 
 void SceneComposer::onActorDuplicate() {
     m_undoRedo->push(new PasteObjects(m_controller->dumpSelected(), nullptr, m_controller, "Duplicate Selected"));
 }
 
-void SceneComposer::onObjectsDeleted(std::list<Object *> objects) {
-    m_controller->onRemoveActor(objects);
+void SceneComposer::onSelectionDeleted() {
+    m_controller->onRemoveActor(m_controller->selected());
 }
 
 void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {

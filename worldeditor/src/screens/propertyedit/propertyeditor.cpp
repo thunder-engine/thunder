@@ -85,6 +85,8 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     PropertyEdit::registerEditorFactory(createStandardEditor);
 
     connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
+
+    m_filter->setSourceModel(m_nextModel);
 }
 
 PropertyEditor::~PropertyEditor() {
@@ -104,12 +106,19 @@ void PropertyEditor::updateAndExpand() {
     ui->treeView->expandToDepth(-1);
 }
 
-void PropertyEditor::onObjectsSelected(const Object::ObjectList &objects) {
-    m_nextModel->clear();
-    m_filter->setSourceModel(m_nextModel);
-
+void PropertyEditor::onSelectionChanged() {
+    Object::ObjectList objects = m_editor->selected();
     if(!objects.empty()) {
-        m_item = objects.front();
+        onObjectSelected(objects.front());
+    } else {
+        m_nextModel->clear();
+    }
+}
+
+void PropertyEditor::onObjectSelected(Object *object) {
+    m_nextModel->clear();
+    if(object) {
+        m_item = object;
 
         ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
         if(browser) {

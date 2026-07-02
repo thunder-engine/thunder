@@ -52,8 +52,10 @@ public:
 
     UndoStack *undoRedo() const;
 
+    Object::ObjectList selected() const;
+
 signals:
-    void objectsSelected(const Object::ObjectList &);
+    void selectionChanged();
 
     void copied();
 

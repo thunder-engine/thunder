@@ -64,6 +64,8 @@ private:
     void timerEvent(QTimerEvent *) override;
     void changeEvent(QEvent *event) override;
 
+    Object::ObjectList selected() const override;
+
     Ui::ParticleEdit *ui;
 
     EffectBuilder *m_builder;

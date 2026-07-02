@@ -61,7 +61,7 @@ AnimationEdit::AnimationEdit() :
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(m_graph, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
 
-    connect(ui->schemeWidget, &GraphView::objectsSelected, this, &AnimationEdit::onObjectsSelected);
+    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &AnimationEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -157,7 +157,8 @@ QMenu *AnimationEdit::propertyContextMenu(Object *object, const TString &propert
     return nullptr;
 }
 
-void AnimationEdit::onObjectsSelected(const Object::ObjectList &objects) {
+void AnimationEdit::onSelectionChanged() {
+    Object::ObjectList objects = ui->schemeWidget->selected();
     if(!objects.empty()) {
         if(m_variableButton) {
             m_variableButton->setVisible(objects.front() == m_graph);
@@ -169,7 +170,7 @@ void AnimationEdit::onObjectsSelected(const Object::ObjectList &objects) {
         }
     }
 
-    emit objectsSelected(objects);
+    emit selectionChanged();
 }
 
 void AnimationEdit::onRenameVariable() {
@@ -214,4 +215,8 @@ void AnimationEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
+}
+
+Object::ObjectList AnimationEdit::selected() const {
+    return ui->schemeWidget->selected();
 }

@@ -53,7 +53,7 @@ public:
 public slots:
     void onUpdated() override;
 
-    void onObjectsSelected(const Object::ObjectList &objects) override;
+    void onSelectionChanged() override;
     void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override {}
 
     void onItemRename();
@@ -68,7 +68,7 @@ private slots:
     void onCreateComponent(const QString &uri);
     void onDragStarted(Qt::DropActions supportedActions);
 
-    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void onModelSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
     void on_treeView_clicked(const QModelIndex &index);
     void on_treeView_doubleClicked(const QModelIndex &index);

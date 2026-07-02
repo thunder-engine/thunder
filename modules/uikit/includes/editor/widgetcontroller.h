@@ -39,7 +39,7 @@ public:
 
 signals:
     void sceneUpdated();
-    void objectsSelected(Object::ObjectList objects);
+    void selectionChanged();
     void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
     void copied();
 

@@ -34,7 +34,7 @@ void WidgetController::setRoot(Widget *rootObject) {
 void WidgetController::clear(bool signal) {
     m_selected = 0;
     if(signal) {
-        emit objectsSelected(selected());
+        emit selectionChanged();
     }
 }
 
@@ -69,7 +69,7 @@ void WidgetController::selectActors(const std::list<uint32_t> &list) {
             break;
         }
     }
-    emit objectsSelected(selected());
+    emit selectionChanged();
 }
 
 void WidgetController::onSelectActor(uint32_t object) {

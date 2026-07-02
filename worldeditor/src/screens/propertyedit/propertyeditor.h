@@ -22,7 +22,7 @@ public:
 
     ~PropertyEditor();
 
-    void onObjectsSelected(const Object::ObjectList &objects) override;
+    void onSelectionChanged() override;
 
     QAbstractItemModel *model();
 
@@ -32,6 +32,9 @@ public:
 
     AssetEditor *currentEditor() const;
     void setCurrentEditor(AssetEditor *editor) override;
+
+public slots:
+    void onObjectSelected(Object *object);
 
 protected:
     void updatePersistent(const QModelIndex &index);

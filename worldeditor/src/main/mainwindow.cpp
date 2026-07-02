@@ -133,11 +133,9 @@ void MainWindow::addGadget(EditorGadget *gadget) {
     ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
 
     connect(m_documentModel, &DocumentModel::updated, gadget, &EditorGadget::onUpdated);
-    connect(m_documentModel, &DocumentModel::objectsSelected, gadget, &EditorGadget::onObjectsSelected);
+    connect(m_documentModel, &DocumentModel::selectionChanaged, gadget, &EditorGadget::onSelectionChanged);
 
-    connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::objectsSelected);
-
-    connect(m_contentBrowser, &ContentBrowser::assetsSelected, gadget, &EditorGadget::onObjectsSelected);
+    connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::selectionChanaged);
 }
 
 AssetEditor *MainWindow::openEditor(const TString &path) {
@@ -335,7 +333,9 @@ void MainWindow::onImportFinished() {
     m_editorSettingsBrowser->init();
     m_projectSettingsBrowser->init();
 
-    addGadget(new PropertyEditor(this));
+    PropertyEditor *property = new PropertyEditor(this);
+    connect(m_contentBrowser, &ContentBrowser::assetsSelected, property, &PropertyEditor::onObjectSelected);
+    addGadget(property);
     addGadget(new HierarchyBrowser(this));
 
     for(auto &it : PluginManager::instance()->extensions("gadget")) {

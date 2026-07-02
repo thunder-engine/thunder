@@ -37,7 +37,7 @@ private slots:
 
     void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
 
-    void onObjectsSelected(const Object::ObjectList &objects);
+    void onSelectionChanged();
 
     void onRenameVariable();
     void onDeleteVariable();
@@ -57,6 +57,8 @@ private:
     TString assetType() const override;
 
     void changeEvent(QEvent *event) override;
+
+    Object::ObjectList selected() const override;
 
 private:
     friend class AnimationProxy;

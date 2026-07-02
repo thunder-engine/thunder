@@ -49,6 +49,8 @@ public:
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
 
+    virtual Object::ObjectList selected() const;
+
     bool checkSave();
 
     UndoStack *undoRedo() const;
@@ -60,7 +62,7 @@ signals:
 
     void objectsHierarchyChanged(Object *root);
 
-    void objectsSelected(Object::ObjectList objects);
+    void selectionChanged();
 
     void objectsChanged(const Object::ObjectList &objects, TString property, const Variant &value);
 
@@ -83,9 +85,9 @@ public slots:
 
     virtual void onUpdated();
 
-    virtual void onObjectCreate(TString type);
+    virtual void onObjectCreate(const TString &type);
     virtual void onObjectsSelected(Object::ObjectList objects, bool force);
-    virtual void onObjectsDeleted(Object::ObjectList objects);
+    virtual void onSelectionDeleted();
 
     virtual void onDrop(QDropEvent *event);
     virtual void onDragEnter(QDragEnterEvent *event);

@@ -513,7 +513,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
         } else {
 
         }
-        emit assetsSelected({m_settings});
+        emit assetsSelected(m_settings);
     }
 }
 
