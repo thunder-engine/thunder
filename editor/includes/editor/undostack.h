@@ -1,0 +1,52 @@
+#ifndef UNDOMANAGER_H
+#define UNDOMANAGER_H
+
+#include <editor.h>
+
+class EDITOR_EXPORT UndoCommand {
+public:
+    explicit UndoCommand(const TString &text, UndoCommand *parent = nullptr);
+    virtual ~UndoCommand();
+
+    TString text() const;
+
+    virtual void undo();
+    virtual void redo();
+
+    size_t childCount() const;
+
+protected:
+    std::vector<UndoCommand *> m_childs;
+
+    TString m_text;
+
+};
+
+class EDITOR_EXPORT UndoStack {
+public:
+    UndoStack();
+    ~UndoStack();
+
+    void push(UndoCommand *cmd);
+
+    void undo();
+    void redo();
+
+    bool isClean() const;
+    void setClean();
+
+    TString undoText() const;
+    TString redoText() const;
+
+    void clear();
+
+protected:
+    std::vector<UndoCommand *> m_commands;
+
+    int m_currentIndex;
+
+    int m_cleanIndex;
+
+};
+
+#endif // UNDOMANAGER_H

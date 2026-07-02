@@ -3,7 +3,7 @@
 
 #include <editor/asseteditor.h>
 
-#include <resources/resource.h>
+#include <resource.h>
 
 class SpriteRender;
 class TextureConverter;

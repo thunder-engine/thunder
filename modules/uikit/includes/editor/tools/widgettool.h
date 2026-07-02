@@ -19,10 +19,10 @@ public:
     void setTranslation(const Vector3 &position, const Vector3 &scale);
 
 protected:
-    std::string icon() const override;
-    std::string name() const override;
+    TString icon() const override;
+    TString name() const override;
 
-    std::string component() const override;
+    TString component() const override;
 
     bool snapHelperX(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
     bool snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;

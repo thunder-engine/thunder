@@ -1,7 +1,7 @@
 #ifndef PHYSICMATERIALCONVERTER_H
 #define PHYSICMATERIALCONVERTER_H
 
-#include <assetconverter.h>
+#include <editor/assetconverter.h>
 
 class PhysicMaterialImportSettings : public AssetConverterSettings {
 public:

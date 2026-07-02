@@ -56,30 +56,10 @@ if(desktop)
         ${${PROJECT_NAME}_incPaths}
         "includes/editor"
         "../thirdparty/pugixml/src"
-        "../thirdparty/assimp/include"
-    )
-
-    file(GLOB MOC_HEADERS
-        "includes/editor/viewport/*.h"
-    )
-
-    file(GLOB EDITOR_SOURCES
-        "src/editor/*.cpp"
-    )
-
-    QT_WRAP_CPP(MOC_SRCS
-        "includes/editor/asseteditor.h"
-        "includes/editor/assetmanager.h"
-        "includes/editor/baseassetprovider.h"
-        "includes/editor/editorgadget.h"
-        "includes/editor/editorplatform.h"
-        "includes/editor/pluginmanager.h"
-        "includes/editor/propertyedit.h"
-        ${MOC_HEADERS}
     )
 
     # Dynamic Library
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles})
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         assimp
@@ -88,10 +68,6 @@ if(desktop)
         zlib-editor
         physfs-editor
         freetype-editor
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
-        Qt::Svg
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
@@ -112,16 +88,9 @@ if(desktop)
 
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
-    file(GLOB ${PROJECT_NAME}_editorFiles
-        "src/editor/*.cpp"
-        "src/editor/converters/*.cpp"
-        "src/editor/viewport/*.cpp"
-    )
-
     target_sources(${PROJECT_NAME}-editor PRIVATE
         "src/adapters/platformadaptor.cpp"
         "src/adapters/desktopadaptor.cpp"
-        ${${PROJECT_NAME}_editorFiles}
     )
 
     if(WIN32)
@@ -148,12 +117,6 @@ if(desktop)
 
     install(FILES ${${PROJECT_NAME}_headers}
         DESTINATION "${INC_PATH}/engine"
-    )
-
-    install(DIRECTORY includes/editor/
-        DESTINATION "${INC_PATH}/editor"
-        FILES_MATCHING PATTERN "*.h"
-        PATTERN "converters" EXCLUDE
     )
 
 endif()

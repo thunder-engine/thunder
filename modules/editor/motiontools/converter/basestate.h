@@ -1,7 +1,7 @@
 #ifndef BASESTATE_H
 #define BASESTATE_H
 
-#include <editor/graph/statenode.h>
+#include <graph/statenode.h>
 
 #include <editor/assetmanager.h>
 

@@ -2,6 +2,7 @@
 
 #include <system.h>
 #include <invalid.h>
+#include <editor/assetconverter.h>
 #include <editor/propertyedit.h>
 
 #include "custom/component/actions.h"

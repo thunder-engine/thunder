@@ -13,7 +13,10 @@ Project {
     ]
 
     property stringList incPaths: [
-        "../",
+        "includes",
+        "includes/components",
+        "includes/resources",
+        "includes/adapters",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -23,35 +26,22 @@ Project {
         "../thirdparty/glfw/include",
         "../thirdparty/glfm/include",
         "../thirdparty/freetype/include",
-        "../thirdparty/assimp/include",
         "../thirdparty/pugixml/src",
         "../thirdparty/metal/metal-cpp",
-        "../thirdparty/metal/metal-cpp-extensions",
-        "includes/components",
-        "includes/resources",
-        "includes/adapters",
-        "includes/editor",
-        "includes"
+        "../thirdparty/metal/metal-cpp-extensions"
     ]
 
     DynamicLibrary {
         name: "engine-editor"
         condition: engine.desktop
-        files: {
-            var sources = srcFiles
-            sources.push("src/editor/**/*.cpp")
-            sources.push("includes/editor/converters/*.h")
-            return sources
-        }
+        files: engine.srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
-        Depends { name: "assimp" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
         Depends { name: "zlib-editor" }
         Depends { name: "physfs-editor" }
         Depends { name: "freetype-editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg"]; }
         bundle.isBundle: false
 
         cpp.defines: {
@@ -70,6 +60,13 @@ Project {
         Properties {
             condition: engine.desktop
             files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: outer.concat([
+                "Shell32"
+            ])
         }
 
         Properties {
@@ -103,28 +100,6 @@ Project {
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"
-            qbs.installPrefix: engine.PREFIX
-        }
-
-        Group {
-            name: "Editor includes"
-            prefix: "includes/editor"
-            files: [
-                "**/*.h"
-            ]
-            qbs.install: true
-            qbs.installDir: engine.INC_PATH + "/editor"
-            qbs.installPrefix: engine.PREFIX
-        }
-
-        Group {
-            name: "Viewport Editor includes"
-            prefix: "includes/editor/viewport"
-            files: [
-                "**/*.h"
-            ]
-            qbs.install: true
-            qbs.installDir: engine.INC_PATH + "/editor/viewport"
             qbs.installPrefix: engine.PREFIX
         }
     }

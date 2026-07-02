@@ -80,10 +80,12 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes"
     "../engine/includes/resources"
     "../engine/includes/components"
+    "../editor/includes"
     "../thirdparty/next/inc"
     "../thirdparty/next/inc/math"
     "../thirdparty/next/inc/core"
     "../thirdparty/next/inc/anim"
+    "../thirdparty/next/inc/os"
 )
 
 # This path is only needed on the BSDs
@@ -155,6 +157,7 @@ if (desktop)
     target_link_libraries(${EDITOR_NAME} PRIVATE
         next-editor
         engine-editor
+        editor
         Qt::Core
         Qt::Gui
         Qt::Widgets

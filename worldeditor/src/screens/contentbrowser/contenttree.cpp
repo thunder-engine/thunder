@@ -9,6 +9,7 @@
 #include <file.h>
 
 #include <editor/assetmanager.h>
+#include <editor/assetconverter.h>
 #include <editor/projectsettings.h>
 
 ContentTree::ContentTree() :

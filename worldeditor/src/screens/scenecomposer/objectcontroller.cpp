@@ -16,14 +16,15 @@
 #include <resources/texture.h>
 #include <resources/rendertarget.h>
 
-#include <editor/viewport/viewport.h>
-#include <editor/viewport/handles.h>
+#include <viewport/viewport.h>
+#include <viewport/handles.h>
 
 #include <pipelinetask.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <input.h>
 #include <log.h>
+#include <url.h>
 
 #include "tools/selecttool.h"
 #include "tools/movetool.h"

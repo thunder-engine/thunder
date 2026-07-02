@@ -52,12 +52,11 @@
   <customwidget>
    <class>Viewport</class>
    <extends>QWidget</extends>
-   <header>editor/viewport/viewport.h</header>
+   <header>viewport/viewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../res/WorldEditor.qrc"/>
   <include location="../../../res/WorldEditor.qrc"/>
  </resources>
  <connections/>

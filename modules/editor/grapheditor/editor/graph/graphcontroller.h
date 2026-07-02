@@ -1,10 +1,10 @@
 #ifndef GRAPHCONTROLLER_H
 #define GRAPHCONTROLLER_H
 
-#include <editor/viewport/cameracontroller.h>
-
-#include <editor/graph/abstractnodegraph.h>
+#include <viewport/cameracontroller.h>
 #include <editor/undostack.h>
+
+#include <graph/abstractnodegraph.h>
 
 class NodeWidget;
 class PortWidget;

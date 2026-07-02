@@ -4,7 +4,7 @@
 #include "../shadergraph.h"
 
 #include <editor/assetconverter.h>
-#include <editor/graph/graphnode.h>
+#include <graph/graphnode.h>
 
 #include <components/actor.h>
 #include <components/frame.h>

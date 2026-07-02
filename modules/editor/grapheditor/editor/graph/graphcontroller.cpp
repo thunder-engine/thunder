@@ -14,7 +14,7 @@
 #include <components/camera.h>
 #include <components/recttransform.h>
 
-#include <editor/viewport/handletools.h>
+#include <viewport/handletools.h>
 
 #include <pugixml.hpp>
 #include <sstream>
