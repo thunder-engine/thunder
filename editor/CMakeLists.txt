@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(editor)
 
 set(${PROJECT_NAME}_incPaths
+    "../"
     "includes"
     "includes/editor"
     "../engine/includes"
@@ -63,34 +64,36 @@ if(desktop)
     )
 
     # Dynamic Library
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
+    add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
 
-    target_link_libraries(${PROJECT_NAME}-editor PRIVATE
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         assimp
+        next-editor
         engine-editor
+        zlib-editor
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Svg
     )
 
-    target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
         SHARED_DEFINE
         EDITOR_LIBRARY
     )
 
     if(UNIX AND NOT APPLE)
-        set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+        set_target_properties(${PROJECT_NAME} PROPERTIES
             INSTALL_RPATH "$ORIGIN/../lib"
         )
 
         # Solve build error using Clang on BSDs
         if(NOT LINUX)
-            target_compile_options(${PROJECT_NAME}-editor PRIVATE -fPIC)
+            target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
         endif()
     endif()
 
-    target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     file(GLOB ${PROJECT_NAME}_editorFiles
         "src/editor/*.cpp"
@@ -98,24 +101,22 @@ if(desktop)
         "src/viewport/*.cpp"
     )
 
-    target_sources(${PROJECT_NAME}-editor PRIVATE
-        "src/adapters/platformadaptor.cpp"
-        "src/adapters/desktopadaptor.cpp"
+    target_sources(${PROJECT_NAME} PRIVATE
         ${${PROJECT_NAME}_editorFiles}
     )
 
     if(WIN32)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE Shell32)
+        target_link_libraries(${PROJECT_NAME} PRIVATE Shell32)
     elseif(APPLE)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework IOKit")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework IOKit")
     endif()
 
-    set_target_properties(${PROJECT_NAME}-editor PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "../${LIB_PATH}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "../${LIB_PATH}"
     )
 
-    install(TARGETS ${PROJECT_NAME}-editor
+    install(TARGETS ${PROJECT_NAME}
         DESTINATION "${LIB_PATH}"
     )
 
@@ -126,17 +127,3 @@ if(desktop)
     )
 
 endif()
-
-# Solve build error using Clang on BSDs
-if(UNIX AND NOT APPLE AND NOT LINUX)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
-endif()
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../${STATIC_PATH}"
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "../${STATIC_PATH}"
-)
-
-install(TARGETS ${PROJECT_NAME}
-    DESTINATION "${STATIC_PATH}"
-)

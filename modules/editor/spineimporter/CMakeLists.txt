@@ -13,7 +13,7 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
-    "../../../engine/includes/editor"
+    "../../../editor/includes"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
@@ -39,6 +39,7 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
+        editor
         Qt::Core
         Qt::Gui
     )

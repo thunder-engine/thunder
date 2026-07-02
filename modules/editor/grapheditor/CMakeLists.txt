@@ -11,10 +11,11 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 
 set(${PROJECT_NAME}_incPaths
     "./"
+    "editor"
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
-    "../../../engine/includes/editor"
+    "../../../editor/includes"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
@@ -46,6 +47,7 @@ if (desktop)
         next-editor
         engine-editor
         uikit-editor
+        editor
         Qt::Core
         Qt::Gui
         Qt::Widgets

@@ -13,14 +13,14 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
-    "../../../engine/includes/editor"
+    "../../../editor/includes"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
     "../../../thirdparty/pugixml/src"
     "../../../thirdparty/spirvcross/src"
     "../../../thirdparty/glsl"
-    "../../../modules/editor/grapheditor"
+    "../../../modules/editor/grapheditor/editor"
     "../../../modules/uikit/includes"
 )
 
@@ -65,6 +65,7 @@ if (desktop)
         engine-editor
         graph-editor
         uikit-editor
+        editor
         glsl
         spirvcross
         Qt::Core
