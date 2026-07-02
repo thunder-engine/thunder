@@ -27,7 +27,7 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
-    "../../../engine/includes/editor"
+    "../../../editor/includes"
     "../../../thirdparty/angelscript/include"
     "../../../thirdparty/angelscript/modules"
 )
@@ -67,6 +67,7 @@ if(desktop)
         next-editor
         engine-editor
         angelscript-editor
+        editor
         Qt::Core
         Qt::Gui
     )

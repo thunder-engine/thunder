@@ -4,7 +4,7 @@
 #include <components/transform.h>
 #include <components/renderable.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include <input.h>
 
@@ -58,7 +58,7 @@ void SelectTool::beginControl() {
 }
 
 void SelectTool::endControl() {
-    UndoCommand *group = new UndoCommand(name().c_str());
+    UndoCommand *group = new UndoCommand(name());
 
     auto cache = m_propertiesCache.begin();
     if(cache != m_propertiesCache.end()) {
@@ -114,15 +114,15 @@ void SelectTool::cancelControl() {
     }
 }
 
-std::string SelectTool::icon() const {
+TString SelectTool::icon() const {
     return ":/Images/editor/Select.png";
 }
 
-std::string SelectTool::name() const {
+TString SelectTool::name() const {
     return "Select";
 }
 
-std::string SelectTool::component() const {
+TString SelectTool::component() const {
     return Transform::metaClass()->name();
 }
 

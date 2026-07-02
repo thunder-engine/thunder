@@ -93,6 +93,7 @@ Project {
     references: [
         "thirdparty/thirdparty.qbs",
         "engine/engine.qbs",
+        "editor/editor.qbs",
         "modules/modules.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",

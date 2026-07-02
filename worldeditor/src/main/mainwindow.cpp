@@ -9,6 +9,7 @@
 #include <json.h>
 #include <timer.h>
 #include <log.h>
+#include <url.h>
 #include <filedialog.h>
 
 #include <editor/asseteditor.h>

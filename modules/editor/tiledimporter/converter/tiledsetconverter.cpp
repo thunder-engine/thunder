@@ -2,15 +2,13 @@
 
 #include "tiledmapconverter.h"
 
-#include <cstring>
-
 #include <bson.h>
 #include <file.h>
 
 #include <tilemap.h>
 #include <sprite.h>
 
-#include <projectsettings.h>
+#include <editor/projectsettings.h>
 
 #define FORMAT_VERSION 1
 

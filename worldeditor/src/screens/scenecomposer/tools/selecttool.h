@@ -36,10 +36,10 @@ protected:
     void endControl() override;
     void cancelControl() override;
 
-    std::string icon() const override;
-    std::string name() const override;
+    TString icon() const override;
+    TString name() const override;
 
-    std::string component() const override;
+    TString component() const override;
 
     Vector3 objectPosition();
     AABBox objectBound();

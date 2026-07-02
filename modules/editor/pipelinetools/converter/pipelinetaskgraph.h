@@ -1,8 +1,8 @@
 #ifndef PIPELINETASKGRAPH_H
 #define PIPELINETASKGRAPH_H
 
-#include <editor/graph/graphnode.h>
-#include <editor/graph/abstractnodegraph.h>
+#include <graph/graphnode.h>
+#include <graph/abstractnodegraph.h>
 
 #include <pipelinetask.h>
 #include <metaobject.h>

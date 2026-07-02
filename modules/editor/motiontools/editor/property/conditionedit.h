@@ -1,7 +1,7 @@
 #ifndef CONDITIONEDIT_H
 #define CONDITIONEDIT_H
 
-#include "propertyedit.h"
+#include <editor/propertyedit.h>
 
 namespace Ui {
     class ConditionEdit;

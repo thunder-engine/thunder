@@ -2,6 +2,8 @@
 
 #include "config.h"
 
+#include <url.h>
+
 #include <engine.h>
 #include <systems/resourcesystem.h>
 

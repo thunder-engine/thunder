@@ -12,15 +12,16 @@ Project {
 
     property stringList incPaths: [
         "./",
+        "editor",
         "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
-        "../../../engine/includes/editor",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/pugixml/src",
-        "../../../modules/uikit/includes/",
+        "../../../modules/uikit/includes",
         "../../../modules/uikit/includes/components"
     ]
 
@@ -33,6 +34,7 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "uikit-editor" }
+        Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
@@ -59,7 +61,7 @@ Project {
                 "**/*.h"
             ]
             qbs.install: true
-            qbs.installDir: grapheditor.INC_PATH + "/editor/graph"
+            qbs.installDir: grapheditor.INC_PATH + "/graph"
             qbs.installPrefix: grapheditor.PREFIX
         }
 

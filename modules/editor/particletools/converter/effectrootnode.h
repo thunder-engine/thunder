@@ -4,7 +4,7 @@
 #include <resources/material.h>
 #include <resources/mesh.h>
 
-#include <editor/graph/graphnode.h>
+#include <graph/graphnode.h>
 #include <editor/projectsettings.h>
 
 #include "modules/effectmodule.h"

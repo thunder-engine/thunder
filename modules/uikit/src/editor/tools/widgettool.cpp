@@ -7,7 +7,7 @@
 #include <transform.h>
 #include <renderable.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include "components/widget.h"
 #include "components/recttransform.h"
@@ -53,7 +53,7 @@ void WidgetTool::beginControl() {
 }
 
 void WidgetTool::endControl() {
-    UndoCommand *group = new UndoCommand(name().c_str());
+    UndoCommand *group = new UndoCommand(name());
 
     auto cache = m_propertiesCache.begin();
 
@@ -232,15 +232,15 @@ void WidgetTool::drawAnchors(const Vector3 &center, const Vector3 &size, const V
     Gizmos::drawLines(points, indices, Vector4(1.0f));
 }
 
-std::string WidgetTool::icon() const {
+TString WidgetTool::icon() const {
     return ":/Images/editor/Transform.png";
 }
 
-std::string WidgetTool::name() const {
+TString WidgetTool::name() const {
     return "Widget Transform";
 }
 
-std::string WidgetTool::component() const {
+TString WidgetTool::component() const {
     return Widget::metaClass()->name();
 }
 

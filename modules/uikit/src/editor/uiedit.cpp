@@ -12,7 +12,7 @@
 
 #include <editor/undostack.h>
 #include <editor/assetconverter.h>
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 
 #include "components/canvas.h"
 #include "components/uiloader.h"

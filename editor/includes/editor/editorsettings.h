@@ -1,0 +1,50 @@
+#ifndef EDITORSETTINGS_H
+#define EDITORSETTINGS_H
+
+#include <QLocale>
+
+#include <editor.h>
+
+class QTranslator;
+
+class EDITOR_EXPORT EditorSettings : public Object {
+    A_OBJECT(EditorSettings, Object, Editor)
+
+    A_METHODS(
+        A_SIGNAL(EditorSettings::updated)
+    )
+
+public:
+    EditorSettings();
+
+    static EditorSettings *instance();
+
+    void registerValue(const TString &name, const Variant &value, const TString &annotation = TString());
+
+    Variant value(const TString &name);
+    void setValue(const TString &name, const Variant &value);
+
+    void setLanguage(const QLocale &language);
+
+    void setProperty(const char *name, const Variant &value) override;
+
+signals:
+    void updated();
+
+public slots:
+    void loadSettings();
+    void saveSettings();
+
+private:
+    TString propertyTag(const TString &hint, const TString &tag) const;
+
+private:
+    static EditorSettings *m_pInstance;
+
+    QLocale m_locale;
+
+    QTranslator *m_translator;
+
+};
+
+#endif // EDITORSETTINGS_H

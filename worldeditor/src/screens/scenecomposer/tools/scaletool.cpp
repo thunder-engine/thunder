@@ -9,7 +9,7 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include "../objectcontroller.h"
 
@@ -106,25 +106,25 @@ QLineEdit *ScaleTool::snapWidget() {
 
         m_snapEditor = new QLineEdit();
         m_snapEditor->setValidator(validator);
-        m_snapEditor->setObjectName(name().c_str());
+        m_snapEditor->setObjectName(name().data());
         m_snapEditor->setText(QString::number((double)m_snap, 'f', 2));
     }
 
     return m_snapEditor;
 }
 
-std::string ScaleTool::icon() const {
+TString ScaleTool::icon() const {
     return ":/Images/editor/Scale.png";
 }
 
-std::string ScaleTool::name() const {
+TString ScaleTool::name() const {
     return "Scale";
 }
 
-std::string ScaleTool::toolTip() const {
+TString ScaleTool::toolTip() const {
     return QObject::tr("Select and Scale objects").toStdString();
 }
 
-std::string ScaleTool::shortcut() const {
+TString ScaleTool::shortcut() const {
     return "Shift+S";
 }

@@ -4,7 +4,7 @@
 #include <components/transform.h>
 #include <components/spriterender.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 #include <input.h>
 
 #include "../objectcontroller.h"
@@ -90,14 +90,14 @@ void TransformTool::update(bool center, bool local, bool snap) {
     }
 }
 
-std::string TransformTool::icon() const {
+TString TransformTool::icon() const {
     return ":/Images/editor/Transform.png";
 }
 
-std::string TransformTool::name() const {
+TString TransformTool::name() const {
     return "Transform";
 }
 
-std::string TransformTool::component() const {
+TString TransformTool::component() const {
     return SpriteRender::metaClass()->name();
 }

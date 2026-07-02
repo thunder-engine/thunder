@@ -2,7 +2,7 @@
 #define WIDGETCONTROLLER_H
 
 #include <editor/undostack.h>
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/cameracontroller.h>
 
 #include "tools/widgettool.h"
 

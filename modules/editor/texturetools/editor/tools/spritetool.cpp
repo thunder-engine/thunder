@@ -10,7 +10,7 @@
 #include <camera.h>
 #include <spriterender.h>
 
-#include <editor/viewport/handles.h>
+#include <viewport/handles.h>
 
 #include "../spritecontroller.h"
 #include "../actions/selectsprite.h"
@@ -264,14 +264,14 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     Input::mouseSetCursor(shape);
 }
 
-std::string SpriteTool::icon() const {
+TString SpriteTool::icon() const {
     return ":/Images/editor/Transform.png";
 }
 
-std::string SpriteTool::name() const {
+TString SpriteTool::name() const {
     return "Resize";
 }
 
-std::string SpriteTool::component() const {
+TString SpriteTool::component() const {
     return SpriteRender::metaClass()->name();
 }

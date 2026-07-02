@@ -1,13 +1,11 @@
 #include "editor/vulkanwindow.h"
 
-#include <editor/viewport/viewport.h>
+#include <viewport/viewport.h>
 
 #include <vulkan/vulkan.h>
 
 #include <QVulkanInstance>
 #include <QPlatformSurfaceEvent>
-
-#include "wrappervk.h"
 
 ThunderVulkanWindow::ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *system) :
         m_viewport(viewport),

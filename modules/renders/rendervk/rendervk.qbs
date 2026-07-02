@@ -17,10 +17,10 @@ Project {
 
     property stringList incPaths: [
         "includes",
-        "../../../common",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
         "../../../engine/includes",
+        "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",

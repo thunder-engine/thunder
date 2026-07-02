@@ -1,11 +1,13 @@
 #include "objectselect.h"
 #include "ui_objectselect.h"
 
-#include "editor/projectsettings.h"
-
 #include <QAction>
 #include <QMimeData>
 #include <QDragEnterEvent>
+
+#include <url.h>
+#include <components/scene.h>
+#include <editor/projectsettings.h>
 
 #include "objectselectbrowser.h"
 

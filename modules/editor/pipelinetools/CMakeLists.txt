@@ -12,10 +12,11 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/resources"
     "../../../engine/includes/components"
+    "../../../editor/includes"
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
-    "../../../modules/editor/grapheditor"
+    "../../../modules/editor/grapheditor/editor"
 )
 
 # This path is only needed on the BSDs
@@ -63,6 +64,7 @@ if (desktop)
         next-editor
         engine-editor
         graph-editor
+        editor
         Qt::Core
         Qt::Gui
         Qt::Widgets

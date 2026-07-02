@@ -11,12 +11,12 @@ Project {
 
     property stringList incPaths: [
         "includes",
-        "../../thirdparty/next/inc",
-        "../../thirdparty/next/inc/math",
-        "../../thirdparty/next/inc/core",
         "../../engine/includes",
         "../../engine/includes/resources",
-        "../../engine/includes/editor"
+        "../../editor/includes",
+        "../../thirdparty/next/inc",
+        "../../thirdparty/next/inc/math",
+        "../../thirdparty/next/inc/core"
     ]
 
     DynamicLibrary {

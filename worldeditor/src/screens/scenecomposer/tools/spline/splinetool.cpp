@@ -4,8 +4,8 @@
 #include <components/transform.h>
 #include <components/camera.h>
 
-#include <editor/viewport/handles.h>
-#include <editor/viewport/handletools.h>
+#include <viewport/handles.h>
+#include <viewport/handletools.h>
 
 #include <gizmos.h>
 #include <input.h>
@@ -185,15 +185,15 @@ void SplineTool::cancelControl() {
     }
 }
 
-std::string SplineTool::icon() const {
+TString SplineTool::icon() const {
     return ":/Images/editor/Spline.png";
 }
 
-std::string SplineTool::name() const {
+TString SplineTool::name() const {
     return "Spline Tool";
 }
 
-std::string SplineTool::component() const {
+TString SplineTool::component() const {
     return Spline::metaClass()->name();
 }
 

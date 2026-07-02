@@ -2,6 +2,8 @@
 #include "ui_timelineedit.h"
 
 #include <json.h>
+#include <file.h>
+#include <url.h>
 
 #include <resources/animationstatemachine.h>
 #include <resources/animationclip.h>

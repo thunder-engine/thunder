@@ -43,7 +43,7 @@
   <customwidget>
    <class>GraphView</class>
    <extends>QWidget</extends>
-   <header>editor/graph/graphview.h</header>
+   <header>graph/graphview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

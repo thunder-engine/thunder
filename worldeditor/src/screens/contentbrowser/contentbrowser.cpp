@@ -16,6 +16,8 @@
 #include "config.h"
 
 #include <global.h>
+#include <url.h>
+#include <file.h>
 #include <filedialog.h>
 
 #include "contenttree.h"

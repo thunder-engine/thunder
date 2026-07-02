@@ -19,7 +19,7 @@ set(${PROJECT_NAME}_incPaths
     "../../../engine/includes"
     "../../../engine/includes/components"
     "../../../engine/includes/resources"
-    "../../../engine/includes/editor"
+    "../../../editor/includes"
     "../../../thirdparty/bullet/src"
 )
 
@@ -57,6 +57,7 @@ if(desktop)
         next-editor
         engine-editor
         bullet3
+        editor
         Qt::Core
         Qt::Gui
     )

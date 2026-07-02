@@ -3,10 +3,10 @@
 
 #include <editor/assetconverter.h>
 
-#include <resources/tileset.h>
-#include <resources/tilemap.h>
-
 #include <pugixml.hpp>
+
+class TileSet;
+class TileMap;
 
 class TiledMapConverterSettings : public AssetConverterSettings {
 public:
