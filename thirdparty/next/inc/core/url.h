@@ -31,10 +31,13 @@ class NEXT_LIBRARY_EXPORT Url {
     A_METHODS(
         A_METHOD(TString, Url::scheme),
         A_METHOD(TString, Url::host),
-        A_METHOD(TString, Url::path),
+        A_METHOD(TString, Url::filePath),
+        A_METHOD(TString, Url::relativeFilePath),
         A_METHOD(TString, Url::query),
         A_METHOD(TString, Url::fragment),
         A_METHOD(TString, Url::dir),
+        A_METHOD(TString, Url::absoluteDir),
+        A_METHOD(TString, Url::relativeDir),
         A_METHOD(TString, Url::name),
         A_METHOD(TString, Url::baseName),
         A_METHOD(TString, Url::suffix),
@@ -51,11 +54,14 @@ public:
 
     TString scheme() const;
     TString host() const;
-    TString path() const;
+    TString filePath() const;
+    TString absoluteFilePath() const;
+    TString relativeFilePath(const TString &base) const;
     TString query() const;
     TString fragment() const;
     TString dir() const;
     TString absoluteDir() const;
+    TString relativeDir(const TString &base) const;
     TString name() const;
     TString baseName() const;
     TString suffix() const;

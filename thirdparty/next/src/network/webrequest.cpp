@@ -99,7 +99,7 @@ void WebRequest::send() {
     Url url(m_url);
     TString host(url.host());
     TString scheme(url.scheme());
-    TString path(url.path());
+    TString path(url.filePath());
     TString headerData(m_operation + " " + (path.isEmpty() ? "/" : path) + " HTTP/1.1\r\n");
 
     headerData += TString("Host: ") + host + "\r\n";

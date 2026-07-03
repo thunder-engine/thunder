@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QTimer>
-#include <QImage>
 
 #include <set>
 
@@ -38,34 +37,26 @@ public:
     bool import(const TString &source, const TString &target);
 
     void registerConverter(AssetConverter *converter);
+    AssetConverter *getConverter(const TString &source);
+
+    std::list<AssetConverter *> converters() const;
+    std::list<CodeBuilder *> builders() const;
 
     static void findFreeName(TString &name, const TString &path, const TString &suff = TString());
 
     TString uuidToPath(const TString &uuid) const;
     TString pathToUuid(const TString &path) const;
-    bool isPersistent(const TString &path) const;
-
-    QImage icon(const TString &source);
+    TString pathToLocal(const TString &source) const;
 
     Actor *createActor(const TString &source);
 
-    std::set<TString> labels() const;
+    StringList labels() const;
 
     AssetConverterSettings *fetchSettings(const TString &source);
-
-    AssetConverter *getConverter(const TString &source);
-
-    StringList templates() const;
-
-    std::list<CodeBuilder *> builders() const;
 
     bool pushToImport(AssetConverterSettings *settings);
 
     void createFromTemplate(const TString &destination);
-
-    void fixUUIDs();
-
-    void getChangedUUIDs();
 
     void registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info);
     TString unregisterAsset(const TString &source);
@@ -130,8 +121,9 @@ protected:
 protected:
     void convert(AssetConverterSettings *settings);
 
-    TString pathToLocal(const TString &source) const;
+    void getChangedUUIDs();
 
+    void fixUUIDs();
 };
 
 #endif // ASSETMANAGER_H

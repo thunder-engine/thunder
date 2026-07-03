@@ -13,6 +13,7 @@ class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
+class Scene;
 
 class NODEGRAPH_EXPORT GraphView : public Viewport {
     Q_OBJECT

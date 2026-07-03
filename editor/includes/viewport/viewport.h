@@ -12,6 +12,7 @@ class PipelineTask;
 
 class Texture;
 class Camera;
+class World;
 
 class Outline;
 class GizmoRender;

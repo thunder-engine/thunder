@@ -1,6 +1,5 @@
 #include "documentmodel.h"
 
-#include <QDir>
 #include <QEvent>
 
 #include <editor/assetmanager.h>
@@ -60,8 +59,7 @@ void DocumentModel::openFile(AssetEditor *editor) {
 }
 
 AssetEditor *DocumentModel::openFile(const TString &path) {
-    QDir dir(ProjectSettings::instance()->contentPath().data());
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(dir.absoluteFilePath(path.data()).toStdString());
+    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
 
     AssetEditor *editor = nullptr;
 

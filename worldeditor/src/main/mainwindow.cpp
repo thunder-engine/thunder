@@ -312,7 +312,7 @@ void MainWindow::onOpenProject(const TString &path) {
         QString name = it.data();
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
-        action->setProperty(qPrintable(gPlatforms), it.data());
+        action->setProperty(gPlatforms, it.data());
         connect(action, &QAction::triggered, this, &MainWindow::onBuildProject);
     }
 
@@ -524,7 +524,7 @@ void MainWindow::resetGeometry() {
 void MainWindow::onBuildProject() {
     QAction *action = dynamic_cast<QAction *>(sender());
     if(action) {
-        build(action->property(qPrintable(gPlatforms)).toString());
+        build(action->property(gPlatforms).toString());
     }
 }
 

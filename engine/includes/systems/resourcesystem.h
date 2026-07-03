@@ -4,8 +4,6 @@
 #include "system.h"
 #include "resource.h"
 
-#include <set>
-
 class ENGINE_EXPORT ResourceSystem : public System {
 public:
     struct ResourceInfo {

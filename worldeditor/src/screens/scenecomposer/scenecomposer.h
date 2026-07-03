@@ -5,9 +5,10 @@
 
 #include <QMenu>
 
-class Prefab;
 class ObjectController;
 class WorldObserver;
+class Prefab;
+class Scene;
 
 class QToolButton;
 class QPushButton;

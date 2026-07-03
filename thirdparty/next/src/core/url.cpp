@@ -66,9 +66,41 @@ TString Url::host() const {
 /*!
     Returns the path of the URI.
 */
-TString Url::path() const {
+TString Url::filePath() const {
     PROFILE_FUNCTION();
     return TString(m_result[5]);
+}
+/*!
+    Returns the absolute file path of the URI.
+*/
+TString Url::absoluteFilePath() const {
+    PROFILE_FUNCTION();
+    TString preffix(scheme());
+    if(!preffix.isEmpty()) {
+        preffix += ":";
+    }
+    return preffix + host() + filePath();
+}
+/*!
+    Returns a relative file path of URI relative to the given \a base directory.
+    If paths have no common prefix, returns the full absolute path including file name.
+    Handles parent directory transitions (../) when paths share a common prefix.
+*/
+TString Url::relativeFilePath(const TString &base) const {
+    PROFILE_FUNCTION();
+
+    TString dirPath = relativeDir(base);
+    TString fileName = name();
+
+    if(dirPath.isEmpty() || dirPath == ".") {
+        return fileName;
+    }
+
+    if(dirPath.back() == '/') {
+        return dirPath + fileName;
+    }
+
+    return dirPath + "/" + fileName;
 }
 /*!
     Returns the query string of the URI if there's a query string, or an empty result if not.
@@ -89,7 +121,7 @@ TString Url::fragment() const {
 */
 TString Url::dir() const {
     PROFILE_FUNCTION();
-    TString str = path();
+    TString str = filePath();
     size_t found = str.lastIndexOf('/');
     if(found != -1) {
         return str.left(found);
@@ -108,11 +140,71 @@ TString Url::absoluteDir() const {
     return preffix + host() + dir();
 }
 /*!
+    Returns a relative directory of URI path relative to the given \a base directory.
+    If paths have no common prefix, returns the full absolute path.
+    Handles parent directory transitions (../) when paths share a common prefix.
+*/
+TString Url::relativeDir(const TString &base) const {
+    PROFILE_FUNCTION();
+
+    TString fullPath = absoluteDir();
+    TString basePath = base;
+
+    basePath.replace('\\', '/');
+    fullPath.replace('\\', '/');
+
+    if(!basePath.isEmpty() && basePath.back() == '/') {
+        basePath = basePath.left(basePath.size() - 1);
+    }
+    if(!fullPath.isEmpty() && fullPath.back() == '/') {
+        fullPath = fullPath.left(fullPath.size() - 1);
+    }
+
+    if(basePath.isEmpty()) {
+        return fullPath;
+    }
+
+    StringList baseParts = basePath.split('/');
+    StringList fullParts = fullPath.split('/');
+
+    std::vector<TString> baseVec(baseParts.begin(), baseParts.end());
+    std::vector<TString> fullVec(fullParts.begin(), fullParts.end());
+
+    size_t common = 0;
+    size_t minSize = std::min(baseVec.size(), fullVec.size());
+    while(common < minSize && baseVec[common] == fullVec[common]) {
+        common++;
+    }
+
+    if(common == 0) {
+        return fullPath;
+    }
+
+    TString result;
+
+    for(size_t i = common; i < baseVec.size(); i++) {
+        result += "../";
+    }
+
+    for(size_t i = common; i < fullVec.size(); i++) {
+        result += fullVec[i];
+        if(i < fullVec.size() - 1) {
+            result += "/";
+        }
+    }
+
+    if(result.isEmpty()) {
+        result = ".";
+    }
+
+    return result;
+}
+/*!
     Returns a file name in the URI path.
 */
 TString Url::name() const {
     PROFILE_FUNCTION();
-    TString str = path();
+    TString str = filePath();
     size_t found = str.lastIndexOf('/');
     if(found != -1) {
         return str.right(found + 1);
@@ -159,6 +251,6 @@ TString Url::completeSuffix() const {
     Returns true if provided path is absolute.
 */
 bool Url::isAbsolute() const {
-    char c = path().front();
+    char c = filePath().front();
     return c == '/' || c == '\\';
 }

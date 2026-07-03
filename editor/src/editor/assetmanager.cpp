@@ -1,6 +1,5 @@
 #include "assetmanager.h"
 
-#include <QDir>
 #include <QMessageBox>
 
 #include <fstream>
@@ -173,37 +172,18 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     return true;
 }
 
-void AssetManager::createFromTemplate(const TString &destination) {
-    AssetConverter *converter = getConverter(destination);
-    if(converter) {
-        converter->createFromTemplate(destination);
-    } else {
-        TString suffix = Url(destination).suffix().toLower();
-        for(auto builder : m_builders) {
-            for(auto &it : builder->suffixes()) {
-                if(it == suffix) {
-                    builder->createFromTemplate(destination);
-                    return;
-                }
-            }
-        }
-    }
-}
-
 TString AssetManager::pathToLocal(const TString &source) const {
-    static QDir dir(ProjectSettings::instance()->contentPath().data());
-    TString path(dir.relativeFilePath(source.data()).toStdString());
-    if(!source.contains(dir.absolutePath().toStdString())) {
-        Url info(source);
-        path = info.name();
+    Url info(source);
+    if(!source.contains(ProjectSettings::instance()->contentPath())) {
+        TString path = info.name();
         TString sub;
         if(info.suffix().isEmpty()) {
             path = Url(info.absoluteDir()).name();
             sub = TString("/") + info.name();
         }
-        path = TString(".embedded/") + path + sub;
+        return TString(".embedded/") + path + sub;
     }
-    return path;
+    return TString(info.relativeFilePath(ProjectSettings::instance()->contentPath()));
 }
 
 void AssetManager::getChangedUUIDs() {
@@ -214,18 +194,15 @@ void AssetManager::getChangedUUIDs() {
     }
 
     StringList targetStr = TString(SDK_VERSION).split('.');
-    uint32_t targetMajor = targetStr.front().toInt();
-    uint32_t targetMinor = targetStr.back().toInt();
-    uint32_t target = VERSION_CHECK(targetMajor, targetMinor);
+    uint32_t target = VERSION_CHECK(targetStr.front().toInt(), targetStr.back().toInt());
 
     if(current < target) {
         File file(ProjectSettings::instance()->resourcePath() + "/uuid.txt");
         if(file.open(File::Read | File::Text)) {
-            VariantMap pairs = Json::load(file.readAll()).toMap();
-            file.close();
-            for(auto &it : pairs) {
+            for(auto &it : Json::load(file.readAll()).toMap()) {
                 m_changedUUIDs.push_back(std::make_pair(it.first, it.second.toString()));
             }
+            file.close();
         }
     }
 }
@@ -331,8 +308,6 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
         if(converter) {
-            Object *parent = actor->parent();
-
             AssetConverterSettings *settings = converter->createSettings();
 
             settings->setSource(path);
@@ -345,6 +320,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
             dumpBundle();
 
+            Object *parent = actor->parent();
             Actor *clone = static_cast<Actor *>(actor->clone(parent));
 
             emit prefabCreated(id.toLong(), clone->uuid());
@@ -369,8 +345,7 @@ bool AssetManager::import(const TString &source, const TString &target) {
 }
 
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
-    QDir dir(ProjectSettings::instance()->contentPath().data());
-    TString path((dir.relativeFilePath(source.data())).toStdString());
+    TString path(pathToLocal(source));
 
     auto it = m_converterSettings.find(path);
     if(it != m_converterSettings.end()) {
@@ -472,24 +447,6 @@ TString AssetManager::pathToUuid(const TString &path) const {
     return TString();
 }
 
-bool AssetManager::isPersistent(const TString &path) const {
-    auto it = m_indices.find(path);
-    if(it != m_indices.end()) {
-        return (it->second.type == gPersistent);
-    }
-
-    return false;
-}
-
-QImage AssetManager::icon(const TString &source) {
-    AssetConverterSettings *settings = fetchSettings(source);
-    if(settings) {
-        return settings->icon(pathToUuid(pathToLocal(source)));
-    }
-
-    return QImage();
-}
-
 Actor *AssetManager::createActor(const TString &source) {
     if(!source.isEmpty()) {
         TString uuid;
@@ -512,8 +469,8 @@ Actor *AssetManager::createActor(const TString &source) {
     return nullptr;
 }
 
-std::set<TString> AssetManager::labels() const {
-    return m_labels;
+StringList AssetManager::labels() const {
+    return StringList(m_labels.begin(), m_labels.end());
 }
 
 void AssetManager::dumpBundle() {
@@ -619,16 +576,16 @@ AssetConverter *AssetManager::getConverter(const TString &source) {
 }
 
 void AssetManager::convert(AssetConverterSettings *settings) {
-    AssetConverter *converter = getConverter(settings->source());
+    TString source(settings->source());
+    AssetConverter *converter = getConverter(source);
     if(converter) {
         settings->setSubItemsDirty();
         uint8_t result = converter->convertFile(settings);
         switch(result) {
             case AssetConverter::Success: {
-                aInfo() << "Converting:" << settings->source();
+                aInfo() << "Converting:" << source;
                 settings->setCurrentVersion(settings->version());
 
-                TString source = settings->source();
                 registerAsset(source, settings->info());
 
                 for(const TString &it : settings->subKeys()) {
@@ -661,28 +618,18 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                 builder->makeOutdated();
             }
         } else {
-            aDebug() << "No Converterter for" << settings->source();
+            aDebug() << "No Converterter for" << source;
         }
     }
 }
 
-StringList AssetManager::templates() const {
-    std::set<TString> paths;
-    for(auto it : m_builders) {
-        TString path(it->templatePath());
-        if(!path.isEmpty()) {
-            paths.insert(path);
-        }
-    }
-
+std::list<AssetConverter *> AssetManager::converters() const {
+    std::set<AssetConverter *> result;
     for(auto &it : m_converters) {
-        TString path(it.second->templatePath());
-        if(!path.isEmpty()) {
-            paths.insert(path);
-        }
+        result.insert(it.second);
     }
 
-    return StringList(paths.begin(), paths.end());
+    return std::list<AssetConverter *>(result.begin(), result.end());
 }
 
 std::list<CodeBuilder *> AssetManager::builders() const {

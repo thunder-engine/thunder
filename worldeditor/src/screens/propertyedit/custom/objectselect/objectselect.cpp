@@ -8,6 +8,7 @@
 #include <url.h>
 #include <components/scene.h>
 #include <editor/projectsettings.h>
+#include <editor/assetconverter.h>
 
 #include "objectselectbrowser.h"
 
@@ -112,7 +113,10 @@ void ObjectSelect::setTemplateData(const Variant &data) {
     if(!uuid.isEmpty()) {
         TString path = AssetManager::instance()->uuidToPath(uuid);
         name = Url(path).baseName().data();
-        m_icon->setIcon(QPixmap::fromImage(AssetManager::instance()->icon(path)));
+        AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+        if(settings) {
+            m_icon->setIcon(QPixmap::fromImage(settings->icon(uuid)));
+        }
     } else {
         m_icon->setIcon(QIcon());
     }

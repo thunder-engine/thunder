@@ -12,6 +12,8 @@ class SpriteController;
 
 class SpriteProxy;
 
+class Scene;
+
 namespace Ui {
     class SpriteEdit;
 }

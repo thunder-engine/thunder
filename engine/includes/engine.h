@@ -1,14 +1,12 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <astring.h>
 #include <objectsystem.h>
 
 class Module;
 class System;
 
 class Actor;
-class Scene;
 class ResourceSystem;
 class RenderSystem;
 class Resource;

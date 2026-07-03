@@ -209,7 +209,7 @@ ShaderGraph::ShaderGraph() :
             Url url(it.second);
 
             if(url.host() == "Shader") {
-                TString path = url.path();
+                TString path = url.filePath();
                 if(path.front() == '/') {
                     path.removeFirst();
                 }
