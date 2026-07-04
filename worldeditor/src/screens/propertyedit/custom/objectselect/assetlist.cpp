@@ -9,6 +9,7 @@
 
 #include <editor/assetmanager.h>
 #include <editor/assetconverter.h>
+#include <editor/projectsettings.h>
 
 namespace {
     const char *gUuid("uuid");
@@ -76,11 +77,16 @@ void AssetList::onRendered(const TString &uuid) {
     TString path = mgr->uuidToPath(uuid);
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
+        if(path.front() != '.') {
+            path = ProjectSettings::instance()->contentPath() + "/" + path;
+        }
         item->setProperty(gType, mgr->assetTypeName(path).data());
         AssetConverterSettings *settings = mgr->fetchSettings(path);
-        QImage img = settings->icon(uuid);
-        if(!img.isNull()) {
-            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
+        if(settings) {
+            QImage img = settings->icon(uuid);
+            if(!img.isNull()) {
+                item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
+            }
         }
 
         emit layoutAboutToBeChanged();
@@ -101,12 +107,17 @@ void AssetList::update() {
         item->setProperty(gType, it.second.type.data());
         item->setProperty(gName, Url(path).baseName().data());
 
-        AssetConverterSettings *settings = mgr->fetchSettings(path);
-        QImage img = settings->icon(it.second.uuid);
-        if(!img.isNull()) {
-            img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
+        if(path.front() != '.') {
+            path = ProjectSettings::instance()->contentPath() + "/" + path;
         }
-        item->setProperty(gIcon, img);
+        AssetConverterSettings *settings = mgr->fetchSettings(path);
+        if(settings) {
+            QImage img = settings->icon(it.second.uuid);
+            if(!img.isNull()) {
+                img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
+            }
+            item->setProperty(gIcon, img);
+        }
         addItem(item);
     }
 

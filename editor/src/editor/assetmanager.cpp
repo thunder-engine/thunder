@@ -43,8 +43,6 @@ namespace {
     const char *gCompany(".company");
     const char *gProjectName(".project");
     const char *gProjectVersion(".version");
-
-    const char *gPersistent("Persistent");
 };
 
 AssetManager::AssetManager() :
@@ -549,7 +547,7 @@ void AssetManager::onPerform() {
 
         auto tmp = m_indices;
         for(auto &index : tmp) {
-            if(index.second.uuid.isEmpty() || (!File::exists(ProjectSettings::instance()->importPath() + "/" + index.second.uuid) && index.second.type != gPersistent)) {
+            if(index.second.uuid.isEmpty() || (!File::exists(ProjectSettings::instance()->importPath() + "/" + index.second.uuid))) {
                 m_indices.erase(m_indices.find(index.first));
             }
         }
