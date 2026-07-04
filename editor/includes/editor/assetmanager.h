@@ -68,8 +68,6 @@ public slots:
 
     void onBuildSuccessful(bool flag, CodeBuilder *builder);
 
-    void checkImportSettings(AssetConverterSettings *settings);
-
 signals:
     void directoryChanged(const TString &path);
 

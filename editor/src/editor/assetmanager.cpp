@@ -1,7 +1,5 @@
 #include "assetmanager.h"
 
-#include <QMessageBox>
-
 #include <fstream>
 
 #include "config.h"
@@ -84,30 +82,6 @@ void AssetManager::init() {
         AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
         if(converter) {
             registerConverter(converter);
-        }
-    }
-}
-
-void AssetManager::checkImportSettings(AssetConverterSettings *settings) {
-    if(settings->isModified()) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The import settings has been modified."));
-        msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-
-        int result = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
-            return;
-        }
-        if(result == QMessageBox::Yes) {
-            settings->saveSettings();
-            pushToImport(settings);
-            reimport();
-        }
-        if(result == QMessageBox::No) {
-            settings->loadSettings();
         }
     }
 }

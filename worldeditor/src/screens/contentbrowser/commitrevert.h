@@ -6,6 +6,7 @@
 #include <engine.h>
 
 class CommitRevertProxy;
+class AssetConverterSettings;
 
 namespace Ui {
     class CommitRevert;
@@ -21,6 +22,8 @@ public:
     void setObject(Object *object);
 
     void onSettingsUpdated();
+
+    void checkImportSettings(AssetConverterSettings *settings);
 
 signals:
     void reverted();
