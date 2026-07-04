@@ -328,7 +328,7 @@ bool Process::openExplorer(const TString &path) {
 #ifdef PLATFORM_WINDOWS
     TString localPath(path);
     return startDetached("explorer.exe", {"/select,", localPath.replace('/', '\\')}, TString(), ProcessEnvironment::systemEnvironment());
-#elif PLATFORM_MAC
+#elif defined(PLATFORM_MAC)
     StringList scriptArgs;
     scriptArgs << "-e" << TString("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(path);
     startDetached(QLatin1String("/usr/bin/osascript"), scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
