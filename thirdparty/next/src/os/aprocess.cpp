@@ -1,10 +1,10 @@
-#include "os/aprocess.h"
+#include "aprocess.h"
 
 #include <chrono>
 #include <thread>
 #include <condition_variable>
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     #include <windows.h>
     #include <tchar.h>
 #else
@@ -30,7 +30,7 @@ public:
             m_monitorThread->join();
         }
 
-    #ifdef _WIN32
+    #ifdef PLATFORM_WINDOWS
         if(m_processHandle) CloseHandle(m_processHandle);
         if(m_threadHandle) CloseHandle(m_threadHandle);
         if(m_stdoutRead) CloseHandle(m_stdoutRead);
@@ -73,7 +73,7 @@ public:
 
     std::unique_ptr<std::thread> m_monitorThread;
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     HANDLE m_processHandle = nullptr;
     HANDLE m_threadHandle = nullptr;
     HANDLE m_stdoutRead = nullptr;
@@ -184,7 +184,7 @@ bool Process::start(const TString &program, const StringList &arguments) {
     m_ptr->cleanup();
     m_ptr->m_exitCode = -1;
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     SECURITY_ATTRIBUTES saAttr;
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
@@ -324,14 +324,29 @@ bool Process::start(const TString &program, const StringList &arguments) {
     return true;
 }
 
+bool Process::openExplorer(const TString &path) {
+#ifdef PLATFORM_WINDOWS
+    TString localPath(path);
+    return startDetached("explorer.exe", {"/select,", localPath.replace('/', '\\')}, TString(), ProcessEnvironment::systemEnvironment());
+#elif PLATFORM_MAC
+    StringList scriptArgs;
+    scriptArgs << "-e" << TString("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(path);
+    startDetached(QLatin1String("/usr/bin/osascript"), scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
+    scriptArgs.clear();
+    scriptArgs << "-e" << "tell application \"Finder\" to activate";
+    return startDetached("/usr/bin/osascript", scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
+#else
+    return startDetached("xdg-open", {path}, TString(), ProcessEnvironment::systemEnvironment());
+#endif
+}
 /*!
     Open the given \a url using the system default handler.
 */
 bool Process::openUrl(const TString &url) {
     StringList args;
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     TString command(url);
-#elif __APPLE__
+#elif PLATFORM_MAC
     TString command("open");
     args.push_back(url);
 #else
@@ -352,7 +367,7 @@ bool Process::openUrl(const TString &url) {
     Returns true if the detached process was launched successfully.
 */
 bool Process::startDetached(const TString &program, const StringList &arguments, const TString &workingDirectory, const ProcessEnvironment &environment) {
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     TString commandLine = program + " ";
     commandLine += TString::join(arguments, " ");
 
@@ -473,7 +488,7 @@ bool Process::startDetached(const TString &program, const StringList &arguments,
 */
 void Process::monitorProcess() {
     while(m_ptr->m_state == State::Running) {
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
         DWORD waitResult = WaitForSingleObject(m_ptr->m_processHandle, 100);
         if(waitResult == WAIT_OBJECT_0) {
             DWORD exitCode;
@@ -519,7 +534,7 @@ void Process::monitorProcess() {
 void Process::readOutput() {
     char buffer[4096];
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     DWORD bytesRead;
     if(PeekNamedPipe(m_ptr->m_stdoutRead, nullptr, 0, nullptr, &bytesRead, nullptr) && bytesRead > 0) {
         if(ReadFile(m_ptr->m_stdoutRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0) {
@@ -566,7 +581,7 @@ void Process::terminate() {
         return;
     }
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     TerminateProcess(m_ptr->m_processHandle, 0);
 #else
     ::kill(m_ptr->m_pid, SIGTERM);
@@ -582,7 +597,7 @@ void Process::kill() {
         return;
     }
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
     TerminateProcess(m_ptr->m_processHandle, 1);
 #else
     ::kill(m_ptr->m_pid, SIGKILL);

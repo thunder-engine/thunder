@@ -3,12 +3,13 @@
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QMouseEvent>
-#include <QProcess>
 #include <QSortFilterProxyModel>
 
 #include "ui_plugindialog.h"
 
 #include <filedialog.h>
+#include <aprocess.h>
+#include <processenvironment.h>
 
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
@@ -192,7 +193,10 @@ void PluginDialog::changeEvent(QEvent *event) {
 void PluginDialog::on_restartButton_clicked() {
     qApp->quit();
 
-    QProcess::startDetached(qApp->arguments().first(), {ProjectSettings::instance()->projectPath().data()});
+    Process::startDetached(qApp->arguments().first().toStdString(),
+                           {ProjectSettings::instance()->projectPath()},
+                           TString(),
+                           ProcessEnvironment::systemEnvironment());
 }
 
 void PluginDialog::on_lineEdit_textChanged(const QString &arg1) {
