@@ -330,7 +330,7 @@ bool Process::openExplorer(const TString &path) {
     return startDetached("explorer.exe", {"/select,", localPath.replace('/', '\\')}, TString(), ProcessEnvironment::systemEnvironment());
 #elif defined(PLATFORM_MAC)
     StringList scriptArgs = {"-e", TString("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(path)};
-    startDetached(QLatin1String("/usr/bin/osascript"), scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
+    startDetached("/usr/bin/osascript", scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
     scriptArgs = {"-e", "tell application \"Finder\" to activate"};
     return startDetached("/usr/bin/osascript", scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
 #else
