@@ -11,12 +11,6 @@ class ComponentModel : public BaseObjectModel {
 public:
     static ComponentModel *instance();
 
-    int columnCount(const QModelIndex &) const;
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
 public slots:
     void update();
 
@@ -24,8 +18,11 @@ private:
     ComponentModel();
     ~ComponentModel() {}
 
-    static ComponentModel *m_pInstance;
+    int columnCount(const QModelIndex &) const override;
 
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 };
 
 #endif // COMPONENTMODEL_H

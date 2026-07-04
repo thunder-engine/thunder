@@ -21,8 +21,6 @@ public:
 
     QModelIndex getIndex(QObject *object, const QModelIndex &parent = QModelIndex()) const;
 
-    virtual bool removeResource(const QModelIndex &index);
-
     void addItem(QObject *object);
 
     QObject *getObject(const QModelIndex &index) const;

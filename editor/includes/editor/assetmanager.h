@@ -71,10 +71,7 @@ public slots:
     void checkImportSettings(AssetConverterSettings *settings);
 
 signals:
-    void ready();
-
     void directoryChanged(const TString &path);
-    void fileChanged(const TString &path);
 
     void imported();
     void importStarted(int count, const TString &stage);

@@ -11,13 +11,14 @@ class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
 public:
-    static ContentTree *instance();
+    ContentTree();
+    ~ContentTree() {}
 
     TString path(const QModelIndex &index) const;
 
     bool reimportResource(const QModelIndex &index);
 
-    bool removeResource(const QModelIndex &index) override;
+    bool removeResource(const QModelIndex &index);
 
     QModelIndex getContent() const;
 
@@ -31,10 +32,6 @@ public slots:
     void clean(QObject *parent);
 
     void revert() override;
-
-private:
-    ContentTree();
-    ~ContentTree() {}
 
 protected:
     Qt::DropActions supportedDropActions() const override;

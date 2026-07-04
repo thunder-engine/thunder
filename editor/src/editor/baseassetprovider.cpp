@@ -78,7 +78,6 @@ void BaseAssetProvider::init(bool force) {
 void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
 
-    AssetManager::instance()->fileChanged(path);
     AssetManager::instance()->reimport();
 }
 /*!

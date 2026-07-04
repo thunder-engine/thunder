@@ -28,11 +28,6 @@ ContentTree::ContentTree() :
     connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
 }
 
-ContentTree *ContentTree::instance() {
-    static ContentTree instance;
-    return &instance;
-}
-
 int ContentTree::columnCount(const QModelIndex &) const {
     return 1;
 }

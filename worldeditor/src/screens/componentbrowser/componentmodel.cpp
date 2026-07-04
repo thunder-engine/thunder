@@ -3,21 +3,19 @@
 #include <QUrl>
 
 #include <engine.h>
+#include <editor/assetmanager.h>
 
 const char *gURI("uri");
-
-ComponentModel *ComponentModel::m_pInstance = nullptr;
 
 ComponentModel::ComponentModel() :
         BaseObjectModel(nullptr) {
 
+    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &ComponentModel::update);
 }
 
 ComponentModel *ComponentModel::instance() {
-    if(!m_pInstance) {
-        m_pInstance = new ComponentModel;
-    }
-    return m_pInstance;
+    static ComponentModel instance;
+    return &instance;
 }
 
 int ComponentModel::columnCount(const QModelIndex &) const {

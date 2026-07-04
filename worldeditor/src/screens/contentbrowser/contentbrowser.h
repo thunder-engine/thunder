@@ -10,6 +10,7 @@
 
 class ContentItemDeligate;
 class ContentTreeFilter;
+class ContentTree;
 
 class CommitRevert;
 
@@ -87,6 +88,8 @@ private:
     CommitRevert *m_commitRevert;
 
     AssetConverterSettings *m_settings;
+
+    ContentTree *m_contentTree;
 
 };
 
