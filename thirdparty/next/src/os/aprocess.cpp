@@ -329,11 +329,9 @@ bool Process::openExplorer(const TString &path) {
     TString localPath(path);
     return startDetached("explorer.exe", {"/select,", localPath.replace('/', '\\')}, TString(), ProcessEnvironment::systemEnvironment());
 #elif defined(PLATFORM_MAC)
-    StringList scriptArgs;
-    scriptArgs << "-e" << TString("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(path);
+    StringList scriptArgs = {"-e", TString("tell application \"Finder\" to reveal POSIX file \"%1\"").arg(path)};
     startDetached(QLatin1String("/usr/bin/osascript"), scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
-    scriptArgs.clear();
-    scriptArgs << "-e" << "tell application \"Finder\" to activate";
+    scriptArgs = {"-e", "tell application \"Finder\" to activate"};
     return startDetached("/usr/bin/osascript", scriptArgs, TString(), ProcessEnvironment::systemEnvironment());
 #else
     return startDetached("xdg-open", {path}, TString(), ProcessEnvironment::systemEnvironment());
