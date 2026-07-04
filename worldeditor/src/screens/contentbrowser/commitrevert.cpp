@@ -87,8 +87,8 @@ void CommitRevert::checkImportSettings(AssetConverterSettings *settings) {
         }
         if(result == QMessageBox::Yes) {
             settings->saveSettings();
-            pushToImport(settings);
-            reimport();
+            AssetManager::instance()->pushToImport(settings);
+            AssetManager::instance()->reimport();
         }
         if(result == QMessageBox::No) {
             settings->loadSettings();

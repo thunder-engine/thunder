@@ -77,9 +77,6 @@ void AssetList::onRendered(const TString &uuid) {
     TString path = mgr->uuidToPath(uuid);
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
-        if(path.front() != '.') {
-            path = ProjectSettings::instance()->contentPath() + "/" + path;
-        }
         item->setProperty(gType, mgr->assetTypeName(path).data());
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
@@ -107,9 +104,6 @@ void AssetList::update() {
         item->setProperty(gType, it.second.type.data());
         item->setProperty(gName, Url(path).baseName().data());
 
-        if(path.front() != '.') {
-            path = ProjectSettings::instance()->contentPath() + "/" + path;
-        }
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
             QImage img = settings->icon(it.second.uuid);
