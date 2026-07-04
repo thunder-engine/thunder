@@ -110,8 +110,6 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     ui->toolWidget->addToolWindow(m_projectSettingsBrowser, QToolWindowManager::NoArea);
     ui->toolWidget->addToolWindow(m_editorSettingsBrowser, QToolWindowManager::NoArea);
 
-    connect(AssetManager::instance(), &AssetManager::buildSuccessful, ComponentModel::instance(), &ComponentModel::update);
-
     resetGeometry();
 
     connect(m_builder, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(onBuildFinished(int,QProcess::ExitStatus)));
@@ -399,9 +397,9 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        TString firstMap = AssetManager::instance()->uuidToPath(ProjectSettings::instance()->firstMap());
-        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap);
+        TString firstMap = ProjectSettings::instance()->contentPath() + "/" + AssetManager::instance()->uuidToPath(ProjectSettings::instance()->firstMap());
 
+        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap);
         if(mapSettings) {
             openEditor(firstMap.data());
         } else {

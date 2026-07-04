@@ -125,7 +125,7 @@ TString ContentTree::path(const QModelIndex &index) const {
 void ContentTree::onRendered(const TString &uuid) {
     AssetManager *asset = AssetManager::instance();
 
-    TString path(asset->uuidToPath(uuid));
+    TString path(ProjectSettings::instance()->contentPath() + "/" + asset->uuidToPath(uuid));
     AssetConverterSettings *settings = asset->fetchSettings(path);
     if(settings) {
         settings->resetIcon(uuid);
