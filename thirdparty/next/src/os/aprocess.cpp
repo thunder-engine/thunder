@@ -346,7 +346,7 @@ bool Process::openUrl(const TString &url) {
     StringList args;
 #ifdef PLATFORM_WINDOWS
     TString command(url);
-#elif PLATFORM_MAC
+#elif defined(PLATFORM_MAC)
     TString command("open");
     args.push_back(url);
 #else
