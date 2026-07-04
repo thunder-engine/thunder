@@ -7,11 +7,12 @@
 
 #include <pugixml.hpp>
 
+class UiLoader;
 class WidgetController;
-class UndoCommand;
+
 class Widget;
 class Canvas;
-class UiLoader;
+class Scene;
 
 namespace Ui {
     class UiEdit;

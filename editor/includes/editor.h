@@ -4,13 +4,19 @@
 #include <engine.h>
 
 #if defined(SHARED_DEFINE) && defined(_WIN32)
-#ifdef EDITOR_LIBRARY
-#define EDITOR_EXPORT __declspec(dllexport)
+    #ifdef EDITOR_LIBRARY
+        #define EDITOR_EXPORT __declspec(dllexport)
+    #else
+        #define EDITOR_EXPORT __declspec(dllimport)
+    #endif
 #else
-#define EDITOR_EXPORT __declspec(dllimport)
+        #define EDITOR_EXPORT
 #endif
-#else
-#define EDITOR_EXPORT
-#endif
+
+class EDITOR_EXPORT Editor : public Object {
+public:
+    Editor();
+    ~Editor();
+};
 
 #endif // EDITOR_H

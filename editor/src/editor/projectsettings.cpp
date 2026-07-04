@@ -21,14 +21,19 @@
 
 namespace {
     const char *gProjects("Projects");
-};
+    const char *gThumbnails("thumbnails");
+    const char *gGenerated("generated");
+    const char *gCache("cache");
+    const char *gPlugins("plugins");
+    const char *gModules("modules");
+}
 
 ProjectSettings::ProjectSettings() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
-#if defined(Q_OS_MAC)
+#if defined(PLATFORM_MAC)
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
@@ -350,18 +355,18 @@ std::map<TString, bool> &ProjectSettings::plugins() {
 
 void ProjectSettings::setCurrentPlatform(const TString &platform) {
     if(platform.isEmpty()) {
-#if defined(Q_OS_WIN)
+#if defined(PLATFORM_WINDOWS)
         m_currentPlatform = "windows";
-#elif defined(Q_OS_MAC)
+#elif defined(PLATFORM_MAC)
         m_currentPlatform = "macos";
-#elif defined(Q_OS_UNIX)
+#elif defined(PLATFORM_LINUX)
         m_currentPlatform = "linux";
 #endif
     } else {
         m_currentPlatform = platform;
     }
 
-    m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + TString("/") + gImport;
+    m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + "/" + gImport;
     EditorPlatform::instance().setImportPath(m_importPath);
 
     File::mkPath(m_importPath);

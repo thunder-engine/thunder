@@ -1,6 +1,8 @@
 #include "commitrevert.h"
 #include "ui_commitrevert.h"
 
+#include <QMessageBox>
+
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
 
@@ -24,7 +26,7 @@ CommitRevert::~CommitRevert() {
 void CommitRevert::setObject(Object *object) {
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
     if(settings && settings != object) {
-        AssetManager::instance()->checkImportSettings(settings);
+        checkImportSettings(settings);
         Object::disconnect(settings, _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
     }
 
@@ -67,5 +69,29 @@ void CommitRevert::on_revertButton_clicked() {
     if(settings) {
         settings->loadSettings();
         emit reverted();
+    }
+}
+
+void CommitRevert::checkImportSettings(AssetConverterSettings *settings) {
+    if(settings->isModified()) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setText(tr("The import settings has been modified."));
+        msgBox.setInformativeText(tr("Do you want to save your changes?"));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+
+        int result = msgBox.exec();
+        if(result == QMessageBox::Cancel) {
+            return;
+        }
+        if(result == QMessageBox::Yes) {
+            settings->saveSettings();
+            AssetManager::instance()->pushToImport(settings);
+            AssetManager::instance()->reimport();
+        }
+        if(result == QMessageBox::No) {
+            settings->loadSettings();
+        }
     }
 }

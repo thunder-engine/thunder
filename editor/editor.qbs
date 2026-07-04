@@ -69,9 +69,10 @@ Project {
 
         Group {
             name: "Editor includes"
-            prefix: "includes/editor"
+            prefix: "includes/"
             files: [
-                "**/*.h",
+                "editor.h",
+                "editor/*.h"
             ]
             qbs.install: true
             qbs.installDir: editor.INC_PATH + "/editor"

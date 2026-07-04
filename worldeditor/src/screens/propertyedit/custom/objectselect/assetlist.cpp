@@ -8,6 +8,8 @@
 #include <systems/resourcesystem.h>
 
 #include <editor/assetmanager.h>
+#include <editor/assetconverter.h>
+#include <editor/projectsettings.h>
 
 namespace {
     const char *gUuid("uuid");
@@ -76,10 +78,12 @@ void AssetList::onRendered(const TString &uuid) {
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
         item->setProperty(gType, mgr->assetTypeName(path).data());
-
-        QImage img = mgr->icon(path);
-        if(!img.isNull()) {
-            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
+        AssetConverterSettings *settings = mgr->fetchSettings(path);
+        if(settings) {
+            QImage img = settings->icon(uuid);
+            if(!img.isNull()) {
+                item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
+            }
         }
 
         emit layoutAboutToBeChanged();
@@ -90,21 +94,24 @@ void AssetList::onRendered(const TString &uuid) {
 void AssetList::update() {
     clear();
 
-    AssetManager *inst = AssetManager::instance();
+    AssetManager *mgr = AssetManager::instance();
     for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 
-        TString path = inst->uuidToPath(it.second.uuid);
+        TString path = mgr->uuidToPath(it.second.uuid);
         item->setObjectName(path.data());
         item->setProperty(gUuid, it.second.uuid.data());
         item->setProperty(gType, it.second.type.data());
         item->setProperty(gName, Url(path).baseName().data());
 
-        QImage img = inst->icon(path);
-        if(!img.isNull()) {
-            img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
+        AssetConverterSettings *settings = mgr->fetchSettings(path);
+        if(settings) {
+            QImage img = settings->icon(it.second.uuid);
+            if(!img.isNull()) {
+                img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
+            }
+            item->setProperty(gIcon, img);
         }
-        item->setProperty(gIcon, img);
         addItem(item);
     }
 

@@ -5,23 +5,24 @@
 
 #include <QImage>
 
-class TString;
+#include <astring.h>
 
 class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
 public:
-    static ContentTree *instance();
+    ContentTree();
+    ~ContentTree() {}
 
     TString path(const QModelIndex &index) const;
 
     bool reimportResource(const QModelIndex &index);
 
-    bool removeResource(const QModelIndex &index) override;
+    bool removeResource(const QModelIndex &index);
 
     QModelIndex getContent() const;
 
-    QModelIndex setNewAsset(const QString &name, const QString &source = QString(), bool directory = false);
+    QModelIndex setNewAsset(const TString &name, const TString &source = TString(), bool directory = false);
 
 public slots:
     void onRendered(const TString &uuid);
@@ -31,10 +32,6 @@ public slots:
     void clean(QObject *parent);
 
     void revert() override;
-
-private:
-    ContentTree();
-    ~ContentTree() {}
 
 protected:
     Qt::DropActions supportedDropActions() const override;

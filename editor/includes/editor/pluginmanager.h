@@ -13,6 +13,8 @@ class Object;
 class Module;
 class System;
 
+class Engine;
+
 struct ComponentData {
     ByteArray data;
     Object *parent;

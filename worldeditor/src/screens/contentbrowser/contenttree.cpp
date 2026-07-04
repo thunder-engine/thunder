@@ -2,7 +2,6 @@
 
 #include "config.h"
 
-#include <QDir>
 #include <QMimeData>
 
 #include <url.h>
@@ -11,6 +10,7 @@
 #include <editor/assetmanager.h>
 #include <editor/assetconverter.h>
 #include <editor/projectsettings.h>
+#include <editor/codebuilder.h>
 
 ContentTree::ContentTree() :
         BaseObjectModel(nullptr),
@@ -28,11 +28,6 @@ ContentTree::ContentTree() :
     connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
 }
 
-ContentTree *ContentTree::instance() {
-    static ContentTree instance;
-    return &instance;
-}
-
 int ContentTree::columnCount(const QModelIndex &) const {
     return 1;
 }
@@ -44,7 +39,7 @@ QVariant ContentTree::data(const QModelIndex &index, int role) const {
 
     QObject *item = getObject(index);
     if(item) {
-        TString path(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        TString path(item->objectName().toStdString());
         switch(role) {
             case Qt::EditRole:
             case Qt::DisplayRole: {
@@ -71,28 +66,35 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
             QObject *item = getObject(index);
             if(item) {
                 Url url(item->objectName().toStdString());
+                TString stringValue(value.toString().toStdString());
+                TString dest(url.absoluteDir() + "/" + stringValue);
+                if(!url.suffix().isEmpty()) {
+                    dest += TString(".") + url.suffix();
+                }
                 if(item == m_newAsset) {
                     TString source(m_newAsset->property(gImport).toString().toStdString());
-                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
                     if(source.isEmpty()) {
-                        QDir dir(path.data());
-                        dir.mkdir(value.toString());
+                        File::mkDir(dest);
                     } else {
-                        AssetManager::instance()->createFromTemplate(path + "/" + value.toString().toStdString() + "." + Url(source).suffix());
+                        AssetManager *mgr = AssetManager::instance();
+                        AssetConverter *converter = mgr->getConverter(dest);
+                        if(converter) {
+                            converter->createFromTemplate(dest);
+                        } else {
+                            TString suffix = url.suffix().toLower();
+                            for(auto builder : mgr->builders()) {
+                                for(auto &it : builder->suffixes()) {
+                                    if(it == suffix) {
+                                        builder->createFromTemplate(dest);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
-
                     m_newAsset->setParent(nullptr);
                 } else {
-                    TString path = ProjectSettings::instance()->contentPath() + "/" + url.dir();
-                    if(path != ".") {
-                        path += "/";
-                    }
-                    TString dest(path + value.toString().toStdString());
-                    if(!url.suffix().isEmpty()) {
-                        dest += TString(".") + url.suffix();
-                    };
-
-                    AssetManager::instance()->renameResource(ProjectSettings::instance()->contentPath() + "/" + url.path(), dest);
+                    AssetManager::instance()->renameResource(url.absoluteFilePath(), dest);
                 }
             }
         } break;
@@ -117,43 +119,36 @@ TString ContentTree::path(const QModelIndex &index) const {
         }
     }
 
-    return TString();
+    return TString(ProjectSettings::instance()->contentPath());
 }
 
 void ContentTree::onRendered(const TString &uuid) {
-    QDir dir(ProjectSettings::instance()->contentPath().data());
-
     AssetManager *asset = AssetManager::instance();
 
-    AssetConverterSettings *settings = asset->fetchSettings(asset->uuidToPath(uuid));
+    TString path(ProjectSettings::instance()->contentPath() + "/" + asset->uuidToPath(uuid));
+    AssetConverterSettings *settings = asset->fetchSettings(path);
     if(settings) {
         settings->resetIcon(uuid);
-    }
 
-    TString path(asset->uuidToPath(uuid));
-    QString source = path.contains(dir.absolutePath().toStdString()) ?
-                                    dir.relativeFilePath(path.data()) :
-                                    (QString(".embedded/") + Url(path).name().data());
+        QObject *item(m_rootItem->findChild<QObject *>(settings->source().data()));
+        if(item) {
+            item->setProperty(gType, asset->assetTypeName(path).data());
 
-    QObject *item(m_rootItem->findChild<QObject *>(source));
-    if(item) {
-        item->setProperty(gType, asset->assetTypeName(path).data());
+            QImage img = settings->icon(uuid);
+            if(!img.isNull()) {
+                item->setProperty(gIcon, img);
+            }
 
-        QImage img = asset->icon(path);
-        if(!img.isNull()) {
-            item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_folder.width()) :
-                                                                    img.scaledToHeight(m_folder.height()));
+            emit layoutAboutToBeChanged();
+            emit layoutChanged();
         }
-
-        emit layoutAboutToBeChanged();
-        emit layoutChanged();
     }
 }
 
 bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = getObject(index);
     if(item) {
-        AssetManager::instance()->pushToImport(ProjectSettings::instance()->contentPath() + "/" + item->objectName().toStdString());
+        AssetManager::instance()->pushToImport(item->objectName().toStdString());
         AssetManager::instance()->reimport();
     }
     return true;
@@ -178,22 +173,19 @@ QModelIndex ContentTree::getContent() const {
     return getIndex(m_content, QModelIndex());
 }
 
-QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source, bool directory) {
+QModelIndex ContentTree::setNewAsset(const TString &name, const TString &source, bool directory) {
     if(!name.isEmpty()) {
-        Url url(name.toStdString());
+        Url url(name);
 
-        QDir dir(ProjectSettings::instance()->contentPath().data());
-
-        TString path = dir.relativeFilePath(url.absoluteDir().data()).toStdString();
-        QObject *parent = m_rootItem->findChild<QObject *>(path.data());
+        QObject *parent = m_rootItem->findChild<QObject *>(url.absoluteDir().data());
         if(parent == nullptr) {
             parent = m_content;
         }
 
         m_newAsset->setParent(parent);
-        m_newAsset->setObjectName(dir.relativeFilePath(name));
-        m_newAsset->setProperty(gImport, source);
-        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentIcon(Url(source.toStdString()).suffix()));
+        m_newAsset->setObjectName(name.data());
+        m_newAsset->setProperty(gImport, source.data());
+        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentIcon(Url(source).suffix()));
     } else {
         m_newAsset->setParent(nullptr);
     }
@@ -205,39 +197,36 @@ QModelIndex ContentTree::setNewAsset(const QString &name, const QString &source,
 }
 
 void ContentTree::update() {
-    QString contentPath(ProjectSettings::instance()->contentPath().data());
-    QDir dir(contentPath);
-
-    QObject *parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(contentPath));
+    TString contentPath(ProjectSettings::instance()->contentPath());
+    QObject *parent = m_rootItem->findChild<QObject *>(contentPath.data());
     if(parent == nullptr) {
         parent = m_content;
     }
     clean(parent);
 
-    AssetManager *asset = AssetManager::instance();
+    AssetManager *mgr = AssetManager::instance();
 
-    StringList list = File::list(contentPath.toStdString());
+    StringList list = File::list(contentPath);
     for(TString &path : list) {
         Url info(path);
         if(info.suffix() == gMetaExt) {
             continue;
         }
 
-        parent = m_rootItem->findChild<QObject *>(dir.relativeFilePath(info.absoluteDir().data()));
+        TString parentDir = info.absoluteDir();
+        parent = m_rootItem->findChild<QObject *>(parentDir.data());
         if(parent == nullptr) {
             parent = m_content;
         }
-        QString source = path.contains(dir.absolutePath().toStdString()) ?
-                             dir.relativeFilePath(path.data()) :
-                             (QString(".embedded/") + info.name().data());
 
-        QObject *item = parent->findChild<QObject *>(source);
+        QObject *item = parent->findChild<QObject *>(path.data());
         if(!item) {
             item = new QObject(parent);
-            item->setObjectName(source);
+            item->setObjectName(path.data());
             if(!File::isDir(path)) {
-                item->setProperty(gType, asset->assetTypeName(path).data());
-                item->setProperty(gIcon, asset->icon(path));
+                item->setProperty(gType, mgr->assetTypeName(path).data());
+                AssetConverterSettings *settings = mgr->fetchSettings(path);
+                item->setProperty(gIcon, settings->icon(settings->destination()));
             } else {
                 item->setProperty(gIcon, m_folder);
             }
@@ -251,7 +240,7 @@ void ContentTree::update() {
 
 void ContentTree::clean(QObject *parent) {
     foreach(QObject *it, parent->children()) {
-        TString path = ProjectSettings::instance()->contentPath() + "/" + qPrintable(it->objectName());
+        TString path = it->objectName().toStdString();
         clean(it);
         if(!File::exists(path)) {
             m_items.remove(reinterpret_cast<quintptr>(it));

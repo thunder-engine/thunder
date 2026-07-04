@@ -17,7 +17,6 @@ ImportQueue::ImportQueue(QWidget *parent) :
     AssetManager *manager = AssetManager::instance();
     connect(manager, &AssetManager::importStarted, this, &ImportQueue::onStarted);
     connect(manager, &AssetManager::imported, this, &ImportQueue::onProcessed);
-
     connect(manager, &AssetManager::importFinished, this, &ImportQueue::onImportFinished);
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);

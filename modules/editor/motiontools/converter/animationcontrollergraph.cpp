@@ -35,7 +35,7 @@ AnimationControllerGraph::AnimationControllerGraph() :
             Url url(it.second);
 
             if(url.host() == "Motion") {
-                TString path = url.path();
+                TString path = url.filePath();
                 if(path.front() == '/') {
                     path.removeFirst();
                 }

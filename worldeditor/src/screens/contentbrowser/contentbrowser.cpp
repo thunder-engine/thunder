@@ -9,7 +9,6 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QProcess>
-#include <QDir>
 #include <QStandardPaths>
 #include <QMimeData>
 
@@ -50,7 +49,7 @@ private:
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const {
         QStyledItemDelegate::initStyleOption(option, index);
         QVariant value = index.data(Qt::DecorationRole);
-        switch(value.type()) {
+        switch(value.typeId()) {
             case QMetaType::QImage: {
                 QImage image = value.value<QImage>();
                 if(!image.isNull()) {
@@ -109,13 +108,13 @@ public:
 
 protected:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
-        QModelIndex index = mapToSource(parent);
+        QModelIndex origin = mapToSource(parent);
 
         ProjectSettings *mgr = ProjectSettings::instance();
 
         TString target(mgr->contentPath());
-        if(index.isValid() && index.parent().isValid()) {
-            target = mgr->contentPath() + "/" + ContentTree::instance()->path(index);
+        if(origin.isValid() && origin.parent().isValid()) {
+            target = static_cast<ContentTree *>(sourceModel())->path(origin);
         }
 
         bool result = File::isDir(target);
@@ -137,12 +136,11 @@ protected:
     }
 
     bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
-        QModelIndex index = mapToSource(parent);
+        QModelIndex origin = mapToSource(parent);
 
-        QDir dir(ProjectSettings::instance()->contentPath().data());
-        TString target;
-        if(index.isValid() && index.parent().isValid()) {
-            target = dir.relativeFilePath(ContentTree::instance()->path(index).data()).toStdString();
+        TString target(ProjectSettings::instance()->contentPath());
+        if(origin.isValid() && origin.parent().isValid()) {
+            target = static_cast<ContentTree *>(sourceModel())->path(origin);
         }
 
         if(data->hasUrls()) {
@@ -156,7 +154,7 @@ protected:
 
             for(QString path : data->data(gMimeContent).split(';')) {
                 if(!path.isEmpty()) {
-                    AssetManager::instance()->renameResource(dir.relativeFilePath(path).toStdString(), target + path.toStdString());
+                    AssetManager::instance()->renameResource(path.toStdString(), target + path.toStdString());
                 }
             }
         } else if(data->hasFormat(gMimeObject)) {
@@ -232,7 +230,8 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
         QWidget(parent),
         ui(new Ui::ContentBrowser),
         m_commitRevert(nullptr),
-        m_settings(nullptr) {
+        m_settings(nullptr),
+        m_contentTree(new ContentTree) {
 
     ui->setupUi(this);
 
@@ -240,7 +239,7 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     treeDeligate->setItemScale(20.0f / ICON_SIZE);
 
     m_treeProxy = new ContentTreeFilter(this);
-    m_treeProxy->setSourceModel(ContentTree::instance());
+    m_treeProxy->setSourceModel(m_contentTree);
     m_treeProxy->setContentTypes({0});
     m_treeProxy->sort(0);
 
@@ -253,15 +252,15 @@ ContentBrowser::ContentBrowser(QWidget* parent) :
     m_contentDeligate->setItemScale(0.75f);
 
     m_listProxy = new ContentTreeFilter(this);
-    m_listProxy->setSourceModel(ContentTree::instance());
+    m_listProxy->setSourceModel(m_contentTree);
     m_listProxy->sort(0);
 
     ui->contentList->setItemDelegate(m_contentDeligate);
     ui->contentList->setModel(m_listProxy);
 
-    ui->contentList->setRootIndex(m_listProxy->mapFromSource(ContentTree::instance()->getContent()));
+    ui->contentList->setRootIndex(m_listProxy->mapFromSource(m_contentTree->getContent()));
 
-    connect(ContentTree::instance(), &ContentTree::layoutChanged, m_treeProxy, &ContentTreeFilter::invalidate);
+    connect(m_contentTree, &ContentTree::layoutChanged, m_treeProxy, &ContentTreeFilter::invalidate);
 
     m_filterMenu = new QMenu(this);
 
@@ -314,7 +313,22 @@ void ContentBrowser::createContextMenus() {
     m_creationMenu.addSeparator();
     m_creationMenu.addAction(a);
 
-    for(auto &it : AssetManager::instance()->templates()) {
+    std::set<TString> paths;
+    for(auto it : AssetManager::instance()->builders()) {
+        TString path(it->templatePath());
+        if(!path.isEmpty()) {
+            paths.insert(path);
+        }
+    }
+
+    for(auto &it : AssetManager::instance()->converters()) {
+        TString path(it->templatePath());
+        if(!path.isEmpty()) {
+            paths.insert(path);
+        }
+    }
+
+    for(auto &it : paths) {
         Url info(it);
         QString name = fromCamelCase(info.baseName().remove('_').data());
         m_creationMenu.addAction(name)->setData(QString(it.data()));
@@ -343,14 +357,13 @@ void ContentBrowser::createContextMenus() {
 void ContentBrowser::onCreationMenuTriggered(QAction *action) {
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    TString path = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
-    QDir dir(path.data());
-    switch(action->data().type()) {
+    Url url(m_contentTree->path(origin));
+    switch(action->data().typeId()) {
         case QMetaType::Bool: {
             TString name("NewFolder");
-            AssetManager::findFreeName(name, dir.path().toStdString());
+            AssetManager::findFreeName(name, url.absoluteFilePath());
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name.data(), "", true);
+            QModelIndex index = m_contentTree->setNewAsset(url.absoluteFilePath() + "/" + name, "", true);
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
@@ -359,9 +372,9 @@ void ContentBrowser::onCreationMenuTriggered(QAction *action) {
             Url info(action->data().toString().toStdString());
             TString name = TString("New") + info.baseName();
             TString suff = TString(".") + info.suffix();
-            AssetManager::findFreeName(name, dir.path().toStdString(), suff);
+            AssetManager::findFreeName(name, url.absoluteFilePath(), suff);
 
-            QModelIndex index = ContentTree::instance()->setNewAsset(dir.path() + "/" + name.data(), action->data().toString());
+            QModelIndex index = m_contentTree->setNewAsset(url.absoluteFilePath() + "/" + name + suff, info.absoluteFilePath());
             QModelIndex mapped = m_listProxy->mapFromSource(index);
             ui->contentList->setCurrentIndex(mapped);
             ui->contentList->edit(mapped);
@@ -417,15 +430,15 @@ void ContentBrowser::onItemDuplicate() {
         QAbstractItemView *view = qvariant_cast<QAbstractItemView*>(action->data());
         QSortFilterProxyModel *filter = static_cast<QSortFilterProxyModel*>(view->model());
 
-        QModelIndex index = filter->mapToSource(view->currentIndex());
-        TString path = ContentTree::instance()->path(index);
+        QModelIndex origin = filter->mapToSource(view->currentIndex());
+        TString path(m_contentTree->path(origin));
         AssetManager::instance()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? Url(path).name() : path);
     }
 }
 
 void ContentBrowser::onItemReimport() {
-    QModelIndex index = m_listProxy->mapToSource(ui->contentList->currentIndex());
-    ContentTree::instance()->reimportResource(index);
+    QModelIndex origin = m_listProxy->mapToSource(ui->contentList->currentIndex());
+    m_contentTree->reimportResource(origin);
 }
 
 void ContentBrowser::onItemDelete() {
@@ -442,8 +455,7 @@ void ContentBrowser::onItemDelete() {
 
             foreach(auto &it, view->selectionModel()->selectedIndexes()) {
                 QModelIndex origin = filter->mapToSource(it);
-                TString path = ContentTree::instance()->path(origin);
-                AssetManager::instance()->removeResource(path);
+                AssetManager::instance()->removeResource(m_contentTree->path(origin));
             }
 
             emit model->layoutAboutToBeChanged();
@@ -470,7 +482,7 @@ void ContentBrowser::on_contentList_doubleClicked(const QModelIndex &index) {
     if(origin.siblingAtColumn(1).data().toBool()) {
         ui->contentList->setRootIndex(index);
     } else {
-        emit openEditor(ContentTree::instance()->path(origin));
+        emit openEditor(m_contentTree->path(origin));
     }
 }
 
@@ -503,12 +515,7 @@ void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     const QModelIndex origin = m_listProxy->mapToSource(index);
 
-    TString source = ContentTree::instance()->path(origin);
-    if(!source.contains(".embedded/")) {
-        source = ProjectSettings::instance()->contentPath() + "/" + source;
-    }
-
-    m_settings = AssetManager::instance()->fetchSettings(source);
+    m_settings = AssetManager::instance()->fetchSettings(m_contentTree->path(origin));
     if(m_settings) {
         if(m_commitRevert) {
             m_commitRevert->setObject(m_settings);
@@ -533,7 +540,7 @@ void ContentBrowser::importAsset() {
 
     const QModelIndex origin = m_listProxy->mapToSource(ui->contentList->rootIndex());
 
-    TString target = ProjectSettings::instance()->contentPath() + "/" + ContentTree::instance()->path(origin);
+    TString target(m_contentTree->path(origin));
 
     foreach(auto &it, files) {
         AssetManager::instance()->import(it, target);
@@ -549,16 +556,14 @@ void ContentBrowser::changeEvent(QEvent *event) {
 void ContentBrowser::showInGraphicalShell() {
     QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();
 
-    TString path;
+    TString path(ProjectSettings::instance()->contentPath());
     if(!list.isEmpty()) {
         QModelIndex origin = m_listProxy->mapToSource(list.first());
-        path = TString("/") + ContentTree::instance()->path(origin);
+        path = TString("/") + m_contentTree->path(origin);
     }
 
-    path = ProjectSettings::instance()->contentPath() + path;
-
 #if defined(Q_OS_WIN)
-    QProcess::startDetached("explorer.exe", QStringList() << "/select," << QDir::toNativeSeparators(path.data()));
+    QProcess::startDetached("explorer.exe", QStringList() << "/select," << path.replace('/', '\\').data());
 #elif defined(Q_OS_MAC)
     QStringList scriptArgs;
     scriptArgs << QLatin1String("-e")

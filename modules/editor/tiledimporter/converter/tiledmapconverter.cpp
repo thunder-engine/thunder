@@ -1,7 +1,5 @@
 #include "tiledmapconverter.h"
 
-#include <QDir>
-
 #include <cstring>
 
 #include <bson.h>
@@ -101,8 +99,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 settings->setSubItem(tilesetName, resInfo);
                             }
                         } else {
-                            QDir dir(ProjectSettings::instance()->contentPath().data());
-                            source = dir.relativeFilePath((info.dir() + "/" + source).data()).toStdString();
+                            source = Url(info.dir() + "/" + source).relativeFilePath(ProjectSettings::instance()->contentPath());
 
                             tileSet = Engine::loadResource<TileSet>(source);
                         }
@@ -202,8 +199,8 @@ void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const TString
     pugi::xml_node element = parent.first_child();
     while(element) {
         if(std::string(element.name()) == "image") {
-            QDir dir(ProjectSettings::instance()->contentPath().data());
-            TString source(dir.relativeFilePath((path + "/" + element.attribute("source").as_string()).data()).toStdString());
+            Url info(path + "/" + element.attribute("source").as_string());
+            TString source(info.relativeFilePath(ProjectSettings::instance()->contentPath()));
 
             tileSet.setTexture(Engine::loadResource<Texture>(source));
         } else if(std::string(element.name()) == "tileoffset") {
