@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QProcess>
-#include <QMenu>
 
 #include <amath.h>
 #include <engine.h>

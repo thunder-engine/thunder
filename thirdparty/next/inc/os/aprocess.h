@@ -55,7 +55,6 @@ public:
 
 public:
     Process();
-
     ~Process();
 
     bool start(const TString &program, const StringList &arguments);
@@ -76,6 +75,7 @@ public:
     int exitCode() const;
     bool isRunning() const;
 
+    static bool openExplorer(const TString &path);
     static bool openUrl(const TString &url);
     static bool startDetached(const TString &program, const StringList &arguments, const TString &workingDirectory, const ProcessEnvironment &environment);
 

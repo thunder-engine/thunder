@@ -8,7 +8,6 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QMessageBox>
-#include <QProcess>
 #include <QStandardPaths>
 #include <QMimeData>
 
@@ -17,6 +16,7 @@
 #include <global.h>
 #include <url.h>
 #include <file.h>
+#include <aprocess.h>
 #include <filedialog.h>
 
 #include "contenttree.h"
@@ -559,24 +559,8 @@ void ContentBrowser::showInGraphicalShell() {
     TString path(ProjectSettings::instance()->contentPath());
     if(!list.isEmpty()) {
         QModelIndex origin = m_listProxy->mapToSource(list.first());
-        path = TString("/") + m_contentTree->path(origin);
+        path = m_contentTree->path(origin);
     }
 
-#if defined(Q_OS_WIN)
-    QProcess::startDetached("explorer.exe", QStringList() << "/select," << path.replace('/', '\\').data());
-#elif defined(Q_OS_MAC)
-    QStringList scriptArgs;
-    scriptArgs << QLatin1String("-e")
-               << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"")
-                                     .arg(path.data());
-    QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
-    scriptArgs.clear();
-    scriptArgs << QLatin1String("-e")
-               << QLatin1String("tell application \"Finder\" to activate");
-    QProcess::execute("/usr/bin/osascript", scriptArgs);
-#else
-    QStringList scriptArgs;
-    scriptArgs << path.data();
-    QProcess::execute(QLatin1String("xdg-open"), scriptArgs);
-#endif
+    Process::openExplorer(path);
 }

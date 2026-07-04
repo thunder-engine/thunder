@@ -306,7 +306,7 @@ void MainWindow::onOpenProject(const TString &path) {
 
     AssetManager::instance()->rescan();
 
-    for(const TString &it : ProjectSettings::instance()->platforms()) {
+    for(const TString &it : m_projectSettings->platforms()) {
         QString name = it.data();
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
@@ -382,7 +382,7 @@ void MainWindow::onImportFinished() {
                     AssetEditor *editor = nullptr;
                     // Documents
                     for(auto &document : params.front().toList()) {
-                        AssetEditor *e = openEditor(document.toList().front().toString().data());
+                        AssetEditor *e = openEditor(document.toList().front().toString());
                         if(e) {
                             editor = e;
                         }
@@ -397,11 +397,12 @@ void MainWindow::onImportFinished() {
     }
 
     if(m_mainEditor->openedDocuments().empty()) {
-        TString firstMap = ProjectSettings::instance()->contentPath() + "/" + AssetManager::instance()->uuidToPath(ProjectSettings::instance()->firstMap());
+        AssetManager *mgr = AssetManager::instance();
+        TString firstMap = mgr->uuidToPath(m_projectSettings->firstMap());
 
-        AssetConverterSettings *mapSettings = AssetManager::instance()->fetchSettings(firstMap);
+        AssetConverterSettings *mapSettings = mgr->fetchSettings(firstMap);
         if(mapSettings) {
-            openEditor(firstMap.data());
+            openEditor(firstMap);
         } else {
             m_mainEditor->onNewAsset();
         }
@@ -454,7 +455,7 @@ void MainWindow::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible
 
 void MainWindow::on_actionSave_Workspace_triggered() {
     FileDialog dialog;
-    dialog.setDirectory(ProjectSettings::instance()->templatePath() + "/workspaces");
+    dialog.setDirectory(m_projectSettings->templatePath() + "/workspaces");
     dialog.setWindowTitle("Save Workspace");
     dialog.setMode(FileDialog::SaveFile);
     dialog.addFilter("Workspaces", { "*.ws" });
@@ -614,19 +615,19 @@ void MainWindow::changeEvent(QEvent *event) {
 }
 
 void MainWindow::on_actionReport_Issue_triggered() {
-    QDesktopServices::openUrl(QUrl("https://github.com/thunder-engine/thunder/issues/new/choose", QUrl::TolerantMode));
+    Process::openUrl("https://github.com/thunder-engine/thunder/issues/new/choose");
 }
 
 void MainWindow::on_actionAPI_Reference_triggered() {
-    QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest/reference/index.html", QUrl::TolerantMode));
+    Process::openUrl("https://doc.thunderengine.org/en/latest/reference/index.html");
 }
 
 void MainWindow::on_actionThunder_Answers_triggered() {
-    QDesktopServices::openUrl(QUrl("https://github.com/thunder-engine/thunder/discussions", QUrl::TolerantMode));
+    Process::openUrl("https://github.com/thunder-engine/thunder/discussions");
 }
 
 void MainWindow::on_actionThunder_Manual_triggered() {
-    QDesktopServices::openUrl(QUrl("https://doc.thunderengine.org/en/latest", QUrl::TolerantMode));
+    Process::openUrl("https://doc.thunderengine.org/en/latest");
 }
 
 void MainWindow::on_actionExit_triggered() {
