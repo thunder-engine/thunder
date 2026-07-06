@@ -13,20 +13,16 @@
 class CommandBufferMt;
 class RenderTargetMt;
 
-class Global;
-
 class MaterialInstanceMt : public MaterialInstance {
 public:
     MaterialInstanceMt(Material *material);
 
     ~MaterialInstanceMt();
 
-    bool bind(CommandBufferMt &buffer, uint32_t layer, const Global &global);
+    bool bind(CommandBufferMt &buffer, uint32_t layer, const MTL::Buffer *global, uint32_t currentFrame);
 
 private:
-    MTL::Buffer *m_instanceBuffer;
-
-    MTL::Buffer *m_globalBuffer;
+    std::vector<MTL::Buffer *> m_local;
 
     int32_t m_globalVertextLocation;
     int32_t m_localVertextLocation;

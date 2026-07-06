@@ -107,10 +107,8 @@ private:
         if(CommandBuffer::isInited() && c) {
             m_context->cameraReset();
 
-            buffer->setRenderTarget(m_spriteTarget);
-            Gizmos::drawSpriteBatch(buffer);
-
             buffer->setRenderTarget(m_geometryTarget);
+            Gizmos::drawSpriteBatch(buffer);
             Gizmos::drawWireBatch(buffer);
             Gizmos::drawSolidBatch(buffer);
 
@@ -123,9 +121,9 @@ private:
                 t->setQuaternion(q);
                 t->setPosition(q * Vector3(0.0f, 0.0f, gNaviCubeDist));
 
-                buffer->setViewport(m_width-gNaviCubeSize, m_height-gNaviCubeSize, gNaviCubeSize, gNaviCubeSize);
                 buffer->setViewProjection(m_camera->viewMatrix(), m_camera->projectionMatrix());
                 buffer->setRenderTarget(m_spriteTarget);
+                buffer->setViewport(m_width-gNaviCubeSize, m_height-gNaviCubeSize, gNaviCubeSize, gNaviCubeSize);
 
                 buffer->drawMesh(PipelineContext::defaultCube(), 0, Material::Opaque, *m_cubeMaterial);
 

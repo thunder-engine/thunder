@@ -21,8 +21,6 @@ public:
 
     MTL::RenderCommandEncoder *encoder() const;
 
-    RenderTargetMt *currentRenderTarget() const;
-
     void dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ) override;
 
     void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance) override;
@@ -42,7 +40,7 @@ protected:
 
     MTL::RenderCommandEncoder *m_encoder;
 
-    RenderTargetMt *m_currentTarget;
+    size_t m_currentFrame;
 
 };
 

@@ -84,3 +84,31 @@ void RenderTargetMt::setLevel(uint32_t level) {
 bool RenderTargetMt::isNative() const {
     return m_native;
 }
+
+MTL::Buffer *RenderTargetMt::globalBuffer(size_t currentFrame) {
+    size_t index = currentFrame;
+    if(flags() & Atlas) {
+        index += tileIndex() * WrapperMt::framesInFlight();
+    }
+    return m_global[index];
+}
+
+void RenderTargetMt::updateGlobalMemory(size_t currentFrame, const Global &global) {
+    size_t swapChainCount = WrapperMt::framesInFlight();
+    size_t index = currentFrame;
+    if(flags() & Atlas) {
+        index += tileIndex() * swapChainCount;
+        swapChainCount *= 32;
+    }
+
+    if(m_global.empty()) {
+        m_global.resize(swapChainCount);
+        for(size_t i = 0; i < swapChainCount; i++) {
+            m_global[i] = WrapperMt::device()->newBuffer(sizeof(Global), MTL::ResourceStorageModeShared);
+        }
+    }
+    uint8_t *ptr = reinterpret_cast<uint8_t *>(m_global[index]->contents());
+    if(ptr) {
+        memcpy(ptr, &global, sizeof(Global));
+    }
+}

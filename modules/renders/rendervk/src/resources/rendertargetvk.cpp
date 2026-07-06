@@ -333,7 +333,7 @@ void RenderTargetVk::updateGlobalMemory(size_t currentFrame, const Global &globa
         m_global.resize(swapChainCount);
 
         uint32_t flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        for(uint32_t i = 0; i < swapChainCount; i++) {
+        for(size_t i = 0; i < swapChainCount; i++) {
             m_global[i].buffer = WrapperVk::createBuffer(sizeof(Global), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
             m_global[i].memory = WrapperVk::allocateMemory(flags, m_global[i].buffer);
             m_global[i].descriptorSet = WrapperVk::createDescriptorSet(CommandBufferVk::globalDescriptorSetLayout(), m_descriptorPool);
