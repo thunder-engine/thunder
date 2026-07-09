@@ -124,6 +124,7 @@ void CommandBufferMt::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
         m_viewport.zfar = (float)1.0f;
 
         m_encoder->setViewport(m_viewport);
+        m_encoder->setScissorRect({(uint32_t)x, (uint32_t)y, (uint32_t)width, (uint32_t)height});
     }
 }
 
@@ -145,4 +146,8 @@ void CommandBufferMt::disableScissor() {
             m_encoder->setScissorRect({(uint32_t)rect.x, (uint32_t)rect.y, (uint32_t)rect.width, (uint32_t)rect.height});
         }
     }
+}
+
+void CommandBufferMt::flipResult() {
+    m_global.params.w = 1.0f;
 }

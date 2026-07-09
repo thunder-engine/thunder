@@ -25,9 +25,18 @@ ShadowMap::ShadowMap() :
     setName("ShadowMap");
 
     Engine::setValue(gShadowmap, true);
+
+    m_shadowMap = Engine::objectCreate<Texture>("shadowAtlas");
+    m_shadowMap->setFormat(Texture::Depth);
+    m_shadowMap->setDepthBits(24);
+    m_shadowMap->setFlags(Texture::Render);
+
+    m_shadowMap->resize(m_shadowAtlasSize, m_shadowAtlasSize);
+    m_outputs.push_back(std::make_pair(m_shadowMap->name(), m_shadowMap));
 }
 
 void ShadowMap::analyze(World *world) {
+    A_UNUSED(world);
     RenderList &components = m_context->sceneRenderables();
     for(auto &it : m_context->sceneLights()) {
         if(it->castShadows()) {
@@ -157,17 +166,8 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
     }
 
     if(sub == nullptr) {
-        Texture *map = Engine::objectCreate<Texture>(std::string("shadowAtlas ") + std::to_string(m_shadowPages.size()));
-        map->setFormat(Texture::Depth);
-        map->setDepthBits(24);
-        map->setFlags(Texture::Render);
-
-        map->resize(m_shadowAtlasSize, m_shadowAtlasSize);
-
-        m_context->addTextureBuffer(map);
-
         target = Engine::objectCreate<RenderTarget>();
-        target->setDepthAttachment(map);
+        target->setDepthAttachment(m_shadowMap);
         target->setFlags(RenderTarget::ClearDepth | RenderTarget::Atlas);
 
         AtlasNode *root = new AtlasNode;
@@ -198,4 +198,11 @@ RenderTarget *ShadowMap::requestShadowTiles(uint32_t id, uint32_t lod, int32_t *
 
     target->setRenderArea(x[0], y[0], width * columns, height * rows);
     return target;
+}
+
+void ShadowMap::resize(int width, int height) {
+    if(m_width != width || m_height != height) {
+        m_width = width;
+        m_height = height;
+    }
 }

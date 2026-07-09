@@ -24,6 +24,8 @@ private:
 
     RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
 
+    void resize(int width, int height) override;
+
 private:
     struct AtlasData {
         std::vector<AtlasNode *> nodes;
@@ -37,6 +39,8 @@ private:
 
     std::unordered_map<uint32_t, AtlasData> m_tiles;
     std::unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
+
+    Texture *m_shadowMap;
 
     uint32_t m_shadowAtlasSize;
     uint32_t m_shadowTileSize;

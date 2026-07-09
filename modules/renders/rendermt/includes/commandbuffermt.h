@@ -33,6 +33,8 @@ public:
 
     void disableScissor() override;
 
+    void flipResult() override;
+
 protected:
     MTL::Viewport m_viewport;
 

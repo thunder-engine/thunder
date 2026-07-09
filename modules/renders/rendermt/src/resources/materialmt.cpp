@@ -435,15 +435,13 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const MTL
             }
         }
 
-        if(material->m_doubleSided) {
-            encoder->setCullMode(MTL::CullModeNone);
-        } else {
-            if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
-                encoder->setCullMode(MTL::CullModeFront);
-            } else {
-                encoder->setCullMode(MTL::CullModeBack);
-            }
+        MTL::CullMode mode = MTL::CullModeBack;
+        if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
+            mode = MTL::CullModeFront;
+        } else if(material->m_doubleSided || (layer & Material::Visibility)) {
+            mode = MTL::CullModeNone;
         }
+        encoder->setCullMode(mode);
 
         return true;
     }
