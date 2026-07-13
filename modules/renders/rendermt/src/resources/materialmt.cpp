@@ -147,6 +147,11 @@ void MaterialMt::loadUserData(const VariantMap &data) {
     }
     m_pipelineFunctions.clear();
 
+    for(auto it : m_pipelines) {
+        it.second->release();
+    }
+    m_pipelines.clear();
+
     for(auto &pair : pairs) {
         auto it = data.find(pair.first);
         if(it != data.end()) {
@@ -264,7 +269,7 @@ MTL::RenderPipelineState *MaterialMt::buildPipeline(uint32_t v, uint32_t f, Rend
     if(target->isNative()) {
         descriptor->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
     } else {
-        for(int i = 0; i < target->colorAttachmentCount(); i++) {
+        for(uint32_t i = 0; i < target->colorAttachmentCount(); i++) {
             TextureMt *texture = static_cast<TextureMt *>(target->colorAttachment(i));
 
             MTL::RenderPipelineColorAttachmentDescriptor *attachDesc = MTL::RenderPipelineColorAttachmentDescriptor::alloc()->init();
@@ -438,7 +443,8 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const MTL
         MTL::CullMode mode = MTL::CullModeBack;
         if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
             mode = MTL::CullModeFront;
-        } else if(material->m_doubleSided || (layer & Material::Visibility)) {
+        }
+        if(material->m_doubleSided || (layer & Material::Visibility)) {
             mode = MTL::CullModeNone;
         }
         encoder->setCullMode(mode);
