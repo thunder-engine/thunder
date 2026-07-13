@@ -47,7 +47,7 @@ void main(void) {
     _vertex = vertex;
 
     vec4 pos = cameraWorldToScreen() * vec4(_vertex, 1.0);
-#ifdef ORIGIN_TOP
+#ifdef METAL
     pos.y = -pos.y;
 #endif
     gl_Position = pos;

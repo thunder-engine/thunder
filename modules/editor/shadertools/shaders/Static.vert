@@ -48,7 +48,7 @@ void main(void) {
     _vertex = _modelMatrix * vec4(vertex + PositionOffset, 1.0);
     vec4 pos = cameraWorldToScreen() * _vertex;
 
-#ifdef ORIGIN_TOP
+#ifdef METAL
     pos.y = -pos.y;
 #endif
     _color = color;

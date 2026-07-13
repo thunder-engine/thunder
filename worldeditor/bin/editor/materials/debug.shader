@@ -44,7 +44,7 @@ void main(void) {
 #pragma instance
 
     vec4 pos = modelMatrix() * vec4(vertex, 1.0);
-#ifdef ORIGIN_TOP
+#ifdef METAL
     pos.y = -pos.y;
 #endif
     _uv0 = uv0;

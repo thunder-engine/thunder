@@ -41,7 +41,7 @@ void main(void) {
 #pragma instance
 
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
-#ifdef ORIGIN_TOP
+#ifdef METAL
     proj.y = 1.0 - proj.y;
 #endif
 
@@ -96,6 +96,7 @@ void main(void) {
                 shadow = getShadow(shadowMap, (coord.xy * offset.zw) + offset.xy, coord.z - currentBias);
             }
         }
+
 
         vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);
         vec3 result = albedo * (1.0 - metal) + refl;

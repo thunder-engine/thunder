@@ -35,8 +35,7 @@ layout(location = 0) out vec4 color;
 
 void main(void) {
     vec2 proj = (_vertex.xyz * 0.5f + 0.5f).xy;
-
-#ifdef ORIGIN_TOP
+#ifdef METAL
     proj.y = 1.0 - proj.y;
 #endif
 

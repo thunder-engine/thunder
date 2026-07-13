@@ -20,7 +20,7 @@ layout(location = 0) out vec4 color;
 
 void main() {
     vec2 uv = _uv0;
-#ifdef ORIGIN_TOP
+#ifdef METAL
     uv.y = 1.0 - uv.y;
 #endif
     color = texture(mainTexture, uv);

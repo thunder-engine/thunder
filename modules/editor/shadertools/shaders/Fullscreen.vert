@@ -14,7 +14,7 @@ void main(void) {
     _vertex = vec4(vertex * 2.0, 1.0);
     _uv0 = uv0;
     _color = color;
-#ifdef ORIGIN_TOP
+#ifdef METAL
     _uv0.y = 1.0 - _uv0.y;
 #endif
     gl_Position = _vertex;

@@ -63,7 +63,7 @@ void main(void) {
 
     vec4 pos = cameraWorldToScreen() * _vertex;
 
-#ifdef ORIGIN_TOP
+#ifdef METAL
     pos.y = -pos.y;
 #endif
     _color = color;

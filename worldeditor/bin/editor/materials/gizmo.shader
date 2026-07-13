@@ -23,7 +23,7 @@ layout(location = 0) out vec4 rgb;
 
 void main(void) {
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
-#ifdef ORIGIN_TOP
+#ifdef METAL
     proj.y = 1.0 - proj.y;
 #endif
     float depth = getLinearDepth(texture(depthMap, proj).x, nearClipPlane(), farClipPlane());
@@ -48,7 +48,7 @@ layout(location = 1) out vec4 _color;
 
 void main(void) {
     _vertex = cameraWorldToScreen() * vec4(vertex, 1.0);
-#ifdef ORIGIN_TOP
+#ifdef METAL
     _vertex.y = -_vertex.y;
 #endif
     _color = color;

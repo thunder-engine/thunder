@@ -527,7 +527,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                 }
 
                 if(currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
-                    define += "\n#define ORIGIN_TOP";
+                    define += "\n#define METAL";
                 }
 
                 define += "\n#define USE_GBUFFER";
