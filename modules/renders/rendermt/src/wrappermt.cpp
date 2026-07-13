@@ -29,3 +29,7 @@ MTL::Device *WrapperMt::device() {
 MTL::CommandQueue *WrapperMt::queue() {
     return s_queue;
 }
+
+uint32_t WrapperMt::framesInFlight() {
+    return 2;
+}

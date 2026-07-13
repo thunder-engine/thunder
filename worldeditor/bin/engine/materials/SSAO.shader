@@ -95,7 +95,7 @@ layout(location = 2) flat out mat4 _projectionInv;
 
 void main(void) {
     _vertex = vec4(vertex * 2.0, 1.0);
-#ifdef ORIGIN_TOP
+#ifdef METAL
     _vertex.y = -_vertex.y;
 #endif
     _uv0 = uv0;

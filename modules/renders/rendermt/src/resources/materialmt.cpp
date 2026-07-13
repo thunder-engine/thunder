@@ -147,6 +147,11 @@ void MaterialMt::loadUserData(const VariantMap &data) {
     }
     m_pipelineFunctions.clear();
 
+    for(auto it : m_pipelines) {
+        it.second->release();
+    }
+    m_pipelines.clear();
+
     for(auto &pair : pairs) {
         auto it = data.find(pair.first);
         if(it != data.end()) {
@@ -174,7 +179,7 @@ void MaterialMt::loadUserData(const VariantMap &data) {
             if(pair.second == FragmentVisibility) {
                 m_layers |= Material::Visibility;
                 if(m_layers & Opaque) {
-                    //m_layers |= Material::Shadowcast;
+                    m_layers |= Material::Shadowcast;
                 }
             }
 
@@ -264,7 +269,7 @@ MTL::RenderPipelineState *MaterialMt::buildPipeline(uint32_t v, uint32_t f, Rend
     if(target->isNative()) {
         descriptor->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
     } else {
-        for(int i = 0; i < target->colorAttachmentCount(); i++) {
+        for(uint32_t i = 0; i < target->colorAttachmentCount(); i++) {
             TextureMt *texture = static_cast<TextureMt *>(target->colorAttachment(i));
 
             MTL::RenderPipelineColorAttachmentDescriptor *attachDesc = MTL::RenderPipelineColorAttachmentDescriptor::alloc()->init();
@@ -341,7 +346,6 @@ MaterialInstance *MaterialMt::createInstance(SurfaceType type) {
 
 MaterialInstanceMt::MaterialInstanceMt(Material *material) :
         MaterialInstance(material),
-        m_instanceBuffer(nullptr),
         m_globalVertextLocation(-1),
         m_localVertextLocation(-1),
         m_globalFragmentLocation(-1),
@@ -350,18 +354,20 @@ MaterialInstanceMt::MaterialInstanceMt(Material *material) :
 }
 
 MaterialInstanceMt::~MaterialInstanceMt() {
-    if(m_instanceBuffer != nullptr) {
-        m_instanceBuffer->release();
-        m_instanceBuffer = 0;
+    for(auto it : m_local) {
+        if(it) {
+            it->release();
+        }
     }
+    m_local.clear();
 }
 
-bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Global &global) {
+bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const MTL::Buffer *global, uint32_t currentFrame) {
     MTL::RenderCommandEncoder *encoder = buffer.encoder();
 
     MaterialMt *material = static_cast<MaterialMt *>(m_material);
 
-    if(material->bind(encoder, buffer.currentRenderTarget(), layer, m_surfaceType + 1)) {
+    if(material->bind(encoder, static_cast<RenderTargetMt *>(buffer.renderTarget()), layer, m_surfaceType + 1)) {
         if(m_globalVertextLocation == -1 && m_localVertextLocation == -1) {
             MaterialMt::Shader *shader = material->shader(VertexStatic);
             for(auto uniform : shader->uniforms) {
@@ -385,44 +391,35 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
         }
 
         // Global buffer
-        {
-            if(m_globalBuffer == nullptr) {
-                m_globalBuffer = WrapperMt::device()->newBuffer(sizeof(Global), MTL::ResourceStorageModeShared);
-            }
-            uint8_t *ptr = reinterpret_cast<uint8_t *>(m_globalBuffer->contents());
-            if(ptr) {
-                memcpy(ptr, &global, sizeof(Global));
-            }
-
-            if(m_globalVertextLocation >= 0) {
-                encoder->setVertexBuffer(m_globalBuffer, 0, m_globalVertextLocation);
-            }
-            if(m_globalFragmentLocation >= 0) {
-                encoder->setFragmentBuffer(m_globalBuffer, 0, m_globalFragmentLocation);
-            }
+        if(m_globalVertextLocation >= 0) {
+            encoder->setVertexBuffer(global, 0, m_globalVertextLocation);
+        }
+        if(m_globalFragmentLocation >= 0) {
+           encoder->setFragmentBuffer(global, 0, m_globalFragmentLocation);
         }
 
+        if(m_local.empty()) {
+            m_local.resize(WrapperMt::framesInFlight());
+        }
         // Instance buffer
-        {
-            const ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
+        const ByteArray &localBuffer = m_batchBuffer ? *m_batchBuffer : rawUniformBuffer();
 
-            if(m_instanceBuffer == nullptr || m_instanceBuffer->length() < localBuffer.size()) {
-                if(m_instanceBuffer) {
-                    m_instanceBuffer->release();
-                }
-                m_instanceBuffer = WrapperMt::device()->newBuffer(localBuffer.size(), MTL::ResourceStorageModeShared);
+        if(m_local[currentFrame] == nullptr || m_local[currentFrame]->length() < localBuffer.size()) {
+            if(m_local[currentFrame]) {
+                m_local[currentFrame]->release();
             }
-            uint8_t *ptr = reinterpret_cast<uint8_t *>(m_instanceBuffer->contents());
-            if(ptr) {
-                memcpy(ptr, localBuffer.data(), localBuffer.size());
-            }
+            m_local[currentFrame] = WrapperMt::device()->newBuffer(localBuffer.size(), MTL::ResourceStorageModeShared);
+        }
+        uint8_t *ptr = reinterpret_cast<uint8_t *>(m_local[currentFrame]->contents());
+        if(ptr) {
+            memcpy(ptr, localBuffer.data(), localBuffer.size());
+        }
 
-            if(m_localVertextLocation >= 0) {
-                encoder->setVertexBuffer(m_instanceBuffer, 0, m_localVertextLocation);
-            }
-            if(m_localFragmentLocation >= 0) {
-                encoder->setFragmentBuffer(m_instanceBuffer, 0, m_localFragmentLocation);
-            }
+        if(m_localVertextLocation >= 0) {
+            encoder->setVertexBuffer(m_local[currentFrame], 0, m_localVertextLocation);
+        }
+        if(m_localFragmentLocation >= 0) {
+            encoder->setFragmentBuffer(m_local[currentFrame], 0, m_localFragmentLocation);
         }
 
         for(auto &it : material->textures()) {
@@ -443,15 +440,14 @@ bool MaterialInstanceMt::bind(CommandBufferMt &buffer, uint32_t layer, const Glo
             }
         }
 
-        if(material->m_doubleSided) {
-            encoder->setCullMode(MTL::CullModeNone);
-        } else {
-            if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
-                encoder->setCullMode(MTL::CullModeFront);
-            } else {
-                encoder->setCullMode(MTL::CullModeBack);
-            }
+        MTL::CullMode mode = MTL::CullModeBack;
+        if(layer & Material::Shadowcast || material->m_materialType == Material::LightFunction) {
+            mode = MTL::CullModeFront;
         }
+        if(material->m_doubleSided || (layer & Material::Visibility)) {
+            mode = MTL::CullModeNone;
+        }
+        encoder->setCullMode(mode);
 
         return true;
     }

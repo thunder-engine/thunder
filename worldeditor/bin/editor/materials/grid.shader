@@ -38,7 +38,7 @@ void main() {
     float lineWidth = width;
 
     vec4 vertex = _vertex;
- #ifdef ORIGIN_TOP
+ #ifdef METAL
     vertex.y = -vertex.y;
 #endif
     vec4 world = _screenToWorld * vertex;
@@ -108,7 +108,7 @@ void main(void) {
 
     _vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0);
     _screenToWorld = cameraScreenToWorld();
-#ifdef ORIGIN_TOP
+#ifdef METAL
     _vertex.y = -_vertex.y;
 #endif
     _color = color;

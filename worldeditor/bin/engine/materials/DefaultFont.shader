@@ -71,7 +71,7 @@ void main(void) {
     _color = color;
 
     vec4 vertex = cameraWorldToScreen() * modelMatrix() * vec4(vertex, 1.0f);
-#ifdef ORIGIN_TOP
+#ifdef METAL
     vertex.y = -vertex.y;
 #endif
     gl_Position = vertex;

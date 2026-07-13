@@ -10,6 +10,8 @@ public:
 
     static MTL::CommandQueue *queue();
 
+    static uint32_t framesInFlight();
+
 protected:
     static MTL::Device *s_device;
 

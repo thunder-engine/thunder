@@ -22,13 +22,13 @@ private:
     void lightUpdate(BaseLight *light, int count);
     void cleanShadowCache();
 
-    RenderTarget *requestShadowTiles(uint32_t id, uint32_t lod, int32_t *x, int32_t *y, int32_t *w, int32_t *h, uint32_t count);
+    const std::vector<AtlasNode *> *requestShadowTiles(uint32_t id, uint32_t lod, uint32_t count);
+
+    void resize(int width, int height) override;
 
 private:
     struct AtlasData {
         std::vector<AtlasNode *> nodes;
-
-        RenderTarget *target = nullptr;
 
         AtlasNode *sub = nullptr;
 
@@ -36,7 +36,11 @@ private:
     };
 
     std::unordered_map<uint32_t, AtlasData> m_tiles;
-    std::unordered_map<RenderTarget *, AtlasNode *> m_shadowPages;
+
+    AtlasNode *m_root;
+
+    RenderTarget *m_shadowTarget;
+    Texture *m_shadowMap;
 
     uint32_t m_shadowAtlasSize;
     uint32_t m_shadowTileSize;

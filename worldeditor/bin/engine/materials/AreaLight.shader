@@ -98,7 +98,7 @@ void main (void) {
     // params = x - brightness, y - radius/width, z - length/height, w - cutoff
 
     vec2 proj = ((_vertex.xyz / _vertex.w) * 0.5 + 0.5).xy;
-#ifdef ORIGIN_TOP
+#ifdef METAL
     proj.y = 1.0 - proj.y;
 #endif
 

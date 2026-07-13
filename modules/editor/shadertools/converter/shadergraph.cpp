@@ -474,8 +474,12 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define USE_GBUFFER";
     }
 
+    if(ShaderBuilder::currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
+        define += "\n#define VULKAN";
+    }
+
     if(ShaderBuilder::currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
-        define += "\n#define ORIGIN_TOP";
+        define += "\n#define METAL";
     }
 
     NativeCodeBuilder *builder = ProjectSettings::instance()->currentBuilder();

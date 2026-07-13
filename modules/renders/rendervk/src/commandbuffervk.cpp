@@ -15,7 +15,8 @@ PFN_vkCmdBeginDebugUtilsLabelEXT CommandBufferVk::vkCmdBeginDebugUtilsLabelEXT;
 PFN_vkCmdEndDebugUtilsLabelEXT CommandBufferVk::vkCmdEndDebugUtilsLabelEXT;
 
 CommandBufferVk::CommandBufferVk() :
-        m_commandBuffer(VK_NULL_HANDLE) {
+        m_commandBuffer(VK_NULL_HANDLE),
+        m_currentFrame(0) {
     PROFILE_FUNCTION();
 
 }
