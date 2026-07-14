@@ -389,6 +389,46 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
     }
 }
 
+namespace {
+    void applyAttachmentTransform(const VariantMap &fields, Vector3 &vertex, float customScale) {
+        Vector3 pos;
+        auto it = fields.find(gX);
+        if(it != fields.end()) {
+            pos.x = it->second.toString().toFloat();
+        }
+        it = fields.find(gY);
+        if(it != fields.end()) {
+            pos.y = it->second.toString().toFloat();
+        }
+
+        Vector3 rot;
+        it = fields.find(gRotation);
+        if(it != fields.end()) {
+            rot.z = it->second.toString().toFloat();
+        }
+
+        Vector3 scl(1.0f);
+        it = fields.find(gScaleX);
+        if(it != fields.end()) {
+            scl.x = it->second.toString().toFloat();
+        }
+        it = fields.find(gScaleY);
+        if(it != fields.end()) {
+            scl.y = it->second.toString().toFloat();
+        }
+
+        Matrix3 matrix;
+        matrix.rotate(Vector3(0.0f, 0.0f, 1.0f), rot.z);
+
+        Vector3 transformed(vertex.x * scl.x, vertex.y * scl.y, vertex.z);
+        transformed = matrix * transformed;
+        transformed += pos;
+        transformed *= customScale;
+
+        vertex = transformed;
+    }
+}
+
 void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
     Item item = settings->m_atlasItems[itemName];
 
@@ -591,7 +631,47 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
 
         float customScale = settings->customScale();
         for(auto &vertex : vertices) {
-            vertex = vertex * customScale;
+            applyAttachmentTransform(fields, vertex, customScale);
+        }
+    }
+
+    auto deformIt = fields.find("deform");
+    if(deformIt != fields.end()) {
+        VariantList deformList = deformIt->second.toList();
+        if(!deformList.empty()) {
+            for(auto &deform : deformList) {
+                VariantMap deformData = deform.toMap();
+                TString shapeName = deformData["name"].toString();
+
+                auto verticesIt = deformData.find("vertices");
+                if(verticesIt != deformData.end()) {
+                    std::vector<uint32_t> indices;
+                    Vector3Vector frameVertices;
+
+                    uint32_t offset = deformData["offset"].toInt();
+
+                    VariantList vertices = verticesIt->second.toList();
+                    auto vertexIt = vertices.begin();
+                    uint32_t index = 0;
+                    while(vertexIt != vertices.end()) {
+                        Vector3 delta;
+                        delta.x = vertexIt->toFloat();
+                        vertexIt++;
+                        delta.y = vertexIt->toFloat();
+                        vertexIt++;
+
+                        if(delta.x != 0.0f || delta.y != 0.0f) {
+                            indices.push_back(offset + index);
+                            frameVertices.push_back(delta);
+                        }
+                        index++;
+                    }
+
+                    if(!indices.empty()) {
+                        mesh->addBlendShapeFrame(shapeName, 1, indices, frameVertices);
+                    }
+                }
+            }
         }
     }
 

@@ -20,6 +20,19 @@ class ENGINE_EXPORT Mesh : public Resource {
     A_NOENUMS()
 
 public:
+    struct BlendShapeFrame {
+        float weight;
+        IndexVector indices;
+        Vector3Vector vertices;
+        Vector3Vector normals;
+        Vector3Vector tangents;
+    };
+
+    struct BlendShape {
+        TString name;
+        std::vector<BlendShapeFrame> frames;
+    };
+
     Mesh();
 
     bool operator== (const Mesh &right) const;
@@ -56,6 +69,19 @@ public:
 
     Vector2Vector &uv1();
     void setUv1(const Vector2Vector &uv1);
+
+    std::vector<BlendShape> &blendShapes();
+    void clearBlendShapes();
+
+    size_t blendShapeCount() const;
+    size_t blendShapeFrameCount(size_t blendShapeIndex) const;
+    float blendShapeFrameWeight(size_t blendShapeIndex, size_t frameIndex) const;
+    void setBlendShapeFrameWeight(size_t blendShapeIndex, size_t frameIndex, float weight);
+    void addBlendShapeFrame(const TString &name, float weight,
+                            const IndexVector &indices,
+                            const Vector3Vector &vertices,
+                            const Vector3Vector &normals = Vector3Vector(),
+                            const Vector3Vector &tangents = Vector3Vector());
 
     AABBox bound() const;
     void setBound(const AABBox &box);
@@ -103,6 +129,8 @@ private:
     Vector2Vector m_uv0;
 
     Vector2Vector m_uv1;
+
+    std::vector<BlendShape> m_blendShapes;
 
     IndexVector m_indices;
 

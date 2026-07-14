@@ -75,6 +75,7 @@ void Mesh::clear() {
     m_tangents.clear();
     m_bones.clear();
     m_weights.clear();
+    m_blendShapes.clear();
 }
 /*!
     Returns a default material for the \a sub mesh.
@@ -212,6 +213,81 @@ void Mesh::setUv1(const Vector2Vector &uv1) {
     m_uv1 = uv1;
 }
 /*!
+    Returns the list of blend shapes for the Mesh.
+*/
+std::vector<Mesh::BlendShape> &Mesh::blendShapes() {
+    return m_blendShapes;
+}
+/*!
+    Clears all blend shapes from the Mesh.
+*/
+void Mesh::clearBlendShapes() {
+    m_blendShapes.clear();
+}
+
+size_t Mesh::blendShapeCount() const {
+    return m_blendShapes.size();
+}
+
+size_t Mesh::blendShapeFrameCount(size_t blendShapeIndex) const {
+    if(blendShapeIndex >= m_blendShapes.size()) {
+        return 0;
+    }
+    return m_blendShapes[blendShapeIndex].frames.size();
+}
+
+float Mesh::blendShapeFrameWeight(size_t blendShapeIndex, size_t frameIndex) const {
+    if(blendShapeIndex >= m_blendShapes.size()) {
+        return 0.0f;
+    }
+    const auto &frames = m_blendShapes[blendShapeIndex].frames;
+    if(frameIndex >= frames.size()) {
+        return 0.0f;
+    }
+    return frames[frameIndex].weight;
+}
+
+void Mesh::setBlendShapeFrameWeight(size_t blendShapeIndex, size_t frameIndex, float weight) {
+    if(blendShapeIndex >= m_blendShapes.size()) {
+        return;
+    }
+    auto &frames = m_blendShapes[blendShapeIndex].frames;
+    if(frameIndex >= frames.size()) {
+        return;
+    }
+    frames[frameIndex].weight = weight;
+}
+
+void Mesh::addBlendShapeFrame(const TString &name, float weight,
+                              const IndexVector &indices,
+                              const Vector3Vector &vertices,
+                              const Vector3Vector &normals,
+                              const Vector3Vector &tangents) {
+    for(auto &shape : m_blendShapes) {
+        if(shape.name == name) {
+            BlendShapeFrame frame;
+            frame.weight = weight;
+            frame.indices = indices;
+            frame.vertices = vertices;
+            frame.normals = normals;
+            frame.tangents = tangents;
+            shape.frames.push_back(frame);
+            return;
+        }
+    }
+
+    BlendShape shape;
+    shape.name = name;
+    BlendShapeFrame frame;
+    frame.weight = weight;
+    frame.indices = indices;
+    frame.vertices = vertices;
+    frame.normals = normals;
+    frame.tangents = tangents;
+    shape.frames.push_back(frame);
+    m_blendShapes.push_back(shape);
+}
+/*! 
     Returns bounding box for the Mesh.
 */
 AABBox Mesh::bound() const {
@@ -518,6 +594,51 @@ void Mesh::loadUserData(const VariantMap &data) {
             m_offsets.push_back(0);
         }
 
+        i++;
+        // Loading blend shapes
+        if(i != mesh.end()) {
+            m_blendShapes.clear();
+            VariantList blendShapes = (*i).toList();
+            m_blendShapes.reserve(blendShapes.size());
+
+            for(auto &shape : blendShapes) {
+                VariantList shapeData = shape.toList();
+
+                BlendShape blendShape;
+                auto s = shapeData.begin();
+                blendShape.name = (*s).toString();
+                s++;
+                VariantList frames = (*s).toList();
+                blendShape.frames.reserve(frames.size());
+                for(auto &frame : frames) {
+                    VariantList frameData = frame.toList();
+
+                    BlendShapeFrame shapeFrame;
+                    auto f = frameData.begin();
+                    shapeFrame.weight = f->toFloat();
+                    f++;
+                    ByteArray shapeData;
+                    shapeData = f->toByteArray();
+                    shapeFrame.indices.resize(shapeData.size() / sizeof(uint32_t));
+                    memcpy(reinterpret_cast<void*>(shapeFrame.indices.data()), shapeData.data(), shapeData.size());
+                    f++;
+                    shapeData = f->toByteArray();
+                    shapeFrame.vertices.resize(shapeData.size() / sizeof(Vector3));
+                    memcpy(reinterpret_cast<void*>(shapeFrame.vertices.data()), shapeData.data(), shapeData.size());
+                    f++;
+                    shapeData = f->toByteArray();
+                    shapeFrame.normals.resize(shapeData.size() / sizeof(Vector3));
+                    memcpy(reinterpret_cast<void*>(shapeFrame.normals.data()), shapeData.data(), shapeData.size());
+                    f++;
+                    shapeData = f->toByteArray();
+                    shapeFrame.tangents.resize(shapeData.size() / sizeof(Vector3));
+                    memcpy(reinterpret_cast<void*>(shapeFrame.tangents.data()), shapeData.data(), shapeData.size());
+                }
+
+                m_blendShapes.push_back(blendShape);
+            }
+        }
+
         m_box.setBox(min, max);
     }
     switchState(ToBeUpdated);
@@ -610,6 +731,44 @@ VariantMap Mesh::saveUserData() const {
         offsets.push_back(it);
     }
     mesh.push_back(offsets);
+
+    if(!m_blendShapes.empty()) {
+        VariantList blendShapes;
+        for(auto &shape : m_blendShapes) {
+            VariantList shapeList;
+            shapeList.push_back(shape.name);
+
+            VariantList frameList;
+            for(auto &shapeFrame : shape.frames) {
+                VariantList frameData;
+
+                frameData.push_back(shapeFrame.weight);
+
+                ByteArray buffer;
+                buffer.resize(sizeof(uint32_t) * shapeFrame.indices.size());
+                memcpy(buffer.data(), shapeFrame.indices.data(), buffer.size());
+                frameData.push_back(buffer);
+
+                buffer.resize(sizeof(Vector3) * shapeFrame.vertices.size());
+                memcpy(buffer.data(), shapeFrame.vertices.data(), buffer.size());
+                frameData.push_back(buffer);
+
+                buffer.resize(sizeof(Vector3) * shapeFrame.normals.size());
+                memcpy(buffer.data(), shapeFrame.normals.data(), buffer.size());
+                frameData.push_back(buffer);
+
+                buffer.resize(sizeof(Vector3) * shapeFrame.tangents.size());
+                memcpy(buffer.data(), shapeFrame.tangents.data(), buffer.size());
+                frameData.push_back(buffer);
+
+                frameList.push_back(frameData);
+            }
+            shapeList.push_back(frameList);
+
+            blendShapes.push_back(shapeList);
+        }
+        mesh.push_back(blendShapes);
+    }
 
     result[gData] = mesh;
 

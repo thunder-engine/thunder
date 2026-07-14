@@ -24,6 +24,12 @@ public:
     Mesh *mesh() const;
     void setMesh(Mesh *mesh);
 
+    float blendShapeWeight(size_t index) const;
+    void setBlendShapeWeight(size_t index, float weight);
+    float blendShapeWeight(const TString &name) const;
+    void setBlendShapeWeight(const TString &name, float weight);
+    void clearBlendShapeWeights();
+
     VariantList materials() const;
     void setMaterials(VariantList list);
 
@@ -36,8 +42,13 @@ protected:
 
     void composeComponent() override;
 
+    void applyBlendShapeWeights();
+
 protected:
     Mesh *m_mesh;
+    Mesh *m_meshInstance;
+
+    std::vector<float> m_blendShapeWeights;
 
 };
 
