@@ -60,6 +60,8 @@ protected:
 
     virtual void setMaterialsList(const std::list<Material *> &materials);
 
+    void applyBlendShapeWeights(Mesh &mesh, Mesh &instance, const std::vector<float> &weights);
+
 protected:
     friend class PipelineContext;
     friend class PipelineTask;

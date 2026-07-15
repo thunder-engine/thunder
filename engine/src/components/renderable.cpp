@@ -208,3 +208,61 @@ void Renderable::group(const GroupList &in, GroupList &out) {
         out.push_back(last);
     }
 }
+/*!
+    Applies current blend shape \a weights to the \a mesh \a instance vertices.
+*/
+void Renderable::applyBlendShapeWeights(Mesh &mesh, Mesh &instance, const std::vector<float> &weights) {
+    const auto &blendShapes = mesh.blendShapes();
+    if(blendShapes.empty()) {
+        return;
+    }
+
+    const Vector3Vector &baseVertices = mesh.vertices();
+    const Vector3Vector &baseNormals = mesh.normals();
+    const Vector3Vector &baseTangents = mesh.tangents();
+
+    Vector3Vector &vertices = instance.vertices();
+    Vector3Vector &normals = instance.normals();
+    Vector3Vector &tangents = instance.tangents();
+
+    for(size_t shapeIndex = 0; shapeIndex < blendShapes.size(); ++shapeIndex) {
+        const Mesh::BlendShape &shape = blendShapes[shapeIndex];
+        float weight = 0.0f;
+        if(shapeIndex < weights.size()) {
+            weight = weights[shapeIndex];
+        }
+        if(weight == 0.0f) {
+            continue;
+        }
+
+        const Mesh::BlendShapeFrame *activeFrame = nullptr;
+        for(const auto &frame : shape.frames) {
+            if(frame.weight != 0.0f) {
+                activeFrame = &frame;
+                break;
+            }
+        }
+
+        if(!activeFrame) {
+            continue;
+        }
+
+        for(size_t i = 0; i < activeFrame->indices.size(); ++i) {
+            uint32_t index = activeFrame->indices[i];
+
+            if(index >= baseVertices.size()) {
+                continue;
+            }
+
+            vertices[index] = baseVertices[index] + activeFrame->vertices[i] * weight;
+            if(i < activeFrame->normals.size()) {
+                normals[index] = baseNormals[index] + activeFrame->normals[i] * weight;
+            }
+            if(i < activeFrame->tangents.size()) {
+                tangents[index] = baseTangents[index] + activeFrame->tangents[i] * weight;
+            }
+        }
+    }
+
+    instance.recalcBounds();
+}

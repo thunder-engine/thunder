@@ -24,7 +24,8 @@ MeshRender::~MeshRender() {
     }
 
     if(m_meshInstance) {
-        m_meshInstance->decRef();
+        delete m_meshInstance;
+        m_meshInstance = nullptr;
     }
 }
 /*!
@@ -60,6 +61,11 @@ void MeshRender::setMesh(Mesh *mesh) {
             m_mesh->decRef();
         }
 
+        if(m_meshInstance) {
+            delete m_meshInstance;
+            m_meshInstance = nullptr;
+        }
+
         m_mesh = mesh;
         m_blendShapeWeights.clear();
         if(m_mesh) {
@@ -76,14 +82,18 @@ void MeshRender::setMesh(Mesh *mesh) {
         }
     }
 }
-
+/*!
+    Returns weight of a blend shape  with specified \a index.
+*/
 float MeshRender::blendShapeWeight(size_t index) const {
     if(index < m_blendShapeWeights.size()) {
         return m_blendShapeWeights[index];
     }
     return 0.0f;
 }
-
+/*!
+    Sets the \a weight of a blend shape with specified \a index for this renderer.
+*/
 void MeshRender::setBlendShapeWeight(size_t index, float weight) {
     if(index >= m_blendShapeWeights.size()) {
         m_blendShapeWeights.resize(index + 1, 0.0f);
@@ -91,37 +101,10 @@ void MeshRender::setBlendShapeWeight(size_t index, float weight) {
     m_blendShapeWeights[index] = weight;
 
     if(m_mesh && m_mesh->blendShapeCount() > index) {
-        applyBlendShapeWeights();
-    }
-}
-
-float MeshRender::blendShapeWeight(const TString &name) const {
-    if(m_mesh) {
-        const auto &shapes = m_mesh->blendShapes();
-        for(size_t i = 0; i < shapes.size(); ++i) {
-            if(shapes[i].name == name) {
-                return blendShapeWeight(i);
-            }
+        if(ensureMeshInstance()) {
+            applyBlendShapeWeights(*m_mesh, *m_meshInstance, m_blendShapeWeights);
         }
     }
-    return 0.0f;
-}
-
-void MeshRender::setBlendShapeWeight(const TString &name, float weight) {
-    if(m_mesh) {
-        const auto &shapes = m_mesh->blendShapes();
-        for(size_t i = 0; i < shapes.size(); ++i) {
-            if(shapes[i].name == name) {
-                setBlendShapeWeight(i, weight);
-                return;
-            }
-        }
-    }
-}
-
-void MeshRender::clearBlendShapeWeights() {
-    m_blendShapeWeights.clear();
-    applyBlendShapeWeights();
 }
 /*!
     Returns a list of assigned materials.
@@ -164,77 +147,25 @@ void MeshRender::composeComponent() {
     setMesh(PipelineContext::defaultCube());
 }
 /*!
-    Applies current blend shape \a weights to the mesh vertices.
+    \internal
 */
-void MeshRender::applyBlendShapeWeights() {
+Mesh *MeshRender::ensureMeshInstance() {
     if(m_mesh == nullptr) {
-        return;
+        return nullptr;
     }
-
-    const auto &blendShapes = m_mesh->blendShapes();
-    if(blendShapes.empty()) {
-        return;
-    }
-
-    const Vector3Vector &baseVertices = m_mesh->vertices();
-    const Vector3Vector &baseNormals = m_mesh->normals();
-    const Vector3Vector &baseTangents = m_mesh->tangents();
 
     if(m_meshInstance == nullptr) {
-        m_meshInstance = Engine::objectCreate<Mesh>(m_mesh->name());
-        m_meshInstance->setVertices(baseVertices);
-        m_meshInstance->setNormals(baseNormals);
-        m_meshInstance->setTangents(baseTangents);
+        m_meshInstance = Engine::objectCreate<Mesh>();
+        m_meshInstance->setIndices(m_mesh->indices());
+        m_meshInstance->setVertices(m_mesh->vertices());
+        m_meshInstance->setNormals(m_mesh->normals());
+        m_meshInstance->setTangents(m_mesh->tangents());
         m_meshInstance->setUv0(m_mesh->uv0());
         m_meshInstance->setUv1(m_mesh->uv1());
         m_meshInstance->setColors(m_mesh->colors());
         m_meshInstance->setBones(m_mesh->bones());
         m_meshInstance->setWeights(m_mesh->weights());
-        m_meshInstance->setIndices(m_mesh->indices());
     }
 
-    Vector3Vector &vertices = m_meshInstance->vertices();
-    Vector3Vector &normals = m_meshInstance->normals();
-    Vector3Vector &tangents = m_meshInstance->tangents();
-
-    for(size_t shapeIndex = 0; shapeIndex < blendShapes.size(); ++shapeIndex) {
-        const Mesh::BlendShape &shape = blendShapes[shapeIndex];
-        float weight = 0.0f;
-        if(shapeIndex < m_blendShapeWeights.size()) {
-            weight = m_blendShapeWeights[shapeIndex];
-        }
-        if(weight == 0.0f) {
-            continue;
-        }
-
-        const Mesh::BlendShapeFrame *activeFrame = nullptr;
-        for(const auto &frame : shape.frames) {
-            if(frame.weight != 0.0f) {
-                activeFrame = &frame;
-                break;
-            }
-        }
-
-        if(!activeFrame) {
-            continue;
-        }
-
-        for(size_t i = 0; i < activeFrame->indices.size(); ++i) {
-            uint32_t index = activeFrame->indices[i];
-
-            if(index >= baseVertices.size()) {
-                continue;
-            }
-
-            vertices[index] = baseVertices[index] + activeFrame->vertices[i] * weight;
-            if(i < activeFrame->normals.size()) {
-                normals[index] = baseNormals[index] + activeFrame->normals[i] * weight;
-            }
-            if(i < activeFrame->tangents.size()) {
-                tangents[index] = baseTangents[index] + activeFrame->tangents[i] * weight;
-            }
-        }
-    }
-
-    m_meshInstance->recalcBounds();
+    return m_meshInstance;
 }

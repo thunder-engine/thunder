@@ -37,6 +37,7 @@ SpriteRender::SpriteRender() :
         m_texture(nullptr),
         m_mesh(PipelineContext::defaultPlane()),
         m_customMesh(Engine::objectCreate<Mesh>()),
+        m_customMeshInstance(nullptr),
         m_drawMode(Simple),
         m_priority(0),
         m_useCustom(false),
@@ -228,6 +229,30 @@ void SpriteRender::setLayer(int layer) {
     m_dirtyMaterial = true;
 }
 /*!
+    Returns weight of a blend shape  with specified \a index.
+*/
+float SpriteRender::blendShapeWeight(size_t index) const {
+    if(index < m_blendShapeWeights.size()) {
+        return m_blendShapeWeights[index];
+    }
+    return 0.0f;
+}
+/*!
+    Sets the \a weight of a blend shape with specified \a index for this renderer.
+*/
+void SpriteRender::setBlendShapeWeight(size_t index, float weight) {
+    if(index >= m_blendShapeWeights.size()) {
+        m_blendShapeWeights.resize(index + 1, 0.0f);
+    }
+    m_blendShapeWeights[index] = weight;
+
+    if(m_mesh && m_mesh->blendShapeCount() > index) {
+        if(ensureMeshInstance()) {
+            applyBlendShapeWeights(*m_customMesh, *m_customMeshInstance, m_blendShapeWeights);
+        }
+    }
+}
+/*!
     \internal
 */
 void SpriteRender::setMaterial(Material *material) {
@@ -248,6 +273,29 @@ void SpriteRender::setMaterialsList(const std::list<Material *> &materials) {
 */
 void SpriteRender::composeComponent() {
     setMaterial(Engine::loadResource<Material>(gDefaultSprite));
+}
+/*!
+    \internal
+*/
+Mesh *SpriteRender::ensureMeshInstance() {
+    if(m_customMesh == nullptr) {
+        return nullptr;
+    }
+
+    if(m_customMeshInstance == nullptr) {
+        m_customMeshInstance = Engine::objectCreate<Mesh>();
+        m_customMeshInstance->setIndices(m_customMesh->indices());
+        m_customMeshInstance->setVertices(m_customMesh->vertices());
+        m_customMeshInstance->setNormals(m_customMesh->normals());
+        m_customMeshInstance->setTangents(m_customMesh->tangents());
+        m_customMeshInstance->setUv0(m_customMesh->uv0());
+        m_customMeshInstance->setUv1(m_customMesh->uv1());
+        m_customMeshInstance->setColors(m_customMesh->colors());
+        m_customMeshInstance->setBones(m_customMesh->bones());
+        m_customMeshInstance->setWeights(m_customMesh->weights());
+    }
+
+    return m_customMeshInstance;
 }
 /*!
     \internal
