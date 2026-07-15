@@ -1,7 +1,5 @@
 #include "components/meshrender.h"
 
-#include "components/transform.h"
-
 #include "resources/material.h"
 
 #include "pipelinecontext.h"
@@ -16,18 +14,27 @@
 */
 
 MeshRender::MeshRender() :
-        m_mesh(nullptr) {
+        m_mesh(nullptr),
+        m_meshInstance(nullptr) {
 
 }
 MeshRender::~MeshRender() {
     if(m_mesh) {
         m_mesh->decRef();
     }
+
+    if(m_meshInstance) {
+        delete m_meshInstance;
+        m_meshInstance = nullptr;
+    }
 }
 /*!
     \internal
 */
 Mesh *MeshRender::meshToDraw() {
+    if(m_meshInstance) {
+        return m_meshInstance;
+    }
     return m_mesh;
 }
 /*!
@@ -54,7 +61,13 @@ void MeshRender::setMesh(Mesh *mesh) {
             m_mesh->decRef();
         }
 
+        if(m_meshInstance) {
+            delete m_meshInstance;
+            m_meshInstance = nullptr;
+        }
+
         m_mesh = mesh;
+        m_blendShapeWeights.clear();
         if(m_mesh) {
             m_mesh->incRef();
 
@@ -66,6 +79,30 @@ void MeshRender::setMesh(Mesh *mesh) {
 
                 setMaterialsList(materials);
             }
+        }
+    }
+}
+/*!
+    Returns weight of a blend shape  with specified \a index.
+*/
+float MeshRender::blendShapeWeight(size_t index) const {
+    if(index < m_blendShapeWeights.size()) {
+        return m_blendShapeWeights[index];
+    }
+    return 0.0f;
+}
+/*!
+    Sets the \a weight of a blend shape with specified \a index for this renderer.
+*/
+void MeshRender::setBlendShapeWeight(size_t index, float weight) {
+    if(index >= m_blendShapeWeights.size()) {
+        m_blendShapeWeights.resize(index + 1, 0.0f);
+    }
+    m_blendShapeWeights[index] = weight;
+
+    if(m_mesh && m_mesh->blendShapeCount() > index) {
+        if(ensureMeshInstance()) {
+            applyBlendShapeWeights(*m_mesh, *m_meshInstance, m_blendShapeWeights);
         }
     }
 }
@@ -108,4 +145,27 @@ void MeshRender::drawGizmosSelected() {
 */
 void MeshRender::composeComponent() {
     setMesh(PipelineContext::defaultCube());
+}
+/*!
+    \internal
+*/
+Mesh *MeshRender::ensureMeshInstance() {
+    if(m_mesh == nullptr) {
+        return nullptr;
+    }
+
+    if(m_meshInstance == nullptr) {
+        m_meshInstance = Engine::objectCreate<Mesh>();
+        m_meshInstance->setIndices(m_mesh->indices());
+        m_meshInstance->setVertices(m_mesh->vertices());
+        m_meshInstance->setNormals(m_mesh->normals());
+        m_meshInstance->setTangents(m_mesh->tangents());
+        m_meshInstance->setUv0(m_mesh->uv0());
+        m_meshInstance->setUv1(m_mesh->uv1());
+        m_meshInstance->setColors(m_mesh->colors());
+        m_meshInstance->setBones(m_mesh->bones());
+        m_meshInstance->setWeights(m_mesh->weights());
+    }
+
+    return m_meshInstance;
 }

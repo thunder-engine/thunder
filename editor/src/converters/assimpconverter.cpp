@@ -480,6 +480,91 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
                 aWarning() << "No tangents exist";
             }
 
+            if(item->mNumAnimMeshes > 0) {
+                for(uint32_t a = 0; a < item->mNumAnimMeshes; a++) {
+                    const aiAnimMesh *animMesh = item->mAnimMeshes[a];
+                    if(animMesh == nullptr) {
+                        continue;
+                    }
+
+                    TString shapeName(animMesh->mName.C_Str());
+                    if(shapeName.isEmpty()) {
+                        shapeName = TString("BlendShape") + TString::number((int)a);
+                    }
+
+                    IndexVector frameIndices;
+                    Vector3Vector frameVertices;
+                    Vector3Vector frameNormals;
+                    Vector3Vector frameTangents;
+
+                    frameIndices.reserve(vertexCount);
+                    frameVertices.reserve(vertexCount);
+                    if(animMesh->HasNormals()) {
+                        frameNormals.reserve(vertexCount);
+                    }
+                    if(animMesh->HasTangentsAndBitangents()) {
+                        frameTangents.reserve(vertexCount);
+                    }
+
+                    for(uint32_t v = 0; v < vertexCount; v++) {
+                        bool hasDelta = false;
+                        Vector3 vertexDelta(0.0f);
+                        Vector3 normalDelta(0.0f);
+                        Vector3 tangentDelta(0.0f);
+
+                        if(animMesh->HasPositions()) {
+                            Vector3 targetPos(animMesh->mVertices[v].x * scl,
+                                              animMesh->mVertices[v].y * scl,
+                                              animMesh->mVertices[v].z * scl);
+                            if(fbxSettings->m_flip) {
+                                targetPos = Vector3(-targetPos.x, targetPos.z, targetPos.y);
+                            }
+                            targetPos = mov * targetPos;
+                            vertexDelta = targetPos - vertices[total_v + v];
+                            if(vertexDelta != Vector3(0.0f)) {
+                                hasDelta = true;
+                            }
+                        }
+
+                        if(animMesh->HasNormals()) {
+                            Vector3 targetNormal(fbxSettings->m_flip ? Vector3(-(animMesh->mNormals[v].x), animMesh->mNormals[v].z, animMesh->mNormals[v].y) :
+                                                               Vector3(  animMesh->mNormals[v].x,  animMesh->mNormals[v].y, animMesh->mNormals[v].z));
+                            targetNormal = rot * targetNormal;
+                            normalDelta = targetNormal - normals[total_v + v];
+                            if(normalDelta != Vector3(0.0f)) {
+                                hasDelta = true;
+                            }
+                        }
+
+                        if(animMesh->HasTangentsAndBitangents()) {
+                            Vector3 targetTangent(fbxSettings->m_flip ? Vector3(-(animMesh->mTangents[v].x), animMesh->mTangents[v].z, animMesh->mTangents[v].y) :
+                                                                 Vector3(  animMesh->mTangents[v].x,  animMesh->mTangents[v].y, animMesh->mTangents[v].z));
+                            targetTangent = rot * targetTangent;
+                            tangentDelta = targetTangent - tangents[total_v + v];
+                            if(tangentDelta != Vector3(0.0f)) {
+                                hasDelta = true;
+                            }
+                        }
+
+                        if(hasDelta) {
+                            frameIndices.push_back(total_v + v);
+                            frameVertices.push_back(vertexDelta);
+                            if(animMesh->HasNormals()) {
+                                frameNormals.push_back(normalDelta);
+                            }
+                            if(animMesh->HasTangentsAndBitangents()) {
+                                frameTangents.push_back(tangentDelta);
+                            }
+                        }
+                    }
+
+                    if(!frameIndices.empty()) {
+                        float frameWeight = animMesh->mWeight > 0.0f ? animMesh->mWeight : 1.0f;
+                        mesh->addBlendShapeFrame(shapeName, frameWeight, frameIndices, frameVertices, frameNormals, frameTangents);
+                    }
+                }
+            }
+
             uint32_t indexCount = static_cast<uint32_t>(item->mNumFaces * 3);
             for(uint32_t i = 0; i < item->mNumFaces; i++) {
                 aiFace *face = &item->mFaces[i];

@@ -58,6 +58,9 @@ public:
     int layer() const;
     void setLayer(int layer);
 
+    float blendShapeWeight(size_t index) const;
+    void setBlendShapeWeight(size_t index, float weight);
+
     void setMaterial(Material *material) override;
 
     MaterialInstance *materialInstance(int index) override;
@@ -71,9 +74,13 @@ private:
 
     void composeComponent() override;
 
+    Mesh *ensureMeshInstance();
+
     static void spriteUpdated(int state, void *ptr);
 
 private:
+    std::vector<float> m_blendShapeWeights;
+
     Vector4 m_color;
 
     Vector2 m_size;
@@ -83,7 +90,9 @@ private:
     Texture *m_texture;
 
     Mesh *m_mesh;
+
     Mesh *m_customMesh;
+    Mesh *m_customMeshInstance;
 
     int m_drawMode;
 
