@@ -8,6 +8,7 @@
 #include <log.h>
 #include <url.h>
 #include <file.h>
+#include <uuid.h>
 
 #include "components/actor.h"
 #include "components/armature.h"
@@ -258,7 +259,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         }
 
         /// \todo We need to reuse actors if possible
-        Actor *root = importObject(scene, scene->mRootNode, nullptr, fbxSettings);
+        Actor *root = importObject(scene, scene->mRootNode, fbxSettings, nullptr);
 
         prefab->setActor(root);
 
@@ -291,15 +292,33 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
 }
 
 Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiMatrix4x4 &p, Actor *parent, AssimpImportSettings *fbxSettings) {
-    std::string name = element->mName.C_Str();
+    TString name = element->mName.C_Str();
 
-    if(name.find("$") != std::string::npos) {
+    if(name.contains("$")) {
         for(uint32_t c = 0; c < element->mNumChildren; c++) {
             importObjectHelper(scene, element->mChildren[c], p * element->mTransformation, parent, fbxSettings);
         }
     } else {
-        Actor *actor = Engine::objectCreate<Actor>(name, parent);
-        Transform *transform = static_cast<Transform *>(actor->addComponent("Transform"));
+        uint32_t lod = 0;
+        StringList pair = name.split("_lod");
+        if(pair.size() == 2) {
+            name = pair.front();
+            lod = pair.back().toInt();
+        }
+
+        Actor *actor = nullptr;
+        Transform *transform = nullptr;
+
+        auto it = fbxSettings->m_actors.find(name);
+        if(it != fbxSettings->m_actors.end()) {
+            actor = it->second;
+            transform = actor->transform();
+        } else {
+            actor = Engine::objectCreate<Actor>(name, parent);
+            transform = static_cast<Transform *>(actor->addComponent("Transform"));
+
+            fbxSettings->m_actors[name] = actor;
+        }
 
         if(fbxSettings->m_rootActor == nullptr) {
             fbxSettings->m_rootActor = actor;
@@ -313,8 +332,6 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
                 }
             }
         }
-
-        fbxSettings->m_actors[actor->name()] = actor;
 
         aiMatrix4x4 t = p * element->mTransformation;
 
@@ -330,19 +347,16 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
         transform->setRotation(Vector3(euler.x, euler.y, euler.z) * RAD2DEG);
         transform->setScale(Vector3(scale.x, scale.y, scale.z));
 
-        Mesh *result = AssimpConverter::importMesh(scene, element, actor, fbxSettings);
-        if(result) {
+        Mesh *result = AssimpConverter::importMesh(scene, element, fbxSettings, actor, lod);
+        if(result && lod == 0) {
+            MeshRender *render = nullptr;
             if(!result->weights().empty()) {
-                SkinnedMeshRender *render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
-
-                render->setMesh(result);
-                fbxSettings->m_renders.push_back(render);
+                render = static_cast<SkinnedMeshRender *>(actor->addComponent("SkinnedMeshRender"));
             } else {
-                MeshRender *render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
-
-                render->setMesh(result);
-                fbxSettings->m_renders.push_back(render);
+                render = static_cast<MeshRender *>(actor->addComponent("MeshRender"));
             }
+            render->setMesh(result);
+            fbxSettings->m_renders.push_back(render);
         }
 
         for(uint32_t c = 0; c < element->mNumChildren; c++) {
@@ -355,27 +369,21 @@ Actor *importObjectHelper(const aiScene *scene, const aiNode *element, const aiM
     return nullptr;
 }
 
-Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings) {
+Actor *AssimpConverter::importObject(const aiScene *scene, const aiNode *element, AssimpImportSettings *fbxSettings, Actor *parent) {
     aiMatrix4x4 m;
     return importObjectHelper(scene, element, m, parent, fbxSettings);
 }
 
-Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, Actor *actor, AssimpImportSettings *fbxSettings) {
+Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, AssimpImportSettings *fbxSettings, Actor *actor, int32_t lod) {
     if(element->mNumMeshes) {
         uint32_t hash = 16;
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             Mathf::hashCombine(hash, element->mMeshes[index]);
         }
 
-        Mesh *mesh = nullptr;
-
         auto it = fbxSettings->m_meshes.find(hash);
         if(it != fbxSettings->m_meshes.end()) {
-            mesh = it->second;
-        }
-
-        if(mesh) {
-            return mesh;
+            return it->second;
         }
 
         size_t total_v = 0;
@@ -385,7 +393,16 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         size_t count_i = 0;
 
         ResourceSystem::ResourceInfo info = fbxSettings->subItem(actor->name(), MetaType::name<Mesh>());
+        if(lod > 0) {
+            Uuid uuid(info.uuid);
+            ByteArray array(uuid.toByteArray());
+            array[2] = lod;
+            uuid.fromByteArray(array);
 
+            info.uuid = uuid.toString();
+        }
+
+        Mesh *mesh = nullptr;
         for(uint32_t index = 0; index < element->mNumMeshes; index++) {
             const aiMesh *item = scene->mMeshes[element->mMeshes[index]];
 
@@ -621,7 +638,11 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
         AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(mesh), dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = mesh->uuid();
-            fbxSettings->setSubItem(actor->name(), info);
+            TString name(actor->name());
+            if(lod > 0) {
+                name += TString("_lod%1").arg(TString::number(lod));
+            }
+            fbxSettings->setSubItem(name, info);
         }
 
         fbxSettings->m_meshes[hash] = mesh;
