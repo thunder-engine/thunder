@@ -633,6 +633,8 @@ void Mesh::loadUserData(const VariantMap &data) {
                     shapeData = f->toByteArray();
                     shapeFrame.tangents.resize(shapeData.size() / sizeof(Vector3));
                     memcpy(reinterpret_cast<void*>(shapeFrame.tangents.data()), shapeData.data(), shapeData.size());
+
+                    blendShape.frames.push_back(shapeFrame);
                 }
 
                 m_blendShapes.push_back(blendShape);
@@ -732,6 +734,7 @@ VariantMap Mesh::saveUserData() const {
     }
     mesh.push_back(offsets);
 
+    // Save blend shapes
     if(!m_blendShapes.empty()) {
         VariantList blendShapes;
         for(auto &shape : m_blendShapes) {
