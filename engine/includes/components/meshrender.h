@@ -5,6 +5,8 @@
 
 #include <mesh.h>
 
+#include <array>
+
 class Material;
 class MaterialInstance;
 
@@ -39,12 +41,17 @@ protected:
 
     void composeComponent() override;
 
-    Mesh *ensureMeshInstance();
+    bool ensureMeshInstance();
+
+    void updateBlendShapes();
 
 protected:
     std::vector<float> m_blendShapeWeights;
+    std::array<std::pair<Mesh *, bool>, 3> m_lods;
 
-    Mesh *m_mesh;
+    TString m_meshRef;
+
+    Mesh *m_baseMesh;
     Mesh *m_meshInstance;
 
 };

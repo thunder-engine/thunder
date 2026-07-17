@@ -2,6 +2,8 @@
 
 #include "resources/material.h"
 
+#include "systems/resourcesystem.h"
+
 #include "pipelinecontext.h"
 #include "gizmos.h"
 
@@ -14,13 +16,21 @@
 */
 
 MeshRender::MeshRender() :
-        m_mesh(nullptr),
+        m_baseMesh(nullptr),
         m_meshInstance(nullptr) {
 
+    for(auto &it : m_lods) {
+        it.first = nullptr;
+        it.second = false;
+    }
 }
 MeshRender::~MeshRender() {
-    if(m_mesh) {
-        m_mesh->decRef();
+    for(auto &it : m_lods) {
+        if(it.first) {
+            it.first->decRef();
+            it.first = nullptr;
+        }
+        it.second = false;
     }
 
     if(m_meshInstance) {
@@ -35,14 +45,33 @@ Mesh *MeshRender::meshToDraw() {
     if(m_meshInstance) {
         return m_meshInstance;
     }
-    return m_mesh;
+
+    Mesh *lastMesh = m_baseMesh;
+    for(int32_t i = 2; i >= static_cast<int32_t>(m_lod); --i) {
+        if(m_lods[i].first) {
+            Resource::State state = m_lods[i].first->state();
+            if(state >= Resource::ToBeUpdated && state <= Resource::Ready) {
+                lastMesh = m_lods[i].first;
+            }
+        } else if(i == m_lod && !m_lods[i].second) {
+            ResourceSystem *system = Engine::resourceSystem();
+            m_lods[i].first = dynamic_cast<Mesh *>(system->loadResourceAsync(m_meshRef, i));
+            m_lods[i].second = true;
+            if(m_lods[i].first) {
+                m_lods[i].first->incRef();
+                lastMesh = m_lods[i].first;
+            }
+        }
+    }
+
+    return lastMesh;
 }
 /*!
     \internal
 */
 AABBox MeshRender::localBound() {
-    if(m_mesh) {
-        return m_mesh->bound();
+    if(m_baseMesh) {
+        return m_baseMesh->bound();
     }
     return Renderable::localBound();
 }
@@ -50,15 +79,19 @@ AABBox MeshRender::localBound() {
     Returns a Mesh assigned to this component.
 */
 Mesh *MeshRender::mesh() const {
-    return m_mesh;
+    return m_baseMesh;
 }
 /*!
     Assigns a new \a mesh to draw.
 */
 void MeshRender::setMesh(Mesh *mesh) {
-    if(m_mesh != mesh) {
-        if(m_mesh) {
-            m_mesh->decRef();
+    if(m_baseMesh != mesh) {
+        for(auto &it : m_lods) {
+            if(it.first) {
+                it.first->decRef();
+                it.first = nullptr;
+            }
+            it.second = false;
         }
 
         if(m_meshInstance) {
@@ -66,19 +99,24 @@ void MeshRender::setMesh(Mesh *mesh) {
             m_meshInstance = nullptr;
         }
 
-        m_mesh = mesh;
-        m_blendShapeWeights.clear();
-        if(m_mesh) {
-            m_mesh->incRef();
+        m_baseMesh = mesh;
+        if(m_baseMesh) {
+            m_baseMesh->incRef();
+
+            m_meshRef = Engine::reference(m_baseMesh);
+
+            updateBlendShapes();
 
             if(m_materials.empty()) {
                 std::list<Material *> materials;
-                for(int i = 0; i < m_mesh->subMeshCount(); i++) {
-                    materials.push_back(m_mesh->defaultMaterial(i));
+                for(int i = 0; i < m_baseMesh->subMeshCount(); i++) {
+                    materials.push_back(m_baseMesh->defaultMaterial(i));
                 }
 
                 setMaterialsList(materials);
             }
+        } else {
+            m_meshRef.clear();
         }
     }
 }
@@ -100,11 +138,7 @@ void MeshRender::setBlendShapeWeight(size_t index, float weight) {
     }
     m_blendShapeWeights[index] = weight;
 
-    if(m_mesh && m_mesh->blendShapeCount() > index) {
-        if(ensureMeshInstance()) {
-            applyBlendShapeWeights(*m_mesh, *m_meshInstance, m_blendShapeWeights);
-        }
-    }
+    updateBlendShapes();
 }
 /*!
     Returns a list of assigned materials.
@@ -149,23 +183,33 @@ void MeshRender::composeComponent() {
 /*!
     \internal
 */
-Mesh *MeshRender::ensureMeshInstance() {
-    if(m_mesh == nullptr) {
-        return nullptr;
+bool MeshRender::ensureMeshInstance() {
+    if(m_lods[m_lod].first == nullptr) {
+        return false;
     }
 
     if(m_meshInstance == nullptr) {
         m_meshInstance = Engine::objectCreate<Mesh>();
-        m_meshInstance->setIndices(m_mesh->indices());
-        m_meshInstance->setVertices(m_mesh->vertices());
-        m_meshInstance->setNormals(m_mesh->normals());
-        m_meshInstance->setTangents(m_mesh->tangents());
-        m_meshInstance->setUv0(m_mesh->uv0());
-        m_meshInstance->setUv1(m_mesh->uv1());
-        m_meshInstance->setColors(m_mesh->colors());
-        m_meshInstance->setBones(m_mesh->bones());
-        m_meshInstance->setWeights(m_mesh->weights());
+        m_meshInstance->setIndices(m_lods[m_lod].first->indices());
+        m_meshInstance->setVertices(m_lods[m_lod].first->vertices());
+        m_meshInstance->setNormals(m_lods[m_lod].first->normals());
+        m_meshInstance->setTangents(m_lods[m_lod].first->tangents());
+        m_meshInstance->setUv0(m_lods[m_lod].first->uv0());
+        m_meshInstance->setUv1(m_lods[m_lod].first->uv1());
+        m_meshInstance->setColors(m_lods[m_lod].first->colors());
+        m_meshInstance->setBones(m_lods[m_lod].first->bones());
+        m_meshInstance->setWeights(m_lods[m_lod].first->weights());
     }
 
-    return m_meshInstance;
+    return true;
+}
+/*!
+    \internal
+*/
+void MeshRender::updateBlendShapes() {
+    if(m_lod < 3 && m_lods[m_lod].first && m_lods[m_lod].first->blendShapeCount() > 0) {
+        if(ensureMeshInstance()) {
+            applyBlendShapeWeights(*(m_lods[m_lod].first), *m_meshInstance, m_blendShapeWeights);
+        }
+    }
 }

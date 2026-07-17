@@ -101,7 +101,7 @@ bool ResourceSystem::loadBundle(const TString &path) {
                 for(auto &it : root[gContent].toMap()) {
                     VariantList item = it.second.toList();
                     auto i = item.begin();
-                    TString path = i->toString();
+                    TString filePath = i->toString();
                     i++;
                     TString type = i->toString();
                     i++;
@@ -113,7 +113,8 @@ bool ResourceSystem::loadBundle(const TString &path) {
                         id = static_cast<uint32_t>(i->toInt());
                     }
 
-                    m_indexMap[path] = {path, type, it.first, md5, id};
+                    m_indexMap[it.first] = {path, type, it.first, md5, id};
+                    m_aliases[filePath] = it.first;
                 }
 
                 for(auto &it : root[gSettings].toMap()) {
@@ -139,7 +140,8 @@ bool ResourceSystem::unloadBundle(const TString &path) {
     auto indexCopy = m_indexMap;
     for(auto &it : indexCopy) {
         if(it.second.bundle == path) {
-            m_indexMap.erase(it.first);
+            m_indexMap.erase(it.second.uuid);
+            m_aliases.erase(it.second.uuid);
         }
     }
 
@@ -157,15 +159,14 @@ void ResourceSystem::factoryAdd(const TString &name, const TString &url, const M
     }
 }
 
-Resource *ResourceSystem::loadResource(const TString &path) {
+Resource *ResourceSystem::loadResource(const TString &path, uint32_t lod) {
     PROFILE_FUNCTION();
 
     if(!path.isEmpty()) {
-        TString uuid = path;
-
-        Resource *object = resource(uuid);
-        if(object) {
-            return object;
+        TString uuid(path);
+        Resource *resource = ResourceSystem::resource(uuid);
+        if(resource) {
+            return resource;
         }
 
         File fp(uuid);
@@ -178,7 +179,7 @@ Resource *ResourceSystem::loadResource(const TString &path) {
                     var = Json::load(TString(data));
                 }
                 if(var.isValid()) {
-                    Resource *resource = static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
+                    resource = static_cast<Resource *>(Engine::toObject(var, nullptr, uuid));
                     if(resource) {
                         resource->switchState(Resource::ToBeUpdated);
                     }
@@ -192,36 +193,38 @@ Resource *ResourceSystem::loadResource(const TString &path) {
     return nullptr;
 }
 
-Resource *ResourceSystem::loadResourceAsync(const TString &path) {
+Resource *ResourceSystem::loadResourceAsync(const TString &path, uint32_t lod) {
     if(!path.isEmpty()) {
+        TString uuid(path);
+        if(uuid.front() != '{') {
+            uuid = reference(path);
+        }
+
+        if(lod > 0 && lod < 16) {
+            static const char *select = "0123456789abcdef";
+            uuid[3] = select[lod];
+        }
+
         ResourceInfo info;
 
-        auto indexIt = m_indexMap.find(path);
+        auto indexIt = m_indexMap.find(uuid);
         if(indexIt != m_indexMap.end()) {
             info = indexIt->second;
-        } else {
-            for(auto &it : m_indexMap) {
-                if(it.second.uuid == path) {
-                    info = it.second;
-                    break;
+        }
+
+        if(!info.uuid.isEmpty()) {
+            Resource *resource = ResourceSystem::resource(info.uuid);
+            if(resource == nullptr) {
+                if(!m_clean || File::isFile(info.uuid)) {
+                    if(!info.type.isEmpty()) {
+                        resource = static_cast<Resource *>(Engine::objectCreate(info.type, info.uuid, nullptr, info.id));
+                        resource->setState(Resource::Loading);
+                    }
                 }
             }
-        }
 
-        auto resourceIt = m_resourceCache.find(info.uuid);
-        if(resourceIt != m_resourceCache.end() && resourceIt->second) {
-            return resourceIt->second;
+            return resource;
         }
-
-        Resource *resource = nullptr;
-        if(!m_clean || File::isFile(info.uuid)) {
-            if(!info.type.isEmpty()) {
-                resource = static_cast<Resource *>(Engine::objectCreate(info.type, info.uuid, nullptr, info.id));
-                resource->setState(Resource::Loading);
-            }
-        }
-
-        return resource;
     }
     return nullptr;
 }
@@ -261,16 +264,21 @@ void ResourceSystem::releaseAll() {
 bool ResourceSystem::isResourceExist(const TString &path) const {
     PROFILE_FUNCTION();
 
-    auto it = m_indexMap.find(path);
+    TString uuid(path);
+    if(uuid.front() != '{') {
+        uuid = reference(path);
+    }
+
+    auto it = m_indexMap.find(uuid);
     return (it != m_indexMap.end());
 }
 
 TString ResourceSystem::reference(const TString &path) const {
     PROFILE_FUNCTION();
 
-    auto it = m_indexMap.find(path);
-    if(it != m_indexMap.end()) {
-        return it->second.uuid;
+    auto it = m_aliases.find(path);
+    if(it != m_aliases.end()) {
+        return it->second;
     }
     return path;
 }
@@ -286,6 +294,10 @@ TString ResourceSystem::reference(Resource *resource) const {
 
 ResourceSystem::Dictionary &ResourceSystem::indices() {
     return m_indexMap;
+}
+
+ResourceSystem::Aliases &ResourceSystem::aliases() {
+    return m_aliases;
 }
 
 void ResourceSystem::deleteFromCahe(Resource *resource) {
@@ -338,7 +350,9 @@ void ResourceSystem::unsubscribe(void *object) {
 }
 
 Resource *ResourceSystem::resource(TString &path) const {
-    path = reference(path);
+    if(path.front() != '{') {
+        path = reference(path);
+    }
 
     auto it = m_resourceCache.find(path);
     if(it != m_resourceCache.end() && it->second) {

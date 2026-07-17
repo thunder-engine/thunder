@@ -65,7 +65,7 @@ bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection)
         Vector2 l1(v1.x / v1.w, v1.y / v1.w);
 
         float size = (l1 - l0).length();
-        m_lod = PipelineContext::lod(size);
+        setLod(PipelineContext::lod(size));
 
         return !(m_lod < 3);
     }
@@ -145,6 +145,12 @@ void Renderable::setMaterialsList(const std::list<Material *> &materials) {
 */
 AABBox Renderable::localBound() {
     return AABBox();
+}
+/*!
+    Sets current \a lod level.
+*/
+void Renderable::setLod(uint32_t lod) {
+    m_lod = lod;
 }
 /*!
     Filters \a out an \a in renderable components by it's material \a layer.

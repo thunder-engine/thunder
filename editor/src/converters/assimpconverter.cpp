@@ -394,12 +394,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
         ResourceSystem::ResourceInfo info = fbxSettings->subItem(actor->name(), MetaType::name<Mesh>());
         if(lod > 0) {
-            Uuid uuid(info.uuid);
-            ByteArray array(uuid.toByteArray());
-            array[2] = lod;
-            uuid.fromByteArray(array);
-
-            info.uuid = uuid.toString();
+            info.uuid = fbxSettings->fixUuid(info.uuid, info.type, lod, false);
         }
 
         Mesh *mesh = nullptr;
@@ -642,7 +637,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             if(lod > 0) {
                 name += TString("_lod%1").arg(TString::number(lod));
             }
-            fbxSettings->setSubItem(name, info);
+            fbxSettings->setSubItem(name, info, lod);
         }
 
         fbxSettings->m_meshes[hash] = mesh;

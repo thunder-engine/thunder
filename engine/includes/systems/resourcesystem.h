@@ -17,8 +17,8 @@ public:
 
         uint32_t id = 0;
     };
-
     typedef std::unordered_map<TString, ResourceInfo> Dictionary;
+    typedef std::unordered_map<TString, TString> Aliases;
 
     typedef void (*BundleUpdatedCallback)(const TString &path, bool unload, void *object);
 
@@ -29,9 +29,9 @@ public:
     bool loadBundle(const TString &path);
     bool unloadBundle(const TString &path);
 
-    Resource *loadResource(const TString &path);
+    Resource *loadResource(const TString &path, uint32_t lod = 0);
 
-    Resource *loadResourceAsync(const TString &path);
+    Resource *loadResourceAsync(const TString &path, uint32_t lod = 0);
 
     void unloadResource(Resource *resource, bool force = false);
 
@@ -48,6 +48,7 @@ public:
     void setResource(Resource *object, const TString &uuid);
 
     Dictionary &indices();
+    Aliases &aliases();
 
     void deleteFromCahe(Resource *resource);
 
@@ -75,6 +76,7 @@ private:
     std::list<std::pair<ResourceSystem::BundleUpdatedCallback, void *>> m_observers;
 
     ResourceSystem::Dictionary m_indexMap;
+    ResourceSystem::Aliases m_aliases;
 
     std::unordered_map<TString, Resource *> m_resourceCache;
     std::unordered_map<Resource *, TString> m_referenceCache;

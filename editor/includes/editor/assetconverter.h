@@ -118,14 +118,14 @@ public:
     std::list<std::pair<TString, TString>> &changedUuids();
     void clearChangedUuids();
 
+    TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve = true);
+
 protected:
     virtual TString propertyAllias(const TString &name) const;
 
     static TString defaultIconPath(const TString &type);
 
     void setVersion(uint32_t version);
-
-    TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve = true);
 
     static QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
 
