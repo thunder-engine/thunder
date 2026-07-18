@@ -590,9 +590,14 @@ void MainWindow::on_menuFile_aboutToShow() {
     QString name;
     QString type;
     if(m_currentEditor) {
-        AssetConverterSettings *settings = m_currentEditor->openedDocuments().front();
-        name = QString(" \"%1\"").arg(settings->source().data());
-        type = QString(" %1").arg(settings->typeName().data());
+        type = QString(" %1").arg(m_currentEditor->assetType().data());
+        if(!m_currentEditor->openedDocuments().empty()) {
+            AssetConverterSettings *settings = m_currentEditor->openedDocuments().front();
+            name = QString(" \"%1\"").arg(settings->source().data());
+        }
+        if(name.isEmpty()) {
+            name = type;
+        }
 
         ui->actionSave_As->setEnabled(m_currentEditor->allowSaveAs());
     }

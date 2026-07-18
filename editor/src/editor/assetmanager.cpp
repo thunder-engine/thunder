@@ -317,6 +317,9 @@ bool AssetManager::import(const TString &source, const TString &target) {
 }
 
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
+    if(source.isEmpty()) {
+        return nullptr;
+    }
     TString path(pathToLocal(source));
 
     auto it = m_converterSettings.find(path);
