@@ -43,7 +43,6 @@ private:
     };
 
     std::vector<Filter> m_filters;
-    TString m_defaultSuffix;
     TString m_windowTitle;
     TString m_initialDir;
     StringList m_selectedFiles;
@@ -86,16 +85,20 @@ bool FileDialogPrivate::execWindows() {
 }
 
 bool FileDialogPrivate::execWindowsFile() {
-    std::string filterStr;
+    TString filterStr;
     for(const auto &f : m_filters) {
-        filterStr += f.name.toStdString() + '\0';
+        filterStr += f.name + '\0';
 
-        std::string patterns;
-        for(const auto& ext : f.extensions) {
-            if (!patterns.empty()) patterns += ";";
-            patterns += "*" + ext.toStdString();
+        TString patterns;
+        for(const auto &ext : f.extensions) {
+            if(!patterns.isEmpty()) {
+                patterns += ";";
+            }
+            patterns += ext;
         }
-        if(patterns.empty()) patterns = "*.*";
+        if(patterns.isEmpty()) {
+            patterns = "*.*";
+        }
         filterStr += patterns + '\0';
     }
     if(m_filters.empty()) {
@@ -109,10 +112,10 @@ bool FileDialogPrivate::execWindowsFile() {
     ofn.hwndOwner = GetActiveWindow();
     ofn.lpstrFile = fileName;
     ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrFilter = filterStr.c_str();
+    ofn.lpstrFilter = filterStr.data();
     ofn.nFilterIndex = 1;
-    ofn.lpstrInitialDir = m_initialDir.isEmpty() ? nullptr : m_initialDir.toStdString().c_str();
-    ofn.lpstrTitle = m_windowTitle.isEmpty() ? nullptr : m_windowTitle.toStdString().c_str();
+    ofn.lpstrInitialDir = m_initialDir.isEmpty() ? nullptr : m_initialDir.replace('/', '\\').data();
+    ofn.lpstrTitle = m_windowTitle.isEmpty() ? nullptr : m_windowTitle.data();
 
     DWORD flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
     if(m_mode == FileDialog::SaveFile) {
@@ -156,7 +159,21 @@ bool FileDialogPrivate::execWindowsFile() {
             }
         }
     } else {
-        m_selectedFiles.push_back(TString(fileName));
+        TString name(fileName);
+        if(ofn.nFileExtension == 0) {
+            if(ofn.nFilterIndex > 0 && ofn.nFilterIndex <= static_cast<DWORD>(m_filters.size())) {
+                const auto &selectedFilter = m_filters[ofn.nFilterIndex - 1];
+                if(!selectedFilter.extensions.empty()) {
+                    TString ext = selectedFilter.extensions.front();
+                    if(!ext.isEmpty()) {
+                        if(ext.front() == '*') {
+                            name += ext.right(1);
+                        }
+                    }
+                }
+            }
+        }
+        m_selectedFiles.push_back(name);
     }
 
     return true;
@@ -168,7 +185,7 @@ bool FileDialogPrivate::execWindowsDirectory() {
 
     bi.hwndOwner = GetActiveWindow();
     bi.pszDisplayName = path;
-    bi.lpszTitle = m_windowTitle.isEmpty() ? "Select Directory" : m_windowTitle.toStdString().c_str();
+    bi.lpszTitle = m_windowTitle.isEmpty() ? "Select Directory" : m_windowTitle.data();
     bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
     bi.lpfn = nullptr;
 
@@ -331,12 +348,11 @@ bool FileDialogPrivate::execLinux() {
 
     GtkFileFilter *allFilter = nullptr;
     for(const auto &filter : m_filters) {
-        GtkFileFilter* gtkFilter = gtk_file_filter_new();
+        GtkFileFilter *gtkFilter = gtk_file_filter_new();
         gtk_file_filter_set_name(gtkFilter, filter.name.data());
 
         for(const auto &ext : filter.extensions) {
-            std::string pattern = "*" + ext.toStdString();
-            gtk_file_filter_add_pattern(gtkFilter, pattern.c_str());
+            gtk_file_filter_add_pattern(gtkFilter, ext.data());
         }
 
         if(filter.extensions.empty()) {
@@ -401,10 +417,6 @@ void FileDialog::setMode(Mode m) {
 
 void FileDialog::setShowHidden(bool show) {
     m_ptr->m_showHidden = show;
-}
-
-void FileDialog::setDefaultSuffix(const TString &suffix) {
-    m_ptr->m_defaultSuffix = suffix;
 }
 
 void FileDialog::setWindowTitle(const TString &title) {
