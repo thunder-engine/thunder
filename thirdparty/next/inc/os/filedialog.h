@@ -44,7 +44,6 @@ public:
 
     void setMode(Mode m);
     void setShowHidden(bool show);
-    void setDefaultSuffix(const TString &suffix);
     void setWindowTitle(const TString &title);
 
     void addFilter(const TString &name, const StringList &extensions);

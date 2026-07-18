@@ -23,6 +23,11 @@ public:
 private:
     friend class FileDialog;
 
+    struct Filter {
+        TString name;
+        StringList extensions;
+    };
+
 #ifdef _WIN32
     bool execWindows();
     bool execWindowsFile();
@@ -37,13 +42,10 @@ private:
     bool execLinux();
 #endif
 
-    struct Filter {
-        TString name;
-        StringList extensions;
-    };
+    // Helper method to ensure file has extension
+    TString ensureExtension(const TString& filename, const Filter &filter) const;
 
     std::vector<Filter> m_filters;
-    TString m_defaultSuffix;
     TString m_windowTitle;
     TString m_initialDir;
     StringList m_selectedFiles;
@@ -68,6 +70,32 @@ bool FileDialogPrivate::exec() {
 #endif
 }
 
+TString FileDialogPrivate::ensureExtension(const TString& filename, const Filter& filter) const {
+    if(filename.isEmpty() || filter.extensions.empty()) {
+        return filename;
+    }
+
+    fs::path path(filename.toStdString());
+    bool hasExtension = path.has_extension();
+
+    if(!hasExtension) {
+        TString ext = filter.extensions.front();
+        if(!ext.isEmpty()) {
+            // Remove '*' if present at the beginning
+            if(ext.front() == '*') {
+                ext = ext.right(1);
+            }
+            // Add dot if not present
+            if(!ext.isEmpty() && ext.front() != '.') {
+                ext = TString(".") + ext;
+            }
+            return filename + ext;
+        }
+    }
+
+    return filename;
+}
+
 #ifdef _WIN32
 #include <windows.h>
 #include <commdlg.h>
@@ -86,16 +114,20 @@ bool FileDialogPrivate::execWindows() {
 }
 
 bool FileDialogPrivate::execWindowsFile() {
-    std::string filterStr;
+    TString filterStr;
     for(const auto &f : m_filters) {
-        filterStr += f.name.toStdString() + '\0';
+        filterStr += f.name + '\0';
 
-        std::string patterns;
-        for(const auto& ext : f.extensions) {
-            if (!patterns.empty()) patterns += ";";
-            patterns += "*" + ext.toStdString();
+        TString patterns;
+        for(const auto &ext : f.extensions) {
+            if(!patterns.isEmpty()) {
+                patterns += ";";
+            }
+            patterns += ext;
         }
-        if(patterns.empty()) patterns = "*.*";
+        if(patterns.isEmpty()) {
+            patterns = "*.*";
+        }
         filterStr += patterns + '\0';
     }
     if(m_filters.empty()) {
@@ -109,10 +141,10 @@ bool FileDialogPrivate::execWindowsFile() {
     ofn.hwndOwner = GetActiveWindow();
     ofn.lpstrFile = fileName;
     ofn.nMaxFile = MAX_PATH;
-    ofn.lpstrFilter = filterStr.c_str();
+    ofn.lpstrFilter = filterStr.data();
     ofn.nFilterIndex = 1;
-    ofn.lpstrInitialDir = m_initialDir.isEmpty() ? nullptr : m_initialDir.toStdString().c_str();
-    ofn.lpstrTitle = m_windowTitle.isEmpty() ? nullptr : m_windowTitle.toStdString().c_str();
+    ofn.lpstrInitialDir = m_initialDir.isEmpty() ? nullptr : m_initialDir.replace('/', '\\').data();
+    ofn.lpstrTitle = m_windowTitle.isEmpty() ? nullptr : m_windowTitle.data();
 
     DWORD flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
     if(m_mode == FileDialog::SaveFile) {
@@ -156,7 +188,14 @@ bool FileDialogPrivate::execWindowsFile() {
             }
         }
     } else {
-        m_selectedFiles.push_back(TString(fileName));
+        TString name(fileName);
+        if(m_mode == FileDialog::SaveFile && ofn.nFileExtension == 0) {
+            if(ofn.nFilterIndex > 0 && ofn.nFilterIndex <= static_cast<DWORD>(m_filters.size())) {
+                const auto &selectedFilter = m_filters[ofn.nFilterIndex - 1];
+                name = ensureExtension(name, selectedFilter);
+            }
+        }
+        m_selectedFiles.push_back(name);
     }
 
     return true;
@@ -168,7 +207,7 @@ bool FileDialogPrivate::execWindowsDirectory() {
 
     bi.hwndOwner = GetActiveWindow();
     bi.pszDisplayName = path;
-    bi.lpszTitle = m_windowTitle.isEmpty() ? "Select Directory" : m_windowTitle.toStdString().c_str();
+    bi.lpszTitle = m_windowTitle.isEmpty() ? "Select Directory" : m_windowTitle.data();
     bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
     bi.lpfn = nullptr;
 
@@ -208,6 +247,9 @@ bool FileDialogPrivate::execMacOS() {
     typedef id (*msgSendIdUInt)(id, SEL, unsigned long);
     typedef const char* (*msgSendIdReturnsChar)(id, SEL);
 
+    // Store selected filter index for extension handling
+    int selectedFilterIndex = -1;
+
     if(m_mode == FileDialog::SaveFile) {
         panelClass = objc_getClass("NSSavePanel");
         panel = ((msgSendClass)objc_msgSend)(panelClass, sel_getUid("savePanel"));
@@ -234,9 +276,9 @@ bool FileDialogPrivate::execMacOS() {
 
     if(!m_initialDir.isEmpty()) {
         id path = ((msgSendIdChar)objc_msgSend)((id)objc_getClass("NSString"),
-                                                        sel_getUid("stringWithUTF8String:"), m_initialDir.data());
+                                                 sel_getUid("stringWithUTF8String:"), m_initialDir.data());
         id url = ((msgSendIdId)objc_msgSend)((id)objc_getClass("NSURL"),
-                                                  sel_getUid("fileURLWithPath:"), path);
+                                              sel_getUid("fileURLWithPath:"), path);
         ((msgSendIdId)objc_msgSend)(panel, sel_getUid("setDirectoryURL:"), url);
     }
 
@@ -251,7 +293,7 @@ bool FileDialogPrivate::execMacOS() {
                         extStr = extStr.substr(1);
                     }
                     id extNSString = ((msgSendIdChar)objc_msgSend)((id)objc_getClass("NSString"),
-                                                                           sel_getUid("stringWithUTF8String:"), extStr.c_str());
+                                                                    sel_getUid("stringWithUTF8String:"), extStr.c_str());
                     ((msgSendIdId)objc_msgSend)(allowedTypes, sel_getUid("addObject:"), extNSString);
                 }
             }
@@ -262,19 +304,47 @@ bool FileDialogPrivate::execMacOS() {
         }
     }
 
+    // For save dialog, set extension handling
+    if(m_mode == FileDialog::SaveFile) {
+        // Allow panel to add extension automatically
+        ((msgSendIdBool)objc_msgSend)(panel, sel_getUid("setCanSelectHiddenExtension:"), YES);
+    }
+
     long result = ((msgSendIdReturnsInt)objc_msgSend)(panel, sel_getUid("runModal"));
 
     if(result == 1) {
-        id urls = ((msgSendId)objc_msgSend)(panel, sel_getUid("URLs"));
-        long count = ((msgSendIdReturnsUInt)objc_msgSend)(urls, sel_getUid("count"));
+        id urls;
+        if(m_mode == FileDialog::SaveFile) {
+            // For save dialog, get single URL
+            id url = ((msgSendId)objc_msgSend)(panel, sel_getUid("URL"));
+            if(url) {
+                id path = ((msgSendId)objc_msgSend)(url, sel_getUid("path"));
+                const char *cpath = ((msgSendIdReturnsChar)objc_msgSend)(path, sel_getUid("UTF8String"));
+                TString filename(cpath);
 
-        for(long i = 0; i < count; i++) {
-            id url = ((msgSendIdUInt)objc_msgSend)(urls, sel_getUid("objectAtIndex:"), i);
-            id path = ((msgSendId)objc_msgSend)(url, sel_getUid("path"));
-            const char *cpath = ((msgSendIdReturnsChar)objc_msgSend)(path, sel_getUid("UTF8String"));
-            m_selectedFiles.push_back(TString(cpath));
+                // Ensure extension for save dialog
+                if(m_mode == FileDialog::SaveFile && !m_filters.empty()) {
+                    // Try to get selected filter from panel (simplified - use first filter)
+                    const auto &selectedFilter = m_filters[0]; // Default to first filter
+                    filename = ensureExtension(filename, selectedFilter);
+                }
+
+                m_selectedFiles.push_back(filename);
+                return true;
+            }
+            return false;
+        } else {
+            urls = ((msgSendId)objc_msgSend)(panel, sel_getUid("URLs"));
+            long count = ((msgSendIdReturnsUInt)objc_msgSend)(urls, sel_getUid("count"));
+
+            for(long i = 0; i < count; i++) {
+                id url = ((msgSendIdUInt)objc_msgSend)(urls, sel_getUid("objectAtIndex:"), i);
+                id path = ((msgSendId)objc_msgSend)(url, sel_getUid("path"));
+                const char *cpath = ((msgSendIdReturnsChar)objc_msgSend)(path, sel_getUid("UTF8String"));
+                m_selectedFiles.push_back(TString(cpath));
+            }
+            return true;
         }
-        return true;
     }
 
     return false;
@@ -329,14 +399,19 @@ bool FileDialogPrivate::execLinux() {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), m_initialDir.data());
     }
 
+    // For save dialog, enable overwrite confirmation
+    if(m_mode == FileDialog::SaveFile) {
+        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+    }
+
     GtkFileFilter *allFilter = nullptr;
+    int filterIndex = 0;
     for(const auto &filter : m_filters) {
-        GtkFileFilter* gtkFilter = gtk_file_filter_new();
+        GtkFileFilter *gtkFilter = gtk_file_filter_new();
         gtk_file_filter_set_name(gtkFilter, filter.name.data());
 
         for(const auto &ext : filter.extensions) {
-            std::string pattern = "*" + ext.toStdString();
-            gtk_file_filter_add_pattern(gtkFilter, pattern.c_str());
+            gtk_file_filter_add_pattern(gtkFilter, ext.data());
         }
 
         if(filter.extensions.empty()) {
@@ -348,6 +423,7 @@ bool FileDialogPrivate::execLinux() {
         if(filter.name == "All Files" || filter.extensions.empty()) {
             allFilter = gtkFilter;
         }
+        filterIndex++;
     }
 
     if(m_filters.empty()) {
@@ -365,17 +441,46 @@ bool FileDialogPrivate::execLinux() {
     int response = gtk_dialog_run(GTK_DIALOG(dialog));
 
     if(response == GTK_RESPONSE_ACCEPT) {
-        GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+        // For save dialog, ensure extension is added
+        if(m_mode == FileDialog::SaveFile && !m_filters.empty()) {
+            char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            if(filename) {
+                TString name(filename);
+                g_free(filename);
 
-        for(GSList *iter = filenames; iter != nullptr; iter = iter->next) {
-            char *filename = (char*)iter->data;
-            m_selectedFiles.push_back(TString(filename));
-            g_free(filename);
+                // Get selected filter
+                GtkFileFilter *selectedFilter = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog));
+                if(selectedFilter) {
+                    // Find the filter in our list by name
+                    const char *filterName = gtk_file_filter_get_name(selectedFilter);
+                    if(filterName) {
+                        TString filterNameStr(filterName);
+                        for(const auto& filter : m_filters) {
+                            if(filter.name == filterNameStr) {
+                                name = ensureExtension(name, filter);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                m_selectedFiles.push_back(name);
+                gtk_widget_destroy(dialog);
+                return true;
+            }
+        } else {
+            GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+
+            for(GSList *iter = filenames; iter != nullptr; iter = iter->next) {
+                char *filename = (char*)iter->data;
+                m_selectedFiles.push_back(TString(filename));
+                g_free(filename);
+            }
+
+            g_slist_free(filenames);
+            gtk_widget_destroy(dialog);
+            return true;
         }
-
-        g_slist_free(filenames);
-        gtk_widget_destroy(dialog);
-        return true;
     }
 
     gtk_widget_destroy(dialog);
@@ -401,10 +506,6 @@ void FileDialog::setMode(Mode m) {
 
 void FileDialog::setShowHidden(bool show) {
     m_ptr->m_showHidden = show;
-}
-
-void FileDialog::setDefaultSuffix(const TString &suffix) {
-    m_ptr->m_defaultSuffix = suffix;
 }
 
 void FileDialog::setWindowTitle(const TString &title) {
