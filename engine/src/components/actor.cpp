@@ -67,8 +67,20 @@ Actor::Actor() :
 }
 
 Actor::~Actor() {
-    if(m_scene && m_scene->world()) {
-        m_scene->world()->graphUpdated();
+    if(m_scene) {
+        World *world = m_scene->world();
+        if(world) {
+            world->graphUpdated();
+        }
+
+        for(auto it : getChildren()) {
+            Component *component = dynamic_cast<Component *>(it);
+            if(component) {
+                for(uint32_t it : component->tags()) {
+                    m_scene->removeFromGroupByHash(component, it);
+                }
+            }
+        }
     }
 }
 /*!

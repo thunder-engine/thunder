@@ -189,6 +189,12 @@ bool Component::hasTagByHash(uint32_t hash) {
     return std::find(m_tags.begin(), m_tags.end(), hash) != m_tags.end();
 }
 /*!
+    Returns list of component tags.
+*/
+const std::vector<uint32_t> &Component::tags() const {
+    return m_tags;
+}
+/*!
     \internal
 */
 void Component::composeComponent() {
