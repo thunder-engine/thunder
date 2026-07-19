@@ -200,6 +200,8 @@ void Viewport::onDraw() {
             }
 
             Engine::instance().processEvents();
+            Engine::resourceSystem()->setActiveWorld(m_world);
+            Engine::resourceSystem()->processEvents();
             Engine::renderSystem()->setActiveWorld(m_world);
             Engine::renderSystem()->processEvents();
         }

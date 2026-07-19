@@ -107,8 +107,6 @@ protected:
 
     BaseAssetProvider *m_assetProvider;
 
-    ResourceSystem::Dictionary &m_indices;
-
     QTimer *m_timer;
 
     bool m_force;

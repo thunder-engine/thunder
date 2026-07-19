@@ -230,9 +230,11 @@ TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type
     if(!result.isNull()) {
         int index = Engine::resourceSystem()->indexOf(type) + 1;
         ByteArray array = result.toByteArray();
-        array[0] = index;
-        array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
-        result.fromByteArray(array);
+        if(array[0] != index) {
+            array[0] = index;
+            array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
+            result.fromByteArray(array);
+        }
     }
 
     TString str(result.toString());
@@ -373,6 +375,8 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
         ResourceSystem::ResourceInfo info;
         info.type = type;
         info.uuid = fixUuid(Uuid::createUuid().toString(), info.type, 0, false);
+        info.md5 = m_info.md5;
+        info.bundle = m_info.bundle;
         return info;
     }
     return ResourceSystem::ResourceInfo();
@@ -383,7 +387,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
 void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod) {
     if(!name.isEmpty() && !info.uuid.isEmpty()) {
         ResourceSystem::ResourceInfo fixedInfo(info);
-        fixedInfo.uuid = fixUuid(fixedInfo.uuid, fixedInfo.type, 0);
+        fixedInfo.uuid = fixUuid(fixedInfo.uuid, fixedInfo.type, lod);
 
         m_subItems[name] = {fixedInfo, QImage(), false};
     }

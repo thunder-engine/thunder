@@ -45,7 +45,6 @@ namespace {
 
 AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
-        m_indices(Engine::resourceSystem()->indices()),
         m_timer(new QTimer(this)),
         m_force(false) {
 
@@ -410,13 +409,14 @@ TString AssetManager::uuidToPath(const TString &uuid) const {
 }
 
 TString AssetManager::pathToUuid(const TString &path) const {
-    auto it = m_indices.find(path);
-    if(it != m_indices.end()) {
-        return it->second.uuid;
+    ResourceSystem::Aliases &aliases = Engine::resourceSystem()->aliases();
+    auto it = aliases.find(path);
+    if(it != aliases.end()) {
+        return it->second;
     }
-    it = m_indices.find(pathToLocal(path));
-    if(it != m_indices.end()) {
-        return it->second.uuid;
+    it = aliases.find(pathToLocal(path));
+    if(it != aliases.end()) {
+        return it->second;
     }
 
     return TString();
@@ -452,9 +452,9 @@ void AssetManager::dumpBundle() {
     VariantMap root;
 
     VariantMap paths;
-    for(auto &it : m_indices) {
+    for(auto &it : Engine::resourceSystem()->indices()) {
         VariantList item;
-        item.push_back(it.first);
+        item.push_back(pathToLocal(uuidToPath(it.first)));
         item.push_back(it.second.type);
         item.push_back(it.second.md5);
         item.push_back(static_cast<int>(it.second.id));
@@ -522,10 +522,11 @@ void AssetManager::onPerform() {
             }
         }
 
-        auto tmp = m_indices;
+        ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        auto tmp = indices;
         for(auto &index : tmp) {
             if(index.second.uuid.isEmpty() || (!File::exists(ProjectSettings::instance()->importPath() + "/" + index.second.uuid))) {
-                m_indices.erase(m_indices.find(index.first));
+                indices.erase(index.second.uuid);
             }
         }
 
@@ -615,7 +616,11 @@ void AssetManager::registerAsset(const TString &source, const ResourceSystem::Re
     if(File::exists(ProjectSettings::instance()->importPath() + "/" + info.uuid)) {
         TString path = pathToLocal(source);
 
-        m_indices[path] = info;
+        ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        indices[info.uuid] = info;
+        ResourceSystem::Aliases &aliases = Engine::resourceSystem()->aliases();
+        aliases[path] = info.uuid;
+
         m_paths[info.uuid] = source;
 
         m_labels.insert(info.type);
@@ -623,18 +628,16 @@ void AssetManager::registerAsset(const TString &source, const ResourceSystem::Re
 }
 
 TString AssetManager::unregisterAsset(const TString &source) {
-    TString path = pathToLocal(source);
-    auto it = m_indices.find(path);
-    if(it != m_indices.end()) {
-        auto pathIt = m_paths.find(it->second.uuid);
-        if(pathIt != m_paths.end() && !pathIt->second.isEmpty()) {
-            TString uuid(it->second.uuid);
+    TString uuid(pathToUuid(source));
+    if(!uuid.isEmpty()) {
+        ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+        indices.erase(uuid);
+        ResourceSystem::Aliases &aliases = Engine::resourceSystem()->aliases();
+        aliases.erase(pathToLocal(source));
+        m_paths.erase(uuid);
 
-            m_indices.erase(it);
-            m_paths.erase(pathIt);
-
-            return uuid;
-        }
+        return uuid;
     }
+
     return TString();
 }

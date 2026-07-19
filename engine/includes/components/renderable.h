@@ -5,9 +5,6 @@
 
 #include <amath.h>
 
-class CommandBuffer;
-class PipelineContext;
-
 class Mesh;
 class Material;
 class MaterialInstance;
@@ -57,6 +54,8 @@ protected:
     virtual Mesh *meshToDraw();
 
     virtual AABBox localBound();
+
+    virtual void setLod(uint32_t lod);
 
     virtual void setMaterialsList(const std::list<Material *> &materials);
 

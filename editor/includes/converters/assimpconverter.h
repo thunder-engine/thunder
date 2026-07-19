@@ -116,9 +116,9 @@ public:
 
     Actor *createActor(const AssetConverterSettings *settings, const TString &guid) const override;
 
-    Actor *importObject(const aiScene *scene, const aiNode *element, Actor *parent, AssimpImportSettings *fbxSettings);
+    Actor *importObject(const aiScene *scene, const aiNode *element, AssimpImportSettings *fbxSettings, Actor *parent);
 
-    static Mesh *importMesh(const aiScene *scene, const aiNode *element, Actor *actor, AssimpImportSettings *fbxSettings);
+    static Mesh *importMesh(const aiScene *scene, const aiNode *element, AssimpImportSettings *fbxSettings, Actor *actor, int32_t lod);
 
     static void importAnimation(const aiScene *scene, AssimpImportSettings *fbxSettings);
 
