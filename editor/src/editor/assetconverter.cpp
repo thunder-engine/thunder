@@ -230,9 +230,11 @@ TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type
     if(!result.isNull()) {
         int index = Engine::resourceSystem()->indexOf(type) + 1;
         ByteArray array = result.toByteArray();
-        array[0] = index;
-        array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
-        result.fromByteArray(array);
+        if(array[0] != index) {
+            array[0] = index;
+            array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
+            result.fromByteArray(array);
+        }
     }
 
     TString str(result.toString());

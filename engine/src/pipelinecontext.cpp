@@ -344,7 +344,7 @@ Texture *PipelineContext::whiteTexture() {
 int32_t PipelineContext::lod(float size) {
     if(size < 0.01f) {
         return 3;
-    } else if(size < 0.3f) {
+    } else if(size < 0.1f) {
         return 2;
     } else if(size < 0.6f) {
         return 1;
