@@ -121,15 +121,15 @@ void DeleteObjects::redo() {
         }
     }
 
+    m_controller->clear();
+    m_controller->selectActors(list);
+
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
             delete object;
         }
     }
-
-    m_controller->clear();
-    m_controller->selectActors(list);
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);
