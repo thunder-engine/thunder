@@ -72,6 +72,7 @@ void DeleteObjects::redo() {
     m_cloneCache.clear();
 
     std::list<uint32_t> list;
+    bool isComponent = false;
 
     for(auto it : m_objects)  {
         Object *object = Engine::findObject(it);
@@ -86,6 +87,7 @@ void DeleteObjects::redo() {
             } else {
                 Component *component = dynamic_cast<Component *>(object);
                 if(component) {
+                    isComponent = true;
                     scenes.insert(component->scene());
                 }
             }
@@ -121,14 +123,20 @@ void DeleteObjects::redo() {
         }
     }
 
-    m_controller->clear();
-    m_controller->selectActors(list);
+    if(!isComponent) {
+        m_controller->clear();
+        m_controller->selectActors(list);
+    }
 
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
             delete object;
         }
+    }
+
+    if(isComponent) {
+        m_controller->selectActors(list);
     }
 
     for(auto it : scenes) {
