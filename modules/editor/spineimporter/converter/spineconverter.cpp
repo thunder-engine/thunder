@@ -7,6 +7,7 @@
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spriterender.h>
+#include <components/skinnedspriterender.h>
 
 #include <resources/mesh.h>
 #include <resources/sprite.h>
@@ -243,8 +244,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 
                 Actor *bone = settings->m_boneStructure[slot.bone];
 
-                Actor *slotActor = Engine::composeActor<SpriteRender>(slotIt.first, bone);
-                slot.render = slotActor->getComponent<SpriteRender>();
+                Actor *slotActor = Engine::composeActor<Transform>(slotIt.first, bone);
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
                     TString attachmentName = attachmentIt.first;
@@ -294,6 +294,15 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                             importMesh(attachmentFields, attachmentName, mesh, settings);
                         } break;
                         default: break;
+                    }
+
+                    if(slot.render == nullptr) {
+                        //if(!mesh->weights().empty()) {
+                        //    slot.render = static_cast<SkinnedSpriteRender *>(slotActor->addComponent("SkinnedSpriteRender"));
+                        //} else {
+                            slot.render = static_cast<SpriteRender *>(slotActor->addComponent("SpriteRender"));
+                        //}
+                        slot.render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
                     }
 
                     if(!mesh->vertices().empty()) {

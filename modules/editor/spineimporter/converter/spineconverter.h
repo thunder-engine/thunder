@@ -7,6 +7,7 @@ class Mesh;
 class Sprite;
 class Transform;
 class SpriteRender;
+class SkinnedSpriteRender;
 
 namespace {
     const char *gX("x");

@@ -286,10 +286,7 @@ Mesh *SpriteRender::ensureMeshInstance() {
         m_customMeshInstance = Engine::objectCreate<Mesh>();
         m_customMeshInstance->setIndices(m_customMesh->indices());
         m_customMeshInstance->setVertices(m_customMesh->vertices());
-        m_customMeshInstance->setNormals(m_customMesh->normals());
-        m_customMeshInstance->setTangents(m_customMesh->tangents());
         m_customMeshInstance->setUv0(m_customMesh->uv0());
-        m_customMeshInstance->setUv1(m_customMesh->uv1());
         m_customMeshInstance->setColors(m_customMesh->colors());
         m_customMeshInstance->setBones(m_customMesh->bones());
         m_customMeshInstance->setWeights(m_customMesh->weights());

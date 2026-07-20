@@ -65,7 +65,7 @@ public:
 
     MaterialInstance *materialInstance(int index) override;
 
-private:
+protected:
     Mesh *meshToDraw() override;
 
     void setMaterialsList(const std::list<Material *> &materials) override;

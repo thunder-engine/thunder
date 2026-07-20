@@ -4,6 +4,7 @@
 #include "components/meshrender.h"
 #include "components/textrender.h"
 #include "components/spriterender.h"
+#include "components/skinnedspriterender.h"
 #include "components/effectrender.h"
 #include "components/directlight.h"
 #include "components/pointlight.h"
@@ -44,6 +45,7 @@ RenderSystem::RenderSystem() :
     MeshRender::registerClassFactory(this);
     TextRender::registerClassFactory(this);
     SpriteRender::registerClassFactory(this);
+    SkinnedSpriteRender::registerClassFactory(this);
     SkinnedMeshRender::registerClassFactory(this);
 
     BaseLight::registerClassFactory(this);
@@ -86,6 +88,7 @@ RenderSystem::~RenderSystem() {
     MeshRender::unregisterClassFactory(this);
     TextRender::unregisterClassFactory(this);
     SpriteRender::unregisterClassFactory(this);
+    SkinnedSpriteRender::unregisterClassFactory(this);
     SkinnedMeshRender::unregisterClassFactory(this);
 
     BaseLight::unregisterClassFactory(this);
