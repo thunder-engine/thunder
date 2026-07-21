@@ -27,7 +27,7 @@ void main(void) {
     proj.y = 1.0 - proj.y;
 #endif
     float depth = getLinearDepth(texture(depthMap, proj).x, nearClipPlane(), farClipPlane());
-    rgb = _color;//(depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.25);
+    rgb = (depth >= _vertex.z) ? _color : vec4(_color.xyz, _color.w * 0.1);
 }
 ]]></fragment>
     <vertex><![CDATA[
