@@ -68,7 +68,7 @@ public:
 
     bool hasTag(const TString &tag);
     bool hasTagByHash(uint32_t hash);
-    const std::vector<uint32_t> &tags() const;
+    std::vector<uint32_t> &tags();
 
     virtual void composeComponent();
 

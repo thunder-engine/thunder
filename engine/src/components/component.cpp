@@ -191,7 +191,7 @@ bool Component::hasTagByHash(uint32_t hash) {
 /*!
     Returns list of component tags.
 */
-const std::vector<uint32_t> &Component::tags() const {
+std::vector<uint32_t> &Component::tags() {
     return m_tags;
 }
 /*!

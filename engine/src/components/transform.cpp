@@ -207,9 +207,12 @@ void Transform::setParent(Object *parent, int32_t position, bool force) {
     }
     Object::setParent(parent, 0, force);
 
-    Actor *p = dynamic_cast<Actor *>(actor()->parent());
-    if(p) {
-        setParentTransform(p->transform(), true);
+    Actor *actor = Transform::actor();
+    if(actor) {
+        Actor *p = dynamic_cast<Actor *>(actor->parent());
+        if(p) {
+            setParentTransform(p->transform(), true);
+        }
     }
 }
 /*!

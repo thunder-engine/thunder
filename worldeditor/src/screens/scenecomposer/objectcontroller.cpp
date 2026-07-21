@@ -569,7 +569,7 @@ void ObjectController::onDrop(QDropEvent *event) {
     for(TString &str : list) {
         if(!str.isEmpty()) {
             if(mgr->assetTypeName(str) == Map::metaClass()->name()) {
-                emit dropMap((ProjectSettings::instance()->contentPath() + "/" + str).data(), (event->keyboardModifiers() & Qt::ControlModifier));
+                emit dropMap(str.data(), (event->keyboardModifiers() & Qt::ControlModifier));
                 return;
             }
         }
@@ -606,9 +606,8 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
 
         StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
         AssetManager *mgr = AssetManager::instance();
-        for(TString str : list) {
+        for(TString &str : list) {
             if(!str.isEmpty()) {
-                str = ProjectSettings::instance()->contentPath() + "/" + str;
                 TString type = mgr->assetTypeName(str);
                 if(type != Map::metaClass()->name()) {
                     Actor *actor = mgr->createActor(str);

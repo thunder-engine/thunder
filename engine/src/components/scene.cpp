@@ -1,6 +1,7 @@
 #include "components/scene.h"
 
 #include "components/world.h"
+#include "components/component.h"
 
 /*!
     \class Scene
@@ -20,6 +21,17 @@ Scene::Scene(const Scene &origin) :
         m_map(origin.m_map),
         m_modified(origin.m_modified) {
 
+}
+
+Scene::~Scene() {
+    for(auto &group : m_groups) {
+        for(auto it : group.second) {
+            Component *component = dynamic_cast<Component *>(it);
+            if(component) {
+                component->tags().clear();
+            }
+        }
+    }
 }
 /*!
     Returns the World to which the scene belongs.
