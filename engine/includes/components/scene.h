@@ -20,6 +20,7 @@ class ENGINE_EXPORT Scene : public Object {
 public:
     Scene();
     Scene(const Scene &origin);
+    ~Scene();
 
     World *world() const;
 
