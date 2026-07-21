@@ -97,7 +97,7 @@ void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConve
 
         Transform *t = boneActor->transform();
 
-        TString path = SpineConverter::pathTo(settings->m_root, t);
+        TString path = SpineConverter::pathTo(settings->m_rootBone, t);
 
         for(auto &type : bone.second.value<VariantMap>()) {
             if(type.first == gRotate) {
@@ -120,14 +120,14 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
     for(auto &slotIt : slotes) {
         Slot &slot = settings->m_slots[slotIt.first];
 
-        TString path = SpineConverter::pathTo(settings->m_root, slot.render);
+        TString path = SpineConverter::pathTo(settings->m_rootBone, slot.render);
 
         for(auto &type : slotIt.second.value<VariantMap>()) {
             if(type.first == gAttachment) {
                 AnimationTrack track;
 
                 track.setPath(path);
-                track.setProperty("item");
+                track.setProperty("sprite");
 
                 AnimationTrack::Frames &frames = track.frames();
 
@@ -214,7 +214,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
             if(trackIt == tracks.end()) {
                 AnimationTrack track;
                 track.setProperty("layer");
-                track.setPath(SpineConverter::pathTo(settings->m_root, slot.render));
+                track.setPath(SpineConverter::pathTo(settings->m_rootBone, slot.render));
 
                 AnimationCurve::KeyFrame frame;
                 frame.m_type = AnimationCurve::KeyFrame::Constant;

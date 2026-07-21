@@ -87,7 +87,7 @@ public:
 
     Vector2 m_atlasSize;
 
-    Actor *m_root;
+    Actor *m_rootBone;
 
 private:
     float m_scale;

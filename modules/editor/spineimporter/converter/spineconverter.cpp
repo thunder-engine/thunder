@@ -30,7 +30,7 @@ enum class SkinTypes {
 };
 
 SpineConverterSettings::SpineConverterSettings() :
-        m_root(nullptr),
+        m_rootBone(nullptr),
         m_scale(1.0f) {
     setVersion(FORMAT_VERSION);
 }
@@ -70,7 +70,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
         // Bones section
         auto it = sections.find(gBones);
         if(it != sections.end()) {
-            spineSettings->m_root = importBones(it->second.value<VariantList>(), spineSettings);
+            spineSettings->m_rootBone = importBones(it->second.value<VariantList>(), spineSettings);
         }
 
         // Slots section
@@ -95,17 +95,17 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 
         /// \todo Events section
 
-        if(spineSettings->m_root) {
-            TString name(spineSettings->m_root->name());
-            spineSettings->m_root->setName(settings->destination());
-            stabilizeUUID(spineSettings->m_root);
-            spineSettings->m_root->setName(name);
+        if(spineSettings->m_rootBone) {
+            TString name(spineSettings->m_rootBone->name());
+            spineSettings->m_rootBone->setName(settings->destination());
+            stabilizeUUID(spineSettings->m_rootBone);
+            spineSettings->m_rootBone->setName(name);
 
             Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
             if(prefab == nullptr) {
                 prefab = Engine::objectCreate<Prefab>(settings->destination());
             }
-            prefab->setActor(spineSettings->m_root);
+            prefab->setActor(spineSettings->m_rootBone);
 
             uint32_t uuid = settings->info().id;
             if(uuid == 0) {
@@ -127,7 +127,13 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSettings *settings) {
     Actor *result = nullptr;
 
-    float scale = settings->customScale();
+    TString poseName("Pose");
+    ResourceSystem::ResourceInfo info = settings->subItem(poseName, MetaType::name<Pose>());
+    Pose *pose = Engine::loadResource<Pose>(info.uuid);
+    if(pose == nullptr) {
+        pose = Engine::objectCreate<Pose>(info.uuid);
+    }
+    pose->clear();
 
     for(auto &bone : bones) {
         VariantMap fields = bone.value<VariantMap>();
@@ -156,23 +162,28 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
 
         float customScale = settings->customScale();
 
+        Bone b;
+        b.setName(name);
+
         Vector3 pos;
         auto it = fields.find(gX);
         if(it != fields.end()) {
-            pos.x = it->second.toFloat() * scale;
+            pos.x = it->second.toFloat();
         }
         it = fields.find(gY);
         if(it != fields.end()) {
-            pos.y = it->second.toFloat() * scale;
+            pos.y = it->second.toFloat();
         }
-        t->setPosition(pos * customScale);
+        b.setPosition(pos * customScale);
+        t->setPosition(b.position());
 
         Vector3 rot;
         it = fields.find(gRotation);
         if(it != fields.end()) {
             rot.z = it->second.toFloat();
         }
-        t->setRotation(rot);
+        b.setRotation(rot);
+        t->setRotation(b.rotation());
 
         Vector3 scl(1.0f);
         it = fields.find(gScaleX);
@@ -183,7 +194,26 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         if(it != fields.end()) {
             scl.y = it->second.toFloat();
         }
+        b.setScale(scl);
         t->setScale(scl);
+
+        pose->addBone(b);
+    }
+
+    Url dst(settings->absoluteDestination());
+
+    AssetConverter::ReturnCode code = settings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
+    if(code == AssetConverter::Success) {
+        info.id = pose->uuid();
+        settings->setSubItem(poseName, info);
+    }
+
+    if(result) {
+        Armature *armature = result->getComponent<Armature>();
+        if(armature) {
+            armature = static_cast<Armature *>(result->addComponent("Armature"));
+            armature->setBindPose(pose);
+        }
     }
 
     return result;
@@ -297,11 +327,15 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     }
 
                     if(slot.render == nullptr) {
-                        //if(!mesh->weights().empty()) {
-                        //    slot.render = static_cast<SkinnedSpriteRender *>(slotActor->addComponent("SkinnedSpriteRender"));
-                        //} else {
+                        if(!mesh->weights().empty()) {
+                            SkinnedSpriteRender *skinned = static_cast<SkinnedSpriteRender *>(slotActor->addComponent("SkinnedSpriteRender"));
+                            if(settings->m_rootBone) {
+                                skinned->setArmature(settings->m_rootBone->getComponent<Armature>());
+                            }
+                            slot.render = skinned;
+                        } else {
                             slot.render = static_cast<SpriteRender *>(slotActor->addComponent("SpriteRender"));
-                        //}
+                        }
                         slot.render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
                     }
 
