@@ -524,17 +524,9 @@ void MaterialInstanceGL::setupDepthState(const Material::DepthState &state) {
             glEnable(GL_DEPTH_TEST);
             enabled = true;
         }
-        static bool writeEnabled = false;
-        if(writeEnabled != state.writeEnabled) {
-            glDepthMask(state.writeEnabled);
-            writeEnabled = state.writeEnabled;
-        }
 
-        static int32_t compareFunction = 0;
-        if(compareFunction != state.compareFunction) {
-            glDepthFunc(state.compareFunction);
-            compareFunction = state.compareFunction;
-        }
+        glDepthMask(state.writeEnabled);
+        glDepthFunc(state.compareFunction);
     } else {
         if(enabled) {
             glDisable(GL_DEPTH_TEST);
