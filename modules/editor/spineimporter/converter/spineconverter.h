@@ -3,6 +3,7 @@
 
 #include <editor/assetconverter.h>
 
+class Pose;
 class Mesh;
 class Sprite;
 class Transform;
@@ -44,18 +45,20 @@ namespace {
     const char *gValue("value");
 
     const char *gTransform("Transform");
-};
+}
 
 struct Item {
     Vector4 bounds;
-    float rotate;
+    float rotate = 0.0f;
+
+    Sprite *sprite = nullptr;
 };
 
 struct Slot {
     TString color;
     TString bone;
     TString item;
-    uint32_t layer;
+    uint32_t layer = 0;
 
     SpriteRender *render = nullptr;
 };
@@ -88,6 +91,8 @@ public:
     Vector2 m_atlasSize;
 
     Actor *m_rootBone;
+
+    Pose *m_pose;
 
 private:
     float m_scale;

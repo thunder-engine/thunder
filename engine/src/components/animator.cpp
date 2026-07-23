@@ -201,7 +201,10 @@ void Animator::sampleString(float dt, TargetProperty &target) {
 
     if(updated) {
         if(static_cast<TransformFlags>(target.flag) == TransformFlags::Object) {
-            Resource *resource = Engine::loadResourceAsync(str);
+            Resource *resource = nullptr;
+            if(!str.isEmpty()) {
+                resource = Engine::loadResourceAsync(str);
+            }
             target.property.write(target.object, Variant(target.defaultValue.userType(), &resource));
         } else {
             target.property.write(target.object, str);

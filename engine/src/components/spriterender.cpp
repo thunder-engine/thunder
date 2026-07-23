@@ -35,7 +35,7 @@ SpriteRender::SpriteRender() :
         m_size(1.0f),
         m_sprite(nullptr),
         m_texture(nullptr),
-        m_mesh(PipelineContext::defaultPlane()),
+        m_mesh(nullptr),
         m_customMesh(Engine::objectCreate<Mesh>()),
         m_customMeshInstance(nullptr),
         m_drawMode(Simple),
@@ -68,7 +68,6 @@ Mesh *SpriteRender::meshToDraw() {
                     if(m_drawMode == Sprite::Simple) {
                         m_size = mesh->bound().extent * 2.0f;
                     }
-
                 } else {
                     m_mesh = PipelineContext::defaultPlane();
                 }
@@ -76,7 +75,7 @@ Mesh *SpriteRender::meshToDraw() {
                 m_useCustom = true;
             }
         } else {
-            m_mesh = PipelineContext::defaultPlane();
+            m_mesh = m_texture ? PipelineContext::defaultPlane() : nullptr;
         }
 
         m_dirtyMesh = false;
