@@ -347,8 +347,6 @@ Animator::TargetProperty *Animator::bindTrack(const AnimationTrack &track) {
         { "quaternion", TransformFlags::Quat }
     };
 
-    static uint32_t type = MetaType::type("Resource") + 1;
-
     TargetProperty *target = nullptr;
 
     auto bind = m_bindProperties.find(track.hash());
