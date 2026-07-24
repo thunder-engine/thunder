@@ -122,7 +122,7 @@ private:
     void importAtlas(SpineConverterSettings *settings);
 
     void importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
-    void importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings);
+    void importMesh(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
 
     void stabilizeUUID(Object *object);
 

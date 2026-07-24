@@ -134,7 +134,6 @@ void CameraController::update() {
 
                 if(m_mouseSaved != p) {
                     m_cameraInMove = true;
-                    m_blockPickingBack = m_blockPicking;
                     m_blockPicking = true;
                 }
                 m_mouseSaved = p;

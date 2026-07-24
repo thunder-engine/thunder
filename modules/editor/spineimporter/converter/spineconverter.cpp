@@ -320,7 +320,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                             importRegion(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
                         } break;
                         case SkinTypes::Mesh: {
-                            importMesh(attachmentFields, attachmentName, mesh, settings);
+                            importMesh(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
                         } break;
                         default: break;
                     }
@@ -436,44 +436,42 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
     }
 }
 
-namespace {
-    void applyAttachmentTransform(const VariantMap &fields, Vector3 &vertex, float customScale) {
-        Vector3 pos;
-        auto it = fields.find(gX);
-        if(it != fields.end()) {
-            pos.x = it->second.toString().toFloat();
-        }
-        it = fields.find(gY);
-        if(it != fields.end()) {
-            pos.y = it->second.toString().toFloat();
-        }
-
-        Vector3 rot;
-        it = fields.find(gRotation);
-        if(it != fields.end()) {
-            rot.z = it->second.toString().toFloat();
-        }
-
-        Vector3 scl(1.0f);
-        it = fields.find(gScaleX);
-        if(it != fields.end()) {
-            scl.x = it->second.toString().toFloat();
-        }
-        it = fields.find(gScaleY);
-        if(it != fields.end()) {
-            scl.y = it->second.toString().toFloat();
-        }
-
-        Matrix3 matrix;
-        matrix.rotate(Vector3(0.0f, 0.0f, 1.0f), rot.z);
-
-        Vector3 transformed(vertex.x * scl.x, vertex.y * scl.y, vertex.z);
-        transformed = matrix * transformed;
-        transformed += pos;
-        transformed *= customScale;
-
-        vertex = transformed;
+void applyAttachmentTransform(const VariantMap &fields, Vector3 &vertex, float customScale) {
+    Vector3 pos;
+    auto it = fields.find(gX);
+    if(it != fields.end()) {
+        pos.x = it->second.toString().toFloat();
     }
+    it = fields.find(gY);
+    if(it != fields.end()) {
+        pos.y = it->second.toString().toFloat();
+    }
+
+    Vector3 rot;
+    it = fields.find(gRotation);
+    if(it != fields.end()) {
+        rot.z = it->second.toString().toFloat();
+    }
+
+    Vector3 scl(1.0f);
+    it = fields.find(gScaleX);
+    if(it != fields.end()) {
+        scl.x = it->second.toString().toFloat();
+    }
+    it = fields.find(gScaleY);
+    if(it != fields.end()) {
+        scl.y = it->second.toString().toFloat();
+    }
+
+    Matrix3 matrix;
+    matrix.rotate(Vector3(0.0f, 0.0f, 1.0f), rot.z);
+
+    Vector3 transformed(vertex.x * scl.x, vertex.y * scl.y, vertex.z);
+    transformed = matrix * transformed;
+    transformed += pos;
+    transformed *= customScale;
+
+    vertex = transformed;
 }
 
 void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
@@ -563,8 +561,8 @@ void SpineConverter::importRegion(const VariantMap &fields, const TString &itemN
     mesh->setUv0(uvs);
 }
 
-void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings) {
-    Item item = settings->m_atlasItems[itemName];
+void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
+    const Item &item = settings->m_atlasItems[itemName];
 
     uint32_t uvCount = 0;
 
@@ -622,32 +620,36 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
         mesh->setUv0(uvs);
     }
 
-    float customScale = settings->customScale();
-
     it = fields.find(gVertices);
     if(it != fields.end()) {
         uint32_t vertexCount = 0;
 
         Vector3Vector &vertices = mesh->vertices();
-
         vertices.resize(uvCount);
 
+        float customScale = settings->customScale();
+
         VariantList list = it->second.toList();
-        if(list.size() > uvCount * 2) { // weighted mesh
+        bool isWeighted = (list.size() > uvCount * 2);
+
+        if(isWeighted) {
             Vector4Vector &bones = mesh->bones();
             Vector4Vector &weights = mesh->weights();
 
             bones.resize(uvCount);
             weights.resize(uvCount);
 
+            Matrix4 rootInverse = transform->worldTransform().inverse();
+
             auto vertexIt = list.begin();
             while(vertexIt != list.end()) {
                 int32_t wCount = vertexIt->toInt();
                 ++vertexIt;
 
-                Vector3 vertex;
+                int firstBoneIndex = -1;
+                Vector3 firstBind;
 
-                for(int32_t w = 0; w < wCount; w++) {
+                for(int32_t w = 0; w < wCount && w < 4; w++) {
                     int boneIndex = vertexIt->toInt();
                     ++vertexIt;
                     float bindX = vertexIt->toFloat();
@@ -657,27 +659,31 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
                     float weight = vertexIt->toFloat();
                     ++vertexIt;
 
-                    if(w < 4) {
-                        bones[vertexCount][w] = boneIndex;
-                        weights[vertexCount][w] = weight;
+                    bones[vertexCount][w] = boneIndex;
+                    weights[vertexCount][w] = weight;
 
-                        if(settings->m_pose) {
-                            const Bone *bone = settings->m_pose->bone(boneIndex);
-                            if(bone) {
-                                Vector3 localPos(bindX * customScale, bindY * customScale, 0.0f);
-
-                                Matrix4 mat(bone->position(), bone->rotation(), bone->scale());
-                                mat = mat.inverse();
-
-                                Vector3 worldPos = mat * localPos;
-
-                                vertex += worldPos * weight;
-                            }
-                        }
+                    if(w == 0) {
+                        firstBoneIndex = boneIndex;
+                        firstBind.x = bindX;
+                        firstBind.y = bindY;
                     }
                 }
 
-                vertices[vertexCount] = vertex;
+                if(firstBoneIndex >= 0 && settings->m_pose) {
+                    const Bone *bone = settings->m_pose->bone(firstBoneIndex);
+                    if(bone) {
+                        auto actorIt = settings->m_boneStructure.find(bone->name());
+                        if(actorIt != settings->m_boneStructure.end()) {
+                            Transform *boneTransform = actorIt->second->transform();
+
+                            Vector3 localPos(firstBind.x * customScale, firstBind.y * customScale, 0.0f);
+                            Vector3 worldPos = boneTransform->worldTransform() * localPos;
+                            Vector3 armatureLocalPos = rootInverse * worldPos;
+
+                            vertices[vertexCount] = armatureLocalPos;
+                        }
+                    }
+                }
 
                 vertexCount++;
             }
@@ -741,7 +747,8 @@ TString SpineConverter::pathTo(Object *root, Object *dst) {
 }
 
 void SpineConverter::stabilizeUUID(Object *object) {
-    Engine::replaceUUID(object, Mathf::hashString(pathTo(nullptr, object)));
+    TString path = pathTo(nullptr, object);
+    Engine::replaceUUID(object, Mathf::hashString(path));
 
     for(auto it : object->getChildren()) {
         stabilizeUUID(it);
