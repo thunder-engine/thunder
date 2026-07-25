@@ -116,22 +116,23 @@ void importBoneTransform(TransformMode mode, AnimationClip &clip, const TString 
 
 void importBoneTimeline(const VariantMap &bones, AnimationClip &clip, SpineConverterSettings *settings) {
     for(auto &bone : bones) {
-        Actor *boneActor = settings->m_boneStructure[bone.first];
+        Transform *t = nullptr;
+        for(auto it : settings->m_bones) {
+            if(it->name() == bone.first) {
+                t = it->transform();
+                break;
+            }
+        }
 
-        Transform *t = boneActor->transform();
-
-        TString path = SpineConverter::pathTo(settings->m_rootBone, t);
+        TString path = SpineConverter::pathTo(settings->m_bones.front(), t);
 
         for(auto &type : bone.second.value<VariantMap>()) {
             if(type.first == gRotate) {
                 importBoneTransform(TransformMode::Rotate, clip, path, t->rotation(), type.second, settings);
-
             } else if(type.first == gTranslate) {
                 importBoneTransform(TransformMode::Translate, clip, path, t->position(), type.second, settings);
-
             } else if(type.first == gScale) {
                 importBoneTransform(TransformMode::Scale, clip, path, t->scale(), type.second, settings);
-
             } else if(type.first == "shear") {
                 // Unimplemented
             }
@@ -143,7 +144,7 @@ void importSlotTimeline(const VariantMap &slotes, AnimationClip &clip, SpineConv
     for(auto &slotIt : slotes) {
         Slot &slot = settings->m_slots[slotIt.first];
 
-        TString path = SpineConverter::pathTo(settings->m_rootBone, slot.render);
+        TString path = SpineConverter::pathTo(settings->m_bones.front(), slot.render);
 
         for(auto &type : slotIt.second.value<VariantMap>()) {
             if(type.first == gAttachment) {
@@ -269,7 +270,7 @@ void importDrawOrderTimeline(const VariantList &keys, AnimationClip &clip, Spine
             if(trackIt == tracks.end()) {
                 AnimationTrack track;
                 track.setProperty("layer");
-                track.setPath(SpineConverter::pathTo(settings->m_rootBone, slot.render));
+                track.setPath(SpineConverter::pathTo(settings->m_bones.front(), slot.render));
 
                 if(needInitialState) {
                     AnimationCurve::KeyFrame frame;
@@ -319,7 +320,7 @@ void importAttachmentsTimeline(const VariantMap &attachments, AnimationClip &cli
                     if(type.first == "deform") {
                         AnimationTrack track;
                         track.setProperty(TString("blendShape:") + clipName);
-                        track.setPath(SpineConverter::pathTo(settings->m_rootBone, slot.render));
+                        track.setPath(SpineConverter::pathTo(settings->m_bones.front(), slot.render));
 
                         AnimationCurve &curve = track.curve();
 

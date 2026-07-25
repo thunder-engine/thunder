@@ -80,7 +80,7 @@ private:
     StringList typeNames() const override;
 
 public:
-    std::map<TString, Actor *> m_boneStructure;
+    std::vector<Actor *> m_bones;
 
     std::map<TString, Slot> m_slots;
 
@@ -91,8 +91,6 @@ public:
     Vector2 m_atlasSize;
 
     Actor *m_rootBone;
-
-    Pose *m_pose;
 
 private:
     float m_scale;

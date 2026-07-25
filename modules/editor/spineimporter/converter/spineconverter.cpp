@@ -127,14 +127,6 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSettings *settings) {
     Actor *result = nullptr;
 
-    TString poseName("Pose");
-    ResourceSystem::ResourceInfo info = settings->subItem(poseName, MetaType::name<Pose>());
-    settings->m_pose = Engine::loadResource<Pose>(info.uuid);
-    if(settings->m_pose == nullptr) {
-        settings->m_pose = Engine::objectCreate<Pose>(info.uuid);
-    }
-    settings->m_pose->clear();
-
     for(auto &bone : bones) {
         VariantMap fields = bone.value<VariantMap>();
 
@@ -143,27 +135,22 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         TString name = fields[gName].toString();
 
         if(!parentField.isEmpty()) {
-            auto it = settings->m_boneStructure.find(parentField);
-            if(it != settings->m_boneStructure.end()) {
-                parent = it->second;
+            for(auto it : settings->m_bones) {
+                if(it->name() == parentField) {
+                    parent = it;
+                    break;
+                }
             }
         }
 
         Actor *actor = Engine::objectCreate<Actor>(name, parent);
         actor->addComponent(gTransform);
 
-        settings->m_boneStructure[name] = actor;
+        Transform *t = actor->transform();
 
         if(parentField.isEmpty()) {
             result = actor;
         }
-
-        Transform *t = actor->transform();
-
-        float customScale = settings->customScale();
-
-        Bone b;
-        b.setName(name);
 
         Vector3 pos;
         auto it = fields.find(gX);
@@ -174,16 +161,14 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         if(it != fields.end()) {
             pos.y = it->second.toFloat();
         }
-        b.setPosition(pos * customScale);
-        t->setPosition(b.position());
+        t->setPosition(pos * settings->customScale());
 
         Vector3 rot;
         it = fields.find(gRotation);
         if(it != fields.end()) {
             rot.z = it->second.toFloat();
         }
-        b.setRotation(rot);
-        t->setRotation(b.rotation());
+        t->setRotation(rot);
 
         Vector3 scl(1.0f);
         it = fields.find(gScaleX);
@@ -194,12 +179,11 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         if(it != fields.end()) {
             scl.y = it->second.toFloat();
         }
-        b.setScale(scl);
         t->setScale(scl);
 
-        settings->m_pose->addBone(b);
+        settings->m_bones.push_back(actor);
     }
-
+/*
     Url dst(settings->absoluteDestination());
 
     AssetConverter::ReturnCode code = settings->saveBinary(Engine::toVariant(settings->m_pose), dst.absoluteDir() + "/" + info.uuid);
@@ -215,7 +199,7 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
             armature->setBindPose(settings->m_pose);
         }
     }
-
+*/
     return result;
 }
 
@@ -249,7 +233,7 @@ void SpineConverter::importSlots(const VariantList &list, SpineConverterSettings
             currentSlot.item = it->second.toString();
         }
 
-        /// \todo: blend
+        /// \todo: color blending
 
         settings->m_slots[key] = currentSlot;
 
@@ -270,7 +254,13 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
             for(auto &slotIt : skinIt->second.value<VariantMap>()) {
                 Slot &slot = settings->m_slots[slotIt.first];
 
-                Actor *bone = settings->m_boneStructure[slot.bone];
+                Actor *bone = nullptr;
+                for(auto boneIt : settings->m_bones) {
+                    if(boneIt->name() == slot.bone) {
+                        bone = boneIt;
+                        break;
+                    }
+                }
 
                 Actor *slotActor = Engine::composeActor<Transform>(slotIt.first, bone);
 
@@ -646,9 +636,6 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
                 int32_t wCount = vertexIt->toInt();
                 ++vertexIt;
 
-                int firstBoneIndex = -1;
-                Vector3 firstBind;
-
                 for(int32_t w = 0; w < wCount && w < 4; w++) {
                     int boneIndex = vertexIt->toInt();
                     ++vertexIt;
@@ -659,28 +646,18 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
                     float weight = vertexIt->toFloat();
                     ++vertexIt;
 
-                    bones[vertexCount][w] = boneIndex;
-                    weights[vertexCount][w] = weight;
-
-                    if(w == 0) {
-                        firstBoneIndex = boneIndex;
-                        firstBind.x = bindX;
-                        firstBind.y = bindY;
-                    }
-                }
-
-                if(firstBoneIndex >= 0 && settings->m_pose) {
-                    const Bone *bone = settings->m_pose->bone(firstBoneIndex);
+                    Actor *bone = settings->m_bones[boneIndex];
                     if(bone) {
-                        auto actorIt = settings->m_boneStructure.find(bone->name());
-                        if(actorIt != settings->m_boneStructure.end()) {
-                            Transform *boneTransform = actorIt->second->transform();
+                        bones[vertexCount][w] = boneIndex;
+                        weights[vertexCount][w] = weight;
 
-                            Vector3 localPos(firstBind.x * customScale, firstBind.y * customScale, 0.0f);
-                            Vector3 worldPos = boneTransform->worldTransform() * localPos;
-                            Vector3 armatureLocalPos = rootInverse * worldPos;
+                        if(w == 0) {
+                            Transform *boneTransform = bone->transform();
 
-                            vertices[vertexCount] = armatureLocalPos;
+                            Vector3 localPos(bindX * customScale, bindY * customScale, 0.0f);
+                            Vector3 worldPos(boneTransform->worldTransform() * localPos);
+
+                            vertices[vertexCount] = Vector3(rootInverse * worldPos);
                         }
                     }
                 }
