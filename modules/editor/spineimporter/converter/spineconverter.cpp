@@ -7,11 +7,13 @@
 #include <components/actor.h>
 #include <components/transform.h>
 #include <components/spriterender.h>
+#include <components/skinnedspriterender.h>
 
 #include <resources/mesh.h>
 #include <resources/sprite.h>
 #include <resources/prefab.h>
 #include <resources/material.h>
+#include <resources/pose.h>
 
 #include <editor/projectsettings.h>
 #include <editor/assetmanager.h>
@@ -29,7 +31,7 @@ enum class SkinTypes {
 };
 
 SpineConverterSettings::SpineConverterSettings() :
-        m_root(nullptr),
+        m_rootBone(nullptr),
         m_scale(1.0f) {
     setVersion(FORMAT_VERSION);
 }
@@ -69,7 +71,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
         // Bones section
         auto it = sections.find(gBones);
         if(it != sections.end()) {
-            spineSettings->m_root = importBones(it->second.value<VariantList>(), spineSettings);
+            spineSettings->m_rootBone = importBones(it->second.value<VariantList>(), spineSettings);
         }
 
         // Slots section
@@ -91,20 +93,19 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
         }
 
         /// \todo Constraints section
-
         /// \todo Events section
 
-        if(spineSettings->m_root) {
-            TString name(spineSettings->m_root->name());
-            spineSettings->m_root->setName(settings->destination());
-            stabilizeUUID(spineSettings->m_root);
-            spineSettings->m_root->setName(name);
+        if(spineSettings->m_rootBone) {
+            TString name(spineSettings->m_rootBone->name());
+            spineSettings->m_rootBone->setName(settings->destination());
+            stabilizeUUID(spineSettings->m_rootBone);
+            spineSettings->m_rootBone->setName(name);
 
             Prefab *prefab = Engine::loadResource<Prefab>(settings->destination());
             if(prefab == nullptr) {
                 prefab = Engine::objectCreate<Prefab>(settings->destination());
             }
-            prefab->setActor(spineSettings->m_root);
+            prefab->setActor(spineSettings->m_rootBone);
 
             uint32_t uuid = settings->info().id;
             if(uuid == 0) {
@@ -126,8 +127,6 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
 Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSettings *settings) {
     Actor *result = nullptr;
 
-    float scale = settings->customScale();
-
     for(auto &bone : bones) {
         VariantMap fields = bone.value<VariantMap>();
 
@@ -136,35 +135,33 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
         TString name = fields[gName].toString();
 
         if(!parentField.isEmpty()) {
-            auto it = settings->m_boneStructure.find(parentField);
-            if(it != settings->m_boneStructure.end()) {
-                parent = it->second;
+            for(auto it : settings->m_bones) {
+                if(it->name() == parentField) {
+                    parent = it;
+                    break;
+                }
             }
         }
 
         Actor *actor = Engine::objectCreate<Actor>(name, parent);
         actor->addComponent(gTransform);
 
-        settings->m_boneStructure[name] = actor;
+        Transform *t = actor->transform();
 
         if(parentField.isEmpty()) {
             result = actor;
         }
 
-        Transform *t = actor->transform();
-
-        float customScale = settings->customScale();
-
         Vector3 pos;
         auto it = fields.find(gX);
         if(it != fields.end()) {
-            pos.x = it->second.toFloat() * scale;
+            pos.x = it->second.toFloat();
         }
         it = fields.find(gY);
         if(it != fields.end()) {
-            pos.y = it->second.toFloat() * scale;
+            pos.y = it->second.toFloat();
         }
-        t->setPosition(pos * customScale);
+        t->setPosition(pos * settings->customScale());
 
         Vector3 rot;
         it = fields.find(gRotation);
@@ -183,6 +180,8 @@ Actor *SpineConverter::importBones(const VariantList &bones, SpineConverterSetti
             scl.y = it->second.toFloat();
         }
         t->setScale(scl);
+
+        settings->m_bones.push_back(actor);
     }
 
     return result;
@@ -218,7 +217,7 @@ void SpineConverter::importSlots(const VariantList &list, SpineConverterSettings
             currentSlot.item = it->second.toString();
         }
 
-        /// \todo: blend
+        /// \todo: color blending
 
         settings->m_slots[key] = currentSlot;
 
@@ -232,8 +231,6 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
 
         auto skinIt = skinFields.find(gAttachments);
         if(skinIt != skinFields.end()) {
-            TString skinName(skinFields[gName].toString());
-
             importAtlas(settings);
 
             Url dst(settings->absoluteDestination());
@@ -241,10 +238,15 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
             for(auto &slotIt : skinIt->second.value<VariantMap>()) {
                 Slot &slot = settings->m_slots[slotIt.first];
 
-                Actor *bone = settings->m_boneStructure[slot.bone];
+                Actor *bone = nullptr;
+                for(auto boneIt : settings->m_bones) {
+                    if(boneIt->name() == slot.bone) {
+                        bone = boneIt;
+                        break;
+                    }
+                }
 
-                Actor *slotActor = Engine::composeActor<SpriteRender>(slotIt.first, bone);
-                slot.render = slotActor->getComponent<SpriteRender>();
+                Actor *slotActor = Engine::composeActor<Transform>(slotIt.first, bone);
 
                 for(auto &attachmentIt : slotIt.second.value<VariantMap>()) {
                     TString attachmentName = attachmentIt.first;
@@ -285,13 +287,15 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     sprite->setMode(Sprite::Complex);
                     sprite->setTexture(Engine::loadResource<Texture>(settings->m_texture));
                     Mesh *mesh = sprite->mesh();
+                    mesh->clearBlendShapes();
 
+                    Pose *pose = nullptr;
                     switch(type) {
                         case SkinTypes::Region: {
                             importRegion(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
                         } break;
                         case SkinTypes::Mesh: {
-                            importMesh(attachmentFields, attachmentName, mesh, settings);
+                            pose = importMesh(attachmentFields, attachmentName, slotActor->transform(), mesh, settings);
                         } break;
                         default: break;
                     }
@@ -307,11 +311,35 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         settings->setSubItem(attachmentName, resSprite);
                     }
 
+                    settings->m_atlasItems[attachmentName].sprite = sprite;
+
+                    if(slot.render == nullptr) {
+                        if(!mesh->weights().empty()) {
+                            SkinnedSpriteRender *skinned = static_cast<SkinnedSpriteRender *>(slotActor->addComponent("SkinnedSpriteRender"));
+                            if(pose) {
+                                Actor *parentActor = dynamic_cast<Actor *>(slotActor->parent());
+                                if(parentActor) {
+                                    Armature *armature = static_cast<Armature *>(parentActor->addComponent("Armature"));
+                                    armature->setBindPose(pose);
+                                    skinned->setArmature(armature);
+                                }
+                            }
+
+                            slot.render = skinned;
+                        } else {
+                            slot.render = static_cast<SpriteRender *>(slotActor->addComponent("SpriteRender"));
+                        }
+                        slot.render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
+                    }
+
                     if(slot.render && slot.render->sprite() == nullptr) {
-                        slot.render->setSprite(sprite);
-                        slot.render->setLayer(slot.layer);
-                        if(!slot.color.isEmpty()) {
-                            slot.render->setColor(toColor(slot.color));
+                        bool isSetupPoseAttachment = !slot.item.isEmpty() && (attachmentIt.first == slot.item || attachmentName == slot.item);
+                        if(isSetupPoseAttachment) {
+                            slot.render->setSprite(sprite);
+                            slot.render->setLayer(slot.layer);
+                            if(!slot.color.isEmpty()) {
+                                slot.render->setColor(toColor(slot.color));
+                            }
                         }
                     }
                 }
@@ -337,7 +365,6 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
         };
 
         TString itemName;
-        Vector4 bounds;
 
         uint32_t currentState = State::FileName;
         for(auto &it : data.split('\n')) {
@@ -389,44 +416,42 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
     }
 }
 
-namespace {
-    void applyAttachmentTransform(const VariantMap &fields, Vector3 &vertex, float customScale) {
-        Vector3 pos;
-        auto it = fields.find(gX);
-        if(it != fields.end()) {
-            pos.x = it->second.toString().toFloat();
-        }
-        it = fields.find(gY);
-        if(it != fields.end()) {
-            pos.y = it->second.toString().toFloat();
-        }
-
-        Vector3 rot;
-        it = fields.find(gRotation);
-        if(it != fields.end()) {
-            rot.z = it->second.toString().toFloat();
-        }
-
-        Vector3 scl(1.0f);
-        it = fields.find(gScaleX);
-        if(it != fields.end()) {
-            scl.x = it->second.toString().toFloat();
-        }
-        it = fields.find(gScaleY);
-        if(it != fields.end()) {
-            scl.y = it->second.toString().toFloat();
-        }
-
-        Matrix3 matrix;
-        matrix.rotate(Vector3(0.0f, 0.0f, 1.0f), rot.z);
-
-        Vector3 transformed(vertex.x * scl.x, vertex.y * scl.y, vertex.z);
-        transformed = matrix * transformed;
-        transformed += pos;
-        transformed *= customScale;
-
-        vertex = transformed;
+void applyAttachmentTransform(const VariantMap &fields, Vector3 &vertex, float customScale) {
+    Vector3 pos;
+    auto it = fields.find(gX);
+    if(it != fields.end()) {
+        pos.x = it->second.toString().toFloat();
     }
+    it = fields.find(gY);
+    if(it != fields.end()) {
+        pos.y = it->second.toString().toFloat();
+    }
+
+    Vector3 rot;
+    it = fields.find(gRotation);
+    if(it != fields.end()) {
+        rot.z = it->second.toString().toFloat();
+    }
+
+    Vector3 scl(1.0f);
+    it = fields.find(gScaleX);
+    if(it != fields.end()) {
+        scl.x = it->second.toString().toFloat();
+    }
+    it = fields.find(gScaleY);
+    if(it != fields.end()) {
+        scl.y = it->second.toString().toFloat();
+    }
+
+    Matrix3 matrix;
+    matrix.rotate(Vector3(0.0f, 0.0f, 1.0f), rot.z);
+
+    Vector3 transformed(vertex.x * scl.x, vertex.y * scl.y, vertex.z);
+    transformed = matrix * transformed;
+    transformed += pos;
+    transformed *= customScale;
+
+    vertex = transformed;
 }
 
 void SpineConverter::importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
@@ -516,8 +541,8 @@ void SpineConverter::importRegion(const VariantMap &fields, const TString &itemN
     mesh->setUv0(uvs);
 }
 
-void SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings) {
-    Item item = settings->m_atlasItems[itemName];
+Pose *SpineConverter::importMesh(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings) {
+    const Item &item = settings->m_atlasItems[itemName];
 
     uint32_t uvCount = 0;
 
@@ -575,51 +600,117 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
         mesh->setUv0(uvs);
     }
 
+    it = fields.find(gTriangles);
+    if(it != fields.end()) {
+        IndexVector &indices = mesh->indices();
+
+        VariantList list = it->second.toList();
+        indices.resize(list.size());
+        uint32_t indexCount = 0;
+        for(auto &index : list) {
+            indices[indexCount] = index.toInt();
+            indexCount++;
+        }
+    }
+
     it = fields.find(gVertices);
     if(it != fields.end()) {
         uint32_t vertexCount = 0;
 
         Vector3Vector &vertices = mesh->vertices();
-
         vertices.resize(uvCount);
 
+        float customScale = settings->customScale();
+
         VariantList list = it->second.toList();
-        if(list.size() > uvCount * 2) { // weighted mesh
+        bool isWeighted = (list.size() > uvCount * 2);
+
+        if(isWeighted) {
             Vector4Vector &bones = mesh->bones();
             Vector4Vector &weights = mesh->weights();
 
             bones.resize(uvCount);
             weights.resize(uvCount);
 
+            Actor *rootActor = transform->actor();
+
+            TString poseName(rootActor->name() + "Pose");
+
+            ResourceSystem::ResourceInfo info = settings->subItem(poseName, MetaType::name<Pose>());
+            Pose *pose = Engine::loadResource<Pose>(info.uuid);
+            if(pose == nullptr) {
+                pose = Engine::objectCreate<Pose>(info.uuid);
+            }
+            pose->clear();
+
+            std::map<int, int> boneIndexMap;
+            int localIndex = 0;
+
+            Matrix4 rootInverse = transform->worldTransform().inverse();
+
             auto vertexIt = list.begin();
             while(vertexIt != list.end()) {
                 int32_t wCount = vertexIt->toInt();
                 ++vertexIt;
 
-                Vector3 vertex;
-
                 for(int32_t w = 0; w < wCount; w++) {
-                    int bone = vertexIt->toInt();
+                    int boneIndex = vertexIt->toInt();
                     ++vertexIt;
-                    float posX = vertexIt->toFloat();
+                    float bindX = vertexIt->toFloat();
                     ++vertexIt;
-                    float posY = vertexIt->toFloat();
+                    float bindY = vertexIt->toFloat();
                     ++vertexIt;
                     float weight = vertexIt->toFloat();
                     ++vertexIt;
 
                     if(w < 4) {
-                        bones[vertexCount][w] = bone;
-                        weights[vertexCount][w] = weight;
+                        Actor *bone = settings->m_bones[boneIndex];
+                        if(bone) {
+                            Transform *boneTransform = bone->transform();
 
-                        vertex += Vector3(posX, posY, 0.0f) * weight;
+                            int currentIndex = 0;
+                            auto boneIt = boneIndexMap.find(boneIndex);
+                            if(boneIt == boneIndexMap.end()) {
+                                boneIndexMap[boneIndex] = localIndex;
+                                currentIndex = localIndex;
+                                localIndex++;
+
+                                Bone b;
+                                b.setName(bone->name());
+                                b.setPosition(boneTransform->position());
+                                b.setRotation(boneTransform->rotation());
+                                b.setScale(boneTransform->scale());
+
+                                pose->addBone(b);
+                            } else {
+                                currentIndex = boneIt->second;
+                            }
+
+                            bones[vertexCount][w] = currentIndex;
+                            weights[vertexCount][w] = weight;
+
+                            if(w == 0) {
+                                Vector3 localPos(bindX * customScale, bindY * customScale, 0.0f);
+                                Vector3 worldPos(boneTransform->worldTransform() * localPos);
+
+                                vertices[vertexCount] = Vector3(rootInverse * worldPos);
+                            }
+                        }
                     }
                 }
 
-                vertices[vertexCount] = vertex;
-
                 vertexCount++;
             }
+
+            Url dst(settings->absoluteDestination());
+
+            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
+            if(result == AssetConverter::Success) {
+                info.id = pose->uuid();
+                settings->setSubItem(poseName, info);
+            }
+
+            return pose;
         } else {
             for(auto &vertex : list) {
                 uint32_t index = vertexCount / 2;
@@ -627,75 +718,35 @@ void SpineConverter::importMesh(const VariantMap &fields, const TString &itemNam
 
                 vertexCount++;
             }
-        }
 
-        float customScale = settings->customScale();
-        for(auto &vertex : vertices) {
-            applyAttachmentTransform(fields, vertex, customScale);
-        }
-    }
-
-    auto deformIt = fields.find("deform");
-    if(deformIt != fields.end()) {
-        VariantList deformList = deformIt->second.toList();
-        if(!deformList.empty()) {
-            for(auto &deform : deformList) {
-                VariantMap deformData = deform.toMap();
-                TString shapeName = deformData["name"].toString();
-
-                auto verticesIt = deformData.find("vertices");
-                if(verticesIt != deformData.end()) {
-                    std::vector<uint32_t> indices;
-                    Vector3Vector frameVertices;
-
-                    uint32_t offset = deformData["offset"].toInt();
-
-                    VariantList vertices = verticesIt->second.toList();
-                    auto vertexIt = vertices.begin();
-                    uint32_t index = 0;
-                    while(vertexIt != vertices.end()) {
-                        Vector3 delta;
-                        delta.x = vertexIt->toFloat();
-                        vertexIt++;
-                        delta.y = vertexIt->toFloat();
-                        vertexIt++;
-
-                        if(delta.x != 0.0f || delta.y != 0.0f) {
-                            indices.push_back(offset + index);
-                            frameVertices.push_back(delta);
-                        }
-                        index++;
-                    }
-
-                    if(!indices.empty()) {
-                        mesh->addBlendShapeFrame(shapeName, 1, indices, frameVertices);
-                    }
-                }
+            for(auto &vertex : vertices) {
+                applyAttachmentTransform(fields, vertex, customScale);
             }
         }
     }
 
-    it = fields.find(gTriangles);
-    if(it != fields.end()) {
-        IndexVector &indices = mesh->indices();
-
-        VariantList list = it->second.toList();
-        indices.reserve(list.size());
-        for(auto &index : list) {
-            indices.push_back(index.toInt());
-        }
-    }
+    return nullptr;
 }
 
 Vector4 SpineConverter::toColor(const TString &color) {
-    uint32_t rgba = stoul(color.toStdString(), nullptr, 16);
-    uint8_t rgb[4];
-    rgb[0] = rgba;
-    rgb[1] = rgba >> 8;
-    rgb[2] = rgba >> 16;
-    rgb[3] = rgba >> 24;
+    TString hex = color;
+    if(hex.startsWith("#")) {
+        hex = hex.mid(1, hex.size() - 1);
+    } else if(hex.startsWith("0x") || hex.startsWith("0X")) {
+        hex = hex.mid(2, hex.size() - 2);
+    }
 
-    return Vector4((float)rgb[3] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[0] / 255.0f);
+    if(hex.size() == 6) {
+        hex += "ff";
+    }
+
+    uint32_t rgba = stoul(hex.toStdString(), nullptr, 16);
+    uint8_t r = (rgba >> 24) & 0xFF;
+    uint8_t g = (rgba >> 16) & 0xFF;
+    uint8_t b = (rgba >> 8) & 0xFF;
+    uint8_t a = rgba & 0xFF;
+
+    return Vector4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f);
 }
 
 TString SpineConverter::pathTo(Object *root, Object *dst) {
@@ -711,7 +762,8 @@ TString SpineConverter::pathTo(Object *root, Object *dst) {
 }
 
 void SpineConverter::stabilizeUUID(Object *object) {
-    Engine::replaceUUID(object, Mathf::hashString(pathTo(nullptr, object)));
+    TString path = pathTo(nullptr, object);
+    Engine::replaceUUID(object, Mathf::hashString(path));
 
     for(auto it : object->getChildren()) {
         stabilizeUUID(it);

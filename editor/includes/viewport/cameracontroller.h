@@ -61,7 +61,7 @@ public:
     void blockRotations(bool flag) { m_blockRotation = flag; }
 
     bool isPickingBlocked() const { return m_blockPicking; }
-    void blockPicking(bool flag) { m_blockPicking = flag; }
+    void blockPicking(bool flag) { m_blockPicking = flag; m_blockPickingBack = flag; }
 
     bool isPickingOverlaped() const { return m_overlapPicking; }
     void overlapPicking(bool flag) { m_overlapPicking = flag; }

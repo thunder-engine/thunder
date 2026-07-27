@@ -35,7 +35,7 @@ SpriteRender::SpriteRender() :
         m_size(1.0f),
         m_sprite(nullptr),
         m_texture(nullptr),
-        m_mesh(PipelineContext::defaultPlane()),
+        m_mesh(nullptr),
         m_customMesh(Engine::objectCreate<Mesh>()),
         m_customMeshInstance(nullptr),
         m_drawMode(Simple),
@@ -68,7 +68,6 @@ Mesh *SpriteRender::meshToDraw() {
                     if(m_drawMode == Sprite::Simple) {
                         m_size = mesh->bound().extent * 2.0f;
                     }
-
                 } else {
                     m_mesh = PipelineContext::defaultPlane();
                 }
@@ -76,7 +75,7 @@ Mesh *SpriteRender::meshToDraw() {
                 m_useCustom = true;
             }
         } else {
-            m_mesh = PipelineContext::defaultPlane();
+            m_mesh = m_texture ? PipelineContext::defaultPlane() : nullptr;
         }
 
         m_dirtyMesh = false;
@@ -286,10 +285,7 @@ Mesh *SpriteRender::ensureMeshInstance() {
         m_customMeshInstance = Engine::objectCreate<Mesh>();
         m_customMeshInstance->setIndices(m_customMesh->indices());
         m_customMeshInstance->setVertices(m_customMesh->vertices());
-        m_customMeshInstance->setNormals(m_customMesh->normals());
-        m_customMeshInstance->setTangents(m_customMesh->tangents());
         m_customMeshInstance->setUv0(m_customMesh->uv0());
-        m_customMeshInstance->setUv1(m_customMesh->uv1());
         m_customMeshInstance->setColors(m_customMesh->colors());
         m_customMeshInstance->setBones(m_customMesh->bones());
         m_customMeshInstance->setWeights(m_customMesh->weights());

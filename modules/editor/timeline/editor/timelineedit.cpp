@@ -158,8 +158,8 @@ void TimelineEdit::setPosition(uint32_t position) {
         }
     }
 
-    if(m_armature) {
-        m_armature->update();
+    for(auto it : m_armatures) {
+        it->update();
     }
 
     ui->widget->setPosition(position);
@@ -190,10 +190,12 @@ void TimelineEdit::setAnimator(Animator *animator) {
         saveClip();
 
         m_animator = animator;
-        m_armature = nullptr;
+        m_armatures.clear();
 
         if(m_animator) {
-            m_armature = m_animator->actor()->getComponentInChild<Armature>();
+            for(auto it : m_animator->actor()->componentsInChild("Armature")) {
+                m_armatures.push_back(static_cast<Armature *>(it));
+            }
         }
 
         ui->toolBar->setVisible(m_animator != nullptr);

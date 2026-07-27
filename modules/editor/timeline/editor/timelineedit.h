@@ -94,13 +94,13 @@ private:
 private:
     std::map<TString, AnimationClip *> m_clips;
 
+    std::list<Armature *> m_armatures;
+
     TString m_currentClip;
 
     Ui::TimelineEdit *ui = nullptr;
 
     Animator *m_animator = nullptr;
-
-    Armature *m_armature = nullptr;
 
     TimelineController *m_model = nullptr;
 

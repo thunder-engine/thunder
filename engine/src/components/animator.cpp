@@ -9,11 +9,12 @@
 #include "timer.h"
 #include <log.h>
 
-enum TransformFlags {
+enum class TransformFlags {
     Position = 1,
     Rotation,
     Scale,
-    Quat
+    Quat,
+    Object
 };
 
 /*!
@@ -58,10 +59,14 @@ void Animator::process(float dt) {
     for(auto &it : m_bindProperties) {
         TargetProperty &target = it.second;
 
-        switch(target.defaultValue.type()) {
-            case MetaType::QUATERNION: sampleQuaternion(dt, target); break;
-            case MetaType::STRING: sampleString(dt, target); break;
-            default: sampleVector4(dt, target); break;
+        if(static_cast<TransformFlags>(target.flag) == TransformFlags::Object) {
+            sampleString(dt, target);
+        } else {
+            switch(target.defaultValue.type()) {
+                case MetaType::QUATERNION: sampleQuaternion(dt, target); break;
+                case MetaType::STRING: sampleString(dt, target); break;
+                default: sampleVector4(dt, target); break;
+            }
         }
     }
 
@@ -109,7 +114,7 @@ void Animator::sampleVector4(float dt, TargetProperty &target) {
             case MetaType::FLOAT: target.property.write(target.object, vec4.x); break;
             case MetaType::VECTOR2: target.property.write(target.object, Vector2(vec4)); break;
             case MetaType::VECTOR3: {
-                switch(target.flag) {
+                switch(static_cast<TransformFlags>(target.flag)) {
                     case TransformFlags::Position: static_cast<Transform *>(target.object)->setPosition(vec4); break;
                     case TransformFlags::Rotation: static_cast<Transform *>(target.object)->setRotation(vec4); break;
                     case TransformFlags::Scale: static_cast<Transform *>(target.object)->setScale(vec4); break;
@@ -154,7 +159,7 @@ void Animator::sampleQuaternion(float dt, TargetProperty &target) {
     }
 
     if(updated) {
-        if(target.flag == TransformFlags::Quat) {
+        if(static_cast<TransformFlags>(target.flag) == TransformFlags::Quat) {
             static_cast<Transform *>(target.object)->setQuaternion(quat);
         } else {
             target.property.write(target.object, quat);
@@ -195,7 +200,15 @@ void Animator::sampleString(float dt, TargetProperty &target) {
     }
 
     if(updated) {
-        target.property.write(target.object, str);
+        if(static_cast<TransformFlags>(target.flag) == TransformFlags::Object) {
+            Resource *resource = nullptr;
+            if(!str.isEmpty()) {
+                resource = Engine::loadResourceAsync(str);
+            }
+            target.property.write(target.object, Variant(target.defaultValue.userType(), &resource));
+        } else {
+            target.property.write(target.object, str);
+        }
     }
 }
 
@@ -353,7 +366,12 @@ Animator::TargetProperty *Animator::bindTrack(const AnimationTrack &track) {
                 if(t) {
                     auto transformIt = tranformFlags.find(track.property());
                     if(transformIt != tranformFlags.end()) {
-                        data.flag = transformIt->second;
+                        data.flag = static_cast<int>(transformIt->second);
+                    }
+                } else {
+                    int flags = MetaType::table(data.defaultValue.userType())->flags;
+                    if(flags & MetaType::BASE_OBJECT) {
+                        data.flag = static_cast<int>(TransformFlags::Object);
                     }
                 }
 

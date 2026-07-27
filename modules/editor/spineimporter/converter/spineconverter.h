@@ -3,10 +3,12 @@
 
 #include <editor/assetconverter.h>
 
+class Pose;
 class Mesh;
 class Sprite;
 class Transform;
 class SpriteRender;
+class SkinnedSpriteRender;
 
 namespace {
     const char *gX("x");
@@ -43,18 +45,20 @@ namespace {
     const char *gValue("value");
 
     const char *gTransform("Transform");
-};
+}
 
 struct Item {
     Vector4 bounds;
-    float rotate;
+    float rotate = 0.0f;
+
+    Sprite *sprite = nullptr;
 };
 
 struct Slot {
     TString color;
     TString bone;
     TString item;
-    uint32_t layer;
+    uint32_t layer = 0;
 
     SpriteRender *render = nullptr;
 };
@@ -76,7 +80,7 @@ private:
     StringList typeNames() const override;
 
 public:
-    std::map<TString, Actor *> m_boneStructure;
+    std::vector<Actor *> m_bones;
 
     std::map<TString, Slot> m_slots;
 
@@ -86,7 +90,7 @@ public:
 
     Vector2 m_atlasSize;
 
-    Actor *m_root;
+    Actor *m_rootBone;
 
 private:
     float m_scale;
@@ -116,7 +120,7 @@ private:
     void importAtlas(SpineConverterSettings *settings);
 
     void importRegion(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
-    void importMesh(const VariantMap &fields, const TString &itemName, Mesh *mesh, SpineConverterSettings *settings);
+    Pose *importMesh(const VariantMap &fields, const TString &itemName, Transform *transform, Mesh *mesh, SpineConverterSettings *settings);
 
     void stabilizeUUID(Object *object);
 
