@@ -37,6 +37,17 @@ static Component *componentInChildHelper(const TString &type, Object *parent) {
     return nullptr;
 }
 
+static void componentsInChildHelper(const TString &type, Object *parent, std::list<Component *> &result) {
+    PROFILE_FUNCTION();
+    for(auto it : parent->getChildren()) {
+        const MetaObject *meta = it->metaObject();
+        if(meta->canCastTo(type.data())) {
+            result.push_back(static_cast<Component *>(it));
+        }
+        componentsInChildHelper(type, it, result);
+    }
+}
+
 /*!
     \class Actor
     \brief Base class for all entities in Thunder Engine.
@@ -272,10 +283,7 @@ std::list<Component *> Actor::componentsInChild(const TString &type) const {
     PROFILE_FUNCTION();
     std::list<Component *> result;
     for(auto it : getChildren()) {
-        Component *component = componentInChildHelper(type, it);
-        if(component) {
-            result.push_back(component);
-        }
+        componentsInChildHelper(type, it, result);
     }
     return result;
 }
