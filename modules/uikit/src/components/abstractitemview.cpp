@@ -3,6 +3,8 @@
 #include <abstractitemmodel.h>
 #include <input.h>
 
+#include <algorithm>
+
 AbstractItemView::AbstractItemView() :
         m_model(nullptr),
         m_rootIndex(),
