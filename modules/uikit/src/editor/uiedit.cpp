@@ -30,21 +30,6 @@
 #include <abstractitemmodel.h>
 
 class TestModel : public AbstractItemModel {
-public:
-    TestModel() {
-        m_sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
-        m_list = {"0 editor/viewport/cameracontroller.h",
-                  "1 editor/viewport/cameracontroller.h",
-                  "2 editor/viewport/cameracontroller.h",
-                  "3 editor/viewport/cameracontroller.h",
-                  "4 editor/viewport/cameracontroller.h",
-                  "5 editor/viewport/cameracontroller.h",
-                  "6 editor/viewport/cameracontroller.h",
-                  "7 editor/viewport/cameracontroller.h",
-                  "8 editor/viewport/cameracontroller.h",
-                  "9 editor/viewport/cameracontroller.h"};
-    }
-
 private:
     int rowCount(const ModelIndex &parent = ModelIndex()) const override {
         return m_list.size();
@@ -67,20 +52,26 @@ private:
             return Variant();
         }
 
+        static const Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
+        static const StringList list = {"0 editor/viewport/cameracontroller.h",
+                  "1 editor/viewport/cameracontroller.h",
+                  "2 editor/viewport/cameracontroller.h",
+                  "3 editor/viewport/cameracontroller.h",
+                  "4 editor/viewport/cameracontroller.h",
+                  "5 editor/viewport/cameracontroller.h",
+                  "6 editor/viewport/cameracontroller.h",
+                  "7 editor/viewport/cameracontroller.h",
+                  "8 editor/viewport/cameracontroller.h",
+                  "9 editor/viewport/cameracontroller.h"};
+
         switch(role) {
-            case DisplayRole: return *std::next(m_list.begin(), index.row());
-            case DecorationRole: return Variant::fromValue(m_sprite);
+            case DisplayRole: return *std::next(list.begin(), index.row());
+            case DecorationRole: return Variant::fromValue(sprite);
             default: break;
         }
 
         return Variant();
     }
-
-private:
-    StringList m_list;
-
-    Sprite *m_sprite = nullptr;
-
 };
 
 namespace {

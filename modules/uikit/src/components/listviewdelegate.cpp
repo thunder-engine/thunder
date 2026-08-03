@@ -107,7 +107,6 @@ void ListViewDelegate::updateData(ListView *view) {
         m_label->setText(m_modelIndex.model()->data(m_modelIndex, AbstractItemModel::DisplayRole).toString());
 
         float textWidth = m_label->textWidth();
-        float labelHeight = std::max(16.0f, m_label->textWidth() > 0.0f ? 16.0f : 16.0f);
         float contentOffset = showIcon ? iconSize.x + 4.0f : 2.0f;
         float totalWidth = std::max(contentOffset + textWidth + 2.0f, std::max(cellWidth, 1.0f));
 
@@ -117,7 +116,7 @@ void ListViewDelegate::updateData(ListView *view) {
                 rect->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
                 rect->setPivot(Vector2(0.5f, 1.0f));
                 rect->setPosition(Vector3(0.0f, -(iconHeight + 4.0f), 0.0f));
-                rect->setSize(Vector2(std::min(textWidth, std::max(cellWidth, 1.0f)), std::max(labelHeight, 16.0f)));
+                rect->setSize(Vector2(std::min(textWidth, std::max(cellWidth, 1.0f)), 16.0f));
             } else {
                 rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
                 rect->setPivot(Vector2(0.0f, 0.5f));
