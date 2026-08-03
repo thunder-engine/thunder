@@ -53,7 +53,8 @@ private:
         }
 
         static const Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
-        static const StringList list = {"0 editor/viewport/cameracontroller.h",
+        static const StringList list =
+                 {"0 editor/viewport/cameracontroller.h",
                   "1 editor/viewport/cameracontroller.h",
                   "2 editor/viewport/cameracontroller.h",
                   "3 editor/viewport/cameracontroller.h",
