@@ -32,7 +32,7 @@
 class TestModel : public AbstractItemModel {
 private:
     int rowCount(const ModelIndex &parent = ModelIndex()) const override {
-        return m_list.size();
+        return 10;
     }
 
     int columnCount(const ModelIndex &parent = ModelIndex()) const override {

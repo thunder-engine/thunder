@@ -15,6 +15,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
 set(${PROJECT_NAME}_incPaths
     "includes"
     "includes/resources"
+    "includes/components"
     "includes/editor"
     "includes/editor/tools"
     "../../common"
