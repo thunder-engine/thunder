@@ -1,6 +1,7 @@
 #include "components/abstractitemview.h"
 
 #include <abstractitemmodel.h>
+#include <input.h>
 
 AbstractItemView::AbstractItemView() :
         m_model(nullptr),
@@ -33,10 +34,9 @@ int AbstractItemView::selectionMode() const {
 
 void AbstractItemView::setSelectionMode(int mode) {
     m_selectionMode = mode;
-}
-
-std::list<ModelIndex> AbstractItemView::selectedIndexes() const {
-    return m_selected;
+    if(mode == NoSelection) {
+        clearSelection();
+    }
 }
 
 void AbstractItemView::selectItem(const ModelIndex &index) {
@@ -45,28 +45,143 @@ void AbstractItemView::selectItem(const ModelIndex &index) {
     }
 
     switch(m_selectionMode) {
-        case SingleSelection: {
-                if(!m_selected.empty() && m_selected.front() == index) {
-                    return;
-                }
-                m_selected = {index};
-                m_currentIndex = index;
-                selectionChanged();
-        } break;
+    case NoSelection: return;
+    case SingleSelection: {
+        if(!m_selected.empty() && m_selected.front() == index) {
+            return;
+        }
+        m_selected = {index};
+        m_currentIndex = index;
+        selectionChanged();
+        break;
+    }
         case MultiSelection: {
-            for(auto it = m_selected.begin(); it != m_selected.end(); ++it) {
-                if(*it == index) {
+            auto it = std::find(m_selected.begin(), m_selected.end(), index);
+            if(it != m_selected.end()) {
+                if(m_selected.size() > 1) {
                     m_selected.erase(it);
                     selectionChanged();
-                    return;
                 }
+            } else {
+                m_selected.push_back(index);
+                m_currentIndex = index;
+                selectionChanged();
             }
-            m_selected.push_back(index);
-            m_currentIndex = index;
-            selectionChanged();
         } break;
-        default: break;
+        case ExtendedSelection: {
+            selectItemWithModifiers(index);
+        } break;
     }
+}
+
+void AbstractItemView::selectItemWithModifiers(const ModelIndex &index) {
+    if(!isIndexValid(index)) {
+        return;
+    }
+
+    bool ctrlPressed = Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL);
+    bool shiftPressed = Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
+
+    if(ctrlPressed) {
+        toggleSelection(index);
+    } else if (shiftPressed && m_currentIndex.isValid()) {
+        selectRange(m_currentIndex, index);
+    } else {
+        if(!m_selected.empty() && m_selected.front() == index) {
+            return;
+        }
+        m_selected = {index};
+        m_currentIndex = index;
+        selectionChanged();
+    }
+}
+
+void AbstractItemView::toggleSelection(const ModelIndex &index) {
+    if(!isIndexValid(index)) {
+        return;
+    }
+
+    auto it = std::find(m_selected.begin(), m_selected.end(), index);
+    if(it != m_selected.end()) {
+        if(m_selected.size() > 1) {
+            m_selected.erase(it);
+            selectionChanged();
+        }
+    } else {
+        m_selected.push_back(index);
+        m_currentIndex = index;
+        selectionChanged();
+    }
+}
+
+void AbstractItemView::selectRange(const ModelIndex &from, const ModelIndex &to) {
+    if(!isIndexValid(from) || !isIndexValid(to)) {
+        return;
+    }
+
+    int fromRow = from.row();
+    int toRow = to.row();
+    if(fromRow > toRow) {
+        std::swap(fromRow, toRow);
+    }
+
+    if(m_selectionMode == SingleSelection) {
+        selectItem(to);
+        return;
+    }
+
+    m_selected.clear();
+    for(int row = fromRow; row <= toRow; ++row) {
+        ModelIndex idx = m_model->index(row, 0);
+        if (idx.isValid()) {
+            m_selected.push_back(idx);
+        }
+    }
+    m_currentIndex = to;
+    selectionChanged();
+}
+
+void AbstractItemView::selectAll() {
+    if(!m_model || m_selectionMode == NoSelection) {
+        return;
+    }
+
+    m_selected.clear();
+    int count = m_model->rowCount();
+    for(int i = 0; i < count; ++i) {
+        ModelIndex idx = m_model->index(i, 0);
+        if(idx.isValid()) {
+            m_selected.push_back(idx);
+        }
+    }
+    if(!m_selected.empty()) {
+        m_currentIndex = m_selected.back();
+    }
+    selectionChanged();
+}
+
+bool AbstractItemView::isIndexSelected(const ModelIndex &index) const {
+    if(!index.isValid()) {
+        return false;
+    }
+    return std::find(m_selected.begin(), m_selected.end(), index) != m_selected.end();
+}
+
+void AbstractItemView::setCurrentIndex(const ModelIndex &index) {
+    if(!isIndexValid(index)) {
+        return;
+    }
+    m_currentIndex = index;
+}
+
+void AbstractItemView::clearSelection() {
+    m_selected.clear();
+    m_currentIndex = ModelIndex();
+    selectionChanged();
+}
+
+std::list<ModelIndex> AbstractItemView::selectedIndexes() const {
+    return m_selected;
 }
 
 void AbstractItemView::activateCurrentItem() {
@@ -77,12 +192,6 @@ void AbstractItemView::activateCurrentItem() {
 
 bool AbstractItemView::isIndexValid(const ModelIndex &index) const {
     return index.isValid() && index.model() == m_model;
-}
-
-void AbstractItemView::clearSelection() {
-    m_selected.clear();
-    m_currentIndex = ModelIndex();
-    selectionChanged();
 }
 
 void AbstractItemView::activated(const ModelIndex &index) {

@@ -65,7 +65,6 @@ protected:
 
 private:
     void rebuildItems();
-    void updateHighlight(int index);
     void handleItemClick(int index);
     void handleItemDoubleClick(int index);
 
@@ -77,12 +76,12 @@ private:
 
     Vector2 viewportSize();
 
+    void updateDelegatesStates();
+
 private:
     std::list<ListViewDelegate *> m_items;
 
     Vector2 m_gridSize;
-
-    Frame *m_highlightFrame;
 
     ListViewDelegate *m_delegate;
 
@@ -90,15 +89,11 @@ private:
 
     int m_viewMode;
 
-    int m_highlightIndex;
-
     int m_firstVisibleIndex;
 
     int m_cachedColumns;
 
     int m_cachedRows;
-
-    int m_selectedIndex = -1;
 
     int m_iconAlignment = Alignment::Left | Alignment::Middle;
 

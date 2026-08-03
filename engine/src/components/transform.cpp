@@ -139,7 +139,7 @@ void Transform::setParentTransform(Transform *parent, bool force) {
 
     if(parent) {
         Actor *actor = Transform::actor();
-        Actor *parentActor =  parent->actor();
+        Actor *parentActor = parent->actor();
         if(actor && actor->parent() != parentActor) {
             actor->setParent(parentActor);
             return;

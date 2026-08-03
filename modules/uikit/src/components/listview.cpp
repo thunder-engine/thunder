@@ -11,15 +11,12 @@
 
 ListView::ListView() :
         m_gridSize(80, 100),
-        m_highlightFrame(nullptr),
         m_delegate(nullptr),
         m_rowHeight(20),
         m_viewMode(ListMode),
-        m_highlightIndex(-1),
         m_firstVisibleIndex(0),
         m_cachedColumns(1),
         m_cachedRows(1),
-        m_selectedIndex(-1),
         m_isPressed(false) {
 
 }
@@ -30,7 +27,6 @@ ListView::~ListView() {
 
 void ListView::setModel(AbstractItemModel *model) {
     AbstractItemView::setModel(model);
-    m_selectedIndex = -1;
     m_dirtyItems = true;
 }
 
@@ -39,14 +35,13 @@ int ListView::viewMode() const {
 }
 
 void ListView::setViewMode(int mode) {
-    if (m_viewMode == mode) {
+    if(m_viewMode == mode) {
         return;
     }
 
     m_viewMode = mode;
     m_dirtyItems = true;
     calculateGridParams();
-    updateHighlight(m_selectedIndex >= 0 ? m_selectedIndex : m_highlightIndex);
     repaint();
 }
 
@@ -99,20 +94,6 @@ void ListView::composeComponent() {
     Actor *widgetActor = Engine::composeActor<Widget>("content", actor());
     setContent(widgetActor->getComponent<Widget>());
 
-    Actor *hlActor = Engine::composeActor<Frame>("highlight", m_content->actor());
-    m_highlightFrame = hlActor->getComponent<Frame>();
-    if(m_highlightFrame) {
-        RectTransform *rect = m_highlightFrame->rectTransform();
-        if(rect) {
-            rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-            rect->setPivot(Vector2(0.0f, 1.0f));
-            rect->setSize(Vector2(0.0f, m_rowHeight));
-        }
-        m_highlightFrame->setBackgroundColor(Vector4(0.0f, 0.0f, 0.0f, 0.5f));
-        m_highlightFrame->setEnabled(false);
-        setSubWidget(m_highlightFrame);
-    }
-
     Actor *delegateActor = Engine::composeActor<ListViewDelegate>("delegate");
     ListViewDelegate *delegate = delegateActor->getComponent<ListViewDelegate>();
     if(delegate) {
@@ -132,6 +113,12 @@ bool ListView::onMouseDown(int x, int y) {
         m_isPressed = true;
         handleItemClick(index);
         return true;
+    }
+
+    if(!m_selected.empty()) {
+        clearSelection();
+        updateDelegatesStates();
+        repaint();
     }
 
     return false;
@@ -157,11 +144,18 @@ bool ListView::onMouseUp(int x, int y) {
 }
 
 bool ListView::onMouseMove(int x, int y) {
-    int newHighlight = indexAtPosition(Vector2(x, y));
-    if(newHighlight != m_highlightIndex) {
-        updateHighlight(newHighlight);
-        repaint();
+    if(!m_model || m_model->rowCount() == 0) {
+        return false;
     }
+
+    int newHighlight = indexAtPosition(Vector2(x, y));
+    for(auto delegate : m_items) {
+        if(delegate) {
+            delegate->setHovered(delegate->index() == newHighlight);
+        }
+    }
+
+    repaint();
 
     return true;
 }
@@ -209,7 +203,7 @@ bool ListView::onKeyPress(KeyEvent *event) {
 
     int totalItems = m_model->rowCount();
     int columns = (m_viewMode == IconMode) ? m_cachedColumns : 1;
-    int current = m_selectedIndex;
+    int current = m_currentIndex.isValid() ? m_currentIndex.row() : -1;
     if (current < 0 && totalItems > 0) {
         current = 0;
     }
@@ -281,9 +275,8 @@ bool ListView::onKeyPress(KeyEvent *event) {
             return true;
         }
         case Input::KEY_ESCAPE: {
-            m_selectedIndex = -1;
-            m_highlightIndex = -1;
-            updateHighlight(m_highlightIndex);
+            clearSelection();
+            updateDelegatesStates();
             repaint();
             return true;
         }
@@ -291,15 +284,20 @@ bool ListView::onKeyPress(KeyEvent *event) {
     }
 
     if(newIndex >= 0 && newIndex < totalItems) {
-        m_selectedIndex = newIndex;
-        m_highlightIndex = newIndex;
-        updateHighlight(m_highlightIndex);
-        repaint();
-
         ModelIndex idx = m_model->index(newIndex, 0);
         if(idx.isValid()) {
-            selectItem(idx);
+            if(event->isShiftPressed() && m_currentIndex.isValid()) {
+                selectRange(m_currentIndex, idx);
+            } else if(event->isControlPressed()) {
+                toggleSelection(idx);
+            } else {
+                selectItem(idx);
+            }
+            m_currentIndex = idx;
         }
+
+        updateDelegatesStates();
+        repaint();
 
         if(needScroll) {
             scrollToItem(newIndex);
@@ -398,11 +396,11 @@ void ListView::onVScrollChanged(int value) {
 }
 
 void ListView::activateCurrentItem() {
-    if(m_selectedIndex < 0 || m_selectedIndex >= m_model->rowCount()) {
+    if(!m_currentIndex.isValid()) {
         return;
     }
 
-    ModelIndex idx = m_model->index(m_selectedIndex, 0);
+    ModelIndex idx = m_currentIndex;
     if(idx.isValid()) {
         AbstractItemView::activateCurrentItem();
     }
@@ -413,7 +411,7 @@ void ListView::rebuildItems() {
         int totalItemCount = 0;
         Vector2 viewportSize(ListView::viewportSize());
         if(m_viewMode == ListMode) {
-            totalItemCount = viewportSize.y / m_rowHeight + 1;
+            totalItemCount = viewportSize.y / m_rowHeight;
         } else {
             totalItemCount = viewportSize.x / m_gridSize.x;
             totalItemCount *= int(viewportSize.y / m_gridSize.y) + 1;
@@ -455,7 +453,9 @@ void ListView::rebuildItems() {
 
             if(delegate) {
                 delegate->setEnabled(true);
-                delegate->bind(this, m_model->index(i, 0));
+                ModelIndex idx = m_model->index(i, 0);
+                delegate->bind(this, idx);
+                delegate->setSelected(isIndexSelected(idx));
 
                 RectTransform *rect = delegate->rectTransform();
                 rect->setPosition(Vector3(positionAtIndex(i), 0.0f));
@@ -477,37 +477,17 @@ void ListView::rebuildItems() {
             }
             contentRect->setSize(Vector2(std::max(maxWidth, viewportSize.x), totalHeight));
         }
-        updateHighlight(m_highlightIndex);
-
+        updateDelegatesStates();
         updateScrollRange();
     }
 }
 
-void ListView::updateHighlight(int index) {
-    if(!m_highlightFrame || !m_model) {
-        return;
-    }
-
-    m_highlightIndex = index;
-
-    if(index >= 0 && index < m_model->rowCount()) {
-        RectTransform *rect = m_highlightFrame->rectTransform();
-        if(rect) {
-            rect->setPosition(Vector3(positionAtIndex(index), 0.0f));
-
-            if (m_viewMode == ListMode) {
-                rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-                rect->setPivot(Vector2(0.0f, 1.0f));
-                rect->setSize(Vector2(viewportSize().x, static_cast<float>(m_rowHeight)));
-            } else {
-                rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-                rect->setPivot(Vector2(0.0f, 1.0f));
-                rect->setSize(m_gridSize);
-            }
+void ListView::updateDelegatesStates() {
+    for(auto delegate : m_items) {
+        if(delegate && delegate->isEnabled()) {
+            ModelIndex idx = m_model->index(delegate->index(), 0);
+            delegate->setSelected(isIndexSelected(idx));
         }
-        m_highlightFrame->setEnabled(true);
-    } else {
-        m_highlightFrame->setEnabled(false);
     }
 }
 
@@ -535,12 +515,10 @@ void ListView::handleItemClick(int index) {
         return;
     }
 
-    m_selectedIndex = index;
-    m_highlightIndex = index;
-    updateHighlight(m_highlightIndex);
+    selectItem(idx);
+    updateDelegatesStates();
     repaint();
 
-    selectItem(idx);
     pressed(idx);
 }
 

@@ -28,7 +28,8 @@ public:
     enum SelectionMode {
         NoSelection = 0,
         SingleSelection,
-        MultiSelection
+        MultiSelection,
+        ExtendedSelection
     };
 
 public:
@@ -43,6 +44,14 @@ public:
 
     int selectionMode() const;
     void setSelectionMode(int mode);
+
+    void selectAll();
+    bool isIndexSelected(const ModelIndex &index) const;
+    void toggleSelection(const ModelIndex &index);
+    void selectRange(const ModelIndex &from, const ModelIndex &to);
+
+    void setCurrentIndex(const ModelIndex &index);
+    ModelIndex currentIndex() const { return m_currentIndex; }
 
     std::list<ModelIndex> selectedIndexes() const;
 
@@ -61,6 +70,7 @@ protected:
 
     bool isIndexValid(const ModelIndex &index) const;
     void clearSelection();
+    void selectItemWithModifiers(const ModelIndex &index);
 
 protected:
     AbstractItemModel *m_model;

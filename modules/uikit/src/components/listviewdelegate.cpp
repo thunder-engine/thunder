@@ -9,8 +9,10 @@
 #include <algorithm>
 
 ListViewDelegate::ListViewDelegate() :
-    m_icon(nullptr),
-    m_label(nullptr) {
+        m_icon(nullptr),
+        m_label(nullptr),
+        m_selected(false),
+        m_hovered(false) {
 }
 
 ListViewDelegate::~ListViewDelegate() {
@@ -21,6 +23,34 @@ void ListViewDelegate::bind(ListView *view, const ModelIndex &index) {
     m_modelIndex = index;
 
     updateData(view);
+}
+
+int ListViewDelegate::index() const {
+    return m_modelIndex.row();
+}
+
+void ListViewDelegate::setSelected(bool selected) {
+    if(m_selected != selected) {
+        m_selected = selected;
+        updateStyle();
+    }
+}
+
+void ListViewDelegate::setHovered(bool hovered) {
+    if(m_hovered != hovered) {
+        m_hovered = hovered;
+        updateStyle();
+    }
+}
+
+void ListViewDelegate::updateStyle() {
+    if(m_selected) {
+        setBackgroundColor(Vector4(0.2f, 0.5f, 0.9f, 0.3f));
+    } else if(m_hovered) {
+        setBackgroundColor(Vector4(0.0f, 0.0f, 0.0f, 0.25f));
+    } else {
+        setBackgroundColor(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+    }
 }
 
 void ListViewDelegate::updateData(ListView *view) {
@@ -71,6 +101,7 @@ void ListViewDelegate::updateData(ListView *view) {
 
     if(m_label == nullptr) {
         m_label = actor()->findChild<Label *>();
+        onHierarchyUpdated();
     }
     if(m_label) {
         m_label->setText(m_modelIndex.model()->data(m_modelIndex, AbstractItemModel::DisplayRole).toString());
@@ -132,4 +163,6 @@ void ListViewDelegate::composeComponent() {
         m_label->setWordWrap(false);
         m_label->setClip(true);
     }
+
+    updateStyle();
 }
