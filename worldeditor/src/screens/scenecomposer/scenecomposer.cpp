@@ -42,8 +42,6 @@
 
 #include "screens/componentbrowser/componentbrowser.h"
 
-#include "main/documentmodel.h"
-
 Q_DECLARE_METATYPE(Object *)
 Q_DECLARE_METATYPE(Scene *)
 Q_DECLARE_METATYPE(Actor *)
@@ -404,7 +402,7 @@ void SceneComposer::onRepickSelected() {
     emit selectionChanged();
 }
 
-void SceneComposer::backupScenes() {
+void SceneComposer::backup() {
     m_backupScenes.clear();
 
     World *world = Engine::world();
@@ -421,7 +419,7 @@ void SceneComposer::backupScenes() {
     }
 }
 
-void SceneComposer::restoreBackupScenes() {
+void SceneComposer::restore() {
     if(!m_backupScenes.empty()) {
         emit objectsHierarchyChanged(nullptr);
         emit selectionChanged();

@@ -44,20 +44,6 @@ void DocumentModel::addEditor(AssetEditor *editor) {
     connect(editor, &AssetEditor::dropAsset, this, &DocumentModel::onLoadAsset);
 }
 
-void DocumentModel::newFile(AssetEditor *editor) {
-    if(editor->checkSave()) {
-        closeFile(editor);
-        editor->onNewAsset();
-    }
-}
-
-void DocumentModel::openFile(AssetEditor *editor) {
-    if(editor->checkSave()) {
-        closeFile(editor);
-        editor->onOpenAsset();
-    }
-}
-
 AssetEditor *DocumentModel::openFile(const TString &path) {
     AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
 

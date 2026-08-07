@@ -82,6 +82,7 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     File::mkPath(m_pluginsPath);
 
     setCurrentPlatform();
+    loadSettings();
 }
 
 void ProjectSettings::loadPlatforms() {

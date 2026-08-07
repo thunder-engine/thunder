@@ -27,8 +27,8 @@ public:
     VariantMap saveState() override;
     void restoreState(const VariantMap &data) override;
 
-    void backupScenes();
-    void restoreBackupScenes();
+    void backup() override;
+    void restore() override;
 
     void takeScreenshot();
 

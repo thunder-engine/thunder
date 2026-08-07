@@ -60,6 +60,14 @@ bool AssetEditor::allowSaveAs() const {
     return true;
 }
 
+void AssetEditor::backup() {
+
+}
+
+void AssetEditor::restore() {
+
+}
+
 void AssetEditor::saveAsset(const TString &path) {
     Q_UNUSED(path)
 

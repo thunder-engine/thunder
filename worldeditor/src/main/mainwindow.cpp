@@ -26,8 +26,6 @@
 #include <editor/editorgadget.h>
 #include <editor/nativecodebuilder.h>
 
-#include "documentmodel.h"
-
 // System
 #include <global.h>
 #include "config.h"
@@ -51,22 +49,16 @@ namespace  {
     const char *gWorkspace("main.workspace");
 };
 
-MainWindow::MainWindow(Engine *engine, QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
         m_currentWorkspace(":/Workspaces/Default.ws"),
-        m_engine(engine),
         m_queue(nullptr),
-        m_documentModel(nullptr),
-        m_editorSettings(EditorSettings::instance()),
-        m_projectSettings(ProjectSettings::instance()),
         m_editorSettingsBrowser(new EditorSettingsBrowser(this)),
         m_projectSettingsBrowser(new ProjectSettingsBrowser(this)),
         m_contentBrowser(new ContentBrowser(this)),
         m_consoleOutput(new ConsoleManager(this)),
         m_preview(nullptr),
-        m_mainEditor(nullptr),
-        m_currentEditor(nullptr),
         m_builder(new QProcess(this)) {
 
     qRegisterMetaType<Vector2>  ("Vector2");
@@ -76,7 +68,7 @@ MainWindow::MainWindow(Engine *engine, QWidget *parent) :
     qRegisterMetaType<uint32_t> ("uint32_t");
 
     QLocale locale(QLocale::English, QLocale::UnitedStates);
-    m_editorSettings->registerValue("General/Language", TString(locale.bcp47Name().toStdString()), "editor=Locale");
+    Editor::settings()->registerValue("General/Language", TString(locale.bcp47Name().toStdString()), "editor=Locale");
 
     ui->setupUi(this);
 
@@ -127,35 +119,18 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::addGadget(EditorGadget *gadget) {
-    m_gadgets.push_back(gadget);
-
     ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
 
-    connect(m_documentModel, &DocumentModel::updated, gadget, &EditorGadget::onUpdated);
-    connect(m_documentModel, &DocumentModel::selectionChanaged, gadget, &EditorGadget::onSelectionChanged);
-
-    connect(gadget, &EditorGadget::objectsSelected, m_documentModel, &DocumentModel::selectionChanaged);
+    Editor::addGadget(gadget);
 }
 
 AssetEditor *MainWindow::openEditor(const TString &path) {
-    if(m_documentModel == nullptr) {
-        return nullptr;
-    }
-
-    AssetEditor *editor = m_documentModel->openFile(path);
+    AssetEditor *editor = Editor::openFile(path);
     if(editor) {
         if(ui->toolWidget->areaFor(editor) == nullptr) {
-            QWidget *neighbor = m_mainEditor;
-            for(auto &it : findChildren<QWidget *>()) {
-                if(it->inherits(editor->metaObject()->className())) {
-                    neighbor = it;
-                    break;
-                }
-            }
-
             ui->toolWidget->removeToolWindow(editor);
             editor->setParent(this);
-            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(neighbor));
+            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
         } else {
             ui->toolWidget->activateToolWindow(editor);
         }
@@ -171,35 +146,33 @@ void MainWindow::onOpenEditor(const TString &path) {
 void MainWindow::closeEvent(QCloseEvent *event) {
     QMainWindow::closeEvent(event);
 
-    TString str = m_projectSettings->projectId();
+    TString str = Editor::project()->projectId();
     if(!str.isEmpty()) {
         QSettings settings(COMPANY_NAME, EDITOR_NAME);
 
         // Save status for open editors
-        if(m_documentModel) {
-            VariantList editors;
+        VariantList editors;
 
-            for(auto &it : m_documentModel->documents()) {
-                VariantMap editorState = it->saveState();
+        for(auto &it : Editor::documents()) {
+            VariantMap editorState = it->saveState();
 
-                VariantList documents;
-                for(auto &doc : it->openedDocuments()) {
-                    documents.push_back({doc->source()});
-                }
-
-                VariantList params = {documents, editorState};
-
-                editors.push_back(params);
-
-                ui->toolWidget->activateToolWindow(it);
-                if(!it->checkSave()) {
-                    event->ignore();
-                    return;
-                }
+            VariantList documents;
+            for(auto &doc : it->openedDocuments()) {
+                documents.push_back({doc->source()});
             }
 
-            settings.setValue(str.data(), Json::save(editors).data());
+            VariantList params = {documents, editorState};
+
+            editors.push_back(params);
+
+            ui->toolWidget->activateToolWindow(it);
+            if(!it->checkSave()) {
+                event->ignore();
+                return;
+            }
         }
+
+        settings.setValue(str.data(), Json::save(editors).data());
 
         // Save workspace
         settings.setValue(gGeometry, saveGeometry());
@@ -211,36 +184,53 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    m_documentModel->newFile(m_currentEditor);
+    AssetEditor *editor = Editor::currentEditor();
+    if(editor && editor->checkSave()) {
+        Editor::closeEditor(editor);
+        editor->onNewAsset();
+    }
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    m_documentModel->openFile(m_currentEditor);
+    AssetEditor *editor = Editor::currentEditor();
+    if(editor && editor->checkSave()) {
+        Editor::closeEditor(editor);
+        editor->onOpenAsset();
+    }
 }
 
 void MainWindow::on_actionSave_triggered() {
     if(!Engine::isGameMode()) {
-        m_currentEditor->onSave();
+        Editor::currentEditor()->onSave();
     } else {
         QApplication::beep();
     }
 }
 
 void MainWindow::on_actionSave_As_triggered() {
-    if(!Engine::isGameMode() && m_currentEditor->allowSaveAs()) {
-        m_currentEditor->onSaveAs();
+    if(!Engine::isGameMode()) {
+        AssetEditor *editor = Editor::currentEditor();
+        if(editor && editor->allowSaveAs()) {
+            editor->onSaveAs();
+        }
     }
 }
 
 void MainWindow::on_actionUndo_triggered() {
     if(!Engine::isGameMode()) {
-        m_currentEditor->undoRedo()->undo();
+        AssetEditor *editor = Editor::currentEditor();
+        if(editor) {
+            editor->undoRedo()->undo();
+        }
     }
 }
 
 void MainWindow::on_actionRedo_triggered() {
     if(!Engine::isGameMode()) {
-        m_currentEditor->undoRedo()->redo();
+        AssetEditor *editor = Editor::currentEditor();
+        if(editor) {
+            editor->undoRedo()->redo();
+        }
     }
 }
 
@@ -260,14 +250,14 @@ void MainWindow::setGameMode(bool mode) {
     if(m_preview) {
         if(mode) {
             if(m_preview->parent() == nullptr) {
-                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(m_mainEditor));
+                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
             }
-            static_cast<SceneComposer *>(m_mainEditor)->backupScenes();
+            Editor::backup();
             ui->toolWidget->activateToolWindow(m_preview);
             m_preview->onActivate();
         } else {
-            ui->toolWidget->activateToolWindow(m_mainEditor);
-            static_cast<SceneComposer *>(m_mainEditor)->restoreBackupScenes();
+            ui->toolWidget->activateToolWindow(Editor::currentEditor());
+            Editor::restore();
 
             m_preview->setPaused(false);
             ui->pauseButton->setChecked(false);
@@ -284,29 +274,28 @@ void MainWindow::setGameMode(bool mode) {
     Engine::setGameMode(mode);
 }
 
-void MainWindow::onOpenProject(const TString &path) {
+void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     ProjectModel::addProject(path);
-    m_projectSettings->init(path);
-    m_projectSettings->loadSettings();
+    Editor::project()->init(path);
 
-    PluginManager::instance()->init(m_engine);
+    PluginManager::instance()->init(&engine);
 
     m_queue = new ImportQueue;
     connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
 
     AssetManager::instance()->init();
 
-    m_projectSettings->loadPlatforms();
+    Editor::project()->loadPlatforms();
     // Read settings early for converters
-    m_editorSettings->loadSettings();
+    Editor::settings()->loadSettings();
 
-    if(!PluginManager::instance()->rescanProject(m_projectSettings->pluginsPath())) {
-        m_projectSettings->currentBuilder(m_projectSettings->currentPlatformName())->makeOutdated();
+    if(!PluginManager::instance()->rescanProject(Editor::project()->pluginsPath())) {
+        Editor::project()->currentBuilder(Editor::project()->currentPlatformName())->makeOutdated();
     }
 
     AssetManager::instance()->rescan();
 
-    for(const TString &it : m_projectSettings->platforms()) {
+    for(const TString &it : Editor::project()->platforms()) {
         QString name = it.data();
         name.replace(0, 1, name.at(0).toUpper());
         QAction *action = ui->menuBuild_Project->addAction(tr("Build for %1").arg(name));
@@ -320,14 +309,14 @@ void MainWindow::onOpenProject(const TString &path) {
 void MainWindow::onImportFinished() {
     PluginManager::instance()->initSystems();
 
-    m_documentModel = new DocumentModel;
+    Editor::init();
 
-    m_mainEditor = new SceneComposer(this);
-    m_documentModel->addEditor(m_mainEditor);
+    SceneComposer *composer = new SceneComposer(this);
+    Editor::addEditor(composer);
 
     m_preview = new Preview(this);
 
-    m_editorSettings->loadSettings();
+    Editor::settings()->loadSettings();
 
     m_editorSettingsBrowser->init();
     m_projectSettingsBrowser->init();
@@ -341,8 +330,8 @@ void MainWindow::onImportFinished() {
         addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
     }
 
-    ui->toolWidget->addToolWindow(m_preview,    QToolWindowManager::NoArea);
-    ui->toolWidget->addToolWindow(m_mainEditor, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(m_preview, QToolWindowManager::NoArea);
+    ui->toolWidget->addToolWindow(composer, QToolWindowManager::NoArea);
 
     foreach(QWidget *it, ui->toolWidget->toolWindows()) {
         QAction *action = new QAction(it->windowTitle(), ui->menuWindow);
@@ -357,10 +346,10 @@ void MainWindow::onImportFinished() {
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     // Load last session state
-    QVariant windows = settings.value(gWindows);
     m_currentWorkspace = settings.value(gWorkspace, m_currentWorkspace).toString();
     ui->toolPanel->setVisible(true);
     ui->toolWidget->setVisible(true);
+    QVariant windows = settings.value(gWindows);
     if(!windows.isValid() || !ui->toolWidget->restoreState(windows)) {
         on_actionReset_Workspace_triggered();
     } else {
@@ -372,7 +361,7 @@ void MainWindow::onImportFinished() {
         }
     }
     // Open the same editors with documents from the last session
-    QVariant map = settings.value(m_projectSettings->projectId().data());
+    QVariant map = settings.value(Editor::project()->projectId().data());
     if(map.isValid()) {
         VariantList editors = Json::load(map.toString().toStdString()).toList();
         if(!editors.empty()) {
@@ -396,15 +385,15 @@ void MainWindow::onImportFinished() {
         }
     }
 
-    if(m_mainEditor->openedDocuments().empty()) {
+    if(composer->openedDocuments().empty()) {
         AssetManager *mgr = AssetManager::instance();
-        TString firstMap = mgr->uuidToPath(m_projectSettings->firstMap());
+        TString firstMap = mgr->uuidToPath(Editor::project()->firstMap());
 
         AssetConverterSettings *mapSettings = mgr->fetchSettings(firstMap);
         if(mapSettings) {
             openEditor(firstMap);
         } else {
-            m_mainEditor->onNewAsset();
+            static_cast<AssetEditor *>(composer)->onNewAsset();
         }
     }
 
@@ -424,9 +413,9 @@ void MainWindow::onImportFinished() {
     PluginManager::instance()->syncWhiteList();
 
     TString version(SDK_VERSION);
-    if(m_projectSettings->projectSdk() != version) {
-        m_projectSettings->setProjectSdk(version);
-        m_projectSettings->saveSettings();
+    if(Editor::project()->projectSdk() != version) {
+        Editor::project()->setProjectSdk(version);
+        Editor::project()->saveSettings();
     }
 
     setGameMode(false);
@@ -455,7 +444,7 @@ void MainWindow::onToolWindowVisibilityChanged(QWidget *toolWindow, bool visible
 
 void MainWindow::on_actionSave_Workspace_triggered() {
     FileDialog dialog;
-    dialog.setDirectory(m_projectSettings->templatePath() + "/workspaces");
+    dialog.setDirectory(Editor::project()->templatePath() + "/workspaces");
     dialog.setWindowTitle("Save Workspace");
     dialog.setMode(FileDialog::SaveFile);
     dialog.addFilter("Workspaces", { "*.ws" });
@@ -529,48 +518,33 @@ void MainWindow::onBuildProject() {
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
     AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow);
-    if(editor == m_currentEditor) {
+    if(editor == Editor::currentEditor()) {
         return;
     }
 
     if(editor) {
-        foreach(auto it, m_gadgets) {
-            if(m_currentEditor) {
-                disconnect(it, &EditorGadget::updated, m_currentEditor, &AssetEditor::onUpdated);
-                disconnect(it, &EditorGadget::objectsSelected, m_currentEditor, &AssetEditor::onObjectsSelected);
+        AssetEditor *currentEditor = Editor::currentEditor();
+        if(currentEditor) {
+            disconnect(ui->actionCut, &QAction::triggered, currentEditor, &AssetEditor::onCutAction);
+            disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &AssetEditor::onCopyAction);
+            disconnect(ui->actionPaste, &QAction::triggered, currentEditor, &AssetEditor::onPasteAction);
 
-                disconnect(m_currentEditor, &AssetEditor::objectsChanged, it, &EditorGadget::onObjectsChanged);
-            }
-
-            connect(it, &EditorGadget::updated, editor, &AssetEditor::onUpdated);
-            connect(it, &EditorGadget::objectsSelected, editor, &AssetEditor::onObjectsSelected);
-
-            connect(editor, &AssetEditor::objectsChanged, it, &EditorGadget::onObjectsChanged);
-
-            it->setCurrentEditor(editor);
+            disconnect(currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
 
-        if(m_currentEditor) {
-            disconnect(ui->actionCut, &QAction::triggered, m_currentEditor, &AssetEditor::onCutAction);
-            disconnect(ui->actionCopy, &QAction::triggered, m_currentEditor, &AssetEditor::onCopyAction);
-            disconnect(ui->actionPaste, &QAction::triggered, m_currentEditor, &AssetEditor::onPasteAction);
+        Editor::setCurrentEditor(editor);
+        if(editor) {
+            editor->onActivated();
 
-            disconnect(m_currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
-        }
+            ui->actionCut->setEnabled(editor->isCopyActionAvailable());
+            ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
+            ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
 
-        m_currentEditor = editor;
-        if(m_currentEditor) {
-            m_currentEditor->onActivated();
+            connect(ui->actionCut, &QAction::triggered, editor, &AssetEditor::onCutAction);
+            connect(ui->actionCopy, &QAction::triggered, editor, &AssetEditor::onCopyAction);
+            connect(ui->actionPaste, &QAction::triggered, editor, &AssetEditor::onPasteAction);
 
-            ui->actionCut->setEnabled(m_currentEditor->isCopyActionAvailable());
-            ui->actionCopy->setEnabled(m_currentEditor->isCopyActionAvailable());
-            ui->actionPaste->setEnabled(m_currentEditor->isPasteActionAvailable());
-
-            connect(ui->actionCut, &QAction::triggered, m_currentEditor, &AssetEditor::onCutAction);
-            connect(ui->actionCopy, &QAction::triggered, m_currentEditor, &AssetEditor::onCopyAction);
-            connect(ui->actionPaste, &QAction::triggered, m_currentEditor, &AssetEditor::onPasteAction);
-
-            connect(m_currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+            connect(editor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
     } else {
         Preview *preview = dynamic_cast<Preview *>(toolWindow);
@@ -581,36 +555,39 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 }
 
 void MainWindow::onCopyPasteChanged() {
-    ui->actionCut->setEnabled(m_currentEditor->isCopyActionAvailable());
-    ui->actionCopy->setEnabled(m_currentEditor->isCopyActionAvailable());
-    ui->actionPaste->setEnabled(m_currentEditor->isPasteActionAvailable());
+    AssetEditor *editor = Editor::currentEditor();
+    ui->actionCut->setEnabled(editor->isCopyActionAvailable());
+    ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
+    ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
 }
 
 void MainWindow::on_menuFile_aboutToShow() {
-    QString name;
-    QString type;
-    if(m_currentEditor) {
-        type = QString(" %1").arg(m_currentEditor->assetType().data());
-        if(!m_currentEditor->openedDocuments().empty()) {
-            AssetConverterSettings *settings = m_currentEditor->openedDocuments().front();
-            name = QString(" \"%1\"").arg(settings->source().data());
+    TString name;
+    TString type;
+    AssetEditor *editor = Editor::currentEditor();
+    if(editor) {
+        type = TString(" %1").arg(editor->assetType());
+        if(!editor->openedDocuments().empty()) {
+            AssetConverterSettings *settings = editor->openedDocuments().front();
+            name = TString(" \"%1\"").arg(settings->source());
         }
         if(name.isEmpty()) {
             name = type;
         }
 
-        ui->actionSave_As->setEnabled(m_currentEditor->allowSaveAs());
+        ui->actionSave_As->setEnabled(editor->allowSaveAs());
     }
-    ui->actionNew->setText(tr("New%1").arg(type));
-    ui->actionOpen->setText(tr("Open%1").arg(type));
-    ui->actionSave->setText(tr("Save%1").arg(name));
-    ui->actionSave_As->setText(tr("Save%1 As...").arg(name));
+    ui->actionNew->setText(tr("New%1").arg(type.data()));
+    ui->actionOpen->setText(tr("Open%1").arg(type.data()));
+    ui->actionSave->setText(tr("Save%1").arg(name.data()));
+    ui->actionSave_As->setText(tr("Save%1 As...").arg(name.data()));
 }
 
 void MainWindow::on_menuEdit_aboutToShow() {
-    ui->actionUndo->setText(tr("Undo %1").arg(m_currentEditor->undoRedo()->undoText().data()));
+    UndoStack *stack = Editor::currentEditor()->undoRedo();
+    ui->actionUndo->setText(tr("Undo %1").arg(stack->undoText().data()));
 
-    ui->actionRedo->setText(tr("Redo %1").arg(m_currentEditor->undoRedo()->redoText().data()));
+    ui->actionRedo->setText(tr("Redo %1").arg(stack->redoText().data()));
 }
 
 void MainWindow::changeEvent(QEvent *event) {
@@ -649,7 +626,7 @@ void MainWindow::build(QString platform) {
         TString dir = dialog.getSelectedFile();
         if(!dir.isEmpty()) {
             QStringList args;
-            args << "-s" << m_projectSettings->projectPath().data() << "-t" << dir.data();
+            args << "-s" << Editor::project()->projectPath().data() << "-t" << dir.data();
 
             if(!platform.isEmpty()) {
                 args << "-p" << platform;

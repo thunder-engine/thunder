@@ -67,11 +67,11 @@ int main(int argc, char *argv[]) {
     splash.show();
     app.processEvents();
 
-    MainWindow window(&engine);
+    MainWindow window;
 
     splash.finish(&window);
 
-    window.onOpenProject(project);
+    window.onOpenProject(project, engine);
     window.show();
 
     int result = app.exec();
