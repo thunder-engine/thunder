@@ -125,14 +125,14 @@ std::list<EditorGadget *> Editor::gadgets() {
 
 EditorSettings *Editor::settings() {
     if(s_editorSettings == nullptr) {
-        s_editorSettings = EditorSettings::instance();
+        s_editorSettings = new EditorSettings;
     }
     return s_editorSettings;
 }
 
 ProjectSettings *Editor::project() {
     if(s_projectSettings == nullptr) {
-        s_projectSettings = ProjectSettings::instance();
+        s_projectSettings = new ProjectSettings;
     }
     return s_projectSettings;
 }

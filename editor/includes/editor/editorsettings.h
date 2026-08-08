@@ -17,8 +17,6 @@ class EDITOR_EXPORT EditorSettings : public Object {
 public:
     EditorSettings();
 
-    static EditorSettings *instance();
-
     void registerValue(const TString &name, const Variant &value, const TString &annotation = TString());
 
     Variant value(const TString &name);

@@ -48,11 +48,6 @@ ProjectSettings::ProjectSettings() {
     m_myProjectsPath = path.toStdString();
 }
 
-ProjectSettings *ProjectSettings::instance() {
-    static ProjectSettings instance;
-    return &instance;
-}
-
 void ProjectSettings::init(const TString &project, const TString &target) {
     m_projectPath = project;
 
