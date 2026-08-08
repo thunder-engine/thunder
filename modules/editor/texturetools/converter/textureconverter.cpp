@@ -373,7 +373,7 @@ Texture *TextureConverter::convertTexture(TextureImportSettings *settings) const
         if(settings->compressed()) {
             int method = Texture::BC7; // Desktop
 
-            TString platform = ProjectSettings::instance()->currentPlatformName();
+            TString platform = Editor::project()->currentPlatformName();
             if(platform.contains("webgl")) {
                 method = Texture::BC3;
                 if(channels == 3) {

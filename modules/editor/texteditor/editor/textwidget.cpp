@@ -73,7 +73,7 @@ TextWidget::TextWidget(QWidget *parent) :
     option.setFlags(option.flags() | QTextOption::AddSpaceForLineAndParagraphSeparators);
     document()->setDefaultTextOption(option);
 
-    EditorSettings *settings = EditorSettings::instance();
+    EditorSettings *settings = Editor::settings();
     settings->registerValue(gFont, gDefaultFont);
     settings->registerValue(gZoom, 100);
 
@@ -840,7 +840,7 @@ void TextWidget::insertFromMimeData(const QMimeData *source) {
 }
 
 void TextWidget::onApplySettings() {
-    EditorSettings *s = EditorSettings::instance();
+    EditorSettings *s = Editor::settings();
     TString name = s->property(gFont).toString();
     if(name.isEmpty()) {
         name = gDefaultFont;

@@ -162,7 +162,7 @@ void AssetConverterSettings::resetIcon(const TString &uuid) {
     Returns icon assotiatited with current asset \a uuid.
 */
 QImage AssetConverterSettings::icon(const TString &uuid) {
-    TString iconPath(ProjectSettings::instance()->iconPath() + "/" + uuid + ".png");
+    TString iconPath(Editor::project()->iconPath() + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
         if(it.second.info.uuid == uuid) {
@@ -331,7 +331,7 @@ TString AssetConverterSettings::destination() const {
     Returns the absolute destination file path.
 */
 TString AssetConverterSettings::absoluteDestination() const {
-    return ProjectSettings::instance()->importPath() + "/" + m_info.uuid;
+    return Editor::project()->importPath() + "/" + m_info.uuid;
 }
 /*!
     \internal
@@ -415,7 +415,7 @@ AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &dat
             types.insert(it.toList().begin()->toString());
         }
 
-        ProjectSettings::instance()->reportTypes(types);
+        Editor::project()->reportTypes(types);
 
         file.write(Bson::save(data));
         file.close();

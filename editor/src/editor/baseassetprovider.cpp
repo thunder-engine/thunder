@@ -57,8 +57,8 @@ void BaseAssetProvider::init(bool force) {
         m_dirWatcher->removePaths(paths);
     }
 
-    ProjectSettings *mgr = ProjectSettings::instance();
-    TString resourcePath(ProjectSettings::instance()->resourcePath());
+    ProjectSettings *mgr = Editor::project();
+    TString resourcePath(mgr->resourcePath());
 
     bool watch = false;
     onDirectoryChangedForce(resourcePath + "/engine", force);
@@ -167,14 +167,14 @@ void BaseAssetProvider::removeResource(const TString &source) {
         return;
     }
 
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
     AssetManager *asset = AssetManager::instance();
 
     Engine::unloadResource(asset->pathToLocal(source));
     TString uuid(asset->unregisterAsset(source));
     if(!uuid.isEmpty()) {
-        File::remove(project->importPath() + "/" + uuid);
-        File::remove(project->iconPath() + "/" + uuid + ".png");
+        File::remove(mgr->importPath() + "/" + uuid);
+        File::remove(mgr->iconPath() + "/" + uuid + ".png");
     }
 
     File::remove(source + "." + gMetaExt);
@@ -184,7 +184,7 @@ void BaseAssetProvider::removeResource(const TString &source) {
     if(settings) {
         CodeBuilder *builder = settings->builder();
         if(builder) {
-            builder->rescanSources(project->contentPath());
+            builder->rescanSources(mgr->contentPath());
             builder->makeOutdated();
             builder->buildProject();
         }
@@ -227,9 +227,9 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
         if(File::rename(oldName, newName)) {
             std::map<TString, ResourceSystem::ResourceInfo> back;
 
-            ProjectSettings *project = ProjectSettings::instance();
+            ProjectSettings *mgr = Editor::project();
             for(auto it = indices.cbegin(); it != indices.cend();) {
-                TString path(project->contentPath() + "/" + it->first);
+                TString path(mgr->contentPath() + "/" + it->first);
                 if(path.startsWith(oldName)) {
                     back[path] = it->second;
                     it = indices.erase(it);

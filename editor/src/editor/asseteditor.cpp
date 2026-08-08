@@ -36,7 +36,7 @@ void AssetEditor::onOpenAsset() {
     }
 
     dialog.addFilter(assetType(), list);
-    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+    dialog.setDirectory(Editor::project()->contentPath());
 
     if(dialog.exec()) {
         TString path(dialog.getSelectedFile());
@@ -178,7 +178,7 @@ void AssetEditor::onSaveAs() {
     dialog.setWindowTitle(TString("Save ") + assetType);
     dialog.addFilter(assetType, list);
 
-    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+    dialog.setDirectory(Editor::project()->contentPath());
 
     if(dialog.exec()) {
         TString path(dialog.getSelectedFile());

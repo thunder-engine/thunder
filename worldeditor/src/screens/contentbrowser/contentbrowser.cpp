@@ -110,7 +110,7 @@ protected:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) const {
         QModelIndex origin = mapToSource(parent);
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
 
         TString target(mgr->contentPath());
         if(origin.isValid() && origin.parent().isValid()) {
@@ -138,7 +138,7 @@ protected:
     bool dropMimeData(const QMimeData *data, Qt::DropAction, int, int, const QModelIndex &parent) {
         QModelIndex origin = mapToSource(parent);
 
-        TString target(ProjectSettings::instance()->contentPath());
+        TString target(Editor::project()->contentPath());
         if(origin.isValid() && origin.parent().isValid()) {
             target = static_cast<ContentTree *>(sourceModel())->path(origin);
         }
@@ -556,7 +556,7 @@ void ContentBrowser::changeEvent(QEvent *event) {
 void ContentBrowser::showInGraphicalShell() {
     QModelIndexList list = ui->contentList->selectionModel()->selectedIndexes();
 
-    TString path(ProjectSettings::instance()->contentPath());
+    TString path(Editor::project()->contentPath());
     if(!list.isEmpty()) {
         QModelIndex origin = m_listProxy->mapToSource(list.first());
         path = m_contentTree->path(origin);

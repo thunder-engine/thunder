@@ -106,7 +106,7 @@ void AngelBuilder::init() {
 bool AngelBuilder::buildProject() {
     if(m_outdated) {
         AssetManager *assetMgr = AssetManager::instance();
-        ProjectSettings *project = ProjectSettings::instance();
+        ProjectSettings *project = Editor::project();
 
         if(m_sources.empty()) {
             File::remove(project->importPath() + "/" + g_persistentUUID);

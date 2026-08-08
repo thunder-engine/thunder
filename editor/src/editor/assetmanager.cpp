@@ -88,9 +88,9 @@ void AssetManager::init() {
 void AssetManager::rescan() {
     m_force = false;
 
-    TString target = ProjectSettings::instance()->targetPath();
+    TString target = Editor::project()->targetPath();
     if(target.isEmpty()) {
-        bool update = ProjectSettings::instance()->projectSdk() != SDK_VERSION;
+        bool update = Editor::project()->projectSdk() != SDK_VERSION;
         if(update) {
             getChangedUUIDs();
         }
@@ -106,7 +106,7 @@ void AssetManager::rescan() {
 
     Engine::resourceSystem()->setCleanImport(m_force);
 
-    emit directoryChanged(ProjectSettings::instance()->contentPath().data());
+    emit directoryChanged(Editor::project()->contentPath().data());
 
     reimport();
 }
@@ -145,7 +145,7 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
 
 TString AssetManager::pathToLocal(const TString &source) const {
     Url info(source);
-    if(!source.contains(ProjectSettings::instance()->contentPath())) {
+    if(!source.contains(Editor::project()->contentPath())) {
         TString path = info.name();
         TString sub;
         if(info.suffix().isEmpty()) {
@@ -154,12 +154,12 @@ TString AssetManager::pathToLocal(const TString &source) const {
         }
         return TString(".embedded/") + path + sub;
     }
-    return TString(info.relativeFilePath(ProjectSettings::instance()->contentPath()));
+    return TString(info.relativeFilePath(Editor::project()->contentPath()));
 }
 
 void AssetManager::getChangedUUIDs() {
     uint32_t current = 0;
-    StringList currentStr = ProjectSettings::instance()->projectSdk().split('.');
+    StringList currentStr = Editor::project()->projectSdk().split('.');
     if(currentStr.size() >= 2) {
         current = VERSION_CHECK(currentStr.front().toInt(), currentStr.back().toInt());
     }
@@ -168,7 +168,7 @@ void AssetManager::getChangedUUIDs() {
     uint32_t target = VERSION_CHECK(targetStr.front().toInt(), targetStr.back().toInt());
 
     if(current < target) {
-        File file(ProjectSettings::instance()->resourcePath() + "/uuid.txt");
+        File file(Editor::project()->resourcePath() + "/uuid.txt");
         if(file.open(File::Read | File::Text)) {
             for(auto &it : Json::load(file.readAll()).toMap()) {
                 m_changedUUIDs.push_back(std::make_pair(it.first, it.second.toString()));
@@ -184,7 +184,7 @@ void AssetManager::fixUUIDs() {
     }
 
     aInfo() << "Fixing dependencies";
-    for(auto &path : File::list(ProjectSettings::instance()->contentPath())) {
+    for(auto &path : File::list(Editor::project()->contentPath())) {
         std::ifstream file(path.toStdString(), std::ios::binary | std::ios::ate);
         if(!file) {
             continue;
@@ -275,7 +275,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     TString name = source.right(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toLong()));
     if(actor) {
-        TString path = ProjectSettings::instance()->contentPath() + "/" + target + "/" + name + ".fab";
+        TString path = Editor::project()->contentPath() + "/" + target + "/" + name + ".fab";
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
         if(converter) {
@@ -302,7 +302,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 bool AssetManager::import(const TString &source, const TString &target) {
     TString path;
     if(!Url(target).isAbsolute()) {
-        path = ProjectSettings::instance()->contentPath() + "/";
+        path = Editor::project()->contentPath() + "/";
     }
     path += target + "/";
 
@@ -334,7 +334,7 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
             settings->setConverter(converter);
         } else {
             TString suffix(Url(source).suffix().toLower());
-            CodeBuilder *currentBuilder = ProjectSettings::instance()->currentBuilder();
+            CodeBuilder *currentBuilder = Editor::project()->currentBuilder();
             CodeBuilder *builder = nullptr;
             for(auto it : m_builders) {
                 if(it && (dynamic_cast<NativeCodeBuilder *>(it) == nullptr || it == currentBuilder)) {
@@ -467,14 +467,14 @@ void AssetManager::dumpBundle() {
 
     VariantMap values;
 
-    values[gEntry] = ProjectSettings::instance()->firstMap();
-    values[gCompany] = ProjectSettings::instance()->projectCompany();
-    values[gProjectName] = ProjectSettings::instance()->projectName();
-    values[gProjectVersion] = ProjectSettings::instance()->projectVersion();
+    values[gEntry] = Editor::project()->firstMap();
+    values[gCompany] = Editor::project()->projectCompany();
+    values[gProjectName] = Editor::project()->projectName();
+    values[gProjectVersion] = Editor::project()->projectVersion();
 
     root[gSettings] = values;
 
-    File file(ProjectSettings::instance()->importPath() + "/" + gIndex);
+    File file(Editor::project()->importPath() + "/" + gIndex);
     if(file.open(File::Write)) {
         file.write(Json::save(root, 0));
         file.close();
@@ -498,9 +498,9 @@ void AssetManager::onPerform() {
         }
 
         for(CodeBuilder *it : std::as_const(m_builders)) {
-            it->rescanSources(ProjectSettings::instance()->contentPath());
+            it->rescanSources(Editor::project()->contentPath());
             NativeCodeBuilder *native = dynamic_cast<NativeCodeBuilder *>(it);
-            if(!it->isEmpty() && (native == nullptr || (native == ProjectSettings::instance()->currentBuilder() && ProjectSettings::instance()->targetPath().isEmpty()))) {
+            if(!it->isEmpty() && (native == nullptr || (native == Editor::project()->currentBuilder() && Editor::project()->targetPath().isEmpty()))) {
                 if(it->isOutdated()) {
                     result = true;
 
@@ -515,7 +515,7 @@ void AssetManager::onPerform() {
         }
 
         // Cleanup bundle
-        for(auto &path : File::list(ProjectSettings::instance()->importPath())) {
+        for(auto &path : File::list(Editor::project()->importPath())) {
             TString fileName(Url(path).name());
             if(!File::isDir(path) && fileName != gIndex && uuidToPath(fileName).isEmpty()) {
                 File::remove(path);
@@ -525,7 +525,7 @@ void AssetManager::onPerform() {
         ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
         auto tmp = indices;
         for(auto &index : tmp) {
-            if(index.second.uuid.isEmpty() || (!File::exists(ProjectSettings::instance()->importPath() + "/" + index.second.uuid))) {
+            if(index.second.uuid.isEmpty() || (!File::exists(Editor::project()->importPath() + "/" + index.second.uuid))) {
                 indices.erase(index.second.uuid);
             }
         }
@@ -570,7 +570,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                     m_converterSettings[pathToLocal(path)] = settings;
 
                     TString uuid = settings->subItem(it).uuid;
-                    if(File::exists(ProjectSettings::instance()->importPath() + "/" + uuid)) {
+                    if(File::exists(Editor::project()->importPath() + "/" + uuid)) {
                         Engine::reloadResource(uuid);
                         emit imported();
                     }
@@ -613,7 +613,7 @@ std::list<CodeBuilder *> AssetManager::builders() const {
 }
 
 void AssetManager::registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info) {
-    if(File::exists(ProjectSettings::instance()->importPath() + "/" + info.uuid)) {
+    if(File::exists(Editor::project()->importPath() + "/" + info.uuid)) {
         TString path = pathToLocal(source);
 
         ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();

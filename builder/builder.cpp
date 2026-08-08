@@ -19,8 +19,8 @@ Builder::Builder() {
 }
 
 void Builder::setPlatform(const TString &platform) {
-    ProjectSettings *project = ProjectSettings::instance();
-    EditorSettings::instance()->loadSettings();
+    ProjectSettings *project = Editor::project();
+    Editor::settings()->loadSettings();
     if(platform.isEmpty()) {
         for(const TString &it : project->platforms()) {
             m_platformsToBuild.push(it);
@@ -53,7 +53,7 @@ bool Builder::package(const TString &target) {
         return false;
     }
 
-    StringList list(File::list(ProjectSettings::instance()->importPath()));
+    StringList list(File::list(Editor::project()->importPath()));
     for(auto &it : list) {
         if(File::isFile(it)) {
             Url info(it);
@@ -86,7 +86,7 @@ bool Builder::package(const TString &target) {
 }
 
 void Builder::onImportFinished() {
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *project = Editor::project();
 
     NativeCodeBuilder *builder = project->currentBuilder();
 
@@ -100,7 +100,7 @@ void Builder::onImportFinished() {
 }
 
 void Builder::onBuildSuccessful() {
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *project = Editor::project();
     TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
     if(!File::exists(targetPath) && !File::mkPath(targetPath)) {

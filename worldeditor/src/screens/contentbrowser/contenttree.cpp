@@ -119,13 +119,13 @@ TString ContentTree::path(const QModelIndex &index) const {
         }
     }
 
-    return TString(ProjectSettings::instance()->contentPath());
+    return TString(Editor::project()->contentPath());
 }
 
 void ContentTree::onRendered(const TString &uuid) {
     AssetManager *asset = AssetManager::instance();
 
-    TString path(ProjectSettings::instance()->contentPath() + "/" + asset->uuidToPath(uuid));
+    TString path(Editor::project()->contentPath() + "/" + asset->uuidToPath(uuid));
     AssetConverterSettings *settings = asset->fetchSettings(path);
     if(settings) {
         settings->resetIcon(uuid);
@@ -197,7 +197,7 @@ QModelIndex ContentTree::setNewAsset(const TString &name, const TString &source,
 }
 
 void ContentTree::update() {
-    TString contentPath(ProjectSettings::instance()->contentPath());
+    TString contentPath(Editor::project()->contentPath());
     QObject *parent = m_rootItem->findChild<QObject *>(contentPath.data());
     if(parent == nullptr) {
         parent = m_content;

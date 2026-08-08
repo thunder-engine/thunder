@@ -508,7 +508,7 @@ void SceneComposer::changeParent(const Object::ObjectList &objects, Object *pare
 void SceneComposer::onScreenshot(QImage image) {
     if(!image.isNull()) {
         QRect rect((image.width() - image.height()) / 2, 0, image.height(), image.height());
-        image.copy(rect).scaled(128, 128).save((ProjectSettings::instance()->iconPath() + "/auto.png").data());
+        image.copy(rect).scaled(128, 128).save((Editor::project()->iconPath() + "/auto.png").data());
     }
 }
 
@@ -865,7 +865,7 @@ void SceneComposer::saveScene(const TString &path, Scene *scene) {
 void SceneComposer::saveSceneAs(Scene *scene) {
     if(scene) {
         FileDialog dialog;
-        dialog.setDirectory(ProjectSettings::instance()->contentPath());
+        dialog.setDirectory(Editor::project()->contentPath());
         dialog.setWindowTitle("Save Scene");
         dialog.setMode(FileDialog::SaveFile);
         dialog.addFilter("Map", { TString("*.map") });

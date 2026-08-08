@@ -196,8 +196,8 @@ ObjectController::ObjectController(SceneComposer *editor) :
     connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
-    EditorSettings::instance()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
-    EditorSettings::instance()->registerValue(gIsolationColor, Vector4(0.0f, 0.3f, 0.55f, 0.0f), "editor=Color");
+    Editor::settings()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
+    Editor::settings()->registerValue(gIsolationColor, Vector4(0.0f, 0.3f, 0.55f, 0.0f), "editor=Color");
 
     m_tools = {
         new SelectTool(this),
@@ -219,7 +219,7 @@ void ObjectController::init(Viewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
-    Object::connect(EditorSettings::instance(), _SIGNAL(updated()), m_rayCast, _SLOT(onApplySettings()));
+    Object::connect(Editor::settings(), _SIGNAL(updated()), m_rayCast, _SLOT(onApplySettings()));
 
     PipelineContext *pipeline = viewport->pipelineContext();
     pipeline->insertRenderTask(m_rayCast, pipeline->renderTasks().back());
@@ -376,7 +376,7 @@ VariantList ObjectController::dumpSelected() const {
 
 void ObjectController::onApplySettings() {
     if(m_activeCamera) {
-        m_activeCamera->setColor(EditorSettings::instance()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).toVector4());
+        m_activeCamera->setColor(Editor::settings()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).toVector4());
     }
 }
 

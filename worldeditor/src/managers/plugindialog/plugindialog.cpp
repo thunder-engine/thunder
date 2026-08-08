@@ -171,7 +171,7 @@ PluginDialog::~PluginDialog() {
 
 void PluginDialog::on_loadButton_clicked() {
     FileDialog dialog;
-    dialog.setDirectory(ProjectSettings::instance()->pluginsPath());
+    dialog.setDirectory(Editor::project()->pluginsPath());
     dialog.setWindowTitle("Please select Thunder Engine Plugin");
     dialog.setMode(FileDialog::OpenFile);
     dialog.addFilter("Plugins", { "*.dll" });
@@ -194,7 +194,7 @@ void PluginDialog::on_restartButton_clicked() {
     qApp->quit();
 
     Process::startDetached(qApp->arguments().first().toStdString(),
-                           {ProjectSettings::instance()->projectPath()},
+                           {Editor::project()->projectPath()},
                            TString(),
                            ProcessEnvironment::systemEnvironment());
 }

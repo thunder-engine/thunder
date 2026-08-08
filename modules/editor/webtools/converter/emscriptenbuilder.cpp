@@ -17,11 +17,11 @@ EmscriptenBuilder::EmscriptenBuilder() {
 
     connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
 
-    EditorSettings *settings = EditorSettings::instance();
+    EditorSettings *settings = Editor::settings();
 
     settings->registerValue(gEmscriptenPath, "", "editor=Path");
 
-    m_libPath.push_back(ProjectSettings::instance()->sdkPath() + "/emscripten/x86/static");
+    m_libPath.push_back(Editor::project()->sdkPath() + "/emscripten/x86/static");
 
     m_libs.push_back("vorbis");
     m_libs.push_back("vorbisfile");
@@ -30,14 +30,14 @@ EmscriptenBuilder::EmscriptenBuilder() {
 }
 
 bool EmscriptenBuilder::isEmpty() const {
-    return (ProjectSettings::instance()->currentPlatformName() != "webgl");
+    return (Editor::project()->currentPlatformName() != "webgl");
 }
 
 bool EmscriptenBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
         aInfo() << name() << "Build started.";
 
-        m_emPath = EditorSettings::instance()->value(gEmscriptenPath).toString();
+        m_emPath = Editor::settings()->value(gEmscriptenPath).toString();
 #ifdef _WIN32
         m_binary = m_emPath + "/upstream/emscripten/emcc.bat";
 #endif
@@ -48,7 +48,7 @@ bool EmscriptenBuilder::buildProject() {
 
         generateProject();
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
         m_artifact = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/release";
 
         File::mkPath(m_artifact);
