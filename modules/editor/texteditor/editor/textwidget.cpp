@@ -137,8 +137,8 @@ void TextWidget::saveFile(const QString &path) {
 }
 
 void TextWidget::checkClassMap() {
-    for(auto &it : PluginManager::instance()->extensions("converter")) {
-        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
+    for(auto &it : Editor::plugins()->extensions("converter")) {
+        AssetConverter *converter = reinterpret_cast<AssetConverter *>(Editor::plugins()->getPluginObject(it));
         if(converter) {
             for(TString &format : converter->suffixes()) {
                 if(format.toLower() == Url(m_fileName.toStdString()).suffix()) {

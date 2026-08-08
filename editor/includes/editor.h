@@ -16,6 +16,7 @@
 class ProjectSettings;
 class EditorSettings;
 class AssetManager;
+class PluginManager;
 
 class AssetEditor;
 class EditorGadget;
@@ -50,6 +51,7 @@ public:
     static EditorSettings *settings();
     static ProjectSettings *project();
     static AssetManager *assets();
+    static PluginManager *plugins();
 
 protected:
     static std::list<EditorGadget *> s_gadgets;
@@ -58,7 +60,9 @@ protected:
 
     static EditorSettings *s_editorSettings;
     static ProjectSettings *s_projectSettings;
+
     static AssetManager *s_assetManager;
+    static PluginManager *s_pluginManager;
 
     static DocumentModel *s_documentModel;
 

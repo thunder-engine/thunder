@@ -12,8 +12,8 @@
 #include <aprocess.h>
 
 DocumentModel::DocumentModel() {
-    for(auto &it : PluginManager::instance()->extensions("editor")) {
-        addEditor(reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it)));
+    for(auto &it : Editor::plugins()->extensions("editor")) {
+        addEditor(reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject(it)));
     }
 }
 

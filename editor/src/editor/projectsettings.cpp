@@ -384,7 +384,7 @@ NativeCodeBuilder *ProjectSettings::currentBuilder(const TString &platform) cons
 void ProjectSettings::reportTypes(const std::set<TString> &types) {
     TString projectModule = TString("Module") + projectName();
     for(auto &it : types) {
-        TString name = PluginManager::instance()->getModuleName(it);
+        TString name = Editor::plugins()->getModuleName(it);
         if(!name.isEmpty() && name != projectModule) {
             m_autoModules.insert(name);
         }

@@ -79,7 +79,7 @@ bool NativeCodeBuilder::buildProject() {
 void NativeCodeBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0) {
         if(Editor::project()->targetPath().isEmpty()) {
-            PluginManager::instance()->reloadPlugin(m_artifact);
+            Editor::plugins()->reloadPlugin(m_artifact);
         }
     }
 
@@ -192,7 +192,7 @@ void NativeCodeBuilder::generateLoader(const TString &dst, const StringList &mod
     }
 
     TString name = Editor::project()->projectName() + "-editor";
-    for(auto &it : PluginManager::instance()->plugins()) {
+    for(auto &it : Editor::plugins()->plugins()) {
         Url info(it);
         if(name != info.baseName()) {
             m_values[gEditorLibrariesList].append(TString(12, ' ') + "\"" + info.baseName() + "\",\n");

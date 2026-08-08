@@ -147,17 +147,6 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
     return QModelIndex();
 }
 
-PluginManager *PluginManager::instance() {
-    if(m_instance == nullptr) {
-        m_instance = new PluginManager;
-    }
-    return m_instance;
-}
-
-void PluginManager::destroy() {
-    delete m_instance;
-}
-
 void PluginManager::init(Engine *engine) {
     m_engine = engine;
 

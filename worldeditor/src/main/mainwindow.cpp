@@ -272,7 +272,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     ProjectModel::addProject(path);
     Editor::project()->init(path);
 
-    PluginManager::instance()->init(&engine);
+    Editor::plugins()->init(&engine);
 
     m_queue = new ImportQueue;
     connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
@@ -283,7 +283,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     // Read settings early for converters
     Editor::settings()->loadSettings();
 
-    if(!PluginManager::instance()->rescanProject(Editor::project()->pluginsPath())) {
+    if(!Editor::plugins()->rescanProject(Editor::project()->pluginsPath())) {
         Editor::project()->currentBuilder(Editor::project()->currentPlatformName())->makeOutdated();
     }
 
@@ -301,7 +301,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
 }
 
 void MainWindow::onImportFinished() {
-    PluginManager::instance()->initSystems();
+    Editor::plugins()->initSystems();
 
     Editor::init();
 
@@ -404,7 +404,7 @@ void MainWindow::onImportFinished() {
     ui->menuWindow->setEnabled(true);
     ui->menuBuild_Project->setEnabled(true);
 
-    PluginManager::instance()->syncWhiteList();
+    Editor::plugins()->syncWhiteList();
 
     TString version(SDK_VERSION);
     if(Editor::project()->projectSdk() != version) {

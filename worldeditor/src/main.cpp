@@ -76,7 +76,5 @@ int main(int argc, char *argv[]) {
 
     int result = app.exec();
 
-    PluginManager::destroy();
-
     return result;
 }

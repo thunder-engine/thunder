@@ -89,15 +89,15 @@ int main(int argc, char *argv[]) {
 
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
-    PluginManager::instance()->init(&engine);
+    Editor::plugins()->init(&engine);
     Editor::assets()->init();
 
     Editor::project()->loadPlatforms();
 
-    if(!PluginManager::instance()->rescanProject(Editor::project()->pluginsPath())) {
+    if(!Editor::plugins()->rescanProject(Editor::project()->pluginsPath())) {
         aWarning() << "Not all plugins were loaded.";
     }
-    PluginManager::instance()->initSystems();
+    Editor::plugins()->initSystems();
 
     Builder builder;
 

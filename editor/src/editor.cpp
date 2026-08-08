@@ -25,6 +25,7 @@ AssetEditor *Editor::s_currentEditor = nullptr;
 EditorSettings *Editor::s_editorSettings = nullptr;
 ProjectSettings *Editor::s_projectSettings = nullptr;
 AssetManager *Editor::s_assetManager = nullptr;
+PluginManager *Editor::s_pluginManager = nullptr;
 
 DocumentModel *Editor::s_documentModel = nullptr;
 
@@ -39,8 +40,8 @@ Editor::~Editor() {
 void Editor::init() {
     s_documentModel = new DocumentModel;
 
-    for(auto &it : PluginManager::instance()->extensions("gadget")) {
-        addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
+    for(auto &it : Editor::plugins()->extensions("gadget")) {
+        addGadget(reinterpret_cast<EditorGadget *>(Editor::plugins()->getPluginObject(it)));
     }
 }
 
@@ -144,4 +145,11 @@ AssetManager *Editor::assets() {
         s_assetManager = new AssetManager;
     }
     return s_assetManager;
+}
+
+PluginManager *Editor::plugins() {
+    if(s_pluginManager == nullptr) {
+        s_pluginManager = new PluginManager;
+    }
+    return s_pluginManager;
 }

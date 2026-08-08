@@ -203,7 +203,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->camera2DButton, &QPushButton::toggled, this, &SceneComposer::onCamera2D);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
-    connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
+    connect(Editor::plugins(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
     connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
     ui->camera2DButton->setProperty("checkgreen", true);
