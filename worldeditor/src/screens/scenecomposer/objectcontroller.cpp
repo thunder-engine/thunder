@@ -193,7 +193,7 @@ ObjectController::ObjectController(SceneComposer *editor) :
         m_canceled(false),
         m_local(false) {
 
-    connect(AssetManager::instance(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
+    connect(Editor::assets(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
     Editor::settings()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
@@ -565,7 +565,7 @@ void ObjectController::onUpdateSelected() {
 
 void ObjectController::onDrop(QDropEvent *event) {
     StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
-    AssetManager *mgr = AssetManager::instance();
+    AssetManager *mgr = Editor::assets();
     for(TString &str : list) {
         if(!str.isEmpty()) {
             if(mgr->assetTypeName(str) == Map::metaClass()->name()) {
@@ -605,7 +605,7 @@ void ObjectController::onDragEnter(QDragEnterEvent *event) {
         event->acceptProposedAction();
 
         StringList list = TString(event->mimeData()->data(gMimeContent)).split(";");
-        AssetManager *mgr = AssetManager::instance();
+        AssetManager *mgr = Editor::assets();
         for(TString &str : list) {
             if(!str.isEmpty()) {
                 TString type = mgr->assetTypeName(str);

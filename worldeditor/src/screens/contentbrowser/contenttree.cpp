@@ -24,8 +24,8 @@ ContentTree::ContentTree() :
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
 
-    connect(AssetManager::instance(), &AssetManager::directoryChanged, this, &ContentTree::update);
-    connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
+    connect(Editor::assets(), &AssetManager::directoryChanged, this, &ContentTree::update);
+    connect(Editor::assets(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
 }
 
 int ContentTree::columnCount(const QModelIndex &) const {
@@ -76,7 +76,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
                     if(source.isEmpty()) {
                         File::mkDir(dest);
                     } else {
-                        AssetManager *mgr = AssetManager::instance();
+                        AssetManager *mgr = Editor::assets();
                         AssetConverter *converter = mgr->getConverter(dest);
                         if(converter) {
                             converter->createFromTemplate(dest);
@@ -94,7 +94,7 @@ bool ContentTree::setData(const QModelIndex &index, const QVariant &value, int r
                     }
                     m_newAsset->setParent(nullptr);
                 } else {
-                    AssetManager::instance()->renameResource(url.absoluteFilePath(), dest);
+                    Editor::assets()->renameResource(url.absoluteFilePath(), dest);
                 }
             }
         } break;
@@ -123,7 +123,7 @@ TString ContentTree::path(const QModelIndex &index) const {
 }
 
 void ContentTree::onRendered(const TString &uuid) {
-    AssetManager *asset = AssetManager::instance();
+    AssetManager *asset = Editor::assets();
 
     TString path(Editor::project()->contentPath() + "/" + asset->uuidToPath(uuid));
     AssetConverterSettings *settings = asset->fetchSettings(path);
@@ -148,8 +148,8 @@ void ContentTree::onRendered(const TString &uuid) {
 bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = getObject(index);
     if(item) {
-        AssetManager::instance()->pushToImport(item->objectName().toStdString());
-        AssetManager::instance()->reimport();
+        Editor::assets()->pushToImport(item->objectName().toStdString());
+        Editor::assets()->reimport();
     }
     return true;
 }
@@ -158,7 +158,7 @@ bool ContentTree::removeResource(const QModelIndex &index) {
     if(index.isValid()) {
         QObject *item = getObject(index);
         if(item) {
-            AssetManager::instance()->removeResource(item->objectName().toStdString());
+            Editor::assets()->removeResource(item->objectName().toStdString());
             item->setParent(nullptr);
             delete item;
         }
@@ -204,7 +204,7 @@ void ContentTree::update() {
     }
     clean(parent);
 
-    AssetManager *mgr = AssetManager::instance();
+    AssetManager *mgr = Editor::assets();
 
     StringList list = File::list(contentPath);
     for(TString &path : list) {

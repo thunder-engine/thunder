@@ -14,8 +14,8 @@
 #include <QCoreApplication>
 
 Builder::Builder() {
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
-    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
+    connect(Editor::assets(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
+    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
 }
 
 void Builder::setPlatform(const TString &platform) {
@@ -38,7 +38,7 @@ void Builder::setPlatform(const TString &platform) {
             builder->convertFile(nullptr);
         }
 
-        AssetManager::instance()->rescan();
+        Editor::assets()->rescan();
     }
 }
 
@@ -58,7 +58,7 @@ bool Builder::package(const TString &target) {
         if(File::isFile(it)) {
             Url info(it);
 
-            TString origin = AssetManager::instance()->uuidToPath(info.baseName());
+            TString origin = Editor::assets()->uuidToPath(info.baseName());
             aInfo() << "\tCoping:" << origin.data();
 
             File inFile(it);
@@ -130,7 +130,7 @@ void Builder::onBuildSuccessful() {
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
             m_platformsToBuild.pop();
-            AssetManager::instance()->rescan();
+            Editor::assets()->rescan();
 
             return;
         }

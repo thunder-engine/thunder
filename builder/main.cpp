@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
     PluginManager::instance()->init(&engine);
-    AssetManager::instance()->init();
+    Editor::assets()->init();
 
     Editor::project()->loadPlatforms();
 

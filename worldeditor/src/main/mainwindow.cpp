@@ -277,7 +277,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     m_queue = new ImportQueue;
     connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
 
-    AssetManager::instance()->init();
+    Editor::assets()->init();
 
     Editor::project()->loadPlatforms();
     // Read settings early for converters
@@ -287,7 +287,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
         Editor::project()->currentBuilder(Editor::project()->currentPlatformName())->makeOutdated();
     }
 
-    AssetManager::instance()->rescan();
+    Editor::assets()->rescan();
 
     for(const TString &it : Editor::project()->platforms()) {
         QString name = it.data();
@@ -380,7 +380,7 @@ void MainWindow::onImportFinished() {
     }
 
     if(composer->openedDocuments().empty()) {
-        AssetManager *mgr = AssetManager::instance();
+        AssetManager *mgr = Editor::assets();
         TString firstMap = mgr->uuidToPath(Editor::project()->firstMap());
 
         AssetConverterSettings *mapSettings = mgr->fetchSettings(firstMap);

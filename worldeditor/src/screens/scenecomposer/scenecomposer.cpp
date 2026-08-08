@@ -204,7 +204,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
     connect(PluginManager::instance(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
-    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
+    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 
@@ -765,8 +765,8 @@ void SceneComposer::onPrefabIsolate() {
         }
 
         TString uuid = Engine::reference(actor->prefab());
-        TString path = AssetManager::instance()->uuidToPath(uuid);
-        enterToIsolation(AssetManager::instance()->fetchSettings(path.data()));
+        TString path = Editor::assets()->uuidToPath(uuid);
+        enterToIsolation(Editor::assets()->fetchSettings(path.data()));
     }
 }
 
@@ -828,7 +828,7 @@ bool SceneComposer::loadScene(const TString &path, bool additive) {
             scene->setParent(Engine::world());
             scene->setName(Url(path).baseName());
 
-            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+            AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
             if(settings && std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
                 m_settings.push_back(settings);
                 m_sceneSettings[scene->uuid()] = settings;
@@ -879,7 +879,7 @@ void SceneComposer::saveSceneAs(Scene *scene) {
             Url info(path);
             scene->setName(info.baseName());
             saveScene(path, scene);
-            AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+            AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
             m_sceneSettings[scene->uuid()] = settings;
         }
     }
@@ -938,7 +938,7 @@ void SceneComposer::saveIsolated(Prefab *prefab) {
             actor->setParent(prefab);
             TString data = Json::save(Engine::toVariant(prefab), 0);
             if(!data.isEmpty()) {
-                File file(AssetManager::instance()->uuidToPath(Engine::reference(prefab)));
+                File file(Editor::assets()->uuidToPath(Engine::reference(prefab)));
                 if(file.open(File::Write)) {
                     file.write(data);
                     file.close();

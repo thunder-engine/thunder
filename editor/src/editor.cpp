@@ -8,6 +8,7 @@
 
 #include "editor/editorgadget.h"
 #include "editor/asseteditor.h"
+#include "editor/assetmanager.h"
 
 /*!
     \module Editor
@@ -23,6 +24,7 @@ AssetEditor *Editor::s_currentEditor = nullptr;
 
 EditorSettings *Editor::s_editorSettings = nullptr;
 ProjectSettings *Editor::s_projectSettings = nullptr;
+AssetManager *Editor::s_assetManager = nullptr;
 
 DocumentModel *Editor::s_documentModel = nullptr;
 
@@ -135,4 +137,11 @@ ProjectSettings *Editor::project() {
         s_projectSettings = new ProjectSettings;
     }
     return s_projectSettings;
+}
+
+AssetManager *Editor::assets() {
+    if(s_assetManager == nullptr) {
+        s_assetManager = new AssetManager;
+    }
+    return s_assetManager;
 }

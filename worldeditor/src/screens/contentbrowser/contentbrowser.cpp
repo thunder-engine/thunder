@@ -145,7 +145,7 @@ protected:
 
         if(data->hasUrls()) {
             for(const QUrl &url : data->urls()) {
-                AssetManager::instance()->import(url.toLocalFile().toStdString(), target);
+                Editor::assets()->import(url.toLocalFile().toStdString(), target);
             }
         } else if(data->hasFormat(gMimeContent)) {
             if(!target.isEmpty()) {
@@ -154,13 +154,13 @@ protected:
 
             for(QString path : data->data(gMimeContent).split(';')) {
                 if(!path.isEmpty()) {
-                    AssetManager::instance()->renameResource(path.toStdString(), target + path.toStdString());
+                    Editor::assets()->renameResource(path.toStdString(), target + path.toStdString());
                 }
             }
         } else if(data->hasFormat(gMimeObject)) {
             for(QString path : data->data(gMimeObject).split(';')) {
                 if(!path.isEmpty()) {
-                    AssetManager::instance()->makePrefab(path.toStdString(), target);
+                    Editor::assets()->makePrefab(path.toStdString(), target);
                 }
             }
         }
@@ -314,14 +314,14 @@ void ContentBrowser::createContextMenus() {
     m_creationMenu.addAction(a);
 
     std::set<TString> paths;
-    for(auto it : AssetManager::instance()->builders()) {
+    for(auto it : Editor::assets()->builders()) {
         TString path(it->templatePath());
         if(!path.isEmpty()) {
             paths.insert(path);
         }
     }
 
-    for(auto &it : AssetManager::instance()->converters()) {
+    for(auto &it : Editor::assets()->converters()) {
         TString path(it->templatePath());
         if(!path.isEmpty()) {
             paths.insert(path);
@@ -394,7 +394,7 @@ void ContentBrowser::onFilterMenuTriggered(QAction *) {
 }
 
 void ContentBrowser::onFilterMenuAboutToShow() {
-    for(auto &it : AssetManager::instance()->labels()) {
+    for(auto &it : Editor::assets()->labels()) {
         if(!it.isEmpty()) {
             QAction *child = m_filterMenu->findChild<QAction *>(it.data());
             if(child == nullptr) {
@@ -432,7 +432,7 @@ void ContentBrowser::onItemDuplicate() {
 
         QModelIndex origin = filter->mapToSource(view->currentIndex());
         TString path(m_contentTree->path(origin));
-        AssetManager::instance()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? Url(path).name() : path);
+        Editor::assets()->duplicateResource(dynamic_cast<QTreeView*>(view) != nullptr ? Url(path).name() : path);
     }
 }
 
@@ -455,7 +455,7 @@ void ContentBrowser::onItemDelete() {
 
             foreach(auto &it, view->selectionModel()->selectedIndexes()) {
                 QModelIndex origin = filter->mapToSource(it);
-                AssetManager::instance()->removeResource(m_contentTree->path(origin));
+                Editor::assets()->removeResource(m_contentTree->path(origin));
             }
 
             emit model->layoutAboutToBeChanged();
@@ -515,7 +515,7 @@ void ContentBrowser::on_contentTree_customContextMenuRequested(const QPoint &pos
 void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
     const QModelIndex origin = m_listProxy->mapToSource(index);
 
-    m_settings = AssetManager::instance()->fetchSettings(m_contentTree->path(origin));
+    m_settings = Editor::assets()->fetchSettings(m_contentTree->path(origin));
     if(m_settings) {
         if(m_commitRevert) {
             m_commitRevert->setObject(m_settings);
@@ -543,7 +543,7 @@ void ContentBrowser::importAsset() {
     TString target(m_contentTree->path(origin));
 
     foreach(auto &it, files) {
-        AssetManager::instance()->import(it, target);
+        Editor::assets()->import(it, target);
     }
 }
 

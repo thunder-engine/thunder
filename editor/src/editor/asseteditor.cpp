@@ -41,7 +41,7 @@ void AssetEditor::onOpenAsset() {
     if(dialog.exec()) {
         TString path(dialog.getSelectedFile());
         if(!path.isEmpty()) {
-            loadAsset(AssetManager::instance()->fetchSettings(path));
+            loadAsset(Editor::assets()->fetchSettings(path));
         }
     }
 }

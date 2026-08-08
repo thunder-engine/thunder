@@ -105,7 +105,7 @@ void AngelBuilder::init() {
 
 bool AngelBuilder::buildProject() {
     if(m_outdated) {
-        AssetManager *assetMgr = AssetManager::instance();
+        AssetManager *assetMgr = Editor::assets();
         ProjectSettings *project = Editor::project();
 
         if(m_sources.empty()) {

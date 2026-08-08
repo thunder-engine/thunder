@@ -62,11 +62,6 @@ AssetManager::~AssetManager() {
     }
 }
 
-AssetManager *AssetManager::instance() {
-    static AssetManager instance;
-    return &instance;
-}
-
 void AssetManager::init() {
     registerConverter(new AnimConverter);
     registerConverter(new TextConverter);

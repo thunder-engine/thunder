@@ -45,7 +45,7 @@ void DocumentModel::addEditor(AssetEditor *editor) {
 }
 
 AssetEditor *DocumentModel::openFile(const TString &path) {
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+    AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
 
     AssetEditor *editor = nullptr;
 

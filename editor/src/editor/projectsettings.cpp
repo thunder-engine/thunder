@@ -81,7 +81,7 @@ void ProjectSettings::init(const TString &project, const TString &target) {
 }
 
 void ProjectSettings::loadPlatforms() {
-    for(auto &it : AssetManager::instance()->builders()) {
+    for(auto &it : Editor::assets()->builders()) {
         for(auto &platform : it->platforms()) {
             m_supportedPlatforms[platform] = it;
         }

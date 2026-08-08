@@ -10,7 +10,7 @@ const char *gURI("uri");
 ComponentModel::ComponentModel() :
         BaseObjectModel(nullptr) {
 
-    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &ComponentModel::update);
+    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &ComponentModel::update);
 }
 
 ComponentModel *ComponentModel::instance() {

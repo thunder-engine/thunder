@@ -61,7 +61,7 @@ TimelineEdit::~TimelineEdit() {
 void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
-        File file(AssetManager::instance()->uuidToPath(Engine::reference(clip)));
+        File file(Editor::assets()->uuidToPath(Engine::reference(clip)));
         if(file.open(File::Write)) {
             VariantMap data = clip->saveUserData();
 
@@ -109,7 +109,7 @@ void TimelineEdit::updateClips() {
         AnimationStateMachine *stateMachine = m_animator->stateMachine();
         if(stateMachine) {
             for(auto it : stateMachine->states()) {
-                Url info(AssetManager::instance()->uuidToPath(Engine::reference(it->m_clip)));
+                Url info(Editor::assets()->uuidToPath(Engine::reference(it->m_clip)));
                 m_clips[info.baseName()] = it->m_clip;
             }
             if(!m_clips.empty()) {

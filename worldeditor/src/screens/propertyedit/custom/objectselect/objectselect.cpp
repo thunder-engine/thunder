@@ -111,9 +111,9 @@ void ObjectSelect::setTemplateData(const Variant &data) {
     }
 
     if(!uuid.isEmpty()) {
-        TString path = AssetManager::instance()->uuidToPath(uuid);
+        TString path = Editor::assets()->uuidToPath(uuid);
         name = Url(path).baseName().data();
-        AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+        AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
         if(settings) {
             m_icon->setIcon(QPixmap::fromImage(settings->icon(uuid)));
         }
@@ -132,12 +132,12 @@ void ObjectSelect::onDialog() {
         sBrowser->setTypeFilter(m_type.data());
         TString path;
         if(m_data.type() == MetaType::STRING) {
-            path = AssetManager::instance()->uuidToPath(m_data.toString());
+            path = Editor::assets()->uuidToPath(m_data.toString());
         } else {
             Object *object = (m_data.data() == nullptr) ? nullptr : *(reinterpret_cast<Object **>(m_data.data()));
             path = Engine::reference(object);
         }
-        sBrowser->onAssetSelected(AssetManager::instance()->uuidToPath(path).data());
+        sBrowser->onAssetSelected(Editor::assets()->uuidToPath(path).data());
     } else {
         sBrowser->onSetRootObject(m_scene);
         sBrowser->setTypeFilter(m_type.data());
@@ -182,7 +182,7 @@ void ObjectSelect::onAssetSelected(QString asset) {
         sBrowser->hide();
         disconnect(sBrowser, nullptr, this, nullptr);
 
-        TString uuid = AssetManager::instance()->pathToUuid(asset.toStdString());
+        TString uuid = Editor::assets()->pathToUuid(asset.toStdString());
         if(m_data.type() == MetaType::STRING) {
             m_data = uuid;
         } else {
@@ -213,7 +213,7 @@ void ObjectSelect::onDragEnter(QDragEnterEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent) && !m_type.isEmpty()) {
         TString path(Editor::project()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
-        if(AssetManager::instance()->assetTypeName(path) == m_type) {
+        if(Editor::assets()->assetTypeName(path) == m_type) {
             event->acceptProposedAction();
             return;
         }
@@ -245,7 +245,7 @@ void ObjectSelect::onDrop(QDropEvent *event) {
         }
     } else if(event->mimeData()->hasFormat(gMimeContent)) {
         TString path(Editor::project()->contentPath() + "/" + event->mimeData()->data(gMimeContent).toStdString());
-        path = AssetManager::instance()->pathToUuid(path);
+        path = Editor::assets()->pathToUuid(path);
         if(m_data.type() == MetaType::STRING) {
             m_data = path;
         } else {
