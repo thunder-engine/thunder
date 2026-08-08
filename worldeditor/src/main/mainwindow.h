@@ -46,8 +46,6 @@ private:
 
     void timerEvent(QTimerEvent *) override;
 
-    void addGadget(EditorGadget *gadget);
-
     AssetEditor *openEditor(const TString &path);
 
     void resetGeometry();

@@ -118,12 +118,6 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::addGadget(EditorGadget *gadget) {
-    ui->toolWidget->addToolWindow(gadget, QToolWindowManager::NoArea);
-
-    Editor::addGadget(gadget);
-}
-
 AssetEditor *MainWindow::openEditor(const TString &path) {
     AssetEditor *editor = Editor::openFile(path);
     if(editor) {
@@ -323,11 +317,11 @@ void MainWindow::onImportFinished() {
 
     PropertyEditor *property = new PropertyEditor(this);
     connect(m_contentBrowser, &ContentBrowser::assetsSelected, property, &PropertyEditor::onObjectSelected);
-    addGadget(property);
-    addGadget(new HierarchyBrowser(this));
+    Editor::addGadget(property);
+    Editor::addGadget(new HierarchyBrowser(this));
 
-    for(auto &it : PluginManager::instance()->extensions("gadget")) {
-        addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
+    for(auto it : Editor::gadgets()) {
+        ui->toolWidget->addToolWindow(it, QToolWindowManager::NoArea);
     }
 
     ui->toolWidget->addToolWindow(m_preview, QToolWindowManager::NoArea);

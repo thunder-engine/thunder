@@ -2,6 +2,7 @@
 
 #include "projectsettings.h"
 #include "editorsettings.h"
+#include "pluginmanager.h"
 
 #include "documentmodel.h"
 
@@ -35,6 +36,10 @@ Editor::~Editor() {
 
 void Editor::init() {
     s_documentModel = new DocumentModel;
+
+    for(auto &it : PluginManager::instance()->extensions("gadget")) {
+        addGadget(reinterpret_cast<EditorGadget *>(PluginManager::instance()->getPluginObject(it)));
+    }
 }
 
 void Editor::backup() {
