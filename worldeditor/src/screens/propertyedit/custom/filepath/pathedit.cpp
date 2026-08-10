@@ -32,7 +32,7 @@ void PathEdit::onFileDialog() {
     Url url(m_path);
 
     FileDialog dialog;
-    dialog.setDirectory(url.dir().isEmpty() ? ProjectSettings::instance()->contentPath() : url.absoluteDir());
+    dialog.setDirectory(url.dir().isEmpty() ? Editor::project()->contentPath() : url.absoluteDir());
 
     if(!m_file) {
         dialog.setWindowTitle("Open Directory");

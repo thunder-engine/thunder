@@ -14,13 +14,13 @@
 #include <QCoreApplication>
 
 Builder::Builder() {
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
-    connect(AssetManager::instance(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
+    connect(Editor::assets(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
+    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
 }
 
 void Builder::setPlatform(const TString &platform) {
-    ProjectSettings *project = ProjectSettings::instance();
-    EditorSettings::instance()->loadSettings();
+    ProjectSettings *project = Editor::project();
+    Editor::settings()->loadSettings();
     if(platform.isEmpty()) {
         for(const TString &it : project->platforms()) {
             m_platformsToBuild.push(it);
@@ -38,7 +38,7 @@ void Builder::setPlatform(const TString &platform) {
             builder->convertFile(nullptr);
         }
 
-        AssetManager::instance()->rescan();
+        Editor::assets()->rescan();
     }
 }
 
@@ -53,12 +53,12 @@ bool Builder::package(const TString &target) {
         return false;
     }
 
-    StringList list(File::list(ProjectSettings::instance()->importPath()));
+    StringList list(File::list(Editor::project()->importPath()));
     for(auto &it : list) {
         if(File::isFile(it)) {
             Url info(it);
 
-            TString origin = AssetManager::instance()->uuidToPath(info.baseName());
+            TString origin = Editor::assets()->uuidToPath(info.baseName());
             aInfo() << "\tCoping:" << origin.data();
 
             File inFile(it);
@@ -86,7 +86,7 @@ bool Builder::package(const TString &target) {
 }
 
 void Builder::onImportFinished() {
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *project = Editor::project();
 
     NativeCodeBuilder *builder = project->currentBuilder();
 
@@ -100,7 +100,7 @@ void Builder::onImportFinished() {
 }
 
 void Builder::onBuildSuccessful() {
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *project = Editor::project();
     TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
     if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
@@ -130,7 +130,7 @@ void Builder::onBuildSuccessful() {
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
             m_platformsToBuild.pop();
-            AssetManager::instance()->rescan();
+            Editor::assets()->rescan();
 
             return;
         }

@@ -57,8 +57,8 @@ void BaseAssetProvider::init(bool force) {
         m_dirWatcher->removePaths(paths);
     }
 
-    ProjectSettings *mgr = ProjectSettings::instance();
-    TString resourcePath(ProjectSettings::instance()->resourcePath());
+    ProjectSettings *mgr = Editor::project();
+    TString resourcePath(mgr->resourcePath());
 
     bool watch = false;
     onDirectoryChangedForce(resourcePath + "/engine", force);
@@ -78,7 +78,7 @@ void BaseAssetProvider::init(bool force) {
 void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
 
-    AssetManager::instance()->reimport();
+    Editor::assets()->reimport();
 }
 /*!
     Internal file change handler with \a force import option
@@ -94,7 +94,7 @@ void BaseAssetProvider::onFileChanged(const TString &path) {
 */
 void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
     if(File::exists(path) && Url(path).suffix() != gMetaExt) {
-        AssetManager *mgr = AssetManager::instance();
+        AssetManager *mgr = Editor::assets();
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
             if(force || settings->isOutdated()) {
@@ -125,7 +125,7 @@ void BaseAssetProvider::onDirectoryChanged(const TString &path) {
         }
     }
 
-    AssetManager::instance()->directoryChanged(path);
+    Editor::assets()->directoryChanged(path);
 }
 /*!
     Internal directory change handler with optional watching and force import
@@ -167,14 +167,14 @@ void BaseAssetProvider::removeResource(const TString &source) {
         return;
     }
 
-    ProjectSettings *project = ProjectSettings::instance();
-    AssetManager *asset = AssetManager::instance();
+    ProjectSettings *mgr = Editor::project();
+    AssetManager *asset = Editor::assets();
 
     Engine::unloadResource(asset->pathToLocal(source));
     TString uuid(asset->unregisterAsset(source));
     if(!uuid.isEmpty()) {
-        File::remove(project->importPath() + "/" + uuid);
-        File::remove(project->iconPath() + "/" + uuid + ".png");
+        File::remove(mgr->importPath() + "/" + uuid);
+        File::remove(mgr->iconPath() + "/" + uuid + ".png");
     }
 
     File::remove(source + "." + gMetaExt);
@@ -184,7 +184,7 @@ void BaseAssetProvider::removeResource(const TString &source) {
     if(settings) {
         CodeBuilder *builder = settings->builder();
         if(builder) {
-            builder->rescanSources(project->contentPath());
+            builder->rescanSources(mgr->contentPath());
             builder->makeOutdated();
             builder->buildProject();
         }
@@ -210,7 +210,7 @@ void BaseAssetProvider::removeResource(const TString &source) {
     \sa AssetManager::registerAsset(), AssetConverter::renameAsset()
 */
 void BaseAssetProvider::renameResource(const TString &oldName, const TString &newName) {
-    AssetManager *asset = AssetManager::instance();
+    AssetManager *asset = Editor::assets();
 
     ResourceSystem::Dictionary &indices(Engine::resourceSystem()->indices());
 
@@ -227,9 +227,9 @@ void BaseAssetProvider::renameResource(const TString &oldName, const TString &ne
         if(File::rename(oldName, newName)) {
             std::map<TString, ResourceSystem::ResourceInfo> back;
 
-            ProjectSettings *project = ProjectSettings::instance();
+            ProjectSettings *mgr = Editor::project();
             for(auto it = indices.cbegin(); it != indices.cend();) {
-                TString path(project->contentPath() + "/" + it->first);
+                TString path(mgr->contentPath() + "/" + it->first);
                 if(path.startsWith(oldName)) {
                     back[path] = it->second;
                     it = indices.erase(it);
@@ -306,7 +306,7 @@ void BaseAssetProvider::duplicateResource(const TString &source) {
         File::copy(source + "." + gMetaExt, filePath + "." + gMetaExt);
     }
 
-    AssetManager *asset = AssetManager::instance();
+    AssetManager *asset = Editor::assets();
     AssetConverterSettings *targetSettings = asset->fetchSettings(filePath);
     if(targetSettings) {
         targetSettings->newSettings();

@@ -19,7 +19,8 @@ class EDITOR_EXPORT AssetManager : public QObject {
     Q_OBJECT
 
 public:
-    static AssetManager *instance();
+    AssetManager();
+    ~AssetManager();
 
     void init();
 
@@ -83,10 +84,6 @@ signals:
 
 protected slots:
     void onPerform();
-
-private:
-    AssetManager();
-    ~AssetManager();
 
 protected:
     friend class BaseAssetProvider;

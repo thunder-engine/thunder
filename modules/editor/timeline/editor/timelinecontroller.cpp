@@ -64,8 +64,8 @@ void TimelineController::setClip(AnimationClip *clip) {
 
     if(m_clip) {
         TString uuid = Engine::reference(m_clip);
-        TString path = AssetManager::instance()->uuidToPath(uuid);
-        m_clipSettings = AssetManager::instance()->fetchSettings(path);
+        TString path = Editor::assets()->uuidToPath(uuid);
+        m_clipSettings = Editor::assets()->fetchSettings(path);
     }
     emit updated();
 }

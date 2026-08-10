@@ -39,8 +39,8 @@ public:
     };
 
 public:
-    static PluginManager *instance();
-    static void destroy();
+    PluginManager();
+    ~PluginManager();
 
     void init(Engine *engine);
 
@@ -70,10 +70,6 @@ public slots:
     void reloadPlugin(const TString &path);
 
 private:
-    PluginManager();
-
-    ~PluginManager();
-
     int columnCount(const QModelIndex &) const override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;

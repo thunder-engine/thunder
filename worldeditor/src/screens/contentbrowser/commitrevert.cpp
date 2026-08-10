@@ -53,8 +53,8 @@ void CommitRevert::on_commitButton_clicked() {
     AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_propertyObject);
     if(settings && settings->isModified()) {
         settings->saveSettings();
-        AssetManager::instance()->pushToImport(settings);
-        AssetManager::instance()->reimport();
+        Editor::assets()->pushToImport(settings);
+        Editor::assets()->reimport();
     }
 
     ui->commitButton->setEnabled(false);
@@ -87,8 +87,8 @@ void CommitRevert::checkImportSettings(AssetConverterSettings *settings) {
         }
         if(result == QMessageBox::Yes) {
             settings->saveSettings();
-            AssetManager::instance()->pushToImport(settings);
-            AssetManager::instance()->reimport();
+            Editor::assets()->pushToImport(settings);
+            Editor::assets()->reimport();
         }
         if(result == QMessageBox::No) {
             settings->loadSettings();

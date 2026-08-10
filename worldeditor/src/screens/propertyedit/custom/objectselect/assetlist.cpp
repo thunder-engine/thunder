@@ -20,8 +20,8 @@ AssetList::AssetList() :
         BaseObjectModel(nullptr),
         m_cellSzie(64, 64) {
 
-    connect(AssetManager::instance(), &AssetManager::importFinished, this, &AssetList::update);
-    connect(AssetManager::instance(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
+    connect(Editor::assets(), &AssetManager::importFinished, this, &AssetList::update);
+    connect(Editor::assets(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
 
     update();
 }
@@ -73,7 +73,7 @@ Qt::ItemFlags AssetList::flags(const QModelIndex &index) const {
 }
 
 void AssetList::onRendered(const TString &uuid) {
-    AssetManager *mgr = AssetManager::instance();
+    AssetManager *mgr = Editor::assets();
     TString path = mgr->uuidToPath(uuid);
     QObject *item = m_rootItem->findChild<QObject *>(path.data());
     if(item) {
@@ -94,7 +94,7 @@ void AssetList::onRendered(const TString &uuid) {
 void AssetList::update() {
     clear();
 
-    AssetManager *mgr = AssetManager::instance();
+    AssetManager *mgr = Editor::assets();
     for(auto &it : Engine::resourceSystem()->indices()) {
         QObject *item = new QObject(m_rootItem);
 

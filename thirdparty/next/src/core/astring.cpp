@@ -224,14 +224,14 @@ bool TString::startsWith(const TString &str) const {
 /*!
     Returns the index position of the first occurrence of the string \a str in this string. Returns -1 if \a str is not found.
 */
-int TString::indexOf(const TString &str) const {
-     return m_data.find(str.m_data);
+int TString::indexOf(const TString &str, uint32_t offset) const {
+     return m_data.find(str.m_data, offset);
 }
 /*!
     Returns the index position of the first occurrence of the character \a ch in this string. Returns -1 if \a ch is not found.
 */
-int TString::indexOf(const char ch) const {
-    return m_data.find(ch);
+int TString::indexOf(const char ch, uint32_t offset) const {
+    return m_data.find(ch, offset);
 }
 /*!
     Returns a string that contains \a n characters of this string, starting at the specified \a position index up to, but not including.

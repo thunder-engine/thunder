@@ -26,8 +26,6 @@ public:
     ProjectSettings();
     ~ProjectSettings() {}
 
-    static ProjectSettings *instance();
-
     void init(const TString &project, const TString &target = TString());
 
     void loadPlatforms();

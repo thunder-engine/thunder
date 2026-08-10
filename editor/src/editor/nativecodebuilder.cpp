@@ -34,13 +34,13 @@ NativeCodeBuilder::NativeCodeBuilder() {
     connect(&m_process, _SIGNAL(readyReadStandardOutput()), this, _SLOT(onReadOutput()) );
     connect(&m_process, _SIGNAL(readyReadStandardError()), this, _SLOT(onReadError()) );
 
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
-    TString idName = project->projectName().remove(' ').toLower();
+    TString idName = mgr->projectName().remove(' ').toLower();
     idName.remove('_');
     m_values["${idName}"] = idName;
 
-    TString sdk(project->sdkPath());
+    TString sdk(mgr->sdkPath());
 
     m_incPath = {
         sdk + "/include/engine",
@@ -66,9 +66,9 @@ NativeCodeBuilder::NativeCodeBuilder() {
     };
 
     m_defines = {
-        TString("COMPANY_NAME=\"\\\"%1\\\"\"").arg(project->projectCompany()),
-        TString("PRODUCT_NAME=\"\\\"%1\\\"\"").arg(project->projectName()),
-        TString("PRODUCT_VERSION=\"\\\"%1\\\"\"").arg(project->projectVersion())
+        TString("COMPANY_NAME=\"\\\"%1\\\"\"").arg(mgr->projectCompany()),
+        TString("PRODUCT_NAME=\"\\\"%1\\\"\"").arg(mgr->projectName()),
+        TString("PRODUCT_VERSION=\"\\\"%1\\\"\"").arg(mgr->projectVersion())
     };
 }
 
@@ -78,8 +78,8 @@ bool NativeCodeBuilder::buildProject() {
 
 void NativeCodeBuilder::onBuildFinished(int exitCode) {
     if(exitCode == 0) {
-        if(ProjectSettings::instance()->targetPath().isEmpty()) {
-            PluginManager::instance()->reloadPlugin(m_artifact);
+        if(Editor::project()->targetPath().isEmpty()) {
+            Editor::plugins()->reloadPlugin(m_artifact);
         }
     }
 
@@ -100,7 +100,7 @@ void NativeCodeBuilder::onReadError() {
 void NativeCodeBuilder::generateProject() {
     aInfo() << name() << "Generating project";
 
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     m_project = mgr->generatedPath() + "/";
 
@@ -191,8 +191,8 @@ void NativeCodeBuilder::generateLoader(const TString &dst, const StringList &mod
         }
     }
 
-    TString name = ProjectSettings::instance()->projectName() + "-editor";
-    for(auto &it : PluginManager::instance()->plugins()) {
+    TString name = Editor::project()->projectName() + "-editor";
+    for(auto &it : Editor::plugins()->plugins()) {
         Url info(it);
         if(name != info.baseName()) {
             m_values[gEditorLibrariesList].append(TString(12, ' ') + "\"" + info.baseName() + "\",\n");

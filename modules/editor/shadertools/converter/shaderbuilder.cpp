@@ -362,7 +362,7 @@ void ShaderBuilder::compileData(VariantMap &data) {
     uint32_t version = 430;
     bool es = false;
 
-    NativeCodeBuilder *builder = ProjectSettings::instance()->currentBuilder();
+    NativeCodeBuilder *builder = Editor::project()->currentBuilder();
     if(builder->isEmbedded()) {
         version = 300;
         es = true;
@@ -532,7 +532,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
 
                 define += "\n#define USE_GBUFFER";
 
-                NativeCodeBuilder *builder = ProjectSettings::instance()->currentBuilder();
+                NativeCodeBuilder *builder = Editor::project()->currentBuilder();
                 if(builder && !builder->isEmbedded()) {
                     define += "\n#define USE_SSBO";
                 }
@@ -939,10 +939,10 @@ void ShaderBuilder::init() {
 
 TString ShaderBuilder::loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas) {
     StringList paths;
-    paths.push_back(ProjectSettings::instance()->contentPath() + "/");
+    paths.push_back(Editor::project()->contentPath() + "/");
     paths.push_back(":/shaders/");
-    paths.push_back(ProjectSettings::instance()->resourcePath() + "/engine/shaders/");
-    paths.push_back(ProjectSettings::instance()->resourcePath() + "/editor/shaders/");
+    paths.push_back(Editor::project()->resourcePath() + "/engine/shaders/");
+    paths.push_back(Editor::project()->resourcePath() + "/editor/shaders/");
 
     for(const TString &it : paths) {
         QFile file((it + path).data());

@@ -14,11 +14,6 @@ EditorSettings::EditorSettings() :
 
 }
 
-EditorSettings *EditorSettings::instance() {
-    static EditorSettings instance;
-    return &instance;
-}
-
 void EditorSettings::registerValue(const TString &name, const Variant &value, const TString &annotation) {
     blockSignals(true);
     setProperty(name.data(), value);

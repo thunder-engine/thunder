@@ -18,7 +18,7 @@ ShaderCodeDialog::ShaderCodeDialog(QWidget *parent) :
 
     connect(ui->comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(showShader()));
 
-    m_codeEditor = reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject("CodeEdit"));
+    m_codeEditor = reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject("CodeEdit"));
     if(m_codeEditor) {
         ui->verticalLayout->addWidget(m_codeEditor);
     } else {

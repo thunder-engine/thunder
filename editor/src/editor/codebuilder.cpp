@@ -45,7 +45,7 @@ AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
 }
 
 void CodeBuilder::buildSuccessful(bool flag) {
-    AssetManager::instance()->onBuildSuccessful(flag, this);
+    Editor::assets()->onBuildSuccessful(flag, this);
 }
 
 AssetConverterSettings *CodeBuilder::createSettings() {

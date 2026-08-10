@@ -32,7 +32,7 @@ ProjectBrowser::~ProjectBrowser() {
 
 void ProjectBrowser::onNewProject() {
     FileDialog dialog;
-    dialog.setDirectory(ProjectSettings::instance()->myProjectsPath());
+    dialog.setDirectory(Editor::project()->myProjectsPath());
     dialog.setWindowTitle("Create New Project");
     dialog.setMode(FileDialog::SaveFile);
     dialog.addFilter("Project Files", { TString("*") + gProjectExt });
@@ -58,7 +58,7 @@ void ProjectBrowser::onNewProject() {
 
 void ProjectBrowser::onImportProject() {
     FileDialog dialog;
-    dialog.setDirectory(ProjectSettings::instance()->myProjectsPath());
+    dialog.setDirectory(Editor::project()->myProjectsPath());
     dialog.setWindowTitle("Import Existing Project");
     dialog.setMode(FileDialog::OpenFile);
     dialog.addFilter("Project Files", { TString("*") + gProjectExt });

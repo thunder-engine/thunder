@@ -28,11 +28,11 @@ XcodeBuilder::XcodeBuilder() {
 
     m_defPref = TString(5, '\t'); m_defSep = ",\n";
 
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
     m_defines = {
-        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
-        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
-        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+        TString("COMPANY_NAME=\"%1\"").arg(mgr->projectCompany()),
+        TString("PRODUCT_NAME=\"%1\"").arg(mgr->projectName()),
+        TString("PRODUCT_VERSION=\"%1\"").arg(mgr->projectVersion())
     };
 }
 
@@ -40,7 +40,7 @@ bool XcodeBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
         m_process.setWorkingDirectory(m_project);
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
 
         m_values[gPlatformsPath] = mgr->platformsPath();
         m_values[gCachePath] = mgr->cachePath();
@@ -89,7 +89,7 @@ bool XcodeBuilder::buildProject() {
 void XcodeBuilder::generateProject() {
     NativeCodeBuilder::generateProject();
 
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     if(mgr->currentPlatformName() == "tvos") {
         m_values[gSdkName] = "appletvos";

@@ -117,7 +117,7 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
             auto &plugin = *std::next(m_plugins.begin(), index.row());
             plugin.enabled = value.toBool();
 
-            auto &plugins = ProjectSettings::instance()->plugins();
+            auto &plugins = Editor::project()->plugins();
             plugins[plugin.name] = plugin.enabled;
 
             syncWhiteList();
@@ -145,17 +145,6 @@ QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent)
 QModelIndex PluginManager::parent(const QModelIndex &child) const {
     Q_UNUSED(child);
     return QModelIndex();
-}
-
-PluginManager *PluginManager::instance() {
-    if(m_instance == nullptr) {
-        m_instance = new PluginManager;
-    }
-    return m_instance;
-}
-
-void PluginManager::destroy() {
-    delete m_instance;
 }
 
 void PluginManager::init(Engine *engine) {
@@ -194,7 +183,7 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                     plug.tags.push_front("Beta");
                 }
 
-                if(plug.path.contains(ProjectSettings::instance()->pluginsPath().data())) {
+                if(plug.path.contains(Editor::project()->pluginsPath().data())) {
                     plug.tags.push_back("Project");
                     m_whiteList.push_back(plug.name);
                 }
@@ -388,7 +377,7 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
 void PluginManager::syncWhiteList() {
     StringList toRemove;
 
-    auto &plugins = ProjectSettings::instance()->plugins();
+    auto &plugins = Editor::project()->plugins();
     for(auto &it : plugins) {
         if(it.second) {
             if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
@@ -410,7 +399,7 @@ void PluginManager::syncWhiteList() {
             plugins.erase(it);
         }
     }
-    ProjectSettings::instance()->saveSettings();
+    Editor::project()->saveSettings();
 }
 
 StringList PluginManager::plugins() const {

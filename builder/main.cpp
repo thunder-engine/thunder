@@ -87,18 +87,17 @@ int main(int argc, char *argv[]) {
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
-    ProjectSettings::instance()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
-    ProjectSettings::instance()->loadSettings();
+    Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
-    PluginManager::instance()->init(&engine);
-    AssetManager::instance()->init();
+    Editor::plugins()->init(&engine);
+    Editor::assets()->init();
 
-    ProjectSettings::instance()->loadPlatforms();
+    Editor::project()->loadPlatforms();
 
-    if(!PluginManager::instance()->rescanProject(ProjectSettings::instance()->pluginsPath())) {
+    if(!Editor::plugins()->rescanProject(Editor::project()->pluginsPath())) {
         aWarning() << "Not all plugins were loaded.";
     }
-    PluginManager::instance()->initSystems();
+    Editor::plugins()->initSystems();
 
     Builder builder;
 

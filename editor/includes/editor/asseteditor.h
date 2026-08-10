@@ -57,6 +57,9 @@ public:
 
     virtual bool allowSaveAs() const;
 
+    virtual void backup();
+    virtual void restore();
+
 signals:
     void updated();
 

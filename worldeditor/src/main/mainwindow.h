@@ -12,10 +12,6 @@
 
 class ImportQueue;
 
-class ProjectModel;
-class FeedManager;
-class DocumentModel;
-
 class Preview;
 class AssetEditor;
 class EditorGadget;
@@ -25,9 +21,6 @@ class ProjectSettingsBrowser;
 class ContentBrowser;
 class ConsoleManager;
 
-class ProjectSettings;
-class EditorSettings;
-
 namespace Ui {
     class MainWindow;
 }
@@ -36,13 +29,13 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(Engine *engine, QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
 public slots:
     void onOpenEditor(const TString &path);
 
-    void onOpenProject(const TString &path);
+    void onOpenProject(const TString &path, Engine &engine);
 
 signals:
     void readBuildLogs(QString log);
@@ -52,8 +45,6 @@ private:
     void changeEvent(QEvent *event) override;
 
     void timerEvent(QTimerEvent *) override;
-
-    void addGadget(EditorGadget *gadget);
 
     AssetEditor *openEditor(const TString &path);
 
@@ -73,16 +64,7 @@ private:
 
     QString m_currentWorkspace;
 
-    std::list<EditorGadget *> m_gadgets;
-
-    Engine *m_engine;
-
     ImportQueue *m_queue;
-
-    DocumentModel *m_documentModel;
-
-    EditorSettings *m_editorSettings;
-    ProjectSettings *m_projectSettings;
 
     EditorSettingsBrowser *m_editorSettingsBrowser;
     ProjectSettingsBrowser *m_projectSettingsBrowser;
@@ -90,9 +72,6 @@ private:
     ConsoleManager *m_consoleOutput;
 
     Preview *m_preview;
-
-    AssetEditor *m_mainEditor;
-    AssetEditor *m_currentEditor;
 
     QProcess *m_builder;
 

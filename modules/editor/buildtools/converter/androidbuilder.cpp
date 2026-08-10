@@ -22,7 +22,7 @@ namespace {
 AndroidBuilder::AndroidBuilder() {
     setName("[AndroidBuilder]");
 
-    EditorSettings *settings = EditorSettings::instance();
+    EditorSettings *settings = Editor::settings();
 
     settings->registerValue(gAndroidJava, "", gEditorPath);
     settings->registerValue(gAndroidSdk, "", gEditorPath);
@@ -38,7 +38,7 @@ AndroidBuilder::AndroidBuilder() {
 
 bool AndroidBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
-        EditorSettings *settings = EditorSettings::instance();
+        EditorSettings *settings = Editor::settings();
 
         TString sdkPath = settings->value(gAndroidSdk).toString();
         if(sdkPath.isEmpty()) {
@@ -54,7 +54,7 @@ bool AndroidBuilder::buildProject() {
 
         TString toolChains = ndkPath + "/toolchains/llvm/prebuilt/windows-x86_64";
 
-        TString javaPath = EditorSettings::instance()->value(gAndroidJava).toString();
+        TString javaPath = Editor::settings()->value(gAndroidJava).toString();
         if(javaPath.isEmpty()) {
             aCritical() << name() << "Can't find the Java by the path:" << javaPath;
             return false;
@@ -65,7 +65,7 @@ bool AndroidBuilder::buildProject() {
 
         generateProject();
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
         m_projectPath = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/release";
         m_artifact = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/base.apk";
         m_keystorePath = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/debug.keystore";
@@ -112,7 +112,7 @@ bool AndroidBuilder::buildProject() {
 void AndroidBuilder::generateProject() {
     NativeCodeBuilder::generateProject();
 
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     updateTemplate(":/templates/android/AndroidManifest.xml", mgr->platformsPath() + "/android/AndroidManifest.xml");
     updateTemplate(":/templates/android/res/xml/backup_rules.xml", mgr->platformsPath() + "/android/res/xml/backup_rules.xml");
@@ -183,7 +183,7 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
         args.push_back(TString("-I") + it);
     }
 
-    args.push_back(TString("-L") + ProjectSettings::instance()->sdkPath() + "/android/" + arch + "/static");
+    args.push_back(TString("-L") + Editor::project()->sdkPath() + "/android/" + arch + "/static");
 
     for(auto &it : m_libs) {
         args.push_back(TString("-l") + it);
@@ -200,7 +200,7 @@ bool AndroidBuilder::compileNative(const TString &tools, const TString &arch) {
 }
 
 bool AndroidBuilder::compileResources(const TString &tools) {
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     TString compiled = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/compiled";
 
@@ -235,7 +235,7 @@ bool AndroidBuilder::compileResources(const TString &tools) {
 }
 
 bool AndroidBuilder::linkResources(const TString &tools, const TString &sdk) {
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     StringList args;
 
@@ -304,7 +304,7 @@ bool AndroidBuilder::makeKeystore(const TString &java) {
 }
 
 bool AndroidBuilder::signPackage(const TString &java, const TString &tools) {
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     StringList args;
 
@@ -344,7 +344,7 @@ bool AndroidBuilder::package() {
 
     zip_fileinfo zi = {0};
 
-    StringList list(File::list(ProjectSettings::instance()->importPath()));
+    StringList list(File::list(Editor::project()->importPath()));
     for(auto &it : list) {
         Url info(it);
 

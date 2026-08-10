@@ -371,7 +371,7 @@ void SpineConverter::importAtlas(SpineConverterSettings *settings) {
             switch(currentState) {
                 case State::FileName: {
                     TString path = (info.absoluteDir() + "/" + it).toStdString();
-                    settings->m_texture = AssetManager::instance()->pathToUuid(path);
+                    settings->m_texture = Editor::assets()->pathToUuid(path);
 
                     currentState++;
                 } break;

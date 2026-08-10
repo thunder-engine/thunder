@@ -14,7 +14,7 @@ ImportQueue::ImportQueue(QWidget *parent) :
         ui(new Ui::ImportQueue) {
     ui->setupUi(this);
 
-    AssetManager *manager = AssetManager::instance();
+    AssetManager *manager = Editor::assets();
     connect(manager, &AssetManager::importStarted, this, &ImportQueue::onStarted);
     connect(manager, &AssetManager::imported, this, &ImportQueue::onProcessed);
     connect(manager, &AssetManager::importFinished, this, &ImportQueue::onImportFinished);

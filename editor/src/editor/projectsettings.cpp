@@ -48,11 +48,6 @@ ProjectSettings::ProjectSettings() {
     m_myProjectsPath = path.toStdString();
 }
 
-ProjectSettings *ProjectSettings::instance() {
-    static ProjectSettings instance;
-    return &instance;
-}
-
 void ProjectSettings::init(const TString &project, const TString &target) {
     m_projectPath = project;
 
@@ -82,10 +77,11 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     File::mkPath(m_pluginsPath);
 
     setCurrentPlatform();
+    loadSettings();
 }
 
 void ProjectSettings::loadPlatforms() {
-    for(auto &it : AssetManager::instance()->builders()) {
+    for(auto &it : Editor::assets()->builders()) {
         for(auto &platform : it->platforms()) {
             m_supportedPlatforms[platform] = it;
         }
@@ -388,7 +384,7 @@ NativeCodeBuilder *ProjectSettings::currentBuilder(const TString &platform) cons
 void ProjectSettings::reportTypes(const std::set<TString> &types) {
     TString projectModule = TString("Module") + projectName();
     for(auto &it : types) {
-        TString name = PluginManager::instance()->getModuleName(it);
+        TString name = Editor::plugins()->getModuleName(it);
         if(!name.isEmpty() && name != projectModule) {
             m_autoModules.insert(name);
         }

@@ -73,7 +73,7 @@ TextWidget::TextWidget(QWidget *parent) :
     option.setFlags(option.flags() | QTextOption::AddSpaceForLineAndParagraphSeparators);
     document()->setDefaultTextOption(option);
 
-    EditorSettings *settings = EditorSettings::instance();
+    EditorSettings *settings = Editor::settings();
     settings->registerValue(gFont, gDefaultFont);
     settings->registerValue(gZoom, 100);
 
@@ -137,8 +137,8 @@ void TextWidget::saveFile(const QString &path) {
 }
 
 void TextWidget::checkClassMap() {
-    for(auto &it : PluginManager::instance()->extensions("converter")) {
-        AssetConverter *converter = reinterpret_cast<AssetConverter *>(PluginManager::instance()->getPluginObject(it));
+    for(auto &it : Editor::plugins()->extensions("converter")) {
+        AssetConverter *converter = reinterpret_cast<AssetConverter *>(Editor::plugins()->getPluginObject(it));
         if(converter) {
             for(TString &format : converter->suffixes()) {
                 if(format.toLower() == Url(m_fileName.toStdString()).suffix()) {
@@ -840,7 +840,7 @@ void TextWidget::insertFromMimeData(const QMimeData *source) {
 }
 
 void TextWidget::onApplySettings() {
-    EditorSettings *s = EditorSettings::instance();
+    EditorSettings *s = Editor::settings();
     TString name = s->property(gFont).toString();
     if(name.isEmpty()) {
         name = gDefaultFont;

@@ -3,7 +3,8 @@ import qbs
 Project {
     id: editor
     property stringList srcFiles: [
-        "src/**/*.cpp"
+        "src/**/*.cpp",
+        "src/*.h"
     ]
 
     property stringList incPaths: [

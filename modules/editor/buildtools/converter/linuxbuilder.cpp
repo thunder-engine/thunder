@@ -31,7 +31,7 @@ LinuxBuilder::LinuxBuilder() {
 }
 
 bool LinuxBuilder::isEmpty() const {
-    return (ProjectSettings::instance()->currentPlatformName() != "linux");
+    return (Editor::project()->currentPlatformName() != "linux");
 }
 
 bool LinuxBuilder::buildProject() {
@@ -40,7 +40,7 @@ bool LinuxBuilder::buildProject() {
 
         generateProject();
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
 
         TString product = mgr->projectName();
         TString path = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/" + gMode + "/";
@@ -51,7 +51,7 @@ bool LinuxBuilder::buildProject() {
         if(mgr->targetPath().isEmpty()) {
             m_artifact = path + gPrefix + product + gShared;
         } else {
-            m_libPath.push_back(ProjectSettings::instance()->sdkPath() + "/linux/x86/static");
+            m_libPath.push_back(mgr->sdkPath() + "/linux/x86/static");
             m_artifact = path + product;
         }
 

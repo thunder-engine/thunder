@@ -12,8 +12,8 @@
 #include <aprocess.h>
 
 DocumentModel::DocumentModel() {
-    for(auto &it : PluginManager::instance()->extensions("editor")) {
-        addEditor(reinterpret_cast<AssetEditor *>(PluginManager::instance()->getPluginObject(it)));
+    for(auto &it : Editor::plugins()->extensions("editor")) {
+        addEditor(reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject(it)));
     }
 }
 
@@ -44,22 +44,8 @@ void DocumentModel::addEditor(AssetEditor *editor) {
     connect(editor, &AssetEditor::dropAsset, this, &DocumentModel::onLoadAsset);
 }
 
-void DocumentModel::newFile(AssetEditor *editor) {
-    if(editor->checkSave()) {
-        closeFile(editor);
-        editor->onNewAsset();
-    }
-}
-
-void DocumentModel::openFile(AssetEditor *editor) {
-    if(editor->checkSave()) {
-        closeFile(editor);
-        editor->onOpenAsset();
-    }
-}
-
 AssetEditor *DocumentModel::openFile(const TString &path) {
-    AssetConverterSettings *settings = AssetManager::instance()->fetchSettings(path);
+    AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
 
     AssetEditor *editor = nullptr;
 

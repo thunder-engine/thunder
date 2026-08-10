@@ -50,7 +50,7 @@ EditorSettingsBrowser::~EditorSettingsBrowser() {
 }
 
 void EditorSettingsBrowser::init() {
-    ui->propertiesWidget->onObjectSelected(EditorSettings::instance());
+    ui->propertiesWidget->onObjectSelected(Editor::settings());
 
     QStringList groups;
     QAbstractItemModel *m = ui->propertiesWidget->model();
@@ -66,7 +66,7 @@ void EditorSettingsBrowser::init() {
 }
 
 void EditorSettingsBrowser::onSettingsUpdated(const Object::ObjectList &objects, const TString &property, Variant value) {
-    EditorSettings::instance()->setValue(property, value);
+    Editor::settings()->setValue(property, value);
 }
 
 void EditorSettingsBrowser::on_groups_clicked(const QModelIndex &index) {

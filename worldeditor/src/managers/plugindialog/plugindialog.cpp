@@ -154,7 +154,7 @@ PluginDialog::PluginDialog(QWidget *parent) :
 
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
-    m_filter->setSourceModel(PluginManager::instance());
+    m_filter->setSourceModel(Editor::plugins());
 
     ui->listView->setModel(m_filter);
     ui->listView->setItemDelegate(new PluginDelegate());
@@ -162,7 +162,7 @@ PluginDialog::PluginDialog(QWidget *parent) :
     ui->notification->setProperty("notification", true);
     ui->notification->setVisible(false);
 
-    connect(PluginManager::instance(), &PluginManager::listChanged, ui->notification, &QWidget::show);
+    connect(Editor::plugins(), &PluginManager::listChanged, ui->notification, &QWidget::show);
 }
 
 PluginDialog::~PluginDialog() {
@@ -171,7 +171,7 @@ PluginDialog::~PluginDialog() {
 
 void PluginDialog::on_loadButton_clicked() {
     FileDialog dialog;
-    dialog.setDirectory(ProjectSettings::instance()->pluginsPath());
+    dialog.setDirectory(Editor::project()->pluginsPath());
     dialog.setWindowTitle("Please select Thunder Engine Plugin");
     dialog.setMode(FileDialog::OpenFile);
     dialog.addFilter("Plugins", { "*.dll" });
@@ -179,7 +179,7 @@ void PluginDialog::on_loadButton_clicked() {
     if(dialog.exec()) {
         TString path = dialog.getSelectedFile();
         if(!path.isEmpty()) {
-            PluginManager::instance()->loadPlugin(path);
+            Editor::plugins()->loadPlugin(path);
         }
     }
 }
@@ -194,7 +194,7 @@ void PluginDialog::on_restartButton_clicked() {
     qApp->quit();
 
     Process::startDetached(qApp->arguments().first().toStdString(),
-                           {ProjectSettings::instance()->projectPath()},
+                           {Editor::project()->projectPath()},
                            TString(),
                            ProcessEnvironment::systemEnvironment());
 }

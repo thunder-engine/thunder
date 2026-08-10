@@ -36,12 +36,12 @@ void AssetEditor::onOpenAsset() {
     }
 
     dialog.addFilter(assetType(), list);
-    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+    dialog.setDirectory(Editor::project()->contentPath());
 
     if(dialog.exec()) {
         TString path(dialog.getSelectedFile());
         if(!path.isEmpty()) {
-            loadAsset(AssetManager::instance()->fetchSettings(path));
+            loadAsset(Editor::assets()->fetchSettings(path));
         }
     }
 }
@@ -58,6 +58,14 @@ void AssetEditor::loadData(const Variant &data, const TString &suffix) {
 
 bool AssetEditor::allowSaveAs() const {
     return true;
+}
+
+void AssetEditor::backup() {
+
+}
+
+void AssetEditor::restore() {
+
 }
 
 void AssetEditor::saveAsset(const TString &path) {
@@ -170,7 +178,7 @@ void AssetEditor::onSaveAs() {
     dialog.setWindowTitle(TString("Save ") + assetType);
     dialog.addFilter(assetType, list);
 
-    dialog.setDirectory(ProjectSettings::instance()->contentPath());
+    dialog.setDirectory(Editor::project()->contentPath());
 
     if(dialog.exec()) {
         TString path(dialog.getSelectedFile());

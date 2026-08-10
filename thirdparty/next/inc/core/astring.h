@@ -82,8 +82,8 @@ public:
 
     bool startsWith(const TString &str) const;
 
-    int indexOf(const TString &str) const;
-    int indexOf(const char ch) const;
+    int indexOf(const TString &str, uint32_t offset = 0) const;
+    int indexOf(const char ch, uint32_t offset = 0) const;
 
     TString mid(int position, int n) const;
 

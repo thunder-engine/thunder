@@ -3,11 +3,9 @@
 
 #include <QObject>
 
-#include <object.h>
+#include <editor.h>
 
-class AssetEditor;
-
-class DocumentModel : public QObject {
+class EDITOR_EXPORT DocumentModel : public QObject {
     Q_OBJECT
 
 public:
@@ -15,9 +13,6 @@ public:
     ~DocumentModel();
 
     void addEditor(AssetEditor *editor);
-
-    void newFile(AssetEditor *editor);
-    void openFile(AssetEditor *editor);
 
     AssetEditor *openFile(const TString &path);
 

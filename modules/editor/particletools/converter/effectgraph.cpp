@@ -54,7 +54,7 @@ void EffectGraph::scanForFunctions() {
 
     StringList paths = {
         ":/modules",
-        ProjectSettings::instance()->contentPath()
+        Editor::project()->contentPath()
     };
 
     for(auto &path : paths) {

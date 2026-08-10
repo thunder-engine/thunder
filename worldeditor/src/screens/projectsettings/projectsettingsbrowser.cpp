@@ -19,11 +19,11 @@ ProjectSettingsBrowser::~ProjectSettingsBrowser() {
 }
 
 void ProjectSettingsBrowser::init() {
-    ui->projectWidget->onObjectSelected({ProjectSettings::instance()});
+    ui->projectWidget->onObjectSelected(Editor::project());
 }
 
 void ProjectSettingsBrowser::onSettingsUpdated(const Object::ObjectList &list, const TString &property, Variant value) {
-    ProjectSettings::instance()->setProperty(property.data(), value);
+    Editor::project()->setProperty(property.data(), value);
 }
 
 void ProjectSettingsBrowser::changeEvent(QEvent *event) {

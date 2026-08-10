@@ -242,7 +242,7 @@ void ShaderGraph::scanForCustomFunctions() {
 
     QStringList paths = {
         ":/shaders/functions",
-        ProjectSettings::instance()->contentPath().data()
+        Editor::project()->contentPath().data()
     };
 
     for(auto &path : paths) {
@@ -482,7 +482,7 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         define += "\n#define METAL";
     }
 
-    NativeCodeBuilder *builder = ProjectSettings::instance()->currentBuilder();
+    NativeCodeBuilder *builder = Editor::project()->currentBuilder();
     if(root->materialType() == ShaderRootNode::Surface && builder && !builder->isEmbedded()) {
         define += "\n#define USE_SSBO";
     }

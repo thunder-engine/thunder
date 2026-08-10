@@ -99,7 +99,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                                 settings->setSubItem(tilesetName, resInfo);
                             }
                         } else {
-                            source = Url(info.dir() + "/" + source).relativeFilePath(ProjectSettings::instance()->contentPath());
+                            source = Url(info.dir() + "/" + source).relativeFilePath(Editor::project()->contentPath());
 
                             tileSet = Engine::loadResource<TileSet>(source);
                         }
@@ -200,7 +200,7 @@ void TiledMapConverter::parseTileset(const pugi::xml_node &parent, const TString
     while(element) {
         if(std::string(element.name()) == "image") {
             Url info(path + "/" + element.attribute("source").as_string());
-            TString source(info.relativeFilePath(ProjectSettings::instance()->contentPath()));
+            TString source(info.relativeFilePath(Editor::project()->contentPath()));
 
             tileSet.setTexture(Engine::loadResource<Texture>(source));
         } else if(std::string(element.name()) == "tileoffset") {

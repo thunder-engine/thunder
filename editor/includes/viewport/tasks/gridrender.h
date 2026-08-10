@@ -37,9 +37,9 @@ public:
 
         m_outputs.push_back(std::make_pair("Result", nullptr));
 
-        connect(EditorSettings::instance(), _SIGNAL(updated()), this, _SLOT(loadSettings()));
+        connect(Editor::settings(), _SIGNAL(updated()), this, _SLOT(loadSettings()));
 
-        EditorSettings::instance()->registerValue(gGridColor, Vector4(0.4f, 0.4f, 0.4f, 0.4f), "editor=Color");
+        Editor::settings()->registerValue(gGridColor, Vector4(0.4f, 0.4f, 0.4f, 0.4f), "editor=Color");
 
         loadSettings();
     }
@@ -49,7 +49,7 @@ public:
     }
 
     void loadSettings() {
-        m_gridColor = EditorSettings::instance()->value(gGridColor).toVector4();
+        m_gridColor = Editor::settings()->value(gGridColor).toVector4();
         if(m_grid) {
             m_grid->setVector4("mainColor", &m_gridColor);
         }

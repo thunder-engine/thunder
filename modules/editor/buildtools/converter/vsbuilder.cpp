@@ -44,11 +44,11 @@ VsBuilder::VsBuilder() {
     m_libsPref = ""; m_libsSuff = ".lib"; m_libsSep = ";";
     m_defSep = ";";
 
-    ProjectSettings *project = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
     m_defines = {
-        TString("COMPANY_NAME=\"%1\"").arg(project->projectCompany()),
-        TString("PRODUCT_NAME=\"%1\"").arg(project->projectName()),
-        TString("PRODUCT_VERSION=\"%1\"").arg(project->projectVersion())
+        TString("COMPANY_NAME=\"%1\"").arg(mgr->projectCompany()),
+        TString("PRODUCT_NAME=\"%1\"").arg(mgr->projectName()),
+        TString("PRODUCT_VERSION=\"%1\"").arg(mgr->projectVersion())
     };
 }
 
@@ -56,7 +56,7 @@ bool VsBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
         generateProject();
 
-        ProjectSettings *mgr = ProjectSettings::instance();
+        ProjectSettings *mgr = Editor::project();
 
         StringList args;
 
@@ -88,7 +88,7 @@ bool VsBuilder::buildProject() {
 void VsBuilder::generateProject() {
     NativeCodeBuilder::generateProject();
 
-    ProjectSettings *mgr = ProjectSettings::instance();
+    ProjectSettings *mgr = Editor::project();
 
     m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
 
