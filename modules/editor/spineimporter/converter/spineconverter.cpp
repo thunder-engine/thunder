@@ -308,7 +308,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                     AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
                     if(result == AssetConverter::Success) {
                         resSprite.id = sprite->uuid();
-                        settings->setSubItem(attachmentName, resSprite);
+                        settings->setSubItem(attachmentName, resSprite, 0);
                     }
 
                     settings->m_atlasItems[attachmentName].sprite = sprite;
@@ -707,7 +707,7 @@ Pose *SpineConverter::importMesh(const VariantMap &fields, const TString &itemNa
             AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
             if(result == AssetConverter::Success) {
                 info.id = pose->uuid();
-                settings->setSubItem(poseName, info);
+                settings->setSubItem(poseName, info, 0);
             }
 
             return pose;

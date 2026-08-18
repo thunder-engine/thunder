@@ -122,7 +122,7 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
     ResourceSystem::ResourceInfo resInfo = subItem(path, MetaType::name<Mesh>());
     m_elements[path] = element;
 
-    setSubItem(path, resInfo);
+    setSubItem(path, resInfo, 0);
 
     setModified();
     return path;
@@ -478,7 +478,7 @@ void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *se
         AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = sprite->uuid();
-            settings->setSubItem(it.first, info);
+            settings->setSubItem(it.first, info, 0);
         }
     }
 }
