@@ -52,13 +52,12 @@ static const char *meta = \
 "}";
 
 UiKit::UiKit(Engine *engine) :
-        Module(engine),
-        m_system(nullptr) {
+        Module(engine) {
 
 }
 
 UiKit::~UiKit() {
-    delete m_system;
+
 }
 
 const char *UiKit::metaInfo() const {
@@ -67,10 +66,11 @@ const char *UiKit::metaInfo() const {
 
 void *UiKit::getObject(const char *name) {
     if(strcmp(name, "UiSystem") == 0) {
-        if(m_system == nullptr) {
-            m_system = new UiSystem;
+        static UiSystem *system = nullptr;
+        if(system == nullptr) {
+            system = new UiSystem;
         }
-        return m_system;
+        return system;
     }
 #ifdef SHARED_DEFINE
     if(strcmp(name, "UiEdit") == 0) {

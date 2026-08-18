@@ -24,9 +24,6 @@ public:
 
     void *getObject(const char *name) override;
 
-private:
-    UiSystem *m_system;
-
 };
 #ifdef SHARED_DEFINE
 extern "C" {
