@@ -97,7 +97,6 @@ void main(void) {
             }
         }
 
-
         vec3 refl = mix(vec3(spec), albedo, metal) * getCookTorrance(n, v, h, cosTheta, rough);
         vec3 result = albedo * (1.0 - metal) + refl;
         if(shadows > 1.0) {
