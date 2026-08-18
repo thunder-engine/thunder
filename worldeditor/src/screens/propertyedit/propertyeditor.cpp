@@ -112,6 +112,7 @@ void PropertyEditor::onSelectionChanged() {
         onObjectSelected(objects.front());
     } else {
         m_nextModel->clear();
+        setTopWidget(nullptr);
     }
 }
 
