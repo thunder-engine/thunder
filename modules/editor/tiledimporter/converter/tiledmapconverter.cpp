@@ -96,7 +96,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                             AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileSet), dst.absoluteDir() + "/" + resInfo.uuid);
                             if(result == AssetConverter::Success) {
                                 resInfo.id = tileSet->uuid();
-                                settings->setSubItem(tilesetName, resInfo);
+                                settings->setSubItem(tilesetName, resInfo, 0);
                             }
                         } else {
                             source = Url(info.dir() + "/" + source).relativeFilePath(Editor::project()->contentPath());
@@ -143,7 +143,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                         AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileMap), dst.absoluteDir() + "/" + resInfo.uuid);
                         if(result == AssetConverter::Success) {
                             resInfo.id = tileMap->uuid();
-                            settings->setSubItem(tilemapName, resInfo);
+                            settings->setSubItem(tilemapName, resInfo, 0);
                         }
 
                         TileMapRender *render = nullptr;

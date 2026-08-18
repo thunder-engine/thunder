@@ -872,7 +872,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
         AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = clip->uuid();
-            fbxSettings->setSubItem(animation->mName.C_Str(), info);
+            fbxSettings->setSubItem(animation->mName.C_Str(), info, 0);
         }
     }
 }
@@ -912,7 +912,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
     AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
     if(result == AssetConverter::Success) {
         info.id = pose->uuid();
-        fbxSettings->setSubItem(poseName, info);
+        fbxSettings->setSubItem(poseName, info, 0);
     }
 
     if(fbxSettings->m_rootBone) {

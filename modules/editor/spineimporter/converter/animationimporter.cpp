@@ -480,7 +480,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
         AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = clip->uuid();
-            settings->setSubItem(animation.first, info);
+            settings->setSubItem(animation.first, info, 0);
         }
     }
 }

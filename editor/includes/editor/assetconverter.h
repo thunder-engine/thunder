@@ -93,7 +93,7 @@ public:
     void setSubItemsDirty();
 
     ResourceSystem::ResourceInfo subItem(const TString &key, const TString &type = TString());
-    void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod = 0);
+    void setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod);
 
     Variant subItemData(const TString &key) const;
     virtual void setSubItemData(const TString &name, const Variant &data);

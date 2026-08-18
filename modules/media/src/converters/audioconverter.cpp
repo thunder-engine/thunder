@@ -300,7 +300,7 @@ VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_
     result[HEADER] = header;
 
     resInfo.id = clip->uuid();
-    settings->setSubItem(path, resInfo);
+    settings->setSubItem(path, resInfo, 0);
 
     return result;
 }

@@ -232,9 +232,11 @@ TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type
         ByteArray array = result.toByteArray();
         if(array[0] != index) {
             array[0] = index;
-            array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
-            result.fromByteArray(array);
         }
+        if(lod != -1) {
+            array[1] = (array[1] & 0x0F) | ((lod & 0x0F) << 4);
+        }
+        result.fromByteArray(array);
     }
 
     TString str(result.toString());
@@ -511,12 +513,12 @@ bool AssetConverterSettings::loadSettings() {
                 } else {
                     info.type = item->toString();
                 }
-                setSubItem(subIt.first, info);
+                setSubItem(subIt.first, info, -1);
                 item++;
                 if(item != array.end()) {
                     if(item->userType() == MetaType::INTEGER) {
                         info.id = static_cast<uint32_t>(item->toInt());
-                        setSubItem(subIt.first, info); // Update id
+                        setSubItem(subIt.first, info, -1); // Update id
                         item++;
                     }
 
