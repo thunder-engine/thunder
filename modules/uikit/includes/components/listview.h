@@ -5,7 +5,7 @@
 #include <font.h>
 
 class Frame;
-class ListViewDelegate;
+class ItemViewDelegate;
 
 class UIKIT_EXPORT ListView : public AbstractItemView {
     A_OBJECT(ListView, AbstractItemView, Components/UI)
@@ -44,8 +44,8 @@ public:
     Vector2 gridSize() const;
     void setGridSize(const Vector2 &size);
 
-    ListViewDelegate *delegate() const;
-    void setDelegate(ListViewDelegate *delegate);
+    ItemViewDelegate *delegate() const;
+    void setDelegate(ItemViewDelegate *delegate);
 
 protected:
     bool onMouseDown(int x, int y) override;
@@ -63,6 +63,8 @@ protected:
 
     void onVScrollChanged(int value) override;
 
+    Vector2 cellSize() const override;
+
 private:
     void rebuildItems();
     void handleItemClick(int index);
@@ -79,11 +81,11 @@ private:
     void updateDelegatesStates();
 
 private:
-    std::list<ListViewDelegate *> m_items;
+    std::list<ItemViewDelegate *> m_items;
 
     Vector2 m_gridSize;
 
-    ListViewDelegate *m_delegate;
+    ItemViewDelegate *m_delegate;
 
     int m_rowHeight;
 

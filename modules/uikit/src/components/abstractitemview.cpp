@@ -8,7 +8,8 @@
 AbstractItemView::AbstractItemView() :
         m_model(nullptr),
         m_rootIndex(),
-        m_selectionMode(SingleSelection) {
+        m_selectionMode(SingleSelection),
+        m_iconPosition(TextBesideIcon) {
 }
 
 AbstractItemView::~AbstractItemView() {
@@ -186,10 +187,18 @@ std::list<ModelIndex> AbstractItemView::selectedIndexes() const {
     return m_selected;
 }
 
+Vector2 AbstractItemView::cellSize() const {
+    return Vector2();
+}
+
 void AbstractItemView::activateCurrentItem() {
     if(m_currentIndex.isValid()) {
         activated(m_currentIndex);
     }
+}
+
+AbstractItemView::IconPosition AbstractItemView::iconPosition() const {
+    return m_iconPosition;
 }
 
 bool AbstractItemView::isIndexValid(const ModelIndex &index) const {

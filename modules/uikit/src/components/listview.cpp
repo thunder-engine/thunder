@@ -2,8 +2,7 @@
 
 #include "components/recttransform.h"
 #include "components/scrollbar.h"
-#include "components/frame.h"
-#include "components/listviewdelegate.h"
+#include "components/itemviewdelegate.h"
 
 #include <abstractitemmodel.h>
 #include <algorithm>
@@ -22,7 +21,9 @@ ListView::ListView() :
 }
 
 ListView::~ListView() {
-
+    if(m_delegate) {
+        delete m_delegate;
+    }
 }
 
 void ListView::setModel(AbstractItemModel *model) {
@@ -75,15 +76,14 @@ void ListView::setGridSize(const Vector2 &size) {
     m_dirtyItems = true;
 }
 
-ListViewDelegate *ListView::delegate() const {
+ItemViewDelegate *ListView::delegate() const {
     return m_delegate;
 }
 
-void ListView::setDelegate(ListViewDelegate *delegate) {
+void ListView::setDelegate(ItemViewDelegate *delegate) {
     if(m_delegate) {
         delete m_delegate;
     }
-
     m_delegate = delegate;
     m_dirtyItems = true;
 }
@@ -94,11 +94,8 @@ void ListView::composeComponent() {
     Actor *widgetActor = Engine::composeActor<Widget>("content", actor());
     setContent(widgetActor->getComponent<Widget>());
 
-    Actor *delegateActor = Engine::composeActor<ListViewDelegate>("delegate");
-    ListViewDelegate *delegate = delegateActor->getComponent<ListViewDelegate>();
-    if(delegate) {
-        setDelegate(delegate);
-    }
+    Actor *delegateActor = Engine::composeActor<ItemViewDelegate>("delegate");
+    setDelegate(delegateActor->getComponent<ItemViewDelegate>());
 
     setRowHeight(m_rowHeight);
 }
@@ -395,6 +392,15 @@ void ListView::onVScrollChanged(int value) {
     }
 }
 
+Vector2 ListView::cellSize() const {
+    Vector2 size(m_gridSize);
+    if(m_viewMode == ListMode) {
+        size.x = m_rowHeight;
+        size.y = m_rowHeight;
+    }
+    return size;
+}
+
 void ListView::activateCurrentItem() {
     if(!m_currentIndex.isValid()) {
         return;
@@ -431,11 +437,11 @@ void ListView::rebuildItems() {
         int rowCount = MIN(m_model->rowCount(), m_firstVisibleIndex + totalItemCount);
         auto it = m_items.begin();
         for(int i = m_firstVisibleIndex; i < rowCount; ++i) {
-            ListViewDelegate *delegate = *it;
+            ItemViewDelegate *delegate = *it;
             if(delegate == nullptr && m_delegate) {
                 Actor *itemActor = static_cast<Actor *>(m_delegate->actor()->clone(m_content->actor()));
                 itemActor->setName(itemActor->name() + TString::number(i));
-                delegate = itemActor->getComponent<ListViewDelegate>();
+                delegate = itemActor->getComponent<ItemViewDelegate>();
                 RectTransform *rect = delegate->rectTransform();
                 rect->setPivot(Vector2(0.0f, 1.0f));
                 if(m_viewMode == ListMode) {

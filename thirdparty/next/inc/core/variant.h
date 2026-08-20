@@ -147,7 +147,7 @@ public:
 
     template<typename T>
     static Variant fromValue(const T &value) {
-        uint32_t type = MetaType::type<T>();
+        uint32_t type = MetaType::type<std::remove_const_t<T>>();
         if(type != MetaType::INVALID) {
             if(type < MetaType::STRING) {
                 return Variant(value);

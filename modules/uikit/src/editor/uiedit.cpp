@@ -9,6 +9,7 @@
 #include <scene.h>
 #include <actor.h>
 #include <camera.h>
+#include <sprite.h>
 
 #include <editor/undostack.h>
 #include <editor/assetconverter.h>
@@ -18,6 +19,7 @@
 #include "components/uiloader.h"
 #include "components/recttransform.h"
 #include "components/listview.h"
+#include "components/treeview.h"
 
 #include "actions/pastewidget.h"
 #include "actions/createwidget.h"
@@ -32,7 +34,7 @@
 class TestModel : public AbstractItemModel {
 private:
     int rowCount(const ModelIndex &parent = ModelIndex()) const override {
-        return 10;
+        return !parent.isValid() ? 10 : 2;
     }
 
     int columnCount(const ModelIndex &parent = ModelIndex()) const override {
@@ -40,11 +42,21 @@ private:
     }
 
     ModelIndex index(int row, int column, const ModelIndex &parent = ModelIndex()) const override {
-        return createIndex(row, column, row);
+        if(row < 0 || row >= rowCount(parent)) {
+            return ModelIndex();
+        }
+
+        uint32_t id = parent.isValid() ? 100 + parent.internalId() * 3 + row : row + 1;
+        return createIndex(row, column, id);
     }
 
     ModelIndex parent(const ModelIndex &index) const override {
-        return ModelIndex();
+        if(!index.isValid() || index.internalId() < 100) {
+            return ModelIndex();
+        }
+
+        uint32_t parentId = (index.internalId() - 100) / 3;
+        return createIndex(parentId - 1, 0, parentId);
     }
 
     Variant data(const ModelIndex &index, int role = 0) const override {
@@ -52,21 +64,16 @@ private:
             return Variant();
         }
 
-        static const Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
-        static const StringList list =
-                 {"0 editor/viewport/cameracontroller.h",
-                  "1 editor/viewport/cameracontroller.h",
-                  "2 editor/viewport/cameracontroller.h",
-                  "3 editor/viewport/cameracontroller.h",
-                  "4 editor/viewport/cameracontroller.h",
-                  "5 editor/viewport/cameracontroller.h",
-                  "6 editor/viewport/cameracontroller.h",
-                  "7 editor/viewport/cameracontroller.h",
-                  "8 editor/viewport/cameracontroller.h",
-                  "9 editor/viewport/cameracontroller.h"};
+        // need to keep it non constant because of Variant::fromValue
+        static Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
 
         switch(role) {
-            case DisplayRole: return *std::next(list.begin(), index.row());
+            case DisplayRole: {
+                if(!index.parent().isValid()) {
+                    return TString("Element #") + TString::number(index.row());
+                }
+                return TString("Child #") + TString::number(index.row());
+            }
             case DecorationRole: return Variant::fromValue(sprite);
             default: break;
         }
@@ -255,6 +262,14 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
         Actor *actor = dynamic_cast<Actor *>(m_loader->actor()->find("ListView"));
         if(actor) {
             ListView *list = actor->getComponent<ListView>();
+            if(list) {
+                list->setModel(new TestModel);
+            }
+        }
+
+        actor = dynamic_cast<Actor *>(m_loader->actor()->find("TreeView"));
+        if(actor) {
+            TreeView *list = actor->getComponent<TreeView>();
             if(list) {
                 list->setModel(new TestModel);
             }

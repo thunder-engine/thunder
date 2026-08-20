@@ -41,6 +41,7 @@ static const char *meta = \
 "       \"LineEdit\","
 "       \"ListView\","
 "       \"ListViewDelegate\","
+"       \"TreeView\","
 "       \"Menu\","
 "       \"ProgressBar\","
 "       \"RectTransform\","

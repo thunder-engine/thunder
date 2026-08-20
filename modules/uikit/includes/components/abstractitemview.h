@@ -32,6 +32,11 @@ public:
         ExtendedSelection
     };
 
+    enum IconPosition {
+        TextBesideIcon = 0,
+        TextUnderIcon
+    };
+
 public:
     AbstractItemView();
     ~AbstractItemView();
@@ -54,6 +59,9 @@ public:
     ModelIndex currentIndex() const { return m_currentIndex; }
 
     std::list<ModelIndex> selectedIndexes() const;
+
+    virtual Vector2 cellSize() const;
+    IconPosition iconPosition() const;
 
 public: // signals
     void activated(const ModelIndex &index);
@@ -81,6 +89,8 @@ protected:
     ModelIndex m_currentIndex;
 
     int m_selectionMode;
+
+    IconPosition m_iconPosition;
 
 };
 

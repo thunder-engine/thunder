@@ -142,6 +142,7 @@ if(desktop)
         "includes/components/slider.h"
         "includes/components/switch.h"
         "includes/components/toolbutton.h"
+        "includes/components/treeview.h"
         "includes/components/uiloader.h"
         "includes/components/widget.h"
         DESTINATION "${INC_PATH}/engine"

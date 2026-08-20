@@ -12,7 +12,8 @@
 #include "components/label.h"
 #include "components/lineedit.h"
 #include "components/listview.h"
-#include "components/listviewdelegate.h"
+#include "components/treeview.h"
+#include "components/itemviewdelegate.h"
 #include "components/menu.h"
 #include "components/progressbar.h"
 #include "components/recttransform.h"
@@ -71,7 +72,8 @@ UiSystem::UiSystem() :
     AbstractScrollArea::registerClassFactory(this);
     AbstractItemView::registerClassFactory(this);
     ListView::registerClassFactory(this);
-    ListViewDelegate::registerClassFactory(this);
+    TreeView::registerClassFactory(this);
+    ItemViewDelegate::registerClassFactory(this);
 
     GuiLayer::registerClassFactory(this);
 
@@ -117,6 +119,8 @@ UiSystem::~UiSystem() {
     AbstractScrollArea::unregisterClassFactory(this);
     AbstractItemView::unregisterClassFactory(this);
     ListView::unregisterClassFactory(this);
+    TreeView::unregisterClassFactory(this);
+    ItemViewDelegate::unregisterClassFactory(this);
 
     GuiLayer::unregisterClassFactory(this);
 
