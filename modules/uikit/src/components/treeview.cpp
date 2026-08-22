@@ -5,11 +5,14 @@
 #include "components/scrollbar.h"
 #include "components/canvas.h"
 
-#include <abstractitemmodel.h>
 #include <algorithm>
+#include <string.h>
+
 #include <input.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
+
+#include <abstractitemmodel.h>
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 
