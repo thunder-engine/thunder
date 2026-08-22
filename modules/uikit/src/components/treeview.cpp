@@ -520,7 +520,7 @@ bool TreeView::onMouseDoubleClick(int x, int y) {
     }
 
     ItemData *data = getItemData(row);
-    if(data) {
+    if(data == nullptr) {
         return false;
     }
     handleItemClick(row);
