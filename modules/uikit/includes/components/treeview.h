@@ -51,6 +51,16 @@ protected:
     Vector2 cellSize() const override;
 
 private:
+    struct ItemData {
+        ModelIndex index;
+        int depth;
+        ItemViewDelegate *delegate;
+
+        ItemData() : depth(0), delegate(nullptr) {}
+        ItemData(const ModelIndex &idx, int d)
+            : index(idx), depth(d), delegate(nullptr) {}
+    };
+
     void rebuildItems();
     void appendVisible(const ModelIndex &parent, int depth);
     void updateDelegatesStates();
@@ -66,21 +76,23 @@ private:
     void clearDelegates();
 
     void buildArrowInstances();
-
     bool isClickOnIndicator(int row, const Vector2 &pos) const;
-
     Vector4 getArrowRect(int row) const;
-
     bool isPointInRect(const Vector2 &point, const Vector4 &rect) const;
 
+    ItemData *getItemData(int row);
+    const ItemData *getItemData(int row) const;
+
+    float getArrowSize() const;
+    float getArrowWidth() const;
+    float getArrowHeight() const;
+    float getArrowOffset() const;
+
 private:
-    std::list<ItemViewDelegate *> m_items;
-    std::vector<ModelIndex> m_visibleIndexes;
+    std::vector<ItemData> m_itemsData;
     std::list<ModelIndex> m_expandedIndexes;
 
     ItemViewDelegate *m_delegate;
-
-    ByteArray m_instanceBuffer;
 
     int m_rowHeight;
     int m_indentation;
@@ -92,6 +104,9 @@ private:
     MaterialInstance *m_arrowMaterial;
     Sprite *m_arrowSprite;
     Mesh *m_arrowMesh;
+
+    ByteArray m_instanceBuffer;
+
 };
 
 #endif // TREEVIEW_H

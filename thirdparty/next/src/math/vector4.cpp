@@ -40,7 +40,7 @@
 */
 
 /*!
-    Constructs a null vector, i.e. with coordinates (0, 0, 0, 1).
+    Constructs a null vector, i.e. with coordinates (0, 0, 0, 0).
 */
 Vector4::Vector4() :
     x(0),

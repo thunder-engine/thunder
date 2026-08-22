@@ -516,7 +516,7 @@ void Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button
 
     switch(type) {
         case Event::MouseDown:
-            if (onMouseDown((int)localPos.x, (int)localPos.y)) {
+            if(onMouseDown((int)localPos.x, (int)localPos.y)) {
                 return;
             }
             break;
