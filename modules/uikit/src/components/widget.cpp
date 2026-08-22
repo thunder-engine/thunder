@@ -468,7 +468,7 @@ void Widget::updateStyleProperty(const TString &name, const float *v, int32_t si
 */
 void Widget::dispatchKeyEvent(KeyEvent *event) {
     if(focusWidget() == this) {
-        if (event->isPressed()) {
+        if(event->isPressed()) {
             onKeyPress(event);
         } else {
             onKeyRelease(event);
