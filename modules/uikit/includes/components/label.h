@@ -15,6 +15,7 @@ class UIKIT_EXPORT Label : public Widget {
     A_PROPERTIES(
         A_PROPERTY(TString, text, Label::text, Label::setText),
         A_PROPERTY(bool, translated, Label::translated, Label::setTranslated),
+        A_PROPERTY(bool, clip, Label::clip, Label::setClip),
         A_PROPERTYEX(int, alignment, Label::align, Label::setAlign, "editor=Alignment, css=text-align"),
         A_PROPERTYEX(Font *, font, Label::font, Label::setFont, "editor=Asset"),
         A_PROPERTYEX(int, fontSize, Label::fontSize, Label::setFontSize, "css=font-size"),
@@ -43,6 +44,9 @@ public:
 
     bool translated() const;
     void setTranslated(bool enable);
+
+    bool clip() const;
+    void setClip(bool enable);
 
     bool wordWrap() const;
     void setWordWrap(bool wrap);
@@ -94,6 +98,8 @@ private:
     bool m_dirty;
 
     bool m_translated;
+
+    bool m_clip;
 
 };
 

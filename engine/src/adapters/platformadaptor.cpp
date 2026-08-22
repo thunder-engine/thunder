@@ -54,6 +54,11 @@ bool PlatformAdaptor::mouseReleased(int code) const {
     return false;
 }
 
+bool PlatformAdaptor::mouseButtonDoubleClick(int code) const {
+    A_UNUSED(code);
+    return false;
+}
+
 void PlatformAdaptor::mouseLockCursor(bool lock) {
     A_UNUSED(lock);
 }

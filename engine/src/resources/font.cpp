@@ -130,8 +130,7 @@ float Font::textWidth(const TString &text, int size, int flags) {
         float spaceWidth = 0;
         FT_Error error = FT_Load_Glyph( face, FT_Get_Char_Index( face, ' ' ), FT_LOAD_BITMAP_METRICS_ONLY );
         if(!error) {
-            spaceWidth = (adjustedSize == DF_GLYPH_SIZE) ? (DF_GLYPH_SIZE * 64.0f * size) : 64.0f;
-            spaceWidth = face->glyph->advance.x / spaceWidth;
+            spaceWidth = face->glyph->advance.x / 64.0f;
         }
 
         for(uint32_t i = 0; i < length; i++) {

@@ -55,6 +55,9 @@ private:
 
     bool m_dirty;
 
+    bool m_lastPositionValid;
+    Vector2 m_lastPosition;
+
 };
 
 #endif // CANVAS_H

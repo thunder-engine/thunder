@@ -28,6 +28,7 @@
 #include <amath.h>
 #include <astring.h>
 #include <metatype.h>
+#include <modelindex.h>
 
 class Variant;
 
@@ -77,6 +78,8 @@ public:
     Variant(const Quaternion &value);
     Variant(const Matrix3 &value);
     Variant(const Matrix4 &value);
+
+    Variant(const ModelIndex &value);
 
     Variant(uint32_t type, void *copy);
 
@@ -144,7 +147,7 @@ public:
 
     template<typename T>
     static Variant fromValue(const T &value) {
-        uint32_t type = MetaType::type<T>();
+        uint32_t type = MetaType::type<std::remove_const_t<T>>();
         if(type != MetaType::INVALID) {
             if(type < MetaType::STRING) {
                 return Variant(value);

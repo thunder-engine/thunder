@@ -50,6 +50,8 @@ public:
         MATRIX4,
         RAY,
 
+        MODELINDEX,
+
         OBJECT       = 30,
 
         USERTYPE     = 40

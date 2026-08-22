@@ -55,6 +55,10 @@ Menu::Menu() :
 }
 
 Menu::~Menu() {
+    if(m_font) {
+        m_font->unsubscribe(this);
+    }
+
     delete m_textMesh;
 }
 

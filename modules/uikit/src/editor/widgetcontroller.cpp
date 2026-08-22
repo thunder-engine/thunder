@@ -135,6 +135,9 @@ void WidgetController::update() {
                 uint32_t id = 0;
                 if(focusWidget) {
                     id = focusWidget->actor()->uuid();
+                    if(focusWidget->isSubWidget()) {
+                        id = focusWidget->parentWidget()->actor()->uuid();
+                    }
                 }
                 onSelectActor(id);
             } else {

@@ -43,6 +43,7 @@ public:
     virtual bool mouseButton(int code) const;
     virtual bool mousePressed(int code) const;
     virtual bool mouseReleased(int code) const;
+    virtual bool mouseButtonDoubleClick(int code) const;
     virtual void mouseLockCursor(bool lock);
     virtual void mouseSetCursor(Input::CursorShape shape);
 

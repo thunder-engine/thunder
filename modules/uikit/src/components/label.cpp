@@ -44,7 +44,8 @@ Label::Label() :
         m_alignment(Alignment::Center | Alignment::Middle),
         m_flags(Font::Wrap),
         m_dirty(true),
-        m_translated(false) {
+        m_translated(false),
+        m_clip(false) {
 
     m_mesh->makeDynamic();
 
@@ -66,6 +67,13 @@ Label::~Label() {
     \internal
 */
 void Label::draw() {
+    Canvas *canvas = Label::canvas();
+    RectTransform *rect = rectTransform();
+
+    if(m_clip && canvas && rect) {
+        canvas->setClipRegion(rect->clipRegion());
+    }
+
     if(m_material && !m_text.isEmpty()) {
         if(m_dirty && m_font) {
             m_mesh->setName(actor()->name());
@@ -77,7 +85,6 @@ void Label::draw() {
             m_dirty = false;
         }
 
-        RectTransform *rect = rectTransform();
         Matrix4 mat(rect->worldTransform());
 
         mat[12] += rect->padding().w;
@@ -88,11 +95,14 @@ void Label::draw() {
 
         m_material->setTransform(mat, 0, hash);
 
-        Canvas *canvas = Label::canvas();
         canvas->drawMesh(m_mesh, m_material);
     }
 
     Widget::draw();
+
+    if(m_clip && canvas && rect) {
+        canvas->disableClip();
+    }
 }
 /*!
     \internal
@@ -218,6 +228,21 @@ void Label::setTranslated(bool enable) {
     if(m_translated != enable) {
         m_translated = enable;
         m_dirty = true;
+        repaint();
+    }
+}
+/*!
+    Returns true if clip mode is enabled; otherwise returns false.
+*/
+bool Label::clip() const {
+    return m_clip;
+}
+/*!
+    Sets \a enable or disable clipping of contents to the label bounds.
+*/
+void Label::setClip(bool enable) {
+    if(m_clip != enable) {
+        m_clip = enable;
         repaint();
     }
 }

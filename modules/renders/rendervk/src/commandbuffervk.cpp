@@ -180,9 +180,10 @@ void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 
     CommandBuffer::enableScissor(x, y, width, height);
 
+    ScissorRect rect = m_scissorStack.top();
     VkRect2D scissor = {};
-    scissor.offset = { x, y };
-    scissor.extent = { (uint32_t)width, (uint32_t)height };
+    scissor.offset = { rect.x, rect.y };
+    scissor.extent = { (uint32_t)rect.width, (uint32_t)rect.height };
 
     vkCmdSetScissor(m_commandBuffer, 0, 1, &scissor);
 }

@@ -9,6 +9,7 @@
 
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
+#include <input.h>
 
 /*!
     \class Canvas
@@ -26,7 +27,8 @@ Canvas::Canvas() :
         m_transform(nullptr),
         m_buffer(nullptr),
         m_finalMaterial(nullptr),
-        m_dirty(true) {
+        m_dirty(true),
+        m_lastPositionValid(false) {
 
     m_texture->setFormat(Texture::RGBA8);
     m_texture->setFlags(Texture::Render);
@@ -64,6 +66,40 @@ void Canvas::update(const Vector2 &position) {
             Widget *widget = rect->widget();
             if(widget) {
                 widget->m_canvas = this;
+
+                Vector2 globalPos(position);
+                if(!m_lastPositionValid || globalPos != m_lastPosition) {
+                    widget->dispatchMouseEvent(globalPos, Event::MouseMove, 0);
+                    m_lastPosition = globalPos;
+                    m_lastPositionValid = true;
+                }
+
+                float wheelDelta = Input::mouseScrollDelta();
+                if(wheelDelta != 0.0f) {
+                    int delta = static_cast<int>(wheelDelta);
+                    if(delta == 0) {
+                        delta = wheelDelta > 0.0f ? 1 : -1;
+                    }
+                    widget->dispatchMouseWheelEvent(globalPos, delta, false);
+                }
+
+                for(int key = Input::KEY_SPACE; key <= Input::KEY_MENU; ++key) {
+                    if(Input::isKeyDown((Input::KeyCode)key) || Input::isKeyUp((Input::KeyCode)key)) {
+                        KeyEvent event(key, Input::isKeyDown((Input::KeyCode)key));
+                        widget->dispatchKeyEvent(&event);
+                    }
+                }
+
+                if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+                    widget->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
+                }
+                if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+                    widget->dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
+                }
+                if(Input::isMouseButtonDoubleClick(Input::MOUSE_LEFT)) {
+                    widget->dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
+                }
+
                 widget->update(position);
             }
         }

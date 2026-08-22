@@ -210,6 +210,13 @@ Variant::Variant(const Matrix4 &value) {
     *this = fromValue<Matrix4>(value);
 }
 /*!
+    Constructs a new variant with a ModelIndex \a value.
+*/
+Variant::Variant(const ModelIndex &value) {
+    PROFILE_FUNCTION();
+    *this = fromValue<ModelIndex>(value);
+}
+/*!
     Constructs a new variant of \a type and initialized with \a copy value.
 */
 Variant::Variant(uint32_t type, void *copy) {

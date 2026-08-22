@@ -49,6 +49,7 @@ TString DesktopAdaptor::s_inputString;
 
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_keys;
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_mouseButtons;
+std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_mouseDoubleClick;
 std::unordered_map<int32_t, GLFWcursor *> DesktopAdaptor::s_mouseCursors;
 
 DesktopAdaptor::DesktopAdaptor() :
@@ -83,6 +84,14 @@ void DesktopAdaptor::update() {
     }
 
     for(auto &it : s_mouseButtons) {
+        switch(it.second) {
+            case RELEASE: it.second = NONE; break;
+            case PRESS: it.second = REPEAT; break;
+            default: break;
+        }
+    }
+
+    for(auto &it : s_mouseDoubleClick) {
         switch(it.second) {
             case RELEASE: it.second = NONE; break;
             case PRESS: it.second = REPEAT; break;
@@ -233,6 +242,10 @@ bool DesktopAdaptor::mouseReleased(int  button) const {
     return (s_mouseButtons[button | 0x10000000] == RELEASE);
 }
 
+bool DesktopAdaptor::mouseButtonDoubleClick(int button) const {
+    return (s_mouseDoubleClick[button | 0x10000000] == PRESS);
+}
+
 void DesktopAdaptor::mouseLockCursor(bool lock) {
     glfwSetInputMode(m_window, GLFW_CURSOR, lock ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
@@ -347,6 +360,16 @@ void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
 
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
     s_mouseButtons[button | 0x10000000] = action;
+
+    if (action == PRESS) {
+        int key = button | 0x10000000;
+        auto it = s_mouseDoubleClick.find(key);
+        if (it != s_mouseDoubleClick.end() && it->second == REPEAT) {
+            s_mouseDoubleClick[key] = PRESS;
+        } else {
+            s_mouseDoubleClick[key] = action;
+        }
+    }
 }
 
 void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {

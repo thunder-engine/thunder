@@ -37,6 +37,7 @@ public:
     bool mouseButton(int button) const override;
     bool mousePressed(int button) const override;
     bool mouseReleased(int button) const override;
+    bool mouseButtonDoubleClick(int button) const override;
 
     void mouseLockCursor(bool lock) override;
     void mouseSetCursor(Input::CursorShape shape) override;
@@ -80,6 +81,7 @@ protected:
 
     static std::unordered_map<int32_t, int32_t> s_keys;
     static std::unordered_map<int32_t, int32_t> s_mouseButtons;
+    static std::unordered_map<int32_t, int32_t> s_mouseDoubleClick;
     static std::unordered_map<int32_t, GLFWcursor *> s_mouseCursors;
 
     static Vector4 s_mousePosition;
