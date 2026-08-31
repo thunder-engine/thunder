@@ -6,6 +6,7 @@ Project {
     references: [
         "editor/editor.qbs",
         "media/media.qbs",
+		"navigation/navigation.qbs",
         "physics/bullet/bullet.qbs",
         "renders/renders.qbs",
         "uikit/uikit.qbs",

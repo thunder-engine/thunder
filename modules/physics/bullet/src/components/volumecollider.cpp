@@ -27,6 +27,8 @@ VolumeCollider::VolumeCollider() :
         m_dirty(false),
         m_trigger(false) {
 
+    static uint32_t hash = Mathf::hashString("collider");
+    addTagByHash(hash);
 }
 
 VolumeCollider::~VolumeCollider() {

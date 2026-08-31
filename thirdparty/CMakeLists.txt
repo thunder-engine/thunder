@@ -12,6 +12,7 @@ add_subdirectory(libogg)
 add_subdirectory(libvorbis)
 add_subdirectory(glad)
 add_subdirectory(freetype)
+add_subdirectory(recast)
 
 if(desktop)
     add_subdirectory(assimp)
