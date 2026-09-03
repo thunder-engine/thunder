@@ -21,8 +21,8 @@ class NavigationSurface;
 
 struct AgentType {
     float height = 2.0f;
-    float radius = 0.6f;
-    float maxClimb = 0.9f;
+    float radius = 0.5f;
+    float maxClimb = 0.75f;
     float maxSlope = 45.0f;
 };
 
@@ -57,7 +57,7 @@ protected:
 
     bool collectGeometryFromSurface(NavigationSurface *surface, Vector3Vector &outVertices, std::vector<int> &outIndices);
 
-    bool buildNavMeshData(const Vector3Vector &vertices, const std::vector<int> &indices, NavMesh *navMesh);
+    bool buildNavMeshData(NavigationSurface *surface, const Vector3Vector &vertices, const std::vector<int> &indices, NavMesh *navMesh);
 
     void addBoxColliderGeometry(BoxCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices);
     void addMeshColliderGeometry(MeshCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices);

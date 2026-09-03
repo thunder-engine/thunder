@@ -65,7 +65,8 @@ public:
     }
 };
 
-NavigationSystem::NavigationSystem() : System() {
+NavigationSystem::NavigationSystem() :
+        System() {
     PROFILE_FUNCTION();
 
     NavigationSurface::registerClassFactory(this);
@@ -523,18 +524,16 @@ bool NavigationSystem::buildNavMeshFromSurface(NavigationSurface *surface) {
         return false;
     }
 
-    NavMesh *navMesh = Engine::objectCreate<NavMesh>("NavMesh");
-    if(!navMesh) {
-        aError() << "Navigation: Failed to create NavMesh";
-        return false;
+    NavMesh *navMesh = surface->navMesh();
+    if(navMesh == nullptr) {
+        navMesh = Engine::objectCreate<NavMesh>(surface->name());
+        if(!navMesh) {
+            aError() << "Navigation: Failed to create NavMesh";
+            return false;
+        }
     }
 
-    navMesh->setCellSize(surface->cellSize());
-    navMesh->setCellHeight(surface->cellHeight());
-    navMesh->setTileSize(surface->tileSize());
-    navMesh->setOrigin(surface->origin());
-
-    if(!buildNavMeshData(vertices, indices, navMesh)) {
+    if(!buildNavMeshData(surface, vertices, indices, navMesh)) {
         aError() << "Navigation: Failed to build NavMesh data";
         delete navMesh;
         return false;
@@ -557,25 +556,21 @@ bool NavigationSystem::buildNavMeshFromSurface(NavigationSurface *surface) {
     return true;
 }
 
-bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std::vector<int> &indices, NavMesh *navMesh) {
+bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector3Vector &vertices, const std::vector<int> &indices, NavMesh *navMesh) {
     if(!navMesh || vertices.empty() || indices.empty()) {
         return false;
     }
 
-    float cellSize = navMesh->cellSize();
-    float cellHeight = navMesh->cellHeight();
-    int tileSize = navMesh->tileSize();
-
-    const float *floatVertices = vertices[0].v;
+    int agentType = surface->agentType();
 
     rcConfig config;
     memset(&config, 0, sizeof(config));
-    config.cs = cellSize;
-    config.ch = cellHeight;
-    config.walkableSlopeAngle = m_agentTypes[0].maxSlope;
-    config.walkableHeight = m_agentTypes[0].height;
-    config.walkableClimb = m_agentTypes[0].maxClimb;
-    config.walkableRadius = m_agentTypes[0].radius;
+    config.cs = m_agentTypes[agentType].radius / 3.0f;
+    config.ch = config.cs / 2.0f;
+    config.walkableSlopeAngle = m_agentTypes[agentType].maxSlope;
+    config.walkableHeight = m_agentTypes[agentType].height / config.ch;
+    config.walkableClimb = m_agentTypes[agentType].maxClimb / config.ch;
+    config.walkableRadius = m_agentTypes[agentType].radius / config.cs;
     config.maxEdgeLen = 12.0f;
     config.maxSimplificationError = 1.3f;
     config.minRegionArea = 8.0f;
@@ -584,6 +579,7 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     config.detailSampleDist = 6.0f;
     config.detailSampleMaxError = 1.0f;
 
+    const float *floatVertices = vertices[0].v;
     float bmin[3], bmax[3];
     rcCalcBounds(floatVertices, (int)vertices.size(), bmin, bmax);
 
@@ -604,23 +600,16 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
 
     config.width = (int)((config.bmax[0] - config.bmin[0]) / config.cs + 0.5f);
     config.height = (int)((config.bmax[2] - config.bmin[2]) / config.cs + 0.5f);
-    config.tileSize = tileSize;
-
-    aDebug() << "Navigation: Config - width=" << config.width
-             << ", height=" << config.height
-             << ", tileSize=" << config.tileSize;
+    config.tileSize = surface->tileSize();
 
     rcContext ctx;
 
     rcHeightfield *hf = rcAllocHeightfield();
     if(!hf) {
-        aError() << "Navigation: Failed to allocate heightfield";
         return false;
     }
 
-    if(!rcCreateHeightfield(&ctx, *hf, config.width, config.height,
-                             config.bmin, config.bmax, config.cs, config.ch)) {
-        aError() << "Navigation: Failed to create heightfield";
+    if(!rcCreateHeightfield(&ctx, *hf, config.width, config.height, config.bmin, config.bmax, config.cs, config.ch)) {
         rcFreeHeightField(hf);
         return false;
     }
@@ -638,13 +627,11 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
 
     rcCompactHeightfield *chf = rcAllocCompactHeightfield();
     if(!chf) {
-        aError() << "Navigation: Failed to allocate compact heightfield";
         rcFreeHeightField(hf);
         return false;
     }
 
     if(!rcBuildCompactHeightfield(&ctx, config.walkableHeight, config.walkableClimb, *hf, *chf)) {
-        aError() << "Navigation: Failed to build compact heightfield";
         rcFreeHeightField(hf);
         rcFreeCompactHeightfield(chf);
         return false;
@@ -656,14 +643,12 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
 
     rcContourSet *cset = rcAllocContourSet();
     if(!cset) {
-        aError() << "Navigation: Failed to allocate contour set";
         rcFreeCompactHeightfield(chf);
         return false;
     }
 
     rcPolyMesh *pmesh = rcAllocPolyMesh();
     if(!pmesh) {
-        aError() << "Navigation: Failed to allocate poly mesh";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         return false;
@@ -671,7 +656,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
 
     rcPolyMeshDetail *dmesh = rcAllocPolyMeshDetail();
     if(!dmesh) {
-        aError() << "Navigation: Failed to allocate poly mesh detail";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         rcFreePolyMesh(pmesh);
@@ -679,7 +663,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     }
 
     if(!rcBuildDistanceField(&ctx, *chf)) {
-        aError() << "Navigation: Failed to build distance field";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         rcFreePolyMesh(pmesh);
@@ -688,7 +671,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     }
 
     if(!rcBuildRegions(&ctx, *chf, 0, config.minRegionArea, config.mergeRegionArea)) {
-        aError() << "Navigation: Failed to build regions";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         rcFreePolyMesh(pmesh);
@@ -697,7 +679,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     }
 
     if(!rcBuildContours(&ctx, *chf, config.maxSimplificationError, config.maxEdgeLen, *cset)) {
-        aError() << "Navigation: Failed to build contours";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         rcFreePolyMesh(pmesh);
@@ -706,7 +687,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     }
 
     if(!rcBuildPolyMesh(&ctx, *cset, config.maxVertsPerPoly, *pmesh)) {
-        aError() << "Navigation: Failed to build poly mesh";
         rcFreeCompactHeightfield(chf);
         rcFreeContourSet(cset);
         rcFreePolyMesh(pmesh);
@@ -717,7 +697,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     rcFreeContourSet(cset);
 
     if(!rcBuildPolyMeshDetail(&ctx, *pmesh, *chf, config.detailSampleDist, config.detailSampleMaxError, *dmesh)) {
-        aError() << "Navigation: Failed to build poly mesh detail";
         rcFreeCompactHeightfield(chf);
         rcFreePolyMesh(pmesh);
         rcFreePolyMeshDetail(dmesh);
@@ -756,7 +735,6 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     unsigned char *navData = nullptr;
     int navDataSize = 0;
     if(!dtCreateNavMeshData(&createParams, &navData, &navDataSize)) {
-        aError() << "Navigation: Failed to create NavMesh data";
         rcFreePolyMesh(pmesh);
         rcFreePolyMeshDetail(dmesh);
         return false;
@@ -770,11 +748,9 @@ bool NavigationSystem::buildNavMeshData(const Vector3Vector &vertices, const std
     dtFree(navData);
 
     if(!navMesh->setData(outData)) {
-        aError() << "Navigation: Failed to set NavMesh data";
         return false;
     }
 
-    aInfo() << "Navigation: NavMesh data built, size=" << navDataSize;
     return true;
 }
 

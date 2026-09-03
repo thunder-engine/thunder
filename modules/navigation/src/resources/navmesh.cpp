@@ -12,27 +12,14 @@
 #include <DetourNavMeshQuery.h>
 
 NavMesh::NavMesh() :
-        Resource() {
+        Resource(),
+        m_navMesh(nullptr),
+        m_query(nullptr),
+        m_tileRef(0) {
 }
 
 NavMesh::~NavMesh() {
     cleanup();
-}
-
-void NavMesh::setCellSize(float size) {
-    m_cellSize = size;
-}
-
-void NavMesh::setCellHeight(float height) {
-    m_cellHeight = height;
-}
-
-void NavMesh::setTileSize(int size) {
-    m_tileSize = size;
-}
-
-void NavMesh::setOrigin(const Vector3 &origin) {
-    m_origin = origin;
 }
 
 void NavMesh::loadUserData(const VariantMap &data) {
@@ -40,28 +27,9 @@ void NavMesh::loadUserData(const VariantMap &data) {
         cleanup();
     }
 
-    auto it = data.find("config");
-    if(it != data.end()) {
-        VariantList config = it->second.toList();
-        auto field = config.begin();
-
-        m_cellSize = field->toFloat();
-        ++field;
-        m_cellHeight = field->toFloat();
-        ++field;
-        m_tileSize = field->toInt();
-        ++field;
-        m_origin = field->toVector3();
-    }
-
-    it = data.find("tiles");
-    if(it != data.end()) {
-        for(auto &tile : it->second.toList()) {
-            ByteArray tileData = tile.toByteArray();
-            if(!setData(tileData)) {
-                return;
-            }
-        }
+    auto it = data.find("tile");
+    if(it != data.end() && !setData(it->second.toByteArray())) {
+        return;
     }
 
     m_query = dtAllocNavMeshQuery();
@@ -76,15 +44,6 @@ VariantMap NavMesh::saveUserData() const {
     VariantMap result;
 
     if(m_navMesh) {
-        VariantList config;
-        config.push_back(m_cellSize);
-        config.push_back(m_cellHeight);
-        config.push_back(m_tileSize);
-        config.push_back(m_origin);
-
-        result["config"] = config;
-
-        VariantList tiles;
         const dtNavMesh *constNavMesh = static_cast<const dtNavMesh*>(m_navMesh);
         for(int i = 0; i < constNavMesh->getMaxTiles(); ++i) {
             const dtMeshTile *tile = constNavMesh->getTile(i);
@@ -92,38 +51,12 @@ VariantMap NavMesh::saveUserData() const {
                 continue;
             }
 
-            result["tiles"] = ByteArray(tile->data, tile->data + tile->dataSize);
+            result["tile"] = ByteArray(tile->data, tile->data + tile->dataSize);
             break;
         }
     }
 
     return result;
-}
-
-bool NavMesh::initNavMesh() {
-    dtNavMeshParams params;
-    memset(&params, 0, sizeof(params));
-    params.orig[0] = m_origin.x;
-    params.orig[1] = m_origin.y;
-    params.orig[2] = m_origin.z;
-    params.tileWidth = m_tileSize * m_cellSize;
-    params.tileHeight = m_tileSize * m_cellHeight;
-    params.maxTiles = 1;
-    params.maxPolys = 32768;
-
-    m_navMesh = dtAllocNavMesh();
-    if(!m_navMesh) {
-        return false;
-    }
-
-    dtStatus status = m_navMesh->init(&params);
-    if(dtStatusFailed(status)) {
-        dtFreeNavMesh(m_navMesh);
-        m_navMesh = nullptr;
-        return false;
-    }
-
-    return true;
 }
 
 void NavMesh::cleanup() {
@@ -136,6 +69,8 @@ void NavMesh::cleanup() {
         dtFreeNavMesh(m_navMesh);
         m_navMesh = nullptr;
     }
+
+    m_tileRef = 0;
 }
 
 dtTileRef NavMesh::tileRef(int tileX, int tileY) const {
@@ -151,13 +86,46 @@ dtTileRef NavMesh::tileRef(int tileX, int tileY) const {
     return m_navMesh->getTileRef(tile);
 }
 
-bool NavMesh::setData(ByteArray &data) {
-    if(!m_navMesh && !initNavMesh()) {
-        return false;
+bool NavMesh::setData(const ByteArray &data) {
+    if(!m_navMesh) {
+        m_navMesh = dtAllocNavMesh();
+        if(!m_navMesh) {
+            return false;
+        }
+
+        if(data.size() < sizeof(dtMeshHeader)) {
+            return false;
+        }
+
+        const dtMeshHeader *header = (const dtMeshHeader*)data.data();
+
+        dtNavMeshParams params;
+        memset(&params, 0, sizeof(params));
+        params.orig[0] = header->bmin[0];
+        params.orig[1] = header->bmin[1];
+        params.orig[2] = header->bmin[2];
+        params.tileWidth = header->bmax[0] - header->bmin[0];
+        params.tileHeight = header->bmax[2] - header->bmin[2];
+        params.maxTiles = 1;
+        params.maxPolys = 32768;
+
+        dtStatus status = m_navMesh->init(&params);
+        if(dtStatusFailed(status)) {
+            dtFreeNavMesh(m_navMesh);
+            m_navMesh = nullptr;
+            return false;
+        }
     }
 
-    dtTileRef tileRef;
-    dtStatus status = m_navMesh->addTile(data.data(), data.size(), DT_TILE_FREE_DATA, 0, &tileRef);
+    if(m_tileRef) {
+        m_navMesh->removeTile(m_tileRef, nullptr, nullptr);
+        m_tileRef = 0;
+    }
+
+    unsigned char *tileDataCopy = (unsigned char*)dtAlloc(data.size(), DT_ALLOC_PERM);
+    memcpy(tileDataCopy, data.data(), data.size());
+
+    dtStatus status = m_navMesh->addTile(tileDataCopy, data.size(), DT_TILE_FREE_DATA, 0, &m_tileRef);
     if(dtStatusFailed(status)) {
         return false;
     }

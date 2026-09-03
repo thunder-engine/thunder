@@ -8,9 +8,15 @@
 #include <log.h>
 
 #include "resources/navmesh.h"
+#include "utils/debugrender.h"
 
 NavigationSurface::NavigationSurface() :
-        Component() {
+        Component(),
+        m_navMesh(nullptr),
+        m_tileSize(256),
+        m_agentType(0),
+        m_geometrySource(AllColliders),
+        m_autoBuild(true) {
     PROFILE_FUNCTION();
 
     static uint32_t hash = Mathf::hashString("navsurf");
@@ -51,52 +57,6 @@ VariantMap NavigationSurface::saveUserData() const {
 void NavigationSurface::setAutoBuild(bool autoBuild) {
     if(m_autoBuild != autoBuild) {
         m_autoBuild = autoBuild;
-        if(m_autoBuild) {
-            build();
-        }
-    }
-}
-
-void NavigationSurface::setOrigin(const Vector3 &origin) {
-    if(m_origin != origin) {
-        m_origin = origin;
-        if(m_autoBuild) {
-            build();
-        }
-    }
-}
-
-void NavigationSurface::setExtents(const Vector3 &extents) {
-    if(m_extents != extents) {
-        m_extents = extents;
-        if(m_autoBuild) {
-            build();
-        }
-    }
-}
-
-void NavigationSurface::setCellSize(float size) {
-    if(size <= 0.0f) {
-        aWarning() << "NavigationSurface: Cell size must be positive";
-        return;
-    }
-
-    if(m_cellSize != size) {
-        m_cellSize = size;
-        if(m_autoBuild) {
-            build();
-        }
-    }
-}
-
-void NavigationSurface::setCellHeight(float height) {
-    if(height <= 0.0f) {
-        aWarning() << "NavigationSurface: Cell height must be positive";
-        return;
-    }
-
-    if(m_cellHeight != height) {
-        m_cellHeight = height;
         if(m_autoBuild) {
             build();
         }
@@ -199,8 +159,9 @@ void NavigationSurface::clear() {
     }
 }
 
-void NavigationSurface::drawGizmos() {
+void NavigationSurface::drawGizmosSelected() {
     if(m_navMesh) {
-
+        DebugRender render;
+        render.draw(m_navMesh->navMesh());
     }
 }

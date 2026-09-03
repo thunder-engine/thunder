@@ -5,7 +5,8 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/components/*.cpp",
-        "src/resources/*.cpp"
+        "src/resources/*.cpp",
+        "src/utils/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -24,6 +25,7 @@ Project {
         "../../thirdparty/recast/Detour/Include",
         "../../thirdparty/recast/DetourCrowd/Include",
         "../../thirdparty/recast/DetourTileCache/Include",
+        "../../thirdparty/recast/DebugUtils/Include",
     ]
 
     DynamicLibrary {
