@@ -316,7 +316,7 @@ void Spline::drawGizmos() {
 
     if(!m_vertices.empty()) {
         Transform *t = transform();
-        Gizmos::drawLines(m_vertices, m_indices, Vector4(0.0f, 0.0f, 0.0f, 1.0f), t->worldTransform());
+        Gizmos::drawLines(m_vertices, m_indices, Vector4(0.0f, 0.0f, 0.0f, 1.0f), &t->worldTransform());
     }
 }
 /*!
@@ -327,6 +327,6 @@ void Spline::drawGizmosSelected() {
 
     if(!m_vertices.empty()) {
         Transform *t = transform();
-        Gizmos::drawLines(m_vertices, m_indices, Vector4(1.0f, 1.0f, 0.0f, 1.0f), t->worldTransform());
+        Gizmos::drawLines(m_vertices, m_indices, Vector4(1.0f, 1.0f, 0.0f, 1.0f), &t->worldTransform());
     }
 }

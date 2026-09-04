@@ -5,6 +5,8 @@
 #include "resources/texturevk.h"
 #include "resources/rendertargetvk.h"
 
+#include <resources/mesh.h>
+
 #include "commandbuffervk.h"
 #include "wrappervk.h"
 
@@ -71,7 +73,7 @@ void MaterialVk::switchState(State state) {
     }
 }
 
-VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint32_t layer, RenderTargetVk *target) {
+VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint32_t layer, uint32_t topology, RenderTargetVk *target) {
     switch(state()) {
         case ToBeUpdated: {
             for(uint16_t v = VertexStatic; v < VertexLast; v++) {
@@ -101,7 +103,7 @@ VkPipeline MaterialVk::getPipeline(uint16_t vertex, uint32_t layer, RenderTarget
     if(it != m_pipelines.end()) {
         return it->second;
     } else {
-        VkPipeline pipeline = buildPipeline(vertex, layer, target);
+        VkPipeline pipeline = buildPipeline(vertex, layer, topology, target);
         if(pipeline) {
             m_pipelines[index] = pipeline;
             return pipeline;
@@ -148,8 +150,8 @@ VkDescriptorSetLayout MaterialVk::localDescriptorSetLayout() const {
     return m_localDescSetLayout;
 }
 
-bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex) {
-    VkPipeline pipeline = getPipeline(vertex, layer, target);
+bool MaterialVk::bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex, uint32_t topology) {
+    VkPipeline pipeline = getPipeline(vertex, layer, topology, target);
     if(pipeline) {
         vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -198,7 +200,7 @@ void MaterialVk::buildPipelineLayout() {
     }
 }
 
-VkPipeline MaterialVk::buildPipeline(uint32_t vertex, uint32_t layer, RenderTargetVk *target) {
+VkPipeline MaterialVk::buildPipeline(uint32_t vertex, uint32_t layer, uint32_t topology, RenderTargetVk *target) {
     uint16_t fragment = FragmentDefault;
     if((layer & Material::Visibility) || (layer & Material::Shadowcast)) {
         fragment = FragmentVisibility;
@@ -258,7 +260,11 @@ VkPipeline MaterialVk::buildPipeline(uint32_t vertex, uint32_t layer, RenderTarg
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssemblyState.topology = m_wireframe ? VK_PRIMITIVE_TOPOLOGY_LINE_LIST : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    switch(topology) {
+        case Mesh::Points: inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST; break;
+        case Mesh::Lines: inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST; break;
+        default: inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; break;
+    }
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -339,7 +345,7 @@ VkPipeline MaterialVk::buildPipeline(uint32_t vertex, uint32_t layer, RenderTarg
     pipelineCreateInfo.layout = pipelineLayout();
     pipelineCreateInfo.renderPass = target->renderPass();
 
-    VkDynamicState dynEnable[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    VkDynamicState dynEnable[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY };
     VkPipelineDynamicStateCreateInfo dyn = {};
     dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dyn.dynamicStateCount = sizeof(dynEnable) / sizeof(VkDynamicState);
@@ -471,12 +477,12 @@ void MaterialInstanceVk::destroyDescriptors() {
     }
 }
 
-bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame) {
+bool MaterialInstanceVk::bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame, uint32_t topology) {
     MaterialVk *materialVk = static_cast<MaterialVk *>(m_material);
 
     VkCommandBuffer cmd = buffer.nativeBuffer();
 
-    if(materialVk->bind(cmd, static_cast<RenderTargetVk *>(buffer.renderTarget()), layer, surfaceType())) {
+    if(materialVk->bind(cmd, static_cast<RenderTargetVk *>(buffer.renderTarget()), layer, surfaceType(), topology)) {
         size_t swapChainCount = WrapperVk::framesInFlight();
         if(m_descriptorPool == VK_NULL_HANDLE) {
             std::vector<VkDescriptorPoolSize> poolSize;

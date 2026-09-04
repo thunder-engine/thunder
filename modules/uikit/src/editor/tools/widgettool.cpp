@@ -133,7 +133,7 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     size.y /= m_translationScale.y;
 
     if(parent->layout()) {
-        Gizmos::drawRectangle(center, size, Vector4(0.9f));
+        Gizmos::drawWireRectangle(center, size, Vector4(0.9f));
     } else {
         Vector2 minAnchor(rect->minAnchors());
         Vector2 maxAnchor(rect->maxAnchors());

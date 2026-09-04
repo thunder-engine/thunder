@@ -14,8 +14,7 @@ class ENGINE_EXPORT Material : public Resource {
     A_PROPERTIES(
         A_PROPERTY(int, materialType, Material::materialType, Material::setMaterialType),
         A_PROPERTY(int, lightModel, Material::lightModel, Material::setLightModel),
-        A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided),
-        A_PROPERTY(bool, wireframe, Material::wireframe, Material::setWireframe)
+        A_PROPERTY(bool, doubleSided, Material::doubleSided, Material::setDoubleSided)
     )
     A_NOMETHODS()
     A_ENUMS(
@@ -200,9 +199,6 @@ public:
     int lightModel() const;
     void setLightModel(int model);
 
-    bool wireframe() const;
-    void setWireframe(bool wireframe);
-
     int priority() const;
     void setPriority(int priority);
 
@@ -266,8 +262,6 @@ protected:
     int32_t m_materialType;
 
     bool m_doubleSided;
-
-    bool m_wireframe;
 
 };
 

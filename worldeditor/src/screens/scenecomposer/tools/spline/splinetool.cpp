@@ -64,7 +64,7 @@ void SplineTool::update(bool center, bool local, bool snap) {
 
                 bool selected = (i == m_index);
 
-                Gizmos::drawBox(point.position, (camera - point.position).length() * m_dotSize, selected && (m_tangent == 0) ? m_dotColorSelected : m_dotColor, m);
+                Gizmos::drawSolidBox(point.position, (camera - point.position).length() * m_dotSize, selected && (m_tangent == 0) ? m_dotColorSelected : m_dotColor, &m);
                 float distance = HandleTools::distanceToPoint(m, point.position, Handles::s_Mouse);
                 if(distance <= sense) {
                     hoverPoint = i;
@@ -72,9 +72,9 @@ void SplineTool::update(bool center, bool local, bool snap) {
                 if(selected) {
                     Vector3 position(point.position);
 
-                    Gizmos::drawLines({point.position, point.tangentIn, point.tangentOut}, {0, 1, 0, 2}, m_lineColor, m);
-                    Gizmos::drawBox(point.tangentIn, (camera - point.position).length() * m_dotSize, (m_tangent == 1) ? m_dotColorSelected : m_dotColor, m);
-                    Gizmos::drawBox(point.tangentOut, (camera - point.position).length() * m_dotSize, (m_tangent == 2) ? m_dotColorSelected : m_dotColor, m);
+                    Gizmos::drawLines({point.position, point.tangentIn, point.tangentOut}, {0, 1, 0, 2}, m_lineColor, &m);
+                    Gizmos::drawSolidBox(point.tangentIn, (camera - point.position).length() * m_dotSize, (m_tangent == 1) ? m_dotColorSelected : m_dotColor, &m);
+                    Gizmos::drawSolidBox(point.tangentOut, (camera - point.position).length() * m_dotSize, (m_tangent == 2) ? m_dotColorSelected : m_dotColor, &m);
 
                     distance = HandleTools::distanceToPoint(m, point.tangentIn, Handles::s_Mouse);
                     if(distance <= sense) {

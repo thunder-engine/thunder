@@ -1,6 +1,5 @@
 #include "components/pointlight.h"
 
-#include "camera.h"
 #include "components/actor.h"
 #include "components/transform.h"
 
@@ -114,6 +113,6 @@ void PointLight::drawGizmosSelected() {
     Transform *t = transform();
 
     Vector4 p = params();
-    Gizmos::drawWireSphere(Vector3(), p.w, gizmoColor(), t->worldTransform());
-    Gizmos::drawWireCapsule(Vector3(), p.y, p.z + p.y * 2.0f, gizmoColor(), t->worldTransform());
+    Gizmos::drawWireSphere(Vector3(), p.w, gizmoColor(), &t->worldTransform());
+    Gizmos::drawWireCapsule(Vector3(), p.y, p.z + p.y * 2.0f, gizmoColor(), &t->worldTransform());
 }

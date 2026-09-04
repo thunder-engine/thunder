@@ -107,12 +107,12 @@ void Handles::init() {
 }
 
 void Handles::drawArrow(const Matrix4 &transform) {
-    Gizmos::drawLines({Vector3(), Vector3(0, 4, 0)}, {0, 1}, s_Color, transform);
+    Gizmos::drawLines({Vector3(), Vector3(0, 4, 0)}, {0, 1}, s_Color, &transform);
 
     Matrix4 t;
     t[13] += 4.0f;
-
-    Gizmos::drawMesh(*s_Cone, s_Second, transform * t);
+    t = transform * t;
+    Gizmos::drawSolidMesh(*s_Cone, s_Second, &t);
 }
 
 void Handles::drawBone(const Transform *begin, const Transform *end) {
@@ -121,8 +121,7 @@ void Handles::drawBone(const Transform *begin, const Transform *end) {
 
     float size = (p1 - p0).length() * 0.1f;
     Matrix4 b(p0, begin->worldQuaternion(), Vector3(size));
-
-    Gizmos::drawMesh(*s_Bone, s_Color, b);
+    Gizmos::drawSolidMesh(*s_Bone, s_Color, &b);
 }
 
 Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, bool locked) {
@@ -142,7 +141,7 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
         Matrix4 y = model * Matrix4(Vector3(0, conesize, 0), Quaternion(), conesize);
         Matrix4 z = model * Matrix4(Vector3(0, 0, conesize), Quaternion(Vector3(0, 0, 1), 90) * Quaternion(Vector3(1, 0, 0), 90), conesize);
 
-        Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
+        static const Matrix4 r(Vector3(), Quaternion(Vector3(0, 1, 0),-90), Vector3(1));
 
         Vector3 v(rotation * Vector3(0.0f, 0.0f, 1.0f));
 
@@ -205,10 +204,11 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             drawArrow(x);
         }
         if(processX && processZ) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor, x);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_xColor, &x);
         }
         if(processX && processY) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor, x * r);
+            Matrix4 m(x * r);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_xColor, &m);
         }
 
         s_Second = s_yColor;
@@ -217,10 +217,11 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             drawArrow(y);
         }
         if(processX && processY) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor, y);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Y) ? s_Selected : s_yColor, &y);
         }
         if(processY && processZ) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor, y * r);
+            Matrix4 m(y * r);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_yColor, &m);
         }
 
         s_Second = s_zColor;
@@ -229,22 +230,23 @@ Vector3 Handles::moveTool(const Vector3 &position, const Quaternion &rotation, b
             drawArrow(z);
         }
         if(processY && processZ) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor, z);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_Y | AXIS_Z) ? s_Selected : s_zColor, &z);
         }
         if(processX && processZ) {
-            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor, z * r);
+            Matrix4 m(z * r);
+            Gizmos::drawWireMesh(*s_Move, s_Axes == (AXIS_X | AXIS_Z) ? s_Selected : s_zColor, &m);
         }
 
         Vector4 selected(s_Selected);
         selected.w = ALPHA;
         if(s_Axes == (AXIS_X | AXIS_Z)) {
-            Gizmos::drawMesh(*s_MoveXY, selected, x);
+            Gizmos::drawSolidMesh(*s_MoveXY, selected, &x);
         }
         if(s_Axes == (AXIS_X | AXIS_Y)) {
-            Gizmos::drawMesh(*s_MoveXY, selected, y);
+            Gizmos::drawSolidMesh(*s_MoveXY, selected, &y);
         }
         if(s_Axes == (AXIS_Y | AXIS_Z)) {
-            Gizmos::drawMesh(*s_MoveXY, selected, z);
+            Gizmos::drawSolidMesh(*s_MoveXY, selected, &z);
         }
 
         Plane plane;
@@ -321,7 +323,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
         m.scale(1.2f);
 
         if(!locked) {
-            Vector3Vector c_points = Mathf::pointsArc(Quaternion(), 1.0f, 0, 360, 64);
+            Vector3Vector c_points = Mathf::pointsArc(Vector3(), Quaternion(), 1.0f, 0, 360, 64);
             IndexVector c_indices;
             c_indices.resize((c_points.size() - 1) * 2);
             for(int i = 0; i < c_points.size() - 1; i++) {
@@ -329,7 +331,7 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
                 c_indices[i * 2 + 1] = i+1;
             }
 
-            Vector3Vector a_points = Mathf::pointsArc(Quaternion(), 1.0f, 0, 180, 64);
+            Vector3Vector a_points = Mathf::pointsArc(Vector3(), Quaternion(), 1.0f, 0, 180, 64);
             IndexVector a_indices;
             a_indices.resize((a_points.size() - 1) * 2);
             for(int i = 0; i < a_points.size() - 1; i++) {
@@ -382,27 +384,27 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
             selected.w = ALPHA;
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
                 Matrix4 t = q1 * m;
-                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin, -s_AngleTotal, selected, t);
-                Gizmos::drawCircle(Vector3(), 1.0f, selected, t);
+                Gizmos::drawSolidSector(Vector3(), 1.0f, s_AngleBegin, -s_AngleTotal, selected, &t);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, selected, &t);
             } else if(s_Axes == AXIS_X) {
-                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 45, s_AngleTotal, selected, x);
-                Gizmos::drawCircle(Vector3(), 1.0f, selected, x);
+                Gizmos::drawSolidSector(Vector3(), 1.0f, s_AngleBegin + 45, s_AngleTotal, selected, &x);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, selected, &x);
             } else if(s_Axes == AXIS_Y) {
-                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 45, -s_AngleTotal, selected, y);
-                Gizmos::drawCircle(Vector3(), 1.0f, selected, y);
+                Gizmos::drawSolidSector(Vector3(), 1.0f, s_AngleBegin + 45, -s_AngleTotal, selected, &y);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, selected, &y);
             } else if(s_Axes == AXIS_Z) {
-                Gizmos::drawSolidArc(Vector3(), 1.0f, s_AngleBegin + 135, -s_AngleTotal, selected, z);
-                Gizmos::drawCircle(Vector3(), 1.0f, selected, z);
+                Gizmos::drawSolidSector(Vector3(), 1.0f, s_AngleBegin + 135, -s_AngleTotal, selected, &z);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, selected, &z);
             }
         } else {
             if(camera->orthographic()) {
-                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
-                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
-                Gizmos::drawCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, &x);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, &y);
+                Gizmos::drawWireCircle(Vector3(), 1.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, &z);
             } else {
-                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, x);
-                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, y);
-                Gizmos::drawArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, z);
+                Gizmos::drawWireArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_X) ? s_Selected : s_xColor, &x);
+                Gizmos::drawWireArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Y) ? s_Selected : s_yColor, &y);
+                Gizmos::drawWireArc(Vector3(), 1.0f, 0.0f, 180.0f, s_Color = (s_Axes == AXIS_Z) ? s_Selected : s_zColor, &z);
             }
 
             if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
@@ -417,8 +419,8 @@ float Handles::rotationTool(const Vector3 &position, const Quaternion &rotation,
         s_Color = (s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) ? s_Selected : s_Grey * 2.0f;
 
         Matrix4 mat = q1 * m;
-        Gizmos::drawCircle(Vector3(), 1.0f, s_Color, mat);
-        Gizmos::drawCircle(Vector3(), 1.0f, s_Grey, q1);
+        Gizmos::drawWireCircle(Vector3(), 1.0f, s_Color, &mat);
+        Gizmos::drawWireCircle(Vector3(), 1.0f, s_Grey, &q1);
 
         s_Color = s_Normal;
         s_World = hit.point;
@@ -479,60 +481,60 @@ Vector3 Handles::scaleTool(const Vector3 &position, const Quaternion &rotation, 
         {
             Vector4 color(s_xColor);
             if(s_Axes == (AXIS_X | AXIS_Z)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, x);
+                Gizmos::drawSolidMesh(*s_ScaleXY, s_Color, &x);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, x);
+            Gizmos::drawWireMesh(*s_Scale, color, &x);
 
             color = s_xColor;
             if(s_Axes == (AXIS_X | AXIS_Y)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, xr);
+                Gizmos::drawWireMesh(*s_ScaleXY, s_Color, &xr);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, xr);
-            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_X) ? s_Selected : s_xColor, x);
+            Gizmos::drawWireMesh(*s_Scale, color, &xr);
+            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_X) ? s_Selected : s_xColor, &x);
         }
         {
             Vector4 color(s_yColor);
             if(s_Axes == (AXIS_Y | AXIS_X)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, y);
+                Gizmos::drawSolidMesh(*s_ScaleXY, s_Color, &y);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, y);
+            Gizmos::drawWireMesh(*s_Scale, color, &y);
 
             color = s_yColor;
             if(s_Axes == (AXIS_Y | AXIS_Z)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, yr);
+                Gizmos::drawSolidMesh(*s_ScaleXY, s_Color, &yr);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, yr);
-            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_Y) ? s_Selected : s_yColor, y);
+            Gizmos::drawWireMesh(*s_Scale, color, &yr);
+            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_Y) ? s_Selected : s_yColor, &y);
         }
         {
             Vector4 color(s_zColor);
             if(s_Axes == (AXIS_Z | AXIS_Y)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, z);
+                Gizmos::drawSolidMesh(*s_ScaleXY, s_Color, &z);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, z);
+            Gizmos::drawWireMesh(*s_Scale, color, &z);
 
             color = s_zColor;
             if(s_Axes == (AXIS_Z | AXIS_X)) {
-                Gizmos::drawMesh(*s_ScaleXY, s_Color, zr);
+                Gizmos::drawSolidMesh(*s_ScaleXY, s_Color, &zr);
                 color = s_Selected;
             }
-            Gizmos::drawWireMesh(*s_Scale, color, zr);
-            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_Z) ? s_Selected : s_zColor, z);
+            Gizmos::drawWireMesh(*s_Scale, color, &zr);
+            Gizmos::drawWireMesh(*s_Axis, (s_Axes & AXIS_Z) ? s_Selected : s_zColor, &z);
         }
 
         if(s_Axes == (AXIS_X | AXIS_Y | AXIS_Z)) {
             s_ScaleXYZ->setColors(Vector4Vector(s_ScaleXYZ->vertices().size(), s_Color));
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, x);
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, xr);
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, y);
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, yr);
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, z);
-            Gizmos::drawMesh(*s_ScaleXYZ, s_Color, zr);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &x);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &xr);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &y);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &yr);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &z);
+            Gizmos::drawSolidMesh(*s_ScaleXYZ, s_Color, &zr);
         }
         s_Color = s_Normal;
 
@@ -614,7 +616,7 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
         Vector3 br(size.x * 0.5f, size.y *-0.5f, 0.0f);
         Vector3 bl(size.x *-0.5f, size.y *-0.5f, 0.0f);
 
-        Gizmos::drawRectangle(Vector3(), Vector2(size.x, size.y), s_Color, model);
+        Gizmos::drawWireRectangle(Vector3(), Vector2(size.x, size.y), s_Color, &model);
 
         Transform *transform = camera->transform();
         normal = center - transform->position();
@@ -626,16 +628,16 @@ Vector3 Handles::rectTool(const Vector3 &center, const Vector3 &box, int &axis, 
         }
         scale *= (CONTROL_SIZE / s_Screen.y);
 
-        Gizmos::drawBox(model * tr, Vector3(scale * 0.05f), s_Color);
-        Gizmos::drawBox(model * tl, Vector3(scale * 0.05f), s_Color);
-        Gizmos::drawBox(model * br, Vector3(scale * 0.05f), s_Color);
-        Gizmos::drawBox(model * bl, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawSolidBox(model * tr, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawSolidBox(model * tl, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawSolidBox(model * br, Vector3(scale * 0.05f), s_Color);
+        Gizmos::drawSolidBox(model * bl, Vector3(scale * 0.05f), s_Color);
 
         if(side) {
-            Gizmos::drawBox(model * t, Vector3(scale * 0.05f), s_Color);
-            Gizmos::drawBox(model * b, Vector3(scale * 0.05f), s_Color);
-            Gizmos::drawBox(model * r, Vector3(scale * 0.05f), s_Color);
-            Gizmos::drawBox(model * l, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawSolidBox(model * t, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawSolidBox(model * b, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawSolidBox(model * r, Vector3(scale * 0.05f), s_Color);
+            Gizmos::drawSolidBox(model * l, Vector3(scale * 0.05f), s_Color);
         }
 
         if(!locked) {

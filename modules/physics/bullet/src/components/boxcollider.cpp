@@ -17,7 +17,7 @@
 */
 
 BoxCollider::BoxCollider() :
-        m_size(Vector3(0.5f)) {
+        m_size(Vector3(1.0f)) {
 
 }
 /*!
@@ -40,7 +40,7 @@ void BoxCollider::setSize(const Vector3 size) {
 */
 btCollisionShape *BoxCollider::shape() {
     if(m_collisionShape == nullptr) {
-        m_collisionShape = new btBoxShape(btVector3(m_size.x, m_size.y, m_size.z));
+        m_collisionShape = new btBoxShape(btVector3(m_size.x * 0.5f, m_size.y * 0.5f, m_size.z * 0.5f));
 
         Vector3 p = transform()->scale();
         m_collisionShape->setLocalScaling(btVector3(p.x, p.y, p.z));
@@ -57,6 +57,6 @@ btCollisionShape *BoxCollider::shape() {
 void BoxCollider::drawGizmosSelected() {
     Transform *t = transform();
     if(t) {
-        Gizmos::drawWireBox(m_center, m_size * 2.0f, gizmoColor(), t->worldTransform());
+        Gizmos::drawWireBox(m_center, m_size, gizmoColor(), &t->worldTransform());
     }
 }

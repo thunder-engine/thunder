@@ -95,7 +95,7 @@ void CommandBufferVk::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
         MeshVk *meshVk = static_cast<MeshVk *>(mesh);
 
         MaterialInstanceVk &instanceVk = static_cast<MaterialInstanceVk &>(instance);
-        if(instanceVk.bind(*this, layer, static_cast<RenderTargetVk *>(m_target)->globalDescriptorSet(m_currentFrame), m_currentFrame)) {
+        if(instanceVk.bind(*this, layer, static_cast<RenderTargetVk *>(m_target)->globalDescriptorSet(m_currentFrame), m_currentFrame, meshVk->topology())) {
             meshVk->bind(m_commandBuffer);
 
             if(meshVk->indices().empty()) {

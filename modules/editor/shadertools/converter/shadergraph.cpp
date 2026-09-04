@@ -428,7 +428,6 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     properties.push_back(root->materialType());
     properties.push_back(root->isDoubleSided());
     properties.push_back(root->lightModel());
-    properties.push_back(root->isWireframe());
 
     user[PROPERTIES] = properties;
     user[BLENDSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->blendState() : blendState);

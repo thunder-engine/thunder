@@ -230,5 +230,5 @@ void CharacterController::destroyCharacter() {
 */
 void CharacterController::drawGizmosSelected() {
     Transform *t = transform();
-    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), t->worldTransform());
+    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), &t->worldTransform());
 }

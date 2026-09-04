@@ -131,7 +131,8 @@ void Armature::drawGizmosSelected() {
             Vector3 current(it.first->worldPosition());
 
             float length = 0.1f;
-            Gizmos::drawMesh(*bone, color, Matrix4(current, it.first->worldQuaternion(), Vector3(length)));
+            Matrix4 m(current, it.first->worldQuaternion(), Vector3(length));
+            Gizmos::drawSolidMesh(*bone, color, &m);
         }
     }
 }

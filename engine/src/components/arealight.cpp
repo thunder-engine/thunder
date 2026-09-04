@@ -116,6 +116,6 @@ void AreaLight::drawGizmosSelected() {
     Transform *t = transform();
 
     Vector4 p = params();
-    Gizmos::drawWireSphere(Vector3(), p.w, gizmoColor(), t->worldTransform());
-    Gizmos::drawRectangle(Vector3(), Vector2(p.y, p.z), gizmoColor(), t->worldTransform());
+    Gizmos::drawWireSphere(Vector3(), p.w, gizmoColor(), &t->worldTransform());
+    Gizmos::drawWireRectangle(Vector3(), Vector2(p.y, p.z), gizmoColor(), &t->worldTransform());
 }

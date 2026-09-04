@@ -56,5 +56,5 @@ btCollisionShape *SphereCollider::shape() {
 */
 void SphereCollider::drawGizmosSelected() {
     Transform *t = transform();
-    Gizmos::drawWireSphere(m_center, m_radius, gizmoColor(), t->worldTransform());
+    Gizmos::drawWireSphere(m_center, m_radius, gizmoColor(), &t->worldTransform());
 }

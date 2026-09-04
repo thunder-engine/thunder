@@ -101,7 +101,7 @@ void PostProcessVolume::drawGizmos() {
     Transform *t = transform();
 
     if(!m_unbound) {
-        Gizmos::drawWireBox(Vector3(), 1.0f, Vector4(0.5f, 0.0f, 0.5f, 1.0f), t->worldTransform());
+        Gizmos::drawWireBox(Vector3(), 1.0f, Vector4(0.5f, 0.0f, 0.5f, 1.0f), &t->worldTransform());
     }
 
     Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/postprocess.png", Vector4(1.0f));

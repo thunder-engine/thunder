@@ -27,7 +27,8 @@ enum MeshAttributes {
 */
 
 Mesh::Mesh() :
-        m_dynamic(false)  {
+        m_dynamic(false),
+        m_topology(Triangles) {
 
 }
 
@@ -42,7 +43,19 @@ bool Mesh::operator== (const Mesh &right) const {
            (m_uv0 == right.m_uv0) &&
            (m_uv1 == right.m_uv1);
 }
-
+/*!
+    Returns the topology type of the specified mesh, as defined in the Topology enum.
+    This value indicates how the mesh's vertices are connected.
+*/
+int Mesh::topology() const {
+    return m_topology;
+}
+/*!
+    Sets the \a topology type of the specified mesh, as defined in the Topology enum.
+*/
+void Mesh::setTopology(int topology) {
+    m_topology = topology;
+}
 /*!
     Returns true in case of mesh can by changed at the runtime; otherwise returns false.
 */

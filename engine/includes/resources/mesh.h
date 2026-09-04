@@ -33,9 +33,21 @@ public:
         std::vector<BlendShapeFrame> frames;
     };
 
+    enum Topology {
+        Triangles,
+        TriangleStrip,
+        Lines,
+        LineStrip,
+        Points
+    };
+
+public:
     Mesh();
 
     bool operator== (const Mesh &right) const;
+
+    int topology() const;
+    void setTopology(int topology);
 
     bool isDynamic() const;
     void makeDynamic();
@@ -137,6 +149,8 @@ private:
     IndexVector m_offsets;
 
     std::vector<Material *> m_defaultMaterials;
+
+    int m_topology;
 
     bool m_dynamic;
 

@@ -12,7 +12,6 @@ class ShaderRootNode : public GraphNode {
     A_PROPERTIES(
         A_PROPERTYEX(int, materialType, ShaderRootNode::materialType, ShaderRootNode::setMaterialType, "enum=MaterialType"),
         A_PROPERTYEX(int, lightingModel, ShaderRootNode::lightModel, ShaderRootNode::setLightModel, "enum=LightModel"),
-        A_PROPERTY(bool, wireFrame, ShaderRootNode::isWireframe, ShaderRootNode::setWireframe),
         A_PROPERTY(bool, twoSided, ShaderRootNode::isDoubleSided, ShaderRootNode::setDoubleSided),
 
         A_PROPERTY(bool, useWithSkinned, ShaderRootNode::useWithSkinned, ShaderRootNode::setUseWithSkinned),
@@ -168,7 +167,6 @@ public:
             m_lightModel(Lit),
             m_materialType(Surface),
             m_doubleSided(false),
-            m_wireframe(false),
             m_useWithSkinned(true),
             m_useWithParticles(true) {
 
@@ -177,9 +175,6 @@ public:
 
     bool isDoubleSided() const { return m_doubleSided; }
     void setDoubleSided(bool value) { m_doubleSided = value; }
-
-    bool isWireframe() const { return m_wireframe; }
-    void setWireframe(bool value) { m_wireframe = value; }
 
     int materialType() const { return m_materialType; }
     void setMaterialType(int type) { m_materialType = type; }
@@ -281,8 +276,6 @@ private:
     int m_materialType;
 
     bool m_doubleSided;
-
-    bool m_wireframe;
 
     bool m_useWithSkinned;
 

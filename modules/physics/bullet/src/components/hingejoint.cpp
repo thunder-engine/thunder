@@ -39,15 +39,15 @@ void HingeJoint::updateParams() {
 
 void HingeJoint::drawGizmosSelected() {
     Transform *t = transform();
-    Gizmos::drawBox(m_anchor, 0.1f, gizmoColor(), Matrix4(t->worldPosition(),
-                                                          t->worldQuaternion().toMatrix(),
-                                                          Vector3(1.0f)));
-    Matrix4 m;
+    Matrix4 m(t->worldPosition(), t->worldQuaternion().toMatrix(), Vector3(1.0f));
+    Gizmos::drawSolidBox(m_anchor, 0.1f, gizmoColor(), &m);
+
     if(m_rigidBodyA) {
         t = m_rigidBodyA->transform();
-
         m = Matrix4(t->worldPosition(), t->worldQuaternion().toMatrix(), Vector3(1.0f));
+    } else {
+        m.identity();
     }
 
-    Gizmos::drawBox(m_connectedAnchor, 0.1f, gizmoColor(), m);
+    Gizmos::drawSolidBox(m_connectedAnchor, 0.1f, gizmoColor(), &m);
 }
