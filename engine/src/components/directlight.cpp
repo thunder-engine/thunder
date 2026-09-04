@@ -160,7 +160,7 @@ void DirectLight::drawGizmos() {
 
     Vector3Vector vertices;
     vertices.reserve(steps * 2);
-    vertices = Mathf::pointsArc(Quaternion(Vector3(1, 0, 0), 90), 0.25f, 0.0f, 360.0f, 16);
+    vertices = Mathf::pointsArc(Vector3(), Quaternion(Vector3(1, 0, 0), 90), 0.25f, 0.0f, 360.0f, 16);
     for(int i = 0; i < steps; i++) {
         vertices.push_back(vertices[i] + Vector3(0.0f, 0.0f,-1.0f));
     }
@@ -174,7 +174,7 @@ void DirectLight::drawGizmos() {
         indices[i * 4 + 3] = i+steps;
     }
 
-    Gizmos::drawLines(vertices, indices, gizmoColor(), t->worldTransform());
+    Gizmos::drawLines(vertices, indices, gizmoColor(), &t->worldTransform());
     Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/directlight.png", color());
 
     if(m_camera) {

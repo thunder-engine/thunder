@@ -194,7 +194,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 
             element = it.second;
         } else {
-            Gizmos::drawRectangle(rect.center, Vector2(rect.extent.x * 2.0f, rect.extent.y * 2.0f), Handles::s_xColor);
+            Gizmos::drawWireRectangle(rect.center, Vector2(rect.extent.x * 2.0f, rect.extent.y * 2.0f), Handles::s_xColor);
         }
     }
 
@@ -252,7 +252,7 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
         AABBox bb;
         bb.setBox(m_startPoint, m_currentPoint);
 
-        Gizmos::drawRectangle(bb.center, Vector2(bb.extent.x * 2.0f, bb.extent.y * 2.0f), Handles::s_yColor);
+        Gizmos::drawWireRectangle(bb.center, Vector2(bb.extent.x * 2.0f, bb.extent.y * 2.0f), Handles::s_yColor);
     }
 
     if(isDrag && Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {

@@ -56,22 +56,22 @@ void CommandBufferMt::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
             MeshMt *meshMt = static_cast<MeshMt *>(mesh);
             meshMt->bind(m_encoder, 2);
 
-            bool wire = instance.material()->wireframe();
+            MTL::PrimitiveType primitiveType = MTL::PrimitiveTypeTriangle;
+            switch(meshMt->topology()) {
+                case Mesh::TriangleStrip: primitiveType = MTL::PrimitiveTypeTriangleStrip; break;
+                case Mesh::Lines: primitiveType = MTL::PrimitiveTypeLine; break;
+                case Mesh::LineStrip: primitiveType =  MTL::PrimitiveTypeLineStrip; break;
+                default: break;
+            }
 
-            m_encoder->setTriangleFillMode(wire ? MTL::TriangleFillModeLines : MTL::TriangleFillModeFill);
+            //m_encoder->setTriangleFillMode(wire ? MTL::TriangleFillModeLines : MTL::TriangleFillModeFill);
 
             if(meshMt->indices().empty()) {
-                uint32_t vert = meshMt->vertices().size();
-
-                MTL::PrimitiveType primitiveType = wire ? MTL::PrimitiveTypeLineStrip : MTL::PrimitiveTypeTriangleStrip;
-                m_encoder->drawPrimitives(primitiveType, 0, vert, instance.instanceCount(), 0);
+                m_encoder->drawPrimitives(primitiveType, 0, meshMt->vertices().size(), instance.instanceCount(), 0);
 
                 PROFILER_STAT(POLYGONS, index - 2 * count);
             } else {
-                int32_t index = meshMt->indexCount(sub);
-
-                MTL::PrimitiveType primitiveType = wire ? MTL::PrimitiveTypeLine : MTL::PrimitiveTypeTriangle;
-                m_encoder->drawIndexedPrimitives(primitiveType, index, MTL::IndexTypeUInt32, meshMt->indexBuffer(),
+                m_encoder->drawIndexedPrimitives(primitiveType, meshMt->indexCount(sub), MTL::IndexTypeUInt32, meshMt->indexBuffer(),
                                                  meshMt->indexStart(sub), instance.instanceCount(), 0, 0);
 
                 PROFILER_STAT(POLYGONS, (index / 3) * count);

@@ -102,7 +102,7 @@ void WidgetController::drawHandles() {
     Vector2 size(rect->size());
     Vector3 position(size * rect->pivot(), 0.0f);
 
-    Gizmos::drawRectangle(position, size, Handles::s_yColor);
+    Gizmos::drawWireRectangle(position, size, Handles::s_yColor);
 }
 
 Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {

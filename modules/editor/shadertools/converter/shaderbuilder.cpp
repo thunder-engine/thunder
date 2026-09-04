@@ -47,7 +47,6 @@ namespace  {
 
     const char *gTwoSided("twoSided");
     const char *gLightModel("lightModel");
-    const char *gWireFrame("wireFrame");
 
     const char *gOperation("op");
     const char *gColorOperation("colorOp");
@@ -710,8 +709,6 @@ bool ShaderBuilder::saveShaderFormat(const TString &path, const std::map<TString
         pass.append_attribute(gTwoSided) = field->toBool();
         ++field;
         pass.append_attribute(gLightModel) = toLightModel(field->toInt()).data();
-        ++field;
-        pass.append_attribute(gWireFrame) = field->toBool();
     }
 
     it = user.find(BLENDSTATE);
@@ -881,7 +878,6 @@ VariantList ShaderBuilder::parsePassProperties(const pugi::xml_node &element, in
     properties.push_back(element.attribute(gTwoSided).as_bool(true));
     lightingModel = toLightModel(element.attribute(gLightModel).as_string());
     properties.push_back(lightingModel);
-    properties.push_back(element.attribute(gWireFrame).as_bool());
 
     return properties;
 }

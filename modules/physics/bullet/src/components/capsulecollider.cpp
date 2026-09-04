@@ -17,7 +17,7 @@
 */
 
 CapsuleCollider::CapsuleCollider() :
-        m_height(1.0f) {
+        m_height(2.0f) {
 
 }
 /*!
@@ -55,5 +55,5 @@ btCollisionShape *CapsuleCollider::shape() {
 */
 void CapsuleCollider::drawGizmosSelected() {
     Transform *t = transform();
-    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), t->worldTransform());
+    Gizmos::drawWireCapsule(m_center, m_radius, m_height, gizmoColor(), &t->worldTransform());
 }

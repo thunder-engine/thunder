@@ -93,7 +93,7 @@ areal Mathf::perlinNoise(areal x, areal y) {
     return MIX(i1, i2, (1.0f - (areal)cos(fractionaly * PI)) * 0.5f);
 }
 
-Vector3Vector Mathf::pointsArc(const Quaternion &rotation, float size, float start, float angle, int steps, bool center) {
+Vector3Vector Mathf::pointsArc(const Vector3 &center, const Quaternion &rotation, float size, float start, float angle, int steps, bool startCenter) {
     Vector3Vector result;
     int sides = abs(steps / 360.0f * angle);
     float theta = angle / float(sides - 1) * DEG2RAD;
@@ -103,12 +103,12 @@ Vector3Vector Mathf::pointsArc(const Quaternion &rotation, float size, float sta
     float x = size * cosf(start * DEG2RAD);
     float y = size * sinf(start * DEG2RAD);
 
-    if(center) {
-        result.push_back(Vector3());
+    if(startCenter) {
+        result.push_back(center);
     }
 
     for(int i = 0; i < sides; i++) {
-        result.push_back(rotation * Vector3(x, 0.0f, y));
+        result.push_back(rotation * Vector3(center.x + x, center.y, center.z + y));
 
         float tx = -y;
         float ty = x;

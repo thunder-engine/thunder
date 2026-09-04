@@ -55,7 +55,7 @@ void main(void) {
     gl_Position = _vertex;
 }
 ]]></vertex>
-    <pass type="Surface" twoSided="true" lightModel="Unlit" wireFrame="true">
+    <pass type="Surface" twoSided="true" lightModel="Unlit">
         <blend op="Add" dst="OneMinusSourceAlpha" src="SourceAlpha" />
     </pass>
 </shader>

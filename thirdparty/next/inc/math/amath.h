@@ -113,7 +113,7 @@ public:
         return (p - l).sqrLength();
     }
 
-    static Vector3Vector pointsArc(const Quaternion &rotation, float size, float start, float angle, int sides, bool center = false);
+    static Vector3Vector pointsArc(const Vector3 &center, const Quaternion &rotation, float size, float start, float angle, int sides, bool startCenter = false);
 
     static Vector3Vector pointsCurve(const Vector3 &startPosition, const Vector3 &endPosition, const Vector3 &startTangent, const Vector3 &endTangent, int steps);
 

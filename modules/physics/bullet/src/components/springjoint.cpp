@@ -74,9 +74,9 @@ void SpringJoint::drawGizmosSelected() {
 
     Matrix4 mB(transform()->worldTransform());
 
-    Gizmos::drawBox(m_connectedAnchor, 0.1f, color, mA);
-    Gizmos::drawBox(m_anchor, 0.1f, color, mB);
+    Gizmos::drawSolidBox(m_connectedAnchor, 0.1f, color, &mA);
+    Gizmos::drawSolidBox(m_anchor, 0.1f, color, &mB);
 
-    Gizmos::drawLines({Vector3(mA * m_connectedAnchor), Vector3(mB * m_anchor)}, {0, 1}, color, Matrix4());
+    Gizmos::drawLines({Vector3(mA * m_connectedAnchor), Vector3(mB * m_anchor)}, {0, 1}, color);
 
 }

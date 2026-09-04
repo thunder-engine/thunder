@@ -307,8 +307,7 @@ Material::Material() :
         m_priority(0),
         m_lightModel(Unlit),
         m_materialType(Surface),
-        m_doubleSided(true),
-        m_wireframe(false) {
+        m_doubleSided(true) {
 
 }
 
@@ -356,18 +355,6 @@ void Material::setDoubleSided(bool flag) {
     m_doubleSided = flag;
 }
 /*!
-    Returns true if material must be rendered as wireframe.
-*/
-bool Material::wireframe() const {
-    return m_wireframe;
-}
-/*!
-    Enables or disables a \a wireframe mode for the material.
-*/
-void Material::setWireframe(bool wireframe) {
-    m_wireframe = wireframe;
-}
-/*!
     Returns size uniform buffer for single instance.
     This value can be used as stride for instances.
 */
@@ -408,8 +395,6 @@ void Material::loadUserData(const VariantMap &data) {
             setDoubleSided((*i).toBool());
             i++;
             setLightModel((*i).toInt());
-            i++;
-            setWireframe((*i).toBool());
         }
 
         it = data.find(gBlendState);

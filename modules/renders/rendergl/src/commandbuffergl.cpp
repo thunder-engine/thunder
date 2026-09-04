@@ -43,15 +43,22 @@ void CommandBufferGL::drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, Materia
             if(instanceGL.bind(this, layer, index, m_globalBuffer)) {
                 meshGL->bindVao(this);
 
+                int32_t glMode = GL_TRIANGLES;
+                switch(meshGL->topology()) {
+                    case Mesh::Points: glMode = GL_POINTS; break;
+                    case Mesh::Lines: glMode = GL_LINES; break;
+                    case Mesh::LineStrip: glMode = GL_LINE_STRIP; break;
+                    case Mesh::TriangleStrip: glMode = GL_TRIANGLE_STRIP; break;
+                    default: break;
+                }
+
                 if(meshGL->indices().empty()) {
-                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINE_STRIP : GL_TRIANGLE_STRIP;
                     uint32_t verticesCount = meshGL->vertices().size();
 
                     glDrawArraysInstanced(glMode, 0, verticesCount, instance.instanceCount());
                     PROFILER_STAT(POLYGONS, verticesCount / 3);
                 } else {
                     int32_t indexCount = meshGL->indexCount(sub);
-                    int32_t glMode = (instance.material()->wireframe()) ? GL_LINES : GL_TRIANGLES;
 
                     glDrawElementsInstanced(glMode, indexCount, GL_UNSIGNED_INT, reinterpret_cast<void *>(meshGL->indexStart(sub) * sizeof(int32_t)), instance.instanceCount());
                     PROFILER_STAT(POLYGONS, index / 3);

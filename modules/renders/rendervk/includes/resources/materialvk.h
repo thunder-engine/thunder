@@ -8,7 +8,6 @@
 
 #include <resources/material.h>
 
-struct Global;
 class CommandBufferVk;
 
 class RenderTargetVk;
@@ -19,7 +18,7 @@ public:
     MaterialInstanceVk(Material *material);
     ~MaterialInstanceVk() override;
 
-    bool bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame);
+    bool bind(CommandBufferVk &buffer, uint32_t layer, VkDescriptorSet globalDescriptorSet, uint32_t currentFrame, uint32_t topology);
 
     void destroyDescriptors();
 
@@ -80,7 +79,7 @@ public:
 
     void switchState(State state) override;
 
-    bool bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex);
+    bool bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex, uint32_t topology);
 
     VkPipelineLayout pipelineLayout();
 
@@ -91,14 +90,14 @@ public:
     void removeInstance(MaterialInstanceVk *instance);
 
 protected:
-    VkPipeline getPipeline(uint16_t vertex, uint32_t layer, RenderTargetVk *target);
+    VkPipeline getPipeline(uint16_t vertex, uint32_t layer, uint32_t topology, RenderTargetVk *target);
 
     void destroyPrograms();
 
     VkShaderModule buildShader(const ByteArray &src);
 
     void buildPipelineLayout();
-    VkPipeline buildPipeline(uint32_t vertex, uint32_t layer, RenderTargetVk *target);
+    VkPipeline buildPipeline(uint32_t vertex, uint32_t layer, uint32_t topology, RenderTargetVk *target);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
