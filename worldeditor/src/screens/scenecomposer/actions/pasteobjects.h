@@ -5,7 +5,7 @@
 
 class PasteObjects : public UndoCommand {
 public:
-    PasteObjects(const VariantList &data, Object *parent, ObjectController *ctrl, const TString &name = "Paste Object", UndoCommand *group = nullptr);
+    PasteObjects(const VariantList &data, ObjectController *ctrl, const TString &name = "Paste Object", UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 

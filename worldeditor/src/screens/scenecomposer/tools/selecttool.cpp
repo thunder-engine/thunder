@@ -31,7 +31,7 @@ void SelectTool::beginControl() {
     EditorTool::beginControl();
 
     if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
-        m_controller->undoRedo()->push(new PasteObjects(m_controller->dumpSelected(), nullptr, m_controller, "Duplicate Selected"));
+        m_controller->undoRedo()->push(new PasteObjects(m_controller->dumpSelected(), m_controller, "Duplicate Selected"));
     }
 
     m_propertiesCache.clear();
