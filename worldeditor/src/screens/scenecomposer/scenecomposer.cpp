@@ -361,7 +361,7 @@ void SceneComposer::onCopyAction() {
 }
 
 void SceneComposer::onPasteAction() {
-    m_undoRedo->push(new PasteObjects(m_controller->copyData(), nullptr, m_controller));
+    m_undoRedo->push(new PasteObjects(m_controller->copyData(), m_controller));
 }
 
 void SceneComposer::onChangeSnap() {
@@ -632,7 +632,7 @@ void SceneComposer::onActorDelete() {
 }
 
 void SceneComposer::onActorDuplicate() {
-    m_undoRedo->push(new PasteObjects(m_controller->dumpSelected(), nullptr, m_controller, "Duplicate Selected"));
+    m_undoRedo->push(new PasteObjects(m_controller->dumpSelected(), m_controller, "Duplicate Selected"));
 }
 
 void SceneComposer::onSelectionDeleted() {

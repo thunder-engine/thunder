@@ -7,11 +7,11 @@
 
 #include <set>
 
-PasteObjects::PasteObjects(const VariantList &data, Object *parent, ObjectController *ctrl, const TString &name, UndoCommand *group) :
+PasteObjects::PasteObjects(const VariantList &data, ObjectController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_data(data),
         m_controller(ctrl),
-        m_parent(parent->uuid()),
+        m_parent(m_controller->scene()->uuid()),
         m_prefab(0) {
 
     Prefab *fab = m_controller->isolatedPrefab();
