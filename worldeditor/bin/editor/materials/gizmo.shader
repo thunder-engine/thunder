@@ -40,7 +40,8 @@ void main(void) {
 #include "ShaderLayout.h"
 
 layout(location = 0) in vec3 vertex;
-layout(location = 1) in vec4 color;
+layout(location = 1) in vec2 uv0;
+layout(location = 2) in vec4 color;
 
 layout(location = 0) out vec4 _vertex;
 layout(location = 1) out vec4 _color;

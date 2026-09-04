@@ -8,7 +8,6 @@
 
 #include <resources/material.h>
 
-struct Global;
 class CommandBufferVk;
 
 class RenderTargetVk;

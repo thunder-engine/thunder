@@ -420,4 +420,5 @@ void Gizmos::batchMesh(const Vector3Vector &points, const IndexVector &indices, 
     }
     mesh->indices().insert(mesh->indices().end(), indexVector.begin(), indexVector.end());
     mesh->colors().insert(mesh->colors().end(), points.size(), color);
+    mesh->uv0().insert(mesh->uv0().end(), points.size(), Vector2());
 }
