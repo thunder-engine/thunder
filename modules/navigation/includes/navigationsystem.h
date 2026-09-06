@@ -19,6 +19,9 @@ class CapsuleCollider;
 class SphereCollider;
 class NavigationSurface;
 
+struct rcCompactHeightfield;
+struct rcConfig;
+
 struct AgentType {
     float height = 2.0f;
     float radius = 0.5f;
@@ -52,6 +55,8 @@ public:
 
     bool buildNavMeshFromSurface(NavigationSurface *surface);
 
+    AgentType agentType(int index) const;
+
 protected:
     void unregisterNavMeshLocked(Scene *scene);
 
@@ -75,7 +80,6 @@ protected:
 
     dtTileCache *m_tileCache = nullptr;
     dtTileCacheCompressor *m_tileCompressor = nullptr;
-    dtTileCacheMeshProcess *m_tileMeshProcessor = nullptr;
 
 };
 

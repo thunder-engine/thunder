@@ -2,14 +2,15 @@
 #define NAVIGATIONLINK_H
 
 #include <component.h>
+#include <navigation.h>
 
-class NavigationLink : public Component {
+class NAVIGATION_EXPORT NavigationLink : public Component {
     A_OBJECT(NavigationLink, Component, Components/Navigation)
 
     A_PROPERTIES(
         A_PROPERTY(Vector3, startPoint, NavigationLink::startPoint, NavigationLink::setStartPoint),
         A_PROPERTY(Vector3, endPoint, NavigationLink::endPoint, NavigationLink::setEndPoint),
-        A_PROPERTY(float, radius, NavigationLink::radius, NavigationLink::setRadius),
+        A_PROPERTY(float, width, NavigationLink::width, NavigationLink::setWidth),
         A_PROPERTY(bool, bidirectional, NavigationLink::isBidirectional, NavigationLink::setBidirectional)
     )
     A_NOMETHODS()
@@ -25,16 +26,14 @@ public:
     NavigationLink();
     ~NavigationLink();
 
-    void composeComponent() override;
-
     Vector3 startPoint() const { return m_startPoint; }
     void setStartPoint(const Vector3 &point);
 
     Vector3 endPoint() const { return m_endPoint; }
     void setEndPoint(const Vector3 &point);
 
-    float radius() const { return m_radius; }
-    void setRadius(float radius);
+    float width() const { return m_width; }
+    void setWidth(float width);
 
     bool isBidirectional() const { return m_direction == LinkDirection::Bidirectional; }
     void setBidirectional(bool bidirectional);
@@ -43,9 +42,14 @@ public:
     void setDirection(LinkDirection direction);
 
 protected:
-    Vector3 m_startPoint;
-    Vector3 m_endPoint;
-    float m_radius = 0.6f;
+    void drawGizmosSelected() override;
+
+protected:
+    Vector3 m_startPoint = Vector3(-2.0f, 0.0f, 0.0f);
+    Vector3 m_endPoint = Vector3(2.0f, 0.0f, 0.0f);
+
+    float m_width = 0.0f;
+
     LinkDirection m_direction = LinkDirection::Bidirectional;
 
 };

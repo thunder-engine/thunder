@@ -84,7 +84,29 @@ Project {
         }
 
         Group {
-            name: "Install Static navigation"
+            name: "Module includes"
+            files: [
+                "includes/navigation.h"
+            ]
+            qbs.install: true
+            qbs.installDir: navigation.INC_PATH + "/modules"
+            qbs.installPrefix: navigation.PREFIX
+        }
+
+        Group {
+            name: "Engine includes"
+            prefix: "includes/"
+            files: [
+                "components/*.h",
+                "resources/*.h"
+            ]
+            qbs.install: true
+            qbs.installDir: navigation.INC_PATH + "/engine"
+            qbs.installPrefix: navigation.PREFIX
+        }
+
+        Group {
+            name: "Install Static Navigation"
             fileTagsFilter: product.type
             qbs.install: true
             qbs.installDir: navigation.SDK_PATH + "/" + qbs.targetOS[0] + "/" + qbs.architecture + "/static"

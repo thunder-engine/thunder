@@ -29,6 +29,7 @@ public:
     static void drawWireBox(const Vector3 &center, const Vector3 &size, const Vector4 &color, const Matrix4 *transform = nullptr);
     static void drawWireMesh(Mesh &mesh, const Vector4 &color, const Matrix4 *transform = nullptr);
     static void drawWireSphere(const Vector3 &center, float radius, const Vector4 &color, const Matrix4 *transform = nullptr);
+    static void drawWireCylinder(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 *transform = nullptr);
     static void drawWireCapsule(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 *transform = nullptr);
 
 private:

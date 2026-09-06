@@ -4,10 +4,11 @@
 #include <component.h>
 #include <future>
 
-class NavMesh;
-class NavigationSystem;
+#include <navigation.h>
 
-class NavigationSurface : public Component {
+class NavMesh;
+
+class NAVIGATION_EXPORT NavigationSurface : public Component {
     A_OBJECT(NavigationSurface, Component, Components/Navigation)
 
     A_PROPERTIES(
@@ -17,7 +18,10 @@ class NavigationSurface : public Component {
         A_PROPERTY(int, geometrySource, NavigationSurface::geometrySource, NavigationSurface::setGeometrySource),
         A_PROPERTY(TString, includeTag, NavigationSurface::includeTag, NavigationSurface::setIncludeTag)
     )
-    A_NOMETHODS()
+    A_METHODS(
+        A_METHOD(bool, NavigationSurface::build),
+        A_METHOD(void, NavigationSurface::clear)
+    )
     A_NOENUMS()
 
 public:

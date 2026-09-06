@@ -2,8 +2,9 @@
 #define NAVIGATIONOBSTACLE_H
 
 #include <nativebehaviour.h>
+#include <navigation.h>
 
-class NavigationObstacle : public NativeBehaviour {
+class NAVIGATION_EXPORT NavigationObstacle : public NativeBehaviour {
     A_OBJECT(NavigationObstacle, NativeBehaviour, Components/Navigation)
 
     A_PROPERTIES(
