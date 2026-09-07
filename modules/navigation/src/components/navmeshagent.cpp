@@ -1,4 +1,4 @@
-#include "components/navigationagent.h"
+#include "components/navmeshagent.h"
 
 #include "navigationsystem.h"
 
@@ -8,74 +8,74 @@
 
 #include <log.h>
 
-NavigationAgent::NavigationAgent() :
+NavMeshAgent::NavMeshAgent() :
     NativeBehaviour() {
     PROFILE_FUNCTION();
 }
 
-NavigationAgent::~NavigationAgent() {
+NavMeshAgent::~NavMeshAgent() {
     PROFILE_FUNCTION();
 
     stop();
 }
 
-int NavigationAgent::agentType() const {
+int NavMeshAgent::agentType() const {
     return m_agentType;
 }
 
-void NavigationAgent::setAgentType(int type) {
+void NavMeshAgent::setAgentType(int type) {
     m_agentType = type;
 }
 
-float NavigationAgent::speed() const {
+float NavMeshAgent::speed() const {
     return m_maxSpeed;
 }
 
-void NavigationAgent::setSpeed(float speed) {
+void NavMeshAgent::setSpeed(float speed) {
     m_maxSpeed = speed;
 }
 
-float NavigationAgent::angularSpeed() const {
+float NavMeshAgent::angularSpeed() const {
     return m_angularSpeed;
 }
 
-void NavigationAgent::setAngularSpeed(float angularSpeed) {
+void NavMeshAgent::setAngularSpeed(float angularSpeed) {
     m_angularSpeed = angularSpeed;
 }
 
-float NavigationAgent::acceleration() const {
+float NavMeshAgent::acceleration() const {
     return m_maxAcceleration;
 }
 
-void NavigationAgent::setAcceleration(float acceleration) {
+void NavMeshAgent::setAcceleration(float acceleration) {
     m_maxAcceleration = acceleration;
 }
 
-float NavigationAgent::stoppingDistance() const {
+float NavMeshAgent::stoppingDistance() const {
     return m_stoppingDistance;
 }
 
-void NavigationAgent::setStoppingDistance(float stoppingDistance) {
+void NavMeshAgent::setStoppingDistance(float stoppingDistance) {
     m_stoppingDistance = stoppingDistance;
 }
 
-bool NavigationAgent::autoBraking() const {
+bool NavMeshAgent::autoBraking() const {
     return m_autoBraking;
 }
 
-void NavigationAgent::setAutoBraking(bool autoBraking) {
+void NavMeshAgent::setAutoBraking(bool autoBraking) {
     m_autoBraking = autoBraking;
 }
 
-bool NavigationAgent::autoRepath() const {
+bool NavMeshAgent::autoRepath() const {
     return m_autoRepath;
 }
 
-void NavigationAgent::setAutoRepath(bool autoRepath) {
+void NavMeshAgent::setAutoRepath(bool autoRepath) {
     m_autoRepath = autoRepath;
 }
 
-bool NavigationAgent::moveTo(const Vector3 &target) {
+bool NavMeshAgent::moveTo(const Vector3 &target) {
     PROFILE_FUNCTION();
 
     m_target = target;
@@ -88,7 +88,7 @@ bool NavigationAgent::moveTo(const Vector3 &target) {
     return true;
 }
 
-bool NavigationAgent::moveToActor(Actor *targetActor) {
+bool NavMeshAgent::moveToActor(Actor *targetActor) {
     PROFILE_FUNCTION();
 
     if(!targetActor) {
@@ -103,7 +103,7 @@ bool NavigationAgent::moveToActor(Actor *targetActor) {
     return moveTo(transform->position());
 }
 
-void NavigationAgent::stop() {
+void NavMeshAgent::stop() {
     m_state = NavigationState::Idle;
     m_hasTarget = false;
     m_reachedDestination = false;
@@ -113,17 +113,17 @@ void NavigationAgent::stop() {
     m_stuckTimer = 0.0f;
 }
 
-void NavigationAgent::pause(bool paused) {
+void NavMeshAgent::pause(bool paused) {
     m_paused = paused;
 }
 
-void NavigationAgent::requestPath() {
+void NavMeshAgent::requestPath() {
     PROFILE_FUNCTION();
 
     Vector3 position = transform()->position();
 
     NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
-    m_path = navSystem->findPath(scene(), position, m_target, m_agentType);
+    m_path = navSystem->findPath(*this);
     if(!m_path.empty()) {
         m_currentWaypointIndex = 0;
         m_state = NavigationState::Moving;
@@ -136,7 +136,7 @@ void NavigationAgent::requestPath() {
     }
 }
 
-void NavigationAgent::update() {
+void NavMeshAgent::update() {
     PROFILE_FUNCTION();
 
     if(m_paused || m_state == NavigationState::Idle) {
@@ -158,7 +158,7 @@ void NavigationAgent::update() {
     }
 }
 
-void NavigationAgent::updateMovement(float deltaTime) {
+void NavMeshAgent::updateMovement(float deltaTime) {
     if(m_path.empty() || m_currentWaypointIndex >= m_path.size()) {
         if(m_autoBraking && m_velocity.length() > 0.01f) {
             float deceleration = m_maxAcceleration * 2.0f * deltaTime;
@@ -213,21 +213,32 @@ void NavigationAgent::updateMovement(float deltaTime) {
     transform()->setPosition(currentPos + m_velocity * deltaTime);
 }
 
-void NavigationAgent::updateRotation(float deltaTime) {
+void NavMeshAgent::updateRotation(float deltaTime) {
     PROFILE_FUNCTION();
 
-    Vector3 direction(m_velocity);
-    float speed = direction.normalize();
-    if(speed < 0.01f) {
+    if(m_path.empty() || m_currentWaypointIndex >= m_path.size()) {
         return;
     }
 
-    float currentYaw = transform()->rotation().y;
-    currentYaw = fmod(currentYaw, 360.0f);      // 450° -> 90°
-    if(currentYaw > 180.0f) currentYaw -= 360.0f; // 190° -> -170°
-    if(currentYaw < -180.0f) currentYaw += 360.0f; // -190° -> 170°
+    Vector3 currentPos = transform()->position();
+    Vector3 targetWaypoint = m_path[m_currentWaypointIndex];
+    Vector3 direction = targetWaypoint - currentPos;
+    float distance = direction.length();
 
-    float targetYaw = atan2(direction.x, direction.z) * RAD2DEG;
+    if(distance < 0.01f) {
+        return;
+    }
+
+    Vector3 dir = direction;
+    dir.y = 0.0f;
+    dir.normalize();
+
+    float currentYaw = transform()->rotation().y;
+    currentYaw = fmod(currentYaw, 360.0f);
+    if(currentYaw > 180.0f) currentYaw -= 360.0f;
+    if(currentYaw < -180.0f) currentYaw += 360.0f;
+
+    float targetYaw = atan2(dir.x, dir.z) * RAD2DEG;
 
     float maxDelta = m_angularSpeed * deltaTime;
     float deltaYaw = targetYaw - currentYaw;
@@ -240,11 +251,10 @@ void NavigationAgent::updateRotation(float deltaTime) {
     }
 
     float newYaw = currentYaw + deltaYaw;
-
     transform()->setRotation(Vector3(0.0f, newYaw, 0.0f));
 }
 
-void NavigationAgent::checkWaypointReached() {
+void NavMeshAgent::checkWaypointReached() {
     PROFILE_FUNCTION();
 
     if(m_path.empty() || m_currentWaypointIndex >= m_path.size()) {
@@ -261,7 +271,7 @@ void NavigationAgent::checkWaypointReached() {
     }
 }
 
-void NavigationAgent::checkDestinationReached() {
+void NavMeshAgent::checkDestinationReached() {
     PROFILE_FUNCTION();
 
     if(!m_hasTarget || m_path.empty() || m_currentWaypointIndex < m_path.size()) {
@@ -277,7 +287,7 @@ void NavigationAgent::checkDestinationReached() {
     }
 }
 
-void NavigationAgent::handleStuckDetection(float deltaTime) {
+void NavMeshAgent::handleStuckDetection(float deltaTime) {
     PROFILE_FUNCTION();
 
     if(m_state != NavigationState::Moving) {
@@ -306,7 +316,7 @@ void NavigationAgent::handleStuckDetection(float deltaTime) {
     }
 }
 
-void NavigationAgent::checkPathDeviation() {
+void NavMeshAgent::checkPathDeviation() {
     if(m_path.empty() || m_currentWaypointIndex >= m_path.size()) {
         return;
     }
@@ -320,7 +330,7 @@ void NavigationAgent::checkPathDeviation() {
     }
 }
 
-bool NavigationAgent::isOffPath(const Vector3 &currentPos, float maxDeviation) const {
+bool NavMeshAgent::isOffPath(const Vector3 &currentPos, float maxDeviation) const {
     if(m_path.size() < 2) {
         return false;
     }
@@ -339,7 +349,7 @@ bool NavigationAgent::isOffPath(const Vector3 &currentPos, float maxDeviation) c
     return minDist > maxDeviation;
 }
 
-float NavigationAgent::distanceToSegment(const Vector3 &point, const Vector3 &a, const Vector3 &b) const {
+float NavMeshAgent::distanceToSegment(const Vector3 &point, const Vector3 &a, const Vector3 &b) const {
     Vector3 ab = b - a;
     Vector3 ap = point - a;
     float t = ap.dot(ab) / ab.dot(ab);
@@ -355,35 +365,35 @@ float NavigationAgent::distanceToSegment(const Vector3 &point, const Vector3 &a,
     return (point - projection).length();
 }
 
-void NavigationAgent::pathFound() {
+void NavMeshAgent::pathFound() {
     emitSignal(_SIGNAL(pathFound()));
 }
 
-void NavigationAgent::pathFailed() {
+void NavMeshAgent::pathFailed() {
     m_state = NavigationState::Idle;
     m_hasTarget = false;
     emitSignal(_SIGNAL(pathFailed()));
 }
 
-void NavigationAgent::waypointReached() {
+void NavMeshAgent::waypointReached() {
     emitSignal(_SIGNAL(waypointReached()));
 }
 
-void NavigationAgent::destinationReached() {
+void NavMeshAgent::destinationReached() {
     emitSignal(_SIGNAL(destinationReached()));
 }
 
-void NavigationAgent::stuck() {
+void NavMeshAgent::stuck() {
     m_state = NavigationState::Stuck;
     emitSignal(_SIGNAL(stuck()));
 }
 
-void NavigationAgent::unstuck() {
+void NavMeshAgent::unstuck() {
     m_state = NavigationState::Moving;
     emitSignal(_SIGNAL(unstuck()));
 }
 
-void NavigationAgent::drawGizmosSelected() {
+void NavMeshAgent::drawGizmosSelected() {
     NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
     AgentType type = navSystem->agentType(m_agentType);
 

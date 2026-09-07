@@ -1,22 +1,22 @@
-#ifndef NAVIGATIONOBSTACLE_H
-#define NAVIGATIONOBSTACLE_H
+#ifndef NAVMESHONOBSTACLE_H
+#define NAVMESHONOBSTACLE_H
 
 #include <nativebehaviour.h>
 #include <navigation.h>
 
-class NAVIGATION_EXPORT NavigationObstacle : public NativeBehaviour {
-    A_OBJECT(NavigationObstacle, NativeBehaviour, Components/Navigation)
+class NAVIGATION_EXPORT NavMeshObstacle : public NativeBehaviour {
+    A_OBJECT(NavMeshObstacle, NativeBehaviour, Components/Navigation)
 
     A_PROPERTIES(
-        A_PROPERTY(float, radius, NavigationObstacle::radius, NavigationObstacle::setRadius),
-        A_PROPERTY(float, height, NavigationObstacle::height, NavigationObstacle::setHeight)
+        A_PROPERTY(float, radius, NavMeshObstacle::radius, NavMeshObstacle::setRadius),
+        A_PROPERTY(float, height, NavMeshObstacle::height, NavMeshObstacle::setHeight)
     )
     A_NOMETHODS()
     A_NOENUMS()
 
 public:
-    NavigationObstacle();
-    ~NavigationObstacle();
+    NavMeshObstacle();
+    ~NavMeshObstacle();
 
     void update() override;
 
@@ -25,6 +25,8 @@ public:
 
     float height() const { return m_height; }
     void setHeight(float height);
+
+    void setEnabled(bool enabled) override;
 
     void setObstacleRef(uint32_t ref);
 
@@ -41,4 +43,4 @@ protected:
     uint32_t m_obstacleId = 0;
 };
 
-#endif // NAVIGATIONOBSTACLE_H
+#endif // NAVMESHONOBSTACLE_H

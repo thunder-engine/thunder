@@ -1,41 +1,33 @@
-#include "components/navigationlink.h"
+#include "components/navmeshlink.h"
 
 #include <transform.h>
 #include <gizmos.h>
 
-NavigationLink::NavigationLink() :
+NavMeshLink::NavMeshLink() :
         Component() {
     PROFILE_FUNCTION();
 
-    static uint32_t hash = Mathf::hashString("navigationlink");
+    static uint32_t hash = Mathf::hashString("navmeshlink");
     addTagByHash(hash);
 }
 
-NavigationLink::~NavigationLink() {
+NavMeshLink::~NavMeshLink() {
     PROFILE_FUNCTION();
 }
 
-void NavigationLink::setStartPoint(const Vector3 &point) {
+void NavMeshLink::setStartPoint(const Vector3 &point) {
     m_startPoint = point;
 }
 
-void NavigationLink::setEndPoint(const Vector3 &point) {
+void NavMeshLink::setEndPoint(const Vector3 &point) {
     m_endPoint = point;
 }
 
-void NavigationLink::setWidth(float width) {
-    m_width = width;
+void NavMeshLink::setBidirectional(bool bidirectional) {
+    m_bidirectional = bidirectional;
 }
 
-void NavigationLink::setBidirectional(bool bidirectional) {
-    setDirection(bidirectional ? LinkDirection::Bidirectional : LinkDirection::Forward);
-}
-
-void NavigationLink::setDirection(LinkDirection direction) {
-    m_direction = direction;
-}
-
-void NavigationLink::drawGizmosSelected() {
+void NavMeshLink::drawGizmosSelected() {
     Matrix4 worldMatrix = transform()->worldTransform();
 
     Vector3 worldStart = worldMatrix * m_startPoint;

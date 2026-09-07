@@ -1,21 +1,21 @@
-#include "components/navigationobstacle.h"
+#include "components/navmeshobstacle.h"
 
 #include "navigationsystem.h"
 
 #include <transform.h>
 
-NavigationObstacle::NavigationObstacle() :
+NavMeshObstacle::NavMeshObstacle() :
         NativeBehaviour() {
     PROFILE_FUNCTION();
 }
 
-NavigationObstacle::~NavigationObstacle() {
+NavMeshObstacle::~NavMeshObstacle() {
     PROFILE_FUNCTION();
 
     unregisterObstacle();
 }
 
-void NavigationObstacle::update() {
+void NavMeshObstacle::update() {
     PROFILE_FUNCTION();
 
     Vector3 currentPosition = transform()->position();
@@ -27,7 +27,17 @@ void NavigationObstacle::update() {
     }
 }
 
-void NavigationObstacle::setRadius(float radius) {
+void NavMeshObstacle::setEnabled(bool enabled) {
+    NativeBehaviour::setEnabled(enabled);
+
+    if(enabled) {
+        registerObstacle();
+    } else {
+        unregisterObstacle();
+    }
+}
+
+void NavMeshObstacle::setRadius(float radius) {
     if(radius != m_radius) {
         m_radius = radius;
 
@@ -36,7 +46,7 @@ void NavigationObstacle::setRadius(float radius) {
     }
 }
 
-void NavigationObstacle::setHeight(float height) {
+void NavMeshObstacle::setHeight(float height) {
     if(height != m_height) {
         m_height = height;
 
@@ -45,7 +55,7 @@ void NavigationObstacle::setHeight(float height) {
     }
 }
 
-void NavigationObstacle::registerObstacle() {
+void NavMeshObstacle::registerObstacle() {
     if(m_obstacleId == 0) {
         m_lastPosition = transform()->position();
 
@@ -56,7 +66,7 @@ void NavigationObstacle::registerObstacle() {
     }
 }
 
-void NavigationObstacle::unregisterObstacle() {
+void NavMeshObstacle::unregisterObstacle() {
     if(m_obstacleId != 0) {
         NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
         if(navSystem->removeObstacle(m_obstacleId)) {
@@ -65,6 +75,6 @@ void NavigationObstacle::unregisterObstacle() {
     }
 }
 
-void NavigationObstacle::setObstacleRef(uint32_t ref) {
+void NavMeshObstacle::setObstacleRef(uint32_t ref) {
     m_obstacleId = ref;
 }

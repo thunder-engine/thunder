@@ -7,11 +7,6 @@
 #include <scene.h>
 #include <transform.h>
 
-#include <boxcollider.h>
-#include <spherecollider.h>
-#include <capsulecollider.h>
-#include <meshcollider.h>
-
 #include <systems/resourcesystem.h>
 
 #include <Recast.h>
@@ -23,10 +18,10 @@
 #include <DetourTileCache.h>
 #include <DetourTileCacheBuilder.h>
 
-#include "components/navigationsurface.h"
-#include "components/navigationagent.h"
-#include "components/navigationobstacle.h"
-#include "components/navigationlink.h"
+#include "components/navmeshsurface.h"
+#include "components/navmeshagent.h"
+#include "components/navmeshobstacle.h"
+#include "components/navmeshlink.h"
 
 #include "resources/navmesh.h"
 
@@ -59,10 +54,10 @@ NavigationSystem::NavigationSystem() :
         System() {
     PROFILE_FUNCTION();
 
-    NavigationSurface::registerClassFactory(this);
-    NavigationAgent::registerClassFactory(this);
-    NavigationLink::registerClassFactory(this);
-    NavigationObstacle::registerClassFactory(this);
+    NavMeshSurface::registerClassFactory(this);
+    NavMeshAgent::registerClassFactory(this);
+    NavMeshLink::registerClassFactory(this);
+    NavMeshObstacle::registerClassFactory(this);
 
     NavMesh::registerClassFactory(Engine::resourceSystem());
 
@@ -84,10 +79,10 @@ NavigationSystem::~NavigationSystem() {
         m_tileCache = nullptr;
     }
 
-    NavigationSurface::unregisterClassFactory(this);
-    NavigationAgent::unregisterClassFactory(this);
-    NavigationLink::unregisterClassFactory(this);
-    NavigationObstacle::unregisterClassFactory(this);
+    NavMeshSurface::unregisterClassFactory(this);
+    NavMeshAgent::unregisterClassFactory(this);
+    NavMeshLink::unregisterClassFactory(this);
+    NavMeshObstacle::unregisterClassFactory(this);
 
     NavMesh::unregisterClassFactory(Engine::resourceSystem());
 }
@@ -135,44 +130,10 @@ void NavigationSystem::update(World *world) {
         return;
     }
 
-    static const uint32_t navSurfTagHash = Mathf::hashString("navsurf");
-
-    for(auto *scene : world->scenes()) {
-        if(!scene) {
-            continue;
-        }
-
-        {
-            std::lock_guard<std::mutex> lock(m_dataMutex);
-            if(m_sceneNavMeshes.find(scene) != m_sceneNavMeshes.end()) {
-                continue;
-            }
-        }
-
-        Object::ObjectList &surfaces = scene->getObjectsInGroupByHash(navSurfTagHash);
-
-        NavigationSurface *surface = nullptr;
-        for(Object *obj : surfaces) {
-            surface = dynamic_cast<NavigationSurface *>(obj);
-            if(surface) {
-                break;
-            }
-        }
-
-        if(surface) {
-            NavMesh *navMesh = surface->navMesh();
-            if(navMesh && navMesh->state() == NavMesh::Ready) {
-                registerNavMesh(scene, navMesh);
-                aInfo() << "Navigation: Registered NavMesh from NavigationSurface for scene: " << scene->name();
-                continue;
-            }
-        }
-    }
-
     if(m_tileCache) {
         std::lock_guard<std::mutex> lock(m_dataMutex);
         float deltaTime = Timer::deltaTime();
-        for(auto &pair : m_sceneNavMeshes) {
+        for(auto &pair : m_surfaceNavMeshes) {
             NavMesh *navMesh = pair.second;
             if(navMesh && navMesh->navMesh()) {
                 m_tileCache->update(deltaTime, navMesh->navMesh());
@@ -181,34 +142,47 @@ void NavigationSystem::update(World *world) {
     }
 }
 
-std::vector<Vector3> NavigationSystem::findPath(Scene *scene, const Vector3 &start, const Vector3 &end, uint32_t agentType) {
+std::vector<Vector3> NavigationSystem::findPath(NavMeshAgent &agent) {
     std::vector<Vector3> result;
 
-    if(!scene) {
+    Vector3 start = agent.transform()->worldPosition();
+    Vector3 end = agent.target();
+    int agentType = agent.agentType();
+
+    NavMesh *startNavMesh = findNavMeshAtPosition(start, agentType);
+    if(!startNavMesh || startNavMesh->state() != NavMesh::Ready) {
+        aWarning() << "findPath: No NavMesh at start position";
         return result;
     }
 
-    std::lock_guard<std::mutex> lock(m_dataMutex);
-
-    auto it = m_sceneNavMeshes.find(scene);
-    if(it == m_sceneNavMeshes.end()) {
+    NavMesh *endNavMesh = findNavMeshAtPosition(end, agentType);
+    if(!endNavMesh || endNavMesh->state() != NavMesh::Ready) {
+        aWarning() << "findPath: No NavMesh at end position";
         return result;
     }
 
-    NavMesh *navMesh = it->second;
-    if(!navMesh || navMesh->state() != NavMesh::Ready) {
-        return result;
+    if(startNavMesh == endNavMesh) {
+        return findPathOnNavMesh(startNavMesh, start, end, agentType);
     }
+
+    aInfo() << "findPath: Cross-NavMesh path from " << startNavMesh->name()
+            << " to " << endNavMesh->name();
+
+    // TODO: Implement search via off-network communication between NavMeshes
+    // For now, we're simply searching for a path to the closest point on startNavMesh
+    // and from the closest point on endNavMesh
+
+    return result;
+}
+
+std::vector<Vector3> NavigationSystem::findPathOnNavMesh(NavMesh *navMesh, const Vector3 &start, const Vector3 &end, int agentType) {
+    std::vector<Vector3> result;
 
     dtNavMesh *dtNavMesh = navMesh->navMesh();
-    if(!dtNavMesh) {
-        return result;
-    }
+    if(!dtNavMesh) return result;
 
     dtNavMeshQuery query;
-    if(dtStatusFailed(query.init(dtNavMesh, 2048))) {
-        return result;
-    }
+    if(dtStatusFailed(query.init(dtNavMesh, 2048))) return result;
 
     dtQueryFilter filter;
     filter.setIncludeFlags(0xFFFF);
@@ -218,43 +192,37 @@ std::vector<Vector3> NavigationSystem::findPath(Scene *scene, const Vector3 &sta
     float startPos[3] = {start.x, start.y, start.z};
     float endPos[3] = {end.x, end.y, end.z};
     float nearestStart[3], nearestEnd[3];
-    float halfExtents[3] = { m_agentTypes[agentType].radius, m_agentTypes[agentType].height, m_agentTypes[agentType].radius };
+    float halfExtents[3] = {
+        m_agentTypes[agentType].radius,
+        m_agentTypes[agentType].height,
+        m_agentTypes[agentType].radius
+    };
 
-    dtStatus status = query.findNearestPoly(startPos, halfExtents, &filter, &startRef, nearestStart);
-    if(dtStatusFailed(status) || !startRef) {
+    if(dtStatusFailed(query.findNearestPoly(startPos, halfExtents, &filter, &startRef, nearestStart))) {
         return result;
     }
 
-    status = query.findNearestPoly(endPos, halfExtents, &filter, &endRef, nearestEnd);
-    if(dtStatusFailed(status) || !endRef) {
+    if(dtStatusFailed(query.findNearestPoly(endPos, halfExtents, &filter, &endRef, nearestEnd))) {
         return result;
     }
+
+    if(!startRef || !endRef) return result;
 
     dtPolyRef polys[256];
     int polyCount;
-    status = query.findPath(startRef, endRef, nearestStart, nearestEnd, &filter, polys, &polyCount, 256);
-    if(dtStatusFailed(status) || polyCount == 0) {
+    if(dtStatusFailed(query.findPath(startRef, endRef, nearestStart, nearestEnd, &filter, polys, &polyCount, 256))) {
         return result;
     }
 
-    for(int i = 0; i < polyCount; ++i) {
-        const dtMeshTile *tile;
-        const dtPoly *poly;
-        if(dtStatusSucceed(dtNavMesh->getTileAndPolyByRef(polys[i], &tile, &poly))) {
-            if(poly->getType() == DT_POLYTYPE_OFFMESH_CONNECTION) {
-                aInfo() << "findPath: Path uses off-mesh connection at index " << i;
-            }
-        }
-    }
+    if(polyCount == 0) return result;
 
     float straightPath[256 * 3];
     unsigned char straightFlags[256];
     dtPolyRef straightPolys[256];
     int straightCount;
 
-    status = query.findStraightPath(nearestStart, nearestEnd, polys, polyCount,
-                                    straightPath, straightFlags, straightPolys, &straightCount, 256);
-    if(dtStatusFailed(status) || straightCount == 0) {
+    if(dtStatusFailed(query.findStraightPath(nearestStart, nearestEnd, polys, polyCount,
+                                              straightPath, straightFlags, straightPolys, &straightCount, 256))) {
         return result;
     }
 
@@ -265,40 +233,28 @@ std::vector<Vector3> NavigationSystem::findPath(Scene *scene, const Vector3 &sta
     return result;
 }
 
-bool NavigationSystem::registerNavMesh(Scene *scene, NavMesh *navMesh) {
-    if(!scene || !navMesh || navMesh->state() != NavMesh::Ready) {
+bool NavigationSystem::registerNavMesh(NavMeshSurface &surface) {
+    unregisterNavMesh(surface);
+
+    NavMesh *navMesh = surface.navMesh();
+    if(!navMesh || navMesh->state() != NavMesh::Ready) {
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(m_dataMutex);
-    unregisterNavMeshLocked(scene);
-
-    m_sceneNavMeshes[scene] = navMesh;
-
-    if(!rebuildTileCacheTiles(navMesh)) {
-        m_sceneNavMeshes.erase(scene);
-        return false;
+    if(rebuildTileCacheTiles(navMesh)) {
+        std::lock_guard<std::mutex> lock(m_dataMutex);
+        m_surfaceNavMeshes[&surface] = navMesh;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
-void NavigationSystem::unregisterNavMesh(Scene *scene) {
-    if(!scene) {
-        return;
-    }
-
+void NavigationSystem::unregisterNavMesh(NavMeshSurface &surface) {
     std::lock_guard<std::mutex> lock(m_dataMutex);
-    unregisterNavMeshLocked(scene);
-}
 
-void NavigationSystem::unregisterNavMeshLocked(Scene *scene) {
-    if(!scene) {
-        return;
-    }
-
-    auto it = m_sceneNavMeshes.find(scene);
-    if(it == m_sceneNavMeshes.end()) {
+    auto it = m_surfaceNavMeshes.find(&surface);
+    if(it == m_surfaceNavMeshes.end()) {
         return;
     }
 
@@ -309,9 +265,7 @@ void NavigationSystem::unregisterNavMeshLocked(Scene *scene) {
 
         for(int i = 0; i < constNavMesh->getMaxTiles(); ++i) {
             const dtMeshTile *tile = constNavMesh->getTile(i);
-            if(!tile || !tile->header) {
-                continue;
-            }
+            if(!tile || !tile->header) continue;
 
             dtTileRef tileRef = dtNavMesh->getTileRef(tile);
             if(tileRef) {
@@ -320,16 +274,7 @@ void NavigationSystem::unregisterNavMeshLocked(Scene *scene) {
         }
     }
 
-    m_sceneNavMeshes.erase(it);
-}
-
-NavMesh *NavigationSystem::getNavMesh(Scene *scene) const {
-    std::lock_guard<std::mutex> lock(m_dataMutex);
-    auto it = m_sceneNavMeshes.find(scene);
-    if(it == m_sceneNavMeshes.end()) {
-        return nullptr;
-    }
-    return it->second;
+    m_surfaceNavMeshes.erase(it);
 }
 
 bool NavigationSystem::rebuildTileCacheTiles(NavMesh *navMesh) {
@@ -359,109 +304,44 @@ bool NavigationSystem::rebuildTileCacheTiles(NavMesh *navMesh) {
     return true;
 }
 
-bool NavigationSystem::rebuildTile(Scene *scene, int tileX, int tileY, const void *tileData, size_t tileDataSize) {
-    if(!scene || !m_tileCache) {
-        return false;
-    }
-
+NavMesh *NavigationSystem::findNavMeshAtPosition(const Vector3 &position, int agentType) const {
     std::lock_guard<std::mutex> lock(m_dataMutex);
 
-    NavMesh *navMesh = getNavMesh(scene);
-    if(!navMesh) {
-        return false;
-    }
+    for(auto &pair : m_surfaceNavMeshes) {
+        NavMeshSurface *surface = pair.first;
+        if(!surface || !surface->isEnabled()) continue;
 
-    dtNavMesh *dtNavMesh = navMesh->navMesh();
-    if(!dtNavMesh) {
-        return false;
-    }
+        if(surface->agentType() != agentType) continue;
 
-    dtTileRef oldTileRef = navMesh->tileRef(tileX, tileY);
-    if(oldTileRef) {
-        unsigned char *removedData = nullptr;
-        int removedDataSize = 0;
+        NavMesh *navMesh = pair.second;
+        if(!navMesh || navMesh->state() != NavMesh::Ready) continue;
 
-        dtStatus status = dtNavMesh->removeTile(oldTileRef, &removedData, &removedDataSize);
-        if(dtStatusFailed(status)) {
-            return false;
+        dtNavMesh *dtNavMesh = navMesh->navMesh();
+        if(!dtNavMesh) continue;
+
+        dtNavMeshQuery query;
+        if(dtStatusFailed(query.init(dtNavMesh, 2048))) continue;
+
+        dtQueryFilter filter;
+        filter.setIncludeFlags(0xFFFF);
+        filter.setExcludeFlags(0);
+
+        float pos[3] = {position.x, position.y, position.z};
+        float halfExtents[3] = {1.0f, 10.0f, 1.0f};
+
+        dtPolyRef ref;
+        float nearest[3];
+        if(dtStatusSucceed(query.findNearestPoly(pos, halfExtents, &filter, &ref, nearest))) {
+            if(ref != 0) {
+                return navMesh;
+            }
         }
-
-        if(removedData) {
-            dtFree(removedData);
-        }
     }
 
-    dtTileRef newTileRef;
-    dtStatus status = dtNavMesh->addTile((unsigned char*)tileData, tileDataSize, DT_TILE_FREE_DATA, 0, &newTileRef);
-    if(dtStatusFailed(status)) {
-        return false;
-    }
-
-    status = m_tileCache->buildNavMeshTilesAt(tileX, tileY, dtNavMesh);
-    if(dtStatusFailed(status)) {
-        aWarning() << "Navigation: Failed to build tile (" << tileX << ", " << tileY << ")";
-    }
-
-    if(navMesh->query()) {
-        navMesh->query()->init(dtNavMesh, 2048);
-    }
-
-    return true;
+    return nullptr;
 }
 
-void NavigationSystem::invalidateTile(Scene *scene, int tileX, int tileY) {
-    if(!scene || !m_tileCache) {
-        return;
-    }
-
-    std::lock_guard<std::mutex> lock(m_dataMutex);
-
-    NavMesh *navMesh = getNavMesh(scene);
-    if(!navMesh) {
-        return;
-    }
-
-    dtTileRef tileRef = navMesh->tileRef(tileX, tileY);
-    if(!tileRef) {
-        return;
-    }
-
-    invalidateTileByRef(scene, tileRef);
-}
-
-void NavigationSystem::invalidateTileByRef(Scene *scene, dtTileRef tileRef) {
-    if(!scene || !tileRef || !m_tileCache) {
-        return;
-    }
-
-    std::lock_guard<std::mutex> lock(m_dataMutex);
-
-    NavMesh *navMesh = getNavMesh(scene);
-    if(!navMesh) {
-        return;
-    }
-
-    dtNavMesh *dtNavMesh = navMesh->navMesh();
-    if(!dtNavMesh) {
-        return;
-    }
-
-    m_tileCache->removeTile(tileRef, nullptr, nullptr);
-
-    unsigned char *removedData = nullptr;
-    int removedDataSize = 0;
-    dtStatus status = dtNavMesh->removeTile(tileRef, &removedData, &removedDataSize);
-
-    if(dtStatusSucceed(status) && removedData) {
-        dtFree(removedData);
-    }
-
-    if(navMesh->query()) {
-        navMesh->query()->init(dtNavMesh, 2048);
-    }
-}
-
-bool NavigationSystem::addObstacle(NavigationObstacle &obstacle) {
+bool NavigationSystem::addObstacle(NavMeshObstacle &obstacle) {
     if(!m_tileCache) {
         return false;
     }
@@ -498,59 +378,19 @@ bool NavigationSystem::removeObstacle(uint32_t obstacleId) {
     return true;
 }
 
-bool NavigationSystem::buildNavMeshFromSurface(NavigationSurface *surface) {
-    if(!surface) {
-        aError() << "Navigation: Surface is null";
-        return false;
-    }
-
-    Scene *scene = surface->scene();
-    if(!scene) {
-        aError() << "Navigation: Surface has no scene";
-        return false;
-    }
-
+bool NavigationSystem::buildNavMeshFromSurface(NavMeshSurface &surface) {
     Vector3Vector vertices;
     std::vector<int> indices;
 
-    if(!collectGeometryFromSurface(surface, vertices, indices)) {
+    if(!surface.collectGeometry(vertices, indices)) {
         aError() << "Navigation: Failed to collect geometry from surface";
         return false;
     }
 
-    if(vertices.empty() || indices.empty()) {
-        aError() << "Navigation: No geometry collected for surface";
-        return false;
-    }
-
-    NavMesh *navMesh = surface->navMesh();
-    if(navMesh == nullptr) {
-        navMesh = Engine::objectCreate<NavMesh>(surface->name());
-        if(!navMesh) {
-            aError() << "Navigation: Failed to create NavMesh";
-            return false;
-        }
-    }
-
-    if(!buildNavMeshData(surface, vertices, indices, navMesh)) {
+    if(!buildNavMeshData(surface, vertices, indices)) {
         aError() << "Navigation: Failed to build NavMesh data";
-        delete navMesh;
         return false;
     }
-
-    if(navMesh->state() != NavMesh::Ready) {
-        aError() << "Navigation: Failed to load NavMesh data";
-        delete navMesh;
-        return false;
-    }
-
-    if(!registerNavMesh(scene, navMesh)) {
-        aError() << "Navigation: Failed to register NavMesh";
-        delete navMesh;
-        return false;
-    }
-
-    const_cast<NavigationSurface*>(surface)->setNavMesh(navMesh);
 
     return true;
 }
@@ -562,12 +402,21 @@ AgentType NavigationSystem::agentType(int index) const {
     return AgentType();
 }
 
-bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector3Vector &vertices, const std::vector<int> &indices, NavMesh *navMesh) {
-    if(!navMesh || vertices.empty() || indices.empty()) {
+bool NavigationSystem::buildNavMeshData(NavMeshSurface &surface, const Vector3Vector &vertices, const std::vector<int> &indices) {
+    if(vertices.empty() || indices.empty()) {
         return false;
     }
 
-    int agentType = surface->agentType();
+    int agentType = surface.agentType();
+
+    NavMesh *navMesh = surface.navMesh();
+    if(navMesh == nullptr) {
+        navMesh = Engine::objectCreate<NavMesh>(surface.actor()->name());
+        if(!navMesh) {
+            aError() << "Navigation: Failed to create NavMesh";
+            return false;
+        }
+    }
 
     rcConfig config;
     memset(&config, 0, sizeof(config));
@@ -606,7 +455,7 @@ bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector
 
     config.width = (int)((config.bmax[0] - config.bmin[0]) / config.cs + 0.5f);
     config.height = (int)((config.bmax[2] - config.bmin[2]) / config.cs + 0.5f);
-    config.tileSize = surface->tileSize();
+    config.tileSize = surface.tileSize();
 
     rcContext ctx;
 
@@ -716,7 +565,7 @@ bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector
         pmesh->areas[i] = 1;
     }
 
-    Scene *scene = surface->scene();
+    Scene *scene = surface.scene();
     std::vector<float> offMeshVerts;
     std::vector<float> offMeshRadii;
     std::vector<uint32_t> offMeshUserIds;
@@ -725,9 +574,9 @@ bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector
     std::vector<uint8_t> offMeshDir;
 
     if(scene) {
-        static const uint32_t linkHash = Mathf::hashString("navigationlink");
+        static const uint32_t linkHash = Mathf::hashString("navmeshlink");
         for(Object *obj : scene->getObjectsInGroupByHash(linkHash)) {
-            NavigationLink *link = dynamic_cast<NavigationLink *>(obj);
+            NavMeshLink *link = dynamic_cast<NavMeshLink *>(obj);
             if(!link || !link->isEnabled()) continue;
 
             Vector3 worldPosition = link->transform()->worldPosition();
@@ -742,39 +591,6 @@ bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector
             offMeshVerts.push_back(end.x);
             offMeshVerts.push_back(end.y);
             offMeshVerts.push_back(end.z);
-/*
-            Vector3 dir = (end - start);
-            dir.normalize();
-            Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
-            right.normalize();
-            float halfWidth = link->width() * 0.5f;
-
-            // 4 вершины для входа
-            Vector3 startVerts[4] = {
-                start + right * halfWidth,
-                start - right * halfWidth,
-                start - right * halfWidth + dir * 0.1f,
-                start + right * halfWidth + dir * 0.1f
-            };
-
-            Vector3 endVerts[4] = {
-                end + right * halfWidth,
-                end - right * halfWidth,
-                end - right * halfWidth - dir * 0.1f,
-                end + right * halfWidth - dir * 0.1f
-            };
-
-            for(int i = 0; i < 4; ++i) {
-                offMeshVerts.push_back(startVerts[i].x);
-                offMeshVerts.push_back(startVerts[i].y);
-                offMeshVerts.push_back(startVerts[i].z);
-            }
-            for(int i = 0; i < 4; ++i) {
-                offMeshVerts.push_back(endVerts[i].x);
-                offMeshVerts.push_back(endVerts[i].y);
-                offMeshVerts.push_back(endVerts[i].z);
-            }
-*/
 
             offMeshFlags.push_back(0xFFFF);
             offMeshFlags.push_back(0xFFFF);
@@ -853,109 +669,7 @@ bool NavigationSystem::buildNavMeshData(NavigationSurface *surface, const Vector
         return false;
     }
 
+    surface.setNavMesh(navMesh);
+
     return true;
-}
-
-bool NavigationSystem::collectGeometryFromSurface(NavigationSurface *surface, Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    static uint32_t hash = Mathf::hashString("collider");
-
-    Scene *scene = surface->scene();
-    for(auto it : scene->getObjectsInGroupByHash(hash)) {
-        Collider *collider = dynamic_cast<Collider *>(it);
-        Actor *actor = collider->actor();
-        if(!actor || !actor->isEnabled()) continue;
-        if(actor->getComponent<NavigationObstacle>() != nullptr) continue;
-
-        BoxCollider *boxCollider = dynamic_cast<BoxCollider *>(collider);
-        if(boxCollider && boxCollider->isEnabled()) {
-            addBoxColliderGeometry(boxCollider, outVertices, outIndices);
-            continue;
-        }
-
-        MeshCollider *meshCollider = dynamic_cast<MeshCollider *>(collider);
-        if(meshCollider && meshCollider->isEnabled()) {
-            addMeshColliderGeometry(meshCollider, outVertices, outIndices);
-            continue;
-        }
-
-        CapsuleCollider *capsuleCollider = dynamic_cast<CapsuleCollider *>(collider);
-        if(capsuleCollider && capsuleCollider->isEnabled()) {
-            addCapsuleColliderGeometry(capsuleCollider, outVertices, outIndices);
-            continue;
-        }
-
-        SphereCollider *sphereCollider = dynamic_cast<SphereCollider *>(collider);
-        if(sphereCollider && sphereCollider->isEnabled()) {
-            addSphereColliderGeometry(sphereCollider, outVertices, outIndices);
-            continue;
-        }
-    }
-
-    return !outVertices.empty() && !outIndices.empty();
-}
-
-void NavigationSystem::addBoxColliderGeometry(BoxCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    Vector3 size = collider->size();
-    Vector3 center = collider->center();
-    Transform *transform = collider->transform();
-
-    Vector3 localVerts[8] = {
-        Vector3(-size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f),
-        Vector3( size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f),
-        Vector3( size.x * 0.5f, -size.y * 0.5f,  size.z * 0.5f),
-        Vector3(-size.x * 0.5f, -size.y * 0.5f,  size.z * 0.5f),
-        Vector3(-size.x * 0.5f,  size.y * 0.5f, -size.z * 0.5f),
-        Vector3( size.x * 0.5f,  size.y * 0.5f, -size.z * 0.5f),
-        Vector3( size.x * 0.5f,  size.y * 0.5f,  size.z * 0.5f),
-        Vector3(-size.x * 0.5f,  size.y * 0.5f,  size.z * 0.5f)
-    };
-
-    size_t startIndex = outVertices.size();
-
-    for(int i = 0; i < 8; ++i) {
-        Vector3 worldPos = center + localVerts[i];
-        outVertices.push_back(transform->worldTransform() * worldPos);
-    }
-
-    static const uint32_t indices[] = {
-        0, 1, 2,  0, 2, 3,
-        4, 6, 5,  4, 7, 6,
-        0, 4, 5,  0, 5, 1,
-        1, 5, 6,  1, 6, 2,
-        2, 6, 7,  2, 7, 3,
-        3, 7, 4,  3, 4, 0
-    };
-
-    for(uint32_t idx : indices) {
-        outIndices.push_back(static_cast<uint32_t>(startIndex + idx));
-    }
-}
-
-void NavigationSystem::addMeshColliderGeometry(MeshCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    Mesh *mesh = collider->mesh();
-    if(!mesh) {
-        return;
-    }
-
-    Transform *transform = collider->transform();
-
-    size_t startIndex = outVertices.size();
-
-    const auto &localVerts = mesh->vertices();
-    for(const Vector3 &v : localVerts) {
-        outVertices.push_back(transform->worldTransform() * v);
-    }
-
-    const auto &localIndices = mesh->indices();
-    for(uint32_t idx : localIndices) {
-        outIndices.push_back(static_cast<uint32_t>(startIndex + idx));
-    }
-}
-
-void NavigationSystem::addCapsuleColliderGeometry(CapsuleCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    /// \todo: implement this
-}
-
-void NavigationSystem::addSphereColliderGeometry(SphereCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    /// \todo: implement this
 }

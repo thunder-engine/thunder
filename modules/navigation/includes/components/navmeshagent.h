@@ -1,32 +1,32 @@
-#ifndef NAVIGATIONAGENT_H
-#define NAVIGATIONAGENT_H
+#ifndef NAVMESHAGENT_H
+#define NAVMESHAGENT_H
 
 #include <nativebehaviour.h>
 #include <navigation.h>
 
-class NAVIGATION_EXPORT NavigationAgent : public NativeBehaviour {
-    A_OBJECT(NavigationAgent, NativeBehaviour, Components/Navigation)
+class NAVIGATION_EXPORT NavMeshAgent : public NativeBehaviour {
+    A_OBJECT(NavMeshAgent, NativeBehaviour, Components/Navigation)
 
     A_PROPERTIES(
-        A_PROPERTY(int, agentType, NavigationAgent::agentType, NavigationAgent::setAgentType),
-        A_PROPERTY(float, speed, NavigationAgent::speed, NavigationAgent::setSpeed),
-        A_PROPERTY(float, angularSpeed, NavigationAgent::angularSpeed, NavigationAgent::setAngularSpeed),
-        A_PROPERTY(float, acceleration, NavigationAgent::acceleration, NavigationAgent::setAcceleration),
-        A_PROPERTY(float, stoppingDistance, NavigationAgent::stoppingDistance, NavigationAgent::setStoppingDistance),
-        A_PROPERTY(bool, autoBraking, NavigationAgent::autoBraking, NavigationAgent::setAutoBraking),
-        A_PROPERTY(bool, autoRepath, NavigationAgent::autoRepath, NavigationAgent::setAutoRepath)
+        A_PROPERTY(int, agentType, NavMeshAgent::agentType, NavMeshAgent::setAgentType),
+        A_PROPERTY(float, speed, NavMeshAgent::speed, NavMeshAgent::setSpeed),
+        A_PROPERTY(float, angularSpeed, NavMeshAgent::angularSpeed, NavMeshAgent::setAngularSpeed),
+        A_PROPERTY(float, acceleration, NavMeshAgent::acceleration, NavMeshAgent::setAcceleration),
+        A_PROPERTY(float, stoppingDistance, NavMeshAgent::stoppingDistance, NavMeshAgent::setStoppingDistance),
+        A_PROPERTY(bool, autoBraking, NavMeshAgent::autoBraking, NavMeshAgent::setAutoBraking),
+        A_PROPERTY(bool, autoRepath, NavMeshAgent::autoRepath, NavMeshAgent::setAutoRepath)
         )
     A_METHODS(
-        A_SIGNAL(NavigationAgent::pathFound),
-        A_SIGNAL(NavigationAgent::pathFailed),
-        A_SIGNAL(NavigationAgent::waypointReached),
-        A_SIGNAL(NavigationAgent::destinationReached),
-        A_SIGNAL(NavigationAgent::stuck),
-        A_SIGNAL(NavigationAgent::unstuck),
-        A_METHOD(bool, NavigationAgent::moveTo),
-        A_METHOD(bool, NavigationAgent::moveToActor),
-        A_METHOD(void, NavigationAgent::stop),
-        A_METHOD(void, NavigationAgent::pause)
+        A_SIGNAL(NavMeshAgent::pathFound),
+        A_SIGNAL(NavMeshAgent::pathFailed),
+        A_SIGNAL(NavMeshAgent::waypointReached),
+        A_SIGNAL(NavMeshAgent::destinationReached),
+        A_SIGNAL(NavMeshAgent::stuck),
+        A_SIGNAL(NavMeshAgent::unstuck),
+        A_METHOD(bool, NavMeshAgent::moveTo),
+        A_METHOD(bool, NavMeshAgent::moveToActor),
+        A_METHOD(void, NavMeshAgent::stop),
+        A_METHOD(void, NavMeshAgent::pause)
         )
     A_NOENUMS()
 
@@ -40,8 +40,8 @@ public:
     };
 
 public:
-    NavigationAgent();
-    ~NavigationAgent();
+    NavMeshAgent();
+    ~NavMeshAgent();
 
     int agentType() const;
     void setAgentType(int type);
@@ -125,4 +125,4 @@ protected:
     float m_pathDeviationThreshold = 1.0f;
 };
 
-#endif // NAVIGATIONAGENT_H
+#endif // NAVMESHAGENT_H
