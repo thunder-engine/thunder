@@ -79,8 +79,6 @@ private slots:
 
     void onSetActiveScene();
 
-    void onRepickSelected();
-
     void onCreateActor();
     void onActorDelete();
     void onActorDuplicate();
