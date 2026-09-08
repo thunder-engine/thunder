@@ -20,15 +20,13 @@ public:
 
     void update() override;
 
-    float radius() const { return m_radius; }
+    float radius() const;
     void setRadius(float radius);
 
-    float height() const { return m_height; }
+    float height() const;
     void setHeight(float height);
 
     void setEnabled(bool enabled) override;
-
-    void setObstacleRef(uint32_t ref);
 
 protected:
     void registerObstacle();
@@ -37,10 +35,10 @@ protected:
 protected:
     Vector3 m_lastPosition;
 
-    float m_radius = 0.6f;
-    float m_height = 2.0f;
+    float m_radius;
+    float m_height;
 
-    uint32_t m_obstacleId = 0;
+    uint32_t m_obstacleId;
 };
 
 #endif // NAVMESHONOBSTACLE_H

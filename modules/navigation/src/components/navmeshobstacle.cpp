@@ -5,7 +5,10 @@
 #include <transform.h>
 
 NavMeshObstacle::NavMeshObstacle() :
-        NativeBehaviour() {
+        NativeBehaviour(),
+        m_radius(0.6f),
+        m_height(2.0f),
+        m_obstacleId(0) {
     PROFILE_FUNCTION();
 }
 
@@ -37,6 +40,10 @@ void NavMeshObstacle::setEnabled(bool enabled) {
     }
 }
 
+float NavMeshObstacle::radius() const {
+    return m_radius;
+}
+
 void NavMeshObstacle::setRadius(float radius) {
     if(radius != m_radius) {
         m_radius = radius;
@@ -44,6 +51,10 @@ void NavMeshObstacle::setRadius(float radius) {
         unregisterObstacle();
         registerObstacle();
     }
+}
+
+float NavMeshObstacle::height() const {
+    return m_height;
 }
 
 void NavMeshObstacle::setHeight(float height) {
@@ -73,8 +84,4 @@ void NavMeshObstacle::unregisterObstacle() {
             m_obstacleId = 0;
         }
     }
-}
-
-void NavMeshObstacle::setObstacleRef(uint32_t ref) {
-    m_obstacleId = ref;
 }

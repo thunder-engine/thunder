@@ -76,6 +76,8 @@ protected:
     void addCapsuleColliderGeometry(CapsuleCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices);
     void addSphereColliderGeometry(SphereCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices);
 
+    bool buildNavMeshData(const Vector3Vector &vertices, const std::vector<int> &indices);
+
 protected:
     friend class NavigationSystem;
 

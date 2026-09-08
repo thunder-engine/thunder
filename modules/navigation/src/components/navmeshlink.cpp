@@ -3,8 +3,15 @@
 #include <transform.h>
 #include <gizmos.h>
 
+#include "navigationsystem.h"
+
 NavMeshLink::NavMeshLink() :
-        Component() {
+        Component(),
+        m_startPoint(Vector3(-2.0f, 0.0f, 0.0f)),
+        m_endPoint(Vector3(2.0f, 0.0f, 0.0f)),
+        m_agentType(0),
+        m_areaType(1),
+        m_bidirectional(true) {
     PROFILE_FUNCTION();
 
     static uint32_t hash = Mathf::hashString("navmeshlink");
@@ -15,39 +22,57 @@ NavMeshLink::~NavMeshLink() {
     PROFILE_FUNCTION();
 }
 
+int NavMeshLink::agentType() const {
+    return m_agentType;
+}
+
+void NavMeshLink::setAgentType(int type) {
+    m_agentType = type;
+}
+
+int NavMeshLink::areaType() const {
+    return m_areaType;
+}
+
+void NavMeshLink::setAreaType(int type) {
+    m_areaType = type;
+}
+
+Vector3 NavMeshLink::startPoint() const {
+    return m_startPoint;
+}
+
 void NavMeshLink::setStartPoint(const Vector3 &point) {
     m_startPoint = point;
+}
+
+Vector3 NavMeshLink::endPoint() const {
+    return m_endPoint;
 }
 
 void NavMeshLink::setEndPoint(const Vector3 &point) {
     m_endPoint = point;
 }
 
+bool NavMeshLink::isBidirectional() const {
+    return m_bidirectional;
+}
+
 void NavMeshLink::setBidirectional(bool bidirectional) {
     m_bidirectional = bidirectional;
+}
+
+void NavMeshLink::drawGizmos() {
+    Matrix4 worldMatrix = transform()->worldTransform();
+
+    Gizmos::drawLines({worldMatrix * m_startPoint, worldMatrix * m_endPoint}, {0, 1}, Vector4(0.0f, 1.0f, 1.0f, 0.5f));
 }
 
 void NavMeshLink::drawGizmosSelected() {
     Matrix4 worldMatrix = transform()->worldTransform();
 
-    Vector3 worldStart = worldMatrix * m_startPoint;
-    Vector3 worldEnd = worldMatrix * m_endPoint;
+    float radius = static_cast<NavigationSystem *>(system())->agentType(m_agentType).radius;
 
-    Vector3 dir = worldEnd - worldStart;
-    float length = dir.normalize();
-    if(length < 0.001f) {
-        return;
-    }
-
-    Vector3 right = dir.cross(Vector3(0.0f, 1.0f, 0.0f));
-    right.normalize();
-
-    Vector3Vector vertices = {
-        worldStart + right * m_width * 0.5f,
-        worldStart - right * m_width * 0.5f,
-        worldEnd + right * m_width * 0.5f,
-        worldEnd - right * m_width * 0.5f
-    };
-
-    Gizmos::drawLines(vertices, {0, 1, 1, 3, 3, 2, 2, 0}, Vector4(0.0f, 1.0f, 1.0f, 0.7f));
+    Gizmos::drawSolidSphere(worldMatrix * m_startPoint, radius, Vector4(0.0f, 1.0f, 1.0f, 0.5f));
+    Gizmos::drawSolidSphere(worldMatrix * m_endPoint, radius, Vector4(0.0f, 1.0f, 1.0f, 0.5f));
 }

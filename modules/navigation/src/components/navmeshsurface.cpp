@@ -11,7 +11,15 @@
 #include <capsulecollider.h>
 #include <meshcollider.h>
 
+#include <Recast.h>
+#include <RecastAlloc.h>
+#include <RecastAssert.h>
+
+#include <DetourNavMesh.h>
+#include <DetourNavMeshBuilder.h>
+
 #include "components/navmeshobstacle.h"
+#include "components/navmeshlink.h"
 
 #include "resources/navmesh.h"
 #include "utils/debugrender.h"
@@ -130,10 +138,16 @@ void NavMeshSurface::onNavMeshChanged() {
 bool NavMeshSurface::build() {
     PROFILE_FUNCTION();
 
-    NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
-    if(!navSystem->buildNavMeshFromSurface(*this)) {
-        aError() << "NavMeshSurface: Failed to build NavMesh";
+    Vector3Vector vertices;
+    std::vector<int> indices;
+
+    if(!collectGeometry(vertices, indices)) {
+        aError() << "NavMeshSurface: Unable to collect geometry.";
         return false;
+    }
+
+    if(!buildNavMeshData(vertices, indices)) {
+        aError() << "NavMeshSurface: Unable to build nav mesh data.";
     }
 
     return m_navMesh != nullptr && m_navMesh->state() == NavMesh::Ready;
@@ -273,3 +287,273 @@ void NavMeshSurface::addSphereColliderGeometry(SphereCollider *collider, Vector3
     /// \todo: implement this
 }
 
+bool NavMeshSurface::buildNavMeshData(const Vector3Vector &vertices, const std::vector<int> &indices) {
+    if(vertices.empty() || indices.empty()) {
+        return false;
+    }
+
+    if(m_navMesh == nullptr) {
+        m_navMesh = Engine::objectCreate<NavMesh>(actor()->name());
+        if(!m_navMesh) {
+            aError() << "Navigation: Failed to create NavMesh";
+            return false;
+        }
+    }
+
+    AgentType agent = static_cast<NavigationSystem *>(system())->agentType(m_agentType);
+
+    rcConfig config;
+    memset(&config, 0, sizeof(config));
+    config.cs = agent.radius / 3.0f;
+    config.ch = config.cs / 2.0f;
+    config.walkableSlopeAngle = agent.maxSlope;
+    config.walkableHeight = agent.height / config.ch;
+    config.walkableClimb = agent.maxClimb / config.ch;
+    config.walkableRadius = agent.radius / config.cs;
+    config.maxEdgeLen = 12.0f;
+    config.maxSimplificationError = 1.3f;
+    config.minRegionArea = 8.0f;
+    config.mergeRegionArea = 20.0f;
+    config.maxVertsPerPoly = 6;
+    config.detailSampleDist = 6.0f;
+    config.detailSampleMaxError = 1.0f;
+
+    const float *floatVertices = vertices[0].v;
+    float bmin[3], bmax[3];
+    rcCalcBounds(floatVertices, (int)vertices.size(), bmin, bmax);
+
+    const float expand = 2.0f;
+    bmin[0] -= expand;
+    bmin[1] -= expand;
+    bmin[2] -= expand;
+    bmax[0] += expand;
+    bmax[1] += expand;
+    bmax[2] += expand;
+
+    config.bmin[0] = bmin[0];
+    config.bmin[1] = bmin[1];
+    config.bmin[2] = bmin[2];
+    config.bmax[0] = bmax[0];
+    config.bmax[1] = bmax[1];
+    config.bmax[2] = bmax[2];
+
+    config.width = (int)((config.bmax[0] - config.bmin[0]) / config.cs + 0.5f);
+    config.height = (int)((config.bmax[2] - config.bmin[2]) / config.cs + 0.5f);
+    config.tileSize = m_tileSize;
+
+    rcContext ctx;
+
+    rcHeightfield *hf = rcAllocHeightfield();
+    if(!hf) {
+        return false;
+    }
+
+    if(!rcCreateHeightfield(&ctx, *hf, config.width, config.height, config.bmin, config.bmax, config.cs, config.ch)) {
+        rcFreeHeightField(hf);
+        return false;
+    }
+
+    int numTris = (int)indices.size() / 3;
+    std::vector<unsigned char> triAreaIDs(numTris, 1);
+
+    rcRasterizeTriangles(&ctx, floatVertices, (int)vertices.size(),
+                         indices.data(), triAreaIDs.data(), (int)indices.size() / 3,
+                         *hf, config.walkableClimb);
+
+    rcFilterLowHangingWalkableObstacles(&ctx, config.walkableClimb, *hf);
+    rcFilterLedgeSpans(&ctx, config.walkableHeight, config.walkableClimb, *hf);
+    rcFilterWalkableLowHeightSpans(&ctx, config.walkableHeight, *hf);
+
+    rcCompactHeightfield *chf = rcAllocCompactHeightfield();
+    if(!chf) {
+        rcFreeHeightField(hf);
+        return false;
+    }
+
+    if(!rcBuildCompactHeightfield(&ctx, config.walkableHeight, config.walkableClimb, *hf, *chf)) {
+        rcFreeHeightField(hf);
+        rcFreeCompactHeightfield(chf);
+        return false;
+    }
+
+    rcFreeHeightField(hf);
+
+    rcErodeWalkableArea(&ctx, config.walkableRadius, *chf);
+
+    rcContourSet *cset = rcAllocContourSet();
+    if(!cset) {
+        rcFreeCompactHeightfield(chf);
+        return false;
+    }
+
+    rcPolyMesh *pmesh = rcAllocPolyMesh();
+    if(!pmesh) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        return false;
+    }
+
+    rcPolyMeshDetail *dmesh = rcAllocPolyMeshDetail();
+    if(!dmesh) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        return false;
+    }
+
+    if(!rcBuildDistanceField(&ctx, *chf)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildRegions(&ctx, *chf, 0, config.minRegionArea, config.mergeRegionArea)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildContours(&ctx, *chf, config.maxSimplificationError, config.maxEdgeLen, *cset)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildPolyMesh(&ctx, *cset, config.maxVertsPerPoly, *pmesh)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreeContourSet(cset);
+
+    if(!rcBuildPolyMeshDetail(&ctx, *pmesh, *chf, config.detailSampleDist, config.detailSampleMaxError, *dmesh)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreeCompactHeightfield(chf);
+
+    for(int i = 0; i < pmesh->npolys; ++i) {
+        pmesh->flags[i] = 0xFFFF;
+        pmesh->areas[i] = 1;
+    }
+
+    std::vector<float> offMeshVerts;
+    std::vector<float> offMeshRadii;
+    std::vector<uint32_t> offMeshUserIds;
+    std::vector<uint16_t> offMeshFlags;
+    std::vector<uint8_t> offMeshAreas;
+    std::vector<uint8_t> offMeshDir;
+
+    Scene *scene = NavMeshSurface::scene();
+    if(scene) {
+        static const uint32_t linkHash = Mathf::hashString("navmeshlink");
+        for(Object *obj : scene->getObjectsInGroupByHash(linkHash)) {
+            NavMeshLink *link = dynamic_cast<NavMeshLink *>(obj);
+            if(!link || !link->isEnabled()) continue;
+
+            Vector3 worldPosition = link->transform()->worldPosition();
+
+            Vector3 start = worldPosition + link->startPoint();
+            Vector3 end = worldPosition + link->endPoint();
+            bool bidirectional = link->isBidirectional();
+
+            offMeshVerts.push_back(start.x);
+            offMeshVerts.push_back(start.y);
+            offMeshVerts.push_back(start.z);
+            offMeshVerts.push_back(end.x);
+            offMeshVerts.push_back(end.y);
+            offMeshVerts.push_back(end.z);
+
+            offMeshFlags.push_back(0xFFFF);
+            offMeshFlags.push_back(0xFFFF);
+
+            offMeshAreas.push_back(1);
+            offMeshAreas.push_back(1);
+
+            offMeshDir.push_back(bidirectional ? 1 : 0);
+            offMeshDir.push_back(bidirectional ? 1 : 0);
+
+            offMeshRadii.push_back(agent.radius);
+            offMeshRadii.push_back(agent.radius);
+
+            offMeshUserIds.push_back(0);
+            offMeshUserIds.push_back(0);
+        }
+
+        if(!offMeshVerts.empty()) {
+            aInfo() << "Navigation: Adding " << offMeshVerts.size() / 6 << " off-mesh links";
+        }
+    }
+
+    dtNavMeshCreateParams createParams;
+    memset(&createParams, 0, sizeof(createParams));
+    createParams.verts = pmesh->verts;
+    createParams.vertCount = pmesh->nverts;
+    createParams.polys = pmesh->polys;
+    createParams.polyAreas = pmesh->areas;
+    createParams.polyFlags = pmesh->flags;
+    createParams.polyCount = pmesh->npolys;
+    createParams.nvp = pmesh->nvp;
+    createParams.detailMeshes = dmesh->meshes;
+    createParams.detailVerts = dmesh->verts;
+    createParams.detailVertsCount = dmesh->nverts;
+    createParams.detailTris = dmesh->tris;
+    createParams.detailTriCount = dmesh->ntris;
+    createParams.walkableHeight = config.walkableHeight;
+    createParams.walkableRadius = config.walkableRadius;
+    createParams.walkableClimb = config.walkableClimb;
+    createParams.bmin[0] = pmesh->bmin[0];
+    createParams.bmin[1] = pmesh->bmin[1];
+    createParams.bmin[2] = pmesh->bmin[2];
+    createParams.bmax[0] = pmesh->bmax[0];
+    createParams.bmax[1] = pmesh->bmax[1];
+    createParams.bmax[2] = pmesh->bmax[2];
+    createParams.cs = config.cs;
+    createParams.ch = config.ch;
+    createParams.buildBvTree = true;
+
+    if(!offMeshVerts.empty()) {
+        createParams.offMeshConVerts = offMeshVerts.data();
+        createParams.offMeshConRad = offMeshRadii.data();
+        createParams.offMeshConFlags = offMeshFlags.data();
+        createParams.offMeshConAreas = offMeshAreas.data();
+        createParams.offMeshConDir = offMeshDir.data();
+        createParams.offMeshConUserID = offMeshUserIds.data();
+        createParams.offMeshConCount = offMeshVerts.size() / 6;
+    }
+
+    unsigned char *navData = nullptr;
+    int navDataSize = 0;
+    if(!dtCreateNavMeshData(&createParams, &navData, &navDataSize)) {
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreePolyMesh(pmesh);
+    rcFreePolyMeshDetail(dmesh);
+
+    ByteArray outData;
+    outData.assign(navData, navData + navDataSize);
+    dtFree(navData);
+
+    if(!m_navMesh->setData(outData)) {
+        return false;
+    }
+
+    onNavMeshChanged();
+
+    return true;
+}

@@ -4,26 +4,19 @@
 #include <system.h>
 
 #include <DetourNavMesh.h>
-
 #include <DetourTileCache.h>
 #include <DetourTileCacheBuilder.h>
 
-class Scene;
 class NavMesh;
 class NavMeshObstacle;
-class NavMeshLink;
 class NavMeshAgent;
 class NavMeshSurface;
-
-class BoxCollider;
-class MeshCollider;
-class CapsuleCollider;
-class SphereCollider;
 
 struct rcCompactHeightfield;
 struct rcConfig;
 
 struct AgentType {
+    TString name;
     float height = 2.0f;
     float radius = 0.5f;
     float maxClimb = 0.75f;
@@ -39,25 +32,21 @@ public:
 
     void update(World *world) override;
 
-    int threadPolicy() const override { return Pool; };
+    int threadPolicy() const override { return Pool; }
 
-    std::vector<Vector3> findPath(NavMeshAgent &agent);
+    std::vector<Vector3> findPath(NavMeshAgent &agent, const Vector3 &target);
 
     bool registerNavMesh(NavMeshSurface &surface);
     void unregisterNavMesh(NavMeshSurface &surface);
 
     NavMesh *findNavMeshAtPosition(const Vector3 &position, int agentType) const;
 
-    bool addObstacle(NavMeshObstacle &obstacle);
+    uint32_t addObstacle(NavMeshObstacle &obstacle);
     bool removeObstacle(uint32_t obstacleId);
-
-    bool buildNavMeshFromSurface(NavMeshSurface &surface);
 
     AgentType agentType(int index) const;
 
 protected:
-    bool buildNavMeshData(NavMeshSurface &surface, const Vector3Vector &vertices, const std::vector<int> &indices);
-
     std::vector<Vector3> findPathOnNavMesh(NavMesh *navMesh, const Vector3 &start, const Vector3 &end, int agentType);
 
     bool rebuildTileCacheTiles(NavMesh *navMesh);

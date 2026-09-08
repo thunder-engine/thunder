@@ -9,7 +9,22 @@
 #include <log.h>
 
 NavMeshAgent::NavMeshAgent() :
-    NativeBehaviour() {
+        NativeBehaviour(),
+        m_currentWaypointIndex(0),
+        m_state(NavigationState::Idle),
+        m_agentType(0),
+        m_maxSpeed(3.0f),
+        m_angularSpeed(120.0f),
+        m_maxAcceleration(8.0f),
+        m_stoppingDistance(0.5f),
+        m_stuckTimer(0.0f),
+        m_stuckThreshold(2.0f),
+        m_pathDeviationThreshold(1.0f),
+        m_autoBraking(true),
+        m_autoRepath(true),
+        m_paused(false),
+        m_hasTarget(false),
+        m_reachedDestination(false) {
     PROFILE_FUNCTION();
 }
 
@@ -75,6 +90,12 @@ void NavMeshAgent::setAutoRepath(bool autoRepath) {
     m_autoRepath = autoRepath;
 }
 
+Vector3Vector NavMeshAgent::calculatePath(const Vector3 &target) {
+    PROFILE_FUNCTION();
+
+    return static_cast<NavigationSystem *>(system())->findPath(*this, target);
+}
+
 bool NavMeshAgent::moveTo(const Vector3 &target) {
     PROFILE_FUNCTION();
 
@@ -84,7 +105,9 @@ bool NavMeshAgent::moveTo(const Vector3 &target) {
     m_currentWaypointIndex = 0;
     m_reachedDestination = false;
 
-    requestPath();
+    m_path = calculatePath(m_target);
+    checkState();
+
     return true;
 }
 
@@ -117,18 +140,14 @@ void NavMeshAgent::pause(bool paused) {
     m_paused = paused;
 }
 
-void NavMeshAgent::requestPath() {
+void NavMeshAgent::checkState() {
     PROFILE_FUNCTION();
 
-    Vector3 position = transform()->position();
-
-    NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
-    m_path = navSystem->findPath(*this);
     if(!m_path.empty()) {
         m_currentWaypointIndex = 0;
         m_state = NavigationState::Moving;
         m_stuckTimer = 0.0f;
-        m_lastPosition = position;
+        m_lastPosition = transform()->position();
 
         pathFound();
     } else {
@@ -229,16 +248,15 @@ void NavMeshAgent::updateRotation(float deltaTime) {
         return;
     }
 
-    Vector3 dir = direction;
-    dir.y = 0.0f;
-    dir.normalize();
+    direction.y = 0.0f;
+    direction.normalize();
 
     float currentYaw = transform()->rotation().y;
     currentYaw = fmod(currentYaw, 360.0f);
     if(currentYaw > 180.0f) currentYaw -= 360.0f;
     if(currentYaw < -180.0f) currentYaw += 360.0f;
 
-    float targetYaw = atan2(dir.x, dir.z) * RAD2DEG;
+    float targetYaw = atan2(direction.x, direction.z) * RAD2DEG;
 
     float maxDelta = m_angularSpeed * deltaTime;
     float deltaYaw = targetYaw - currentYaw;
@@ -303,7 +321,8 @@ void NavMeshAgent::handleStuckDetection(float deltaTime) {
         if(m_stuckTimer > m_stuckThreshold) {
             stuck();
             if(m_hasTarget && m_autoRepath) {
-                requestPath();
+                m_path = calculatePath(m_target);
+                checkState();
             } else {
                 m_state = NavigationState::Idle;
             }
@@ -322,11 +341,11 @@ void NavMeshAgent::checkPathDeviation() {
     }
 
     Vector3 currentPos = transform()->position();
-    Vector3 targetWaypoint = m_path[m_currentWaypointIndex];
 
     if(isOffPath(currentPos, m_pathDeviationThreshold)) {
         aDebug() << "Agent deviated from path, recalculating...";
-        requestPath();
+        m_path = calculatePath(m_target);
+        checkState();
     }
 }
 

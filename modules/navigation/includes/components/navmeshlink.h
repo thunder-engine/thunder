@@ -19,23 +19,31 @@ public:
     NavMeshLink();
     ~NavMeshLink();
 
-    Vector3 startPoint() const { return m_startPoint; }
+    int agentType() const;
+    void setAgentType(int type);
+
+    int areaType() const;
+    void setAreaType(int type);
+
+    Vector3 startPoint() const;
     void setStartPoint(const Vector3 &point);
 
-    Vector3 endPoint() const { return m_endPoint; }
+    Vector3 endPoint() const;
     void setEndPoint(const Vector3 &point);
 
-    bool isBidirectional() const { return m_bidirectional; }
+    bool isBidirectional() const;
     void setBidirectional(bool bidirectional);
 
 protected:
+    void drawGizmos() override;
     void drawGizmosSelected() override;
 
 protected:
     Vector3 m_startPoint = Vector3(-2.0f, 0.0f, 0.0f);
     Vector3 m_endPoint = Vector3(2.0f, 0.0f, 0.0f);
 
-    float m_width = 0.0f;
+    int m_agentType = 0;
+    int m_areaType = 1;
 
     bool m_bidirectional = true;
 
