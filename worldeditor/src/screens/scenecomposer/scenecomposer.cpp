@@ -204,7 +204,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
     connect(Editor::plugins(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::onRepickSelected);
+    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::selectionChanged);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 
@@ -398,10 +398,6 @@ void SceneComposer::onSetActiveScene() {
     }
 }
 
-void SceneComposer::onRepickSelected() {
-    emit selectionChanged();
-}
-
 void SceneComposer::backup() {
     m_backupScenes.clear();
 
@@ -421,9 +417,6 @@ void SceneComposer::backup() {
 
 void SceneComposer::restore() {
     if(!m_backupScenes.empty()) {
-        emit objectsHierarchyChanged(nullptr);
-        emit selectionChanged();
-
         Engine::world()->unloadAll();
         Engine::resourceSystem()->processEvents();
 
@@ -431,6 +424,19 @@ void SceneComposer::restore() {
         for(auto &it : m_backupScenes) {
             Map *map = dynamic_cast<Map *>(Engine::toObject(Bson::load(it)));
             if(map) {
+                // Restore selection
+                SelectTool::SelectList &list = m_controller->selectList();
+                for(auto &it : list) {
+                    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it.uuid));
+                    if(actor) {
+                        it.object = actor;
+                    } else { // Object been deleted
+                        list.removeOne(it);
+                    }
+                }
+
+                emit selectionChanged();
+
                 Scene *scene = map->scene();
                 scene->setParent(world); // Set parent after detach previous one
             }
@@ -438,19 +444,6 @@ void SceneComposer::restore() {
         m_backupScenes.clear();
 
         emit objectsHierarchyChanged(world);
-        // Repick selection
-        bool first = true;
-        SelectTool::SelectList &list = m_controller->selectList();
-        for(auto &it : list) {
-            Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it.uuid));
-            if(actor) {
-                it.object = actor;
-            } else { // Object was deleted
-                list.removeOne(it);
-            }
-        }
-
-        onRepickSelected();
     }
 }
 
