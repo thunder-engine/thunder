@@ -5,6 +5,8 @@
 #include <cstring>
 
 #ifdef SHARED_DEFINE
+#include "navigationpanel.h"
+
 Module *moduleCreate(Engine *engine) {
     return new Navigation(engine);
 }
@@ -14,28 +16,34 @@ static const char *meta = \
     "{"
     "   \"module\": \"Navigation\","
     "   \"version\": \"1.0\","
-    "   \"description\": \"Navigation Module\","
+    "   \"description\": \"AI Navigation Module\","
     "   \"author\": \"Evgeniy Prikazchikov\","
-    "   \"dependencies\": ["
-    "       \"Bullet\""
-    "   ]"
+    "   \"dependencies\": {"
+    "       \"Bullet\": \"module\""
+    "   },"
     "   \"objects\": {"
-    "       \"NavigationSystem\": \"system\""
+    "       \"NavigationSystem\": \"system\","
+    "       \"NavigationPanel\": \"gadget\""
     "   },"
     "   \"components\": ["
-    "       \"NavigationAgent\","
-    "       \"NavigationLink\","
-    "       \"NavigationObstacle\""
+    "       \"NavMeshAgent\","
+    "       \"NavMeshLink\","
+    "       \"NavMeshObstacle\","
+    "       \"NavMeshSurface\""
     "   ]"
     "}";
 
 Navigation::Navigation(Engine *engine) :
-    Module(engine),
-    m_system(nullptr) {
+        Module(engine),
+        m_system(nullptr),
+        m_panel(nullptr) {
 }
 
 Navigation::~Navigation() {
     delete m_system;
+#ifdef SHARED_DEFINE
+    delete m_panel;
+#endif
 }
 
 const char *Navigation::metaInfo() const {
@@ -49,5 +57,13 @@ void *Navigation::getObject(const char *name) {
         }
         return m_system;
     }
+#ifdef SHARED_DEFINE
+    if(strcmp(name, "NavigationPanel") == 0) {
+        if(m_panel == nullptr) {
+            m_panel = new NavigationPanel();
+        }
+        return m_panel;
+    }
+#endif
     return nullptr;
 }

@@ -10,6 +10,7 @@ Project {
     ]
 
     property stringList incPaths: [
+        "editor",
         "includes",
         "../physics/bullet/includes",
         "../physics/bullet/includes/components",
@@ -31,12 +32,18 @@ Project {
     DynamicLibrary {
         name: "navigation-editor"
         condition: navigation.desktop
-        files: srcFiles
+        files: [
+            "editor/*.cpp",
+            "editor/*.h",
+            "editor/*.ui"
+        ].concat(navigation.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "bullet-editor" }
+        Depends { name: "editor" }
+        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         Depends { name: "recast" }
         bundle.isBundle: false
 
@@ -58,7 +65,7 @@ Project {
 
     StaticLibrary {
         name: "navigation"
-        files: navigation.srcFiles
+        files: srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         bundle.isBundle: false

@@ -13,6 +13,8 @@
     #define NAVIGATION_EXPORT
 #endif
 
+class EditorGadget;
+
 class Navigation : public Module {
 public:
     Navigation(Engine *engine);
@@ -24,6 +26,7 @@ public:
 
 protected:
     System *m_system;
+    EditorGadget *m_panel;
 
 };
 #ifdef SHARED_DEFINE
