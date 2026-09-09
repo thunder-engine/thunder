@@ -2,6 +2,8 @@
 
 #include "navigationsystem.h"
 
+#include <float.h>
+
 #include <transform.h>
 #include <timer.h>
 #include <gizmos.h>
