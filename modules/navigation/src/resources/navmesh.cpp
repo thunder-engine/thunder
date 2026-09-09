@@ -4,6 +4,8 @@
 #include <engine.h>
 #include <systems/resourcesystem.h>
 
+#include <cstring>
+
 #include <Recast.h>
 #include <RecastAlloc.h>
 #include <RecastAssert.h>
