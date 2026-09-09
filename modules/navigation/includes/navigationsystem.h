@@ -16,7 +16,7 @@ struct rcCompactHeightfield;
 struct rcConfig;
 
 struct AgentType {
-    TString name;
+    TString name = "Humanoid";
     float height = 2.0f;
     float radius = 0.5f;
     float maxClimb = 0.75f;
@@ -41,10 +41,11 @@ public:
 
     NavMesh *findNavMeshAtPosition(const Vector3 &position, int agentType) const;
 
+    static AgentType agentType(int index);
+    static void setAgentType(int index, const AgentType &type);
+
     uint32_t addObstacle(NavMeshObstacle &obstacle);
     bool removeObstacle(uint32_t obstacleId);
-
-    AgentType agentType(int index) const;
 
 protected:
     std::vector<Vector3> findPathOnNavMesh(NavMesh *navMesh, const Vector3 &start, const Vector3 &end, int agentType);
@@ -54,7 +55,7 @@ protected:
 protected:
     std::unordered_map<NavMeshSurface *, NavMesh *> m_surfaceNavMeshes;
 
-    std::vector<AgentType> m_agentTypes;
+    static std::vector<AgentType> s_agentTypes;
 
     mutable std::mutex m_dataMutex;
 

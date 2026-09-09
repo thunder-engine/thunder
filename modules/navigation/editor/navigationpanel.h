@@ -3,6 +3,8 @@
 
 #include <editor/editorgadget.h>
 
+#include <navigationsystem.h>
+
 namespace Ui {
     class NavigationPanel;
 }
@@ -15,6 +17,17 @@ public:
     ~NavigationPanel();
 
 private:
+    void loadSettings();
+    void saveSettings();
+    void updateEditor();
+    void updateAgentType();
+
+private slots:
+    void onTypeSelected(int row);
+    void onAddType();
+    void onRemoveType();
+
+private:
     void onUpdated() override {}
 
     void onSelectionChanged() override {}
@@ -22,6 +35,8 @@ private:
 
 private:
     Ui::NavigationPanel *ui;
+    std::vector<AgentType> m_agentTypes;
+    bool m_updating = false;
 
 };
 

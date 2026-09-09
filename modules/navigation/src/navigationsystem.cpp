@@ -19,6 +19,8 @@
 
 #include "resources/navmesh.h"
 
+std::vector<AgentType> NavigationSystem::s_agentTypes = {AgentType()};
+
 class SimpleTileCacheCompressor : public dtTileCacheCompressor {
 public:
     int maxCompressedSize(const int bufferSize) override {
@@ -57,7 +59,6 @@ NavigationSystem::NavigationSystem() :
 
     setName("Navigation");
 
-    m_agentTypes.push_back(AgentType());
 }
 
 NavigationSystem::~NavigationSystem() {
@@ -84,6 +85,28 @@ NavigationSystem::~NavigationSystem() {
 bool NavigationSystem::init() {
     PROFILE_FUNCTION();
 
+    VariantMap navigation = Engine::value("navigation").toMap();
+    VariantList types = navigation["navmesh"].toList();
+    std::vector<AgentType> configuredTypes;
+    for(const Variant &item : types) {
+        VariantMap data = item.toMap();
+        if(data.empty()) {
+            continue;
+        }
+
+        AgentType type;
+        type.name = data["name"].toString();
+        type.height = data["height"].toFloat();
+        type.radius = data["radius"].toFloat();
+        type.maxClimb = data["maxClimb"].toFloat();
+        type.maxSlope = data["maxSlope"].toFloat();
+
+        configuredTypes.push_back(type);
+    }
+    if(!configuredTypes.empty()) {
+        s_agentTypes = configuredTypes;
+    }
+
     m_tileCompressor = new SimpleTileCacheCompressor();
 
     dtTileCacheParams cacheParams;
@@ -93,9 +116,9 @@ bool NavigationSystem::init() {
     cacheParams.orig[2] = 0.0f;
     cacheParams.cs = 0.3f;
     cacheParams.ch = 0.2f;
-    cacheParams.walkableHeight = m_agentTypes[0].height;
-    cacheParams.walkableRadius = m_agentTypes[0].radius;
-    cacheParams.walkableClimb = m_agentTypes[0].maxClimb;
+    cacheParams.walkableHeight = s_agentTypes[0].height;
+    cacheParams.walkableRadius = s_agentTypes[0].radius;
+    cacheParams.walkableClimb = s_agentTypes[0].maxClimb;
     cacheParams.width = 1024;
     cacheParams.height = 1024;
     cacheParams.maxTiles = 1024 * 1024;
@@ -186,9 +209,9 @@ std::vector<Vector3> NavigationSystem::findPathOnNavMesh(NavMesh *navMesh, const
     float endPos[3] = {end.x, end.y, end.z};
     float nearestStart[3], nearestEnd[3];
     float halfExtents[3] = {
-        m_agentTypes[agentType].radius,
-        m_agentTypes[agentType].height,
-        m_agentTypes[agentType].radius
+        s_agentTypes[agentType].radius,
+        s_agentTypes[agentType].height,
+        s_agentTypes[agentType].radius
     };
 
     if(dtStatusFailed(query.findNearestPoly(startPos, halfExtents, &filter, &startRef, nearestStart))) {
@@ -370,9 +393,19 @@ bool NavigationSystem::removeObstacle(uint32_t obstacleId) {
     return true;
 }
 
-AgentType NavigationSystem::agentType(int index) const {
-    if(index < m_agentTypes.size()) {
-        return m_agentTypes[index];
+void NavigationSystem::setAgentType(int index, const AgentType &type) {
+    if(index >= 0 && index < static_cast<int>(s_agentTypes.size())) {
+        s_agentTypes[index] = type;
+    } else if(index == static_cast<int>(s_agentTypes.size())) {
+        s_agentTypes.push_back(type);
+    } else {
+        return;
+    }
+}
+
+AgentType NavigationSystem::agentType(int index) {
+    if(index >= 0 && index < static_cast<int>(s_agentTypes.size())) {
+        return s_agentTypes[index];
     }
     return AgentType();
 }

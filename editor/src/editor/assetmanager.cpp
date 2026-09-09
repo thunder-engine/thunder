@@ -467,6 +467,10 @@ void AssetManager::dumpBundle() {
     values[gProjectName] = Editor::project()->projectName();
     values[gProjectVersion] = Editor::project()->projectVersion();
 
+    for(const TString &name : Editor::project()->dynamicPropertyNames()) {
+        values[name] = Editor::project()->property(name.data());
+    }
+
     root[gSettings] = values;
 
     File file(Editor::project()->importPath() + "/" + gIndex);
