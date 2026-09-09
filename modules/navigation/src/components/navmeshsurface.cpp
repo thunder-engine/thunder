@@ -1,5 +1,7 @@
 #include "components/navmeshsurface.h"
 
+#include <cstring>
+
 #include <actor.h>
 #include <scene.h>
 #include <transform.h>
