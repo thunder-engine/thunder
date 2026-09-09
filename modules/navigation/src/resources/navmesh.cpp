@@ -97,7 +97,7 @@ bool NavMesh::setData(const ByteArray &data) {
             return false;
         }
 
-        const dtMeshHeader *header = (const dtMeshHeader*)data.data();
+        const dtMeshHeader *header = reinterpret_cast<const dtMeshHeader*>(data.data());
 
         dtNavMeshParams params;
         memset(&params, 0, sizeof(params));
@@ -122,7 +122,7 @@ bool NavMesh::setData(const ByteArray &data) {
         m_tileRef = 0;
     }
 
-    unsigned char *tileDataCopy = (unsigned char*)dtAlloc(data.size(), DT_ALLOC_PERM);
+    unsigned char *tileDataCopy = reinterpret_cast<unsigned char *>(dtAlloc(data.size(), DT_ALLOC_PERM));
     memcpy(tileDataCopy, data.data(), data.size());
 
     dtStatus status = m_navMesh->addTile(tileDataCopy, data.size(), DT_TILE_FREE_DATA, 0, &m_tileRef);

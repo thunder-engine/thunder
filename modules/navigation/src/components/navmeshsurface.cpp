@@ -503,7 +503,7 @@ bool NavMeshSurface::buildNavMeshData(const Vector3Vector &vertices, const std::
     }
 
     if(!offMeshVerts.empty()) {
-        aInfo() << "Navigation: Adding " << offMeshVerts.size() / 6 << " off-mesh links";
+        aInfo() << "Navigation: Adding " << (int)offMeshVerts.size() / 6 << " off-mesh links";
     }
 
     dtNavMeshCreateParams createParams;
