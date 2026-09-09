@@ -41,6 +41,7 @@ public:
 
     NavMesh *findNavMeshAtPosition(const Vector3 &position, int agentType) const;
 
+    static int agentTypeCount();
     static AgentType agentType(int index);
     static void setAgentType(int index, const AgentType &type);
 

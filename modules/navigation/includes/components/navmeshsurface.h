@@ -19,20 +19,23 @@ class NAVIGATION_EXPORT NavMeshSurface : public Component {
     A_PROPERTIES(
         A_PROPERTY(bool, autoBuild, NavMeshSurface::autoBuild, NavMeshSurface::setAutoBuild),
         A_PROPERTY(int, tileSize, NavMeshSurface::tileSize, NavMeshSurface::setTileSize),
-        A_PROPERTY(int, agentType, NavMeshSurface::agentType, NavMeshSurface::setAgentType),
-        A_PROPERTY(int, geometrySource, NavMeshSurface::geometrySource, NavMeshSurface::setGeometrySource),
-        A_PROPERTY(TString, includeTag, NavMeshSurface::includeTag, NavMeshSurface::setIncludeTag)
+        A_PROPERTYEX(int, agentType, NavMeshSurface::agentType, NavMeshSurface::setAgentType, "editor=AgentTypeEdit"),
+        A_PROPERTYEX(int, geometrySource, NavMeshSurface::geometrySource, NavMeshSurface::setGeometrySource, "enum=GeometrySource")
     )
     A_METHODS(
         A_METHOD(bool, NavMeshSurface::build),
         A_METHOD(void, NavMeshSurface::clear)
     )
-    A_NOENUMS()
+    A_ENUMS(
+        A_ENUM(GeometrySource,
+               A_VALUE(AllColliders),
+               A_VALUE(CollidersInHierarchy))
+    )
 
 public:
-    enum SurfaceGeometrySource {
+    enum GeometrySource {
         AllColliders,
-        CollidersWithTag
+        CollidersInHierarchy
     };
 
 public:
@@ -50,9 +53,6 @@ public:
 
     int geometrySource() const { return m_geometrySource; }
     void setGeometrySource(int source);
-
-    TString includeTag() const { return m_includeTag; }
-    void setIncludeTag(const TString &tag);
 
     NavMesh *navMesh() const { return m_navMesh; }
     void setNavMesh(NavMesh *navMesh);
@@ -80,8 +80,6 @@ protected:
 
 protected:
     friend class NavigationSystem;
-
-    TString m_includeTag;
 
     NavMesh *m_navMesh;
 

@@ -6,6 +6,8 @@
 #include <world.h>
 #include <transform.h>
 
+#include <cmath>
+
 #include <systems/resourcesystem.h>
 
 #include <DetourNavMeshQuery.h>
@@ -363,12 +365,20 @@ uint32_t NavigationSystem::addObstacle(NavMeshObstacle &obstacle) {
     }
 
     Transform *transform = obstacle.transform();
-    Vector3 position = transform->position();
+    Vector3 position = transform->worldPosition();
 
     std::lock_guard<std::mutex> lock(m_dataMutex);
 
     dtObstacleRef obstacleRef;
-    dtStatus status = m_tileCache->addObstacle(position.v, obstacle.radius(), obstacle.height(), &obstacleRef);
+    dtStatus status;
+    if(obstacle.shape() == NavMeshObstacle::Box) {
+        Vector3 halfExtents = obstacle.size() * 0.5f;
+        Vector3 rotation = transform->worldRotation();
+        float yRadians = rotation.y * static_cast<float>(std::acos(-1.0) / 180.0);
+        status = m_tileCache->addBoxObstacle(position.v, halfExtents.v, yRadians, &obstacleRef);
+    } else {
+        status = m_tileCache->addObstacle(position.v, obstacle.radius(), obstacle.height(), &obstacleRef);
+    }
     if(dtStatusFailed(status)) {
         return 0;
     }
@@ -401,6 +411,10 @@ void NavigationSystem::setAgentType(int index, const AgentType &type) {
     } else {
         return;
     }
+}
+
+int NavigationSystem::agentTypeCount() {
+    return static_cast<int>(s_agentTypes.size());
 }
 
 AgentType NavigationSystem::agentType(int index) {

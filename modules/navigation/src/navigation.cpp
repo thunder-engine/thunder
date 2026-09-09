@@ -6,6 +6,7 @@
 
 #ifdef SHARED_DEFINE
 #include "navigationpanel.h"
+#include "property/agenttypeedit.h"
 
 Module *moduleCreate(Engine *engine) {
     return new Navigation(engine);
@@ -23,7 +24,8 @@ static const char *meta = \
     "   },"
     "   \"objects\": {"
     "       \"NavigationSystem\": \"system\","
-    "       \"NavigationPanel\": \"gadget\""
+    "       \"NavigationPanel\": \"gadget\","
+    "       \"AgentTypeEdit\": \"property\""
     "   },"
     "   \"components\": ["
     "       \"NavMeshAgent\","
@@ -63,6 +65,9 @@ void *Navigation::getObject(const char *name) {
             m_panel = new NavigationPanel();
         }
         return m_panel;
+    }
+    if(strcmp(name, "AgentTypeEdit") == 0) {
+        return new AgentTypeEdit();
     }
 #endif
     return nullptr;

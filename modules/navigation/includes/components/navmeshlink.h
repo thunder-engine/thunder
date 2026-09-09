@@ -8,6 +8,7 @@ class NAVIGATION_EXPORT NavMeshLink : public Component {
     A_OBJECT(NavMeshLink, Component, Components/Navigation)
 
     A_PROPERTIES(
+        A_PROPERTYEX(int, agentType, NavMeshLink::agentType, NavMeshLink::setAgentType, "editor=AgentTypeEdit"),
         A_PROPERTY(Vector3, startPoint, NavMeshLink::startPoint, NavMeshLink::setStartPoint),
         A_PROPERTY(Vector3, endPoint, NavMeshLink::endPoint, NavMeshLink::setEndPoint),
         A_PROPERTY(bool, bidirectional, NavMeshLink::isBidirectional, NavMeshLink::setBidirectional)

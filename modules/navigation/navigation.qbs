@@ -35,7 +35,10 @@ Project {
         files: [
             "editor/*.cpp",
             "editor/*.h",
-            "editor/*.ui"
+            "editor/*.ui",
+            "editor/property/*.cpp",
+            "editor/property/*.h",
+            "editor/property/*.ui"
         ].concat(navigation.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }

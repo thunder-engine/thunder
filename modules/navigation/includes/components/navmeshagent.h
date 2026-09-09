@@ -8,7 +8,7 @@ class NAVIGATION_EXPORT NavMeshAgent : public NativeBehaviour {
     A_OBJECT(NavMeshAgent, NativeBehaviour, Components/Navigation)
 
     A_PROPERTIES(
-        A_PROPERTY(int, agentType, NavMeshAgent::agentType, NavMeshAgent::setAgentType),
+        A_PROPERTYEX(int, agentType, NavMeshAgent::agentType, NavMeshAgent::setAgentType, "editor=AgentTypeEdit"),
         A_PROPERTY(float, speed, NavMeshAgent::speed, NavMeshAgent::setSpeed),
         A_PROPERTY(float, acceleration, NavMeshAgent::acceleration, NavMeshAgent::setAcceleration),
         A_PROPERTY(float, stoppingDistance, NavMeshAgent::stoppingDistance, NavMeshAgent::setStoppingDistance),

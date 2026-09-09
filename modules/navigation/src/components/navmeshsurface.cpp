@@ -32,7 +32,7 @@ NavMeshSurface::NavMeshSurface() :
         m_tileSize(256),
         m_agentType(0),
         m_geometrySource(AllColliders),
-        m_autoBuild(true) {
+        m_autoBuild(false) {
     PROFILE_FUNCTION();
 
     static uint32_t hash = Mathf::hashString("navsurf");
@@ -103,18 +103,9 @@ void NavMeshSurface::setAgentType(int type) {
 }
 
 void NavMeshSurface::setGeometrySource(int source) {
-    SurfaceGeometrySource newSource = static_cast<SurfaceGeometrySource>(source);
+    GeometrySource newSource = static_cast<GeometrySource>(source);
     if(m_geometrySource != newSource) {
         m_geometrySource = newSource;
-        if(m_autoBuild) {
-            build();
-        }
-    }
-}
-
-void NavMeshSurface::setIncludeTag(const TString &tag) {
-    if(m_includeTag != tag) {
-        m_includeTag = tag;
         if(m_autoBuild) {
             build();
         }
@@ -183,35 +174,44 @@ void NavMeshSurface::drawGizmosSelected() {
 }
 
 bool NavMeshSurface::collectGeometry(Vector3Vector &outVertices, std::vector<int> &outIndices) {
-    static uint32_t hash = Mathf::hashString("collider");
+    ObjectList list;
+    if(m_geometrySource == AllColliders) {
+        static uint32_t hash = Mathf::hashString("collider");
+        Scene *scene = NavMeshSurface::scene();
+        list = scene->getObjectsInGroupByHash(hash);
+    } else if(m_geometrySource == CollidersInHierarchy) {
+        for(auto it : actor()->componentsInChild("Collider")) {
+            list.push_back(it);
+        }
+    }
 
-    Scene *scene = NavMeshSurface::scene();
-    for(auto it : scene->getObjectsInGroupByHash(hash)) {
+    for(auto it : list) {
         Collider *collider = dynamic_cast<Collider *>(it);
+        if(!collider || !collider->isEnabled()) continue;
         Actor *actor = collider->actor();
         if(!actor || !actor->isEnabled()) continue;
         if(actor->getComponent<NavMeshObstacle>() != nullptr) continue;
 
         BoxCollider *boxCollider = dynamic_cast<BoxCollider *>(collider);
-        if(boxCollider && boxCollider->isEnabled()) {
+        if(boxCollider) {
             addBoxColliderGeometry(boxCollider, outVertices, outIndices);
             continue;
         }
 
         MeshCollider *meshCollider = dynamic_cast<MeshCollider *>(collider);
-        if(meshCollider && meshCollider->isEnabled()) {
+        if(meshCollider) {
             addMeshColliderGeometry(meshCollider, outVertices, outIndices);
             continue;
         }
 
         CapsuleCollider *capsuleCollider = dynamic_cast<CapsuleCollider *>(collider);
-        if(capsuleCollider && capsuleCollider->isEnabled()) {
+        if(capsuleCollider) {
             addCapsuleColliderGeometry(capsuleCollider, outVertices, outIndices);
             continue;
         }
 
         SphereCollider *sphereCollider = dynamic_cast<SphereCollider *>(collider);
-        if(sphereCollider && sphereCollider->isEnabled()) {
+        if(sphereCollider) {
             addSphereColliderGeometry(sphereCollider, outVertices, outIndices);
             continue;
         }
@@ -456,45 +456,54 @@ bool NavMeshSurface::buildNavMeshData(const Vector3Vector &vertices, const std::
     std::vector<uint8_t> offMeshAreas;
     std::vector<uint8_t> offMeshDir;
 
-    Scene *scene = NavMeshSurface::scene();
-    if(scene) {
-        static const uint32_t linkHash = Mathf::hashString("navmeshlink");
-        for(Object *obj : scene->getObjectsInGroupByHash(linkHash)) {
-            NavMeshLink *link = dynamic_cast<NavMeshLink *>(obj);
-            if(!link || !link->isEnabled()) continue;
-
-            Vector3 worldPosition = link->transform()->worldPosition();
-
-            Vector3 start = worldPosition + link->startPoint();
-            Vector3 end = worldPosition + link->endPoint();
-            bool bidirectional = link->isBidirectional();
-
-            offMeshVerts.push_back(start.x);
-            offMeshVerts.push_back(start.y);
-            offMeshVerts.push_back(start.z);
-            offMeshVerts.push_back(end.x);
-            offMeshVerts.push_back(end.y);
-            offMeshVerts.push_back(end.z);
-
-            offMeshFlags.push_back(0xFFFF);
-            offMeshFlags.push_back(0xFFFF);
-
-            offMeshAreas.push_back(1);
-            offMeshAreas.push_back(1);
-
-            offMeshDir.push_back(bidirectional ? 1 : 0);
-            offMeshDir.push_back(bidirectional ? 1 : 0);
-
-            offMeshRadii.push_back(agent.radius);
-            offMeshRadii.push_back(agent.radius);
-
-            offMeshUserIds.push_back(0);
-            offMeshUserIds.push_back(0);
+    ObjectList links;
+    if(m_geometrySource == AllColliders) {
+        Scene *scene = NavMeshSurface::scene();
+        if(scene) {
+            static const uint32_t linkHash = Mathf::hashString("navmeshlink");
+            links = scene->getObjectsInGroupByHash(linkHash);
         }
-
-        if(!offMeshVerts.empty()) {
-            aInfo() << "Navigation: Adding " << offMeshVerts.size() / 6 << " off-mesh links";
+    } else if(m_geometrySource == CollidersInHierarchy) {
+        for(Component *component : actor()->componentsInChild("NavMeshLink")) {
+            links.push_back(static_cast<Object *>(component));
         }
+    }
+
+    for(Object *obj : links) {
+        NavMeshLink *link = dynamic_cast<NavMeshLink *>(obj);
+        if(!link || !link->isEnabled() || link->agentType() != m_agentType) continue;
+
+        Vector3 worldPosition = link->transform()->worldPosition();
+
+        Vector3 start = worldPosition + link->startPoint();
+        Vector3 end = worldPosition + link->endPoint();
+        bool bidirectional = link->isBidirectional();
+
+        offMeshVerts.push_back(start.x);
+        offMeshVerts.push_back(start.y);
+        offMeshVerts.push_back(start.z);
+        offMeshVerts.push_back(end.x);
+        offMeshVerts.push_back(end.y);
+        offMeshVerts.push_back(end.z);
+
+        offMeshFlags.push_back(0xFFFF);
+        offMeshFlags.push_back(0xFFFF);
+
+        offMeshAreas.push_back(1);
+        offMeshAreas.push_back(1);
+
+        offMeshDir.push_back(bidirectional ? 1 : 0);
+        offMeshDir.push_back(bidirectional ? 1 : 0);
+
+        offMeshRadii.push_back(agent.radius);
+        offMeshRadii.push_back(agent.radius);
+
+        offMeshUserIds.push_back(0);
+        offMeshUserIds.push_back(0);
+    }
+
+    if(!offMeshVerts.empty()) {
+        aInfo() << "Navigation: Adding " << offMeshVerts.size() / 6 << " off-mesh links";
     }
 
     dtNavMeshCreateParams createParams;
