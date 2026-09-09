@@ -37,6 +37,9 @@ if(desktop)
         "editor/*.cpp"
         "editor/*.h"
         "editor/*.ui"
+        "editor/property/*.cpp"
+        "editor/property/*.h"
+        "editor/property/*.ui"
     )
 
     set(CMAKE_AUTOUIC ON)
