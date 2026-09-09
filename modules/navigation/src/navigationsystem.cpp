@@ -7,6 +7,7 @@
 #include <transform.h>
 
 #include <cmath>
+#include <cstring>
 
 #include <systems/resourcesystem.h>
 
