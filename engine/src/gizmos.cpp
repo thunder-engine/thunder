@@ -338,21 +338,53 @@ void Gizmos::drawWireSphere(const Vector3 &center, float radius, const Vector4 &
     drawWireCircle(center, radius, color, &t);
 }
 /*!
-    Draws a wire capsule in the 3D space with the specified \a center, \a radius, \a height and \a color in the 3D space.
-    Parameter \a transform can be used to move, rotate and scale this capsule.
+    Draws a wire cylinder in the 3D space with the specified \a center, \a radius, \a height and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this cylinder.
 */
-void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 *transform) {
-    A_UNUSED(center);
-    float half = height * 0.5f - radius;
+void Gizmos::drawWireCylinder(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 *transform) {
+    float half = height * 0.5f;
     {
-        Vector3 cap(0, half, 0);
-        Matrix4 t = Matrix4(cap, Quaternion(), Vector3(1.0f));
+        // Top
+        Matrix4 t = Matrix4(center + Vector3(0, half, 0), Quaternion(), Vector3(1.0f));
         if(transform) {
             t = *transform * t;
         }
         drawWireCircle(Vector3(), radius, color, &t);
+    }
+    {
+        // Bottom
+        Matrix4 t = Matrix4(center + Vector3(0, -half, 0), Quaternion(), Vector3(1.0f));
+        if(transform) {
+            t = *transform * t;
+        }
+        drawWireCircle(Vector3(), radius, color, &t);
+    }
 
-        t = Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(1.0f));
+    Vector3Vector points = {
+        center + Vector3( radius,  half, 0),
+        center + Vector3( radius, -half, 0),
+        center + Vector3(-radius,  half, 0),
+        center + Vector3(-radius, -half, 0),
+        center + Vector3( 0,  half,  radius),
+        center + Vector3( 0, -half,  radius),
+        center + Vector3( 0,  half, -radius),
+        center + Vector3( 0, -half, -radius)
+    };
+
+    IndexVector indices = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    drawLines(points, indices, color, transform);
+}
+/*!
+    Draws a wire capsule in the 3D space with the specified \a center, \a radius, \a height and \a color in the 3D space.
+    Parameter \a transform can be used to move, rotate and scale this capsule.
+*/
+void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, const Vector4 &color, const Matrix4 *transform) {
+    float half = height * 0.5f - radius;
+    drawWireCylinder(center, radius, height - radius * 2.0f, color, transform);
+    {
+        Vector3 cap = center + Vector3(0, half, 0);
+        Matrix4 t = Matrix4(cap, Quaternion(Vector3(-90,  0, 0)), Vector3(1.0f));
         if(transform) {
             t = *transform * t;
         }
@@ -365,14 +397,8 @@ void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, 
         drawWireArc(Vector3(), radius, 0, 180, color, &t);
     }
     {
-        Vector3 cap(0,-half, 0);
-        Matrix4 t = Matrix4(cap, Quaternion(), Vector3(1.0f));
-        if(transform) {
-            t = *transform * t;
-        }
-        drawWireCircle(Vector3(), radius, color, &t);
-
-        t = Matrix4(cap, Quaternion(Vector3(90,  0, 0)), Vector3(1.0f));
+        Vector3 cap = center + Vector3(0, -half, 0);
+        Matrix4 t = Matrix4(cap, Quaternion(Vector3(90,  0, 0)), Vector3(1.0f));
         if(transform) {
             t = *transform * t;
         }
@@ -384,19 +410,6 @@ void Gizmos::drawWireCapsule(const Vector3 &center, float radius, float height, 
         }
         drawWireArc(Vector3(), radius, 0, 180, color, &t);
     }
-
-    Vector3Vector points = { Vector3( radius, half, 0),
-                             Vector3( radius,-half, 0),
-                             Vector3(-radius, half, 0),
-                             Vector3(-radius,-half, 0),
-                             Vector3( 0, half, radius),
-                             Vector3( 0,-half, radius),
-                             Vector3( 0, half,-radius),
-                             Vector3( 0,-half,-radius)};
-
-    IndexVector indices = {0, 1, 2, 3, 4, 5, 6, 7};
-
-    drawLines(points, indices, color, transform);
 }
 /*!
     \internal

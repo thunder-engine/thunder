@@ -23,6 +23,8 @@ MeshCollider::MeshCollider() :
         m_mesh(nullptr),
         m_material(nullptr) {
 
+    static uint32_t hash = Mathf::hashString("collider");
+    addTagByHash(hash);
 }
 
 MeshCollider::~MeshCollider() {

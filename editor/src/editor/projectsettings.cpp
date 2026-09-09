@@ -166,6 +166,11 @@ void ProjectSettings::saveSettings() {
             }
         }
     }
+
+    for(const TString &name : dynamicPropertyNames()) {
+        object[name] = property(name.data());
+    }
+
     if(!success) {
         aCritical() << "The required settings was not specified:" << TString::join(req, ", ")
                     << "Please specify them in the Project Settings.";

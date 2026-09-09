@@ -7,6 +7,7 @@ if(desktop)
 endif()
 
 add_subdirectory(media)
+add_subdirectory(navigation)
 add_subdirectory(network)
 add_subdirectory(physics/bullet)
 add_subdirectory(renders)

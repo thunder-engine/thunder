@@ -17,6 +17,7 @@ Project {
         "glfm/glfm.qbs",
         "glsl/glsl.qbs",
 		"gtest/gtest.qbs",
+        "recast/recast.qbs",
         "spirvcross/spirvcross.qbs",
         "libogg/ogg.qbs",
         "libvorbis/vorbis.qbs",

@@ -1,0 +1,570 @@
+#include "components/navmeshsurface.h"
+
+#include <cstring>
+
+#include <actor.h>
+#include <scene.h>
+#include <transform.h>
+#include <engine.h>
+#include <log.h>
+
+#include <boxcollider.h>
+#include <spherecollider.h>
+#include <capsulecollider.h>
+#include <meshcollider.h>
+
+#include <Recast.h>
+#include <RecastAlloc.h>
+#include <RecastAssert.h>
+
+#include <DetourNavMesh.h>
+#include <DetourNavMeshBuilder.h>
+
+#include "components/navmeshobstacle.h"
+#include "components/navmeshlink.h"
+
+#include "resources/navmesh.h"
+#include "utils/debugrender.h"
+
+#include "navigationsystem.h"
+
+NavMeshSurface::NavMeshSurface() :
+        Component(),
+        m_navMesh(nullptr),
+        m_tileSize(256),
+        m_agentType(0),
+        m_geometrySource(AllColliders),
+        m_autoBuild(false) {
+    PROFILE_FUNCTION();
+
+    static uint32_t hash = Mathf::hashString("navsurf");
+    addTagByHash(hash);
+}
+
+NavMeshSurface::~NavMeshSurface() {
+    PROFILE_FUNCTION();
+
+    if(m_navMesh) {
+        m_navMesh->decRef();
+        m_navMesh = nullptr;
+    }
+}
+
+void NavMeshSurface::loadUserData(const VariantMap &data) {
+    PROFILE_FUNCTION();
+    Component::loadUserData(data);
+
+    auto it = data.find("navMesh");
+    if(it != data.end()) {
+        TString ref = it->second.toString();
+        setNavMesh(Engine::loadResource<NavMesh>(ref));
+    }
+}
+
+VariantMap NavMeshSurface::saveUserData() const {
+    PROFILE_FUNCTION();
+
+    VariantMap result = Component::saveUserData();
+    if(m_navMesh) {
+        result["navMesh"] = Engine::reference(m_navMesh);
+    }
+
+    return result;
+}
+
+void NavMeshSurface::setAutoBuild(bool autoBuild) {
+    if(m_autoBuild != autoBuild) {
+        m_autoBuild = autoBuild;
+        if(m_autoBuild) {
+            build();
+        }
+    }
+}
+
+void NavMeshSurface::setTileSize(int tileSize) {
+    if(tileSize <= 0) {
+        aWarning() << "NavMeshSurface: Tile size must be positive";
+        return;
+    }
+
+    if(m_tileSize != tileSize) {
+        m_tileSize = tileSize;
+        if(m_autoBuild) {
+            build();
+        }
+    }
+}
+
+void NavMeshSurface::setAgentType(int type) {
+    if(m_agentType != type) {
+        m_agentType = type;
+        if(m_autoBuild) {
+            build();
+        }
+    }
+}
+
+void NavMeshSurface::setGeometrySource(int source) {
+    GeometrySource newSource = static_cast<GeometrySource>(source);
+    if(m_geometrySource != newSource) {
+        m_geometrySource = newSource;
+        if(m_autoBuild) {
+            build();
+        }
+    }
+}
+
+void NavMeshSurface::setNavMesh(NavMesh *navMesh) {
+    if(m_navMesh != navMesh) {
+        m_navMesh = navMesh;
+        onNavMeshChanged();
+    }
+}
+
+void NavMeshSurface::onNavMeshChanged() {
+    if(m_navMesh && m_navMesh->state() == NavMesh::Ready) {
+        NavigationSystem *navSystem = static_cast<NavigationSystem *>(system());
+        navSystem->registerNavMesh(*this);
+    }
+}
+
+bool NavMeshSurface::build() {
+    PROFILE_FUNCTION();
+
+    Vector3Vector vertices;
+    std::vector<int> indices;
+
+    if(!collectGeometry(vertices, indices)) {
+        aError() << "NavMeshSurface: Unable to collect geometry.";
+        return false;
+    }
+
+    if(!buildNavMeshData(vertices, indices)) {
+        aError() << "NavMeshSurface: Unable to build nav mesh data.";
+    }
+
+    return m_navMesh != nullptr && m_navMesh->state() == NavMesh::Ready;
+}
+
+std::future<bool> NavMeshSurface::buildAsync() {
+    PROFILE_FUNCTION();
+
+    return std::async(std::launch::async, [this]() -> bool {
+        return build();
+    });
+}
+
+void NavMeshSurface::clear() {
+    PROFILE_FUNCTION();
+
+    NavigationSystem *navSystem = dynamic_cast<NavigationSystem *>(system());
+    if(navSystem) {
+        navSystem->unregisterNavMesh(*this);
+    }
+
+    if(m_navMesh) {
+        m_navMesh->decRef();
+        m_navMesh = nullptr;
+    }
+}
+
+void NavMeshSurface::drawGizmosSelected() {
+    if(m_navMesh) {
+        DebugRender render;
+        render.draw(m_navMesh->navMesh());
+    }
+}
+
+bool NavMeshSurface::collectGeometry(Vector3Vector &outVertices, std::vector<int> &outIndices) {
+    ObjectList list;
+    if(m_geometrySource == AllColliders) {
+        static uint32_t hash = Mathf::hashString("collider");
+        Scene *scene = NavMeshSurface::scene();
+        list = scene->getObjectsInGroupByHash(hash);
+    } else if(m_geometrySource == CollidersInHierarchy) {
+        for(auto it : actor()->componentsInChild("Collider")) {
+            list.push_back(it);
+        }
+    }
+
+    for(auto it : list) {
+        Collider *collider = dynamic_cast<Collider *>(it);
+        if(!collider || !collider->isEnabled()) continue;
+        Actor *actor = collider->actor();
+        if(!actor || !actor->isEnabled()) continue;
+        if(actor->getComponent<NavMeshObstacle>() != nullptr) continue;
+
+        BoxCollider *boxCollider = dynamic_cast<BoxCollider *>(collider);
+        if(boxCollider) {
+            addBoxColliderGeometry(boxCollider, outVertices, outIndices);
+            continue;
+        }
+
+        MeshCollider *meshCollider = dynamic_cast<MeshCollider *>(collider);
+        if(meshCollider) {
+            addMeshColliderGeometry(meshCollider, outVertices, outIndices);
+            continue;
+        }
+
+        CapsuleCollider *capsuleCollider = dynamic_cast<CapsuleCollider *>(collider);
+        if(capsuleCollider) {
+            addCapsuleColliderGeometry(capsuleCollider, outVertices, outIndices);
+            continue;
+        }
+
+        SphereCollider *sphereCollider = dynamic_cast<SphereCollider *>(collider);
+        if(sphereCollider) {
+            addSphereColliderGeometry(sphereCollider, outVertices, outIndices);
+            continue;
+        }
+    }
+
+    return !outVertices.empty() && !outIndices.empty();
+}
+
+
+void NavMeshSurface::addBoxColliderGeometry(BoxCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
+    Vector3 size = collider->size();
+    Vector3 center = collider->center();
+    Transform *transform = collider->transform();
+
+    Vector3 localVerts[8] = {
+        Vector3(-size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f),
+        Vector3( size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f),
+        Vector3( size.x * 0.5f, -size.y * 0.5f,  size.z * 0.5f),
+        Vector3(-size.x * 0.5f, -size.y * 0.5f,  size.z * 0.5f),
+        Vector3(-size.x * 0.5f,  size.y * 0.5f, -size.z * 0.5f),
+        Vector3( size.x * 0.5f,  size.y * 0.5f, -size.z * 0.5f),
+        Vector3( size.x * 0.5f,  size.y * 0.5f,  size.z * 0.5f),
+        Vector3(-size.x * 0.5f,  size.y * 0.5f,  size.z * 0.5f)
+    };
+
+    size_t startIndex = outVertices.size();
+
+    for(int i = 0; i < 8; ++i) {
+        Vector3 worldPos = center + localVerts[i];
+        outVertices.push_back(transform->worldTransform() * worldPos);
+    }
+
+    static const uint32_t indices[] = {
+        0, 1, 2,  0, 2, 3,
+        4, 6, 5,  4, 7, 6,
+        0, 4, 5,  0, 5, 1,
+        1, 5, 6,  1, 6, 2,
+        2, 6, 7,  2, 7, 3,
+        3, 7, 4,  3, 4, 0
+    };
+
+    for(uint32_t idx : indices) {
+        outIndices.push_back(static_cast<uint32_t>(startIndex + idx));
+    }
+}
+
+void NavMeshSurface::addMeshColliderGeometry(MeshCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
+    Mesh *mesh = collider->mesh();
+    if(!mesh) {
+        return;
+    }
+
+    Transform *transform = collider->transform();
+
+    size_t startIndex = outVertices.size();
+
+    const auto &localVerts = mesh->vertices();
+    for(const Vector3 &v : localVerts) {
+        outVertices.push_back(transform->worldTransform() * v);
+    }
+
+    const auto &localIndices = mesh->indices();
+    for(uint32_t idx : localIndices) {
+        outIndices.push_back(static_cast<uint32_t>(startIndex + idx));
+    }
+}
+
+void NavMeshSurface::addCapsuleColliderGeometry(CapsuleCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
+    /// \todo: implement this
+}
+
+void NavMeshSurface::addSphereColliderGeometry(SphereCollider *collider, Vector3Vector &outVertices, std::vector<int> &outIndices) {
+    /// \todo: implement this
+}
+
+bool NavMeshSurface::buildNavMeshData(const Vector3Vector &vertices, const std::vector<int> &indices) {
+    if(vertices.empty() || indices.empty()) {
+        return false;
+    }
+
+    if(m_navMesh == nullptr) {
+        m_navMesh = Engine::objectCreate<NavMesh>(actor()->name());
+        if(!m_navMesh) {
+            aError() << "Navigation: Failed to create NavMesh";
+            return false;
+        }
+    }
+
+    AgentType agent = static_cast<NavigationSystem *>(system())->agentType(m_agentType);
+
+    rcConfig config;
+    memset(&config, 0, sizeof(config));
+    config.cs = agent.radius / 3.0f;
+    config.ch = config.cs / 2.0f;
+    config.walkableSlopeAngle = agent.maxSlope;
+    config.walkableHeight = agent.height / config.ch;
+    config.walkableClimb = agent.maxClimb / config.ch;
+    config.walkableRadius = agent.radius / config.cs;
+    config.maxEdgeLen = 12.0f;
+    config.maxSimplificationError = 1.3f;
+    config.minRegionArea = 8.0f;
+    config.mergeRegionArea = 20.0f;
+    config.maxVertsPerPoly = 6;
+    config.detailSampleDist = 6.0f;
+    config.detailSampleMaxError = 1.0f;
+
+    const float *floatVertices = vertices[0].v;
+    float bmin[3], bmax[3];
+    rcCalcBounds(floatVertices, (int)vertices.size(), bmin, bmax);
+
+    const float expand = 2.0f;
+    bmin[0] -= expand;
+    bmin[1] -= expand;
+    bmin[2] -= expand;
+    bmax[0] += expand;
+    bmax[1] += expand;
+    bmax[2] += expand;
+
+    config.bmin[0] = bmin[0];
+    config.bmin[1] = bmin[1];
+    config.bmin[2] = bmin[2];
+    config.bmax[0] = bmax[0];
+    config.bmax[1] = bmax[1];
+    config.bmax[2] = bmax[2];
+
+    config.width = (int)((config.bmax[0] - config.bmin[0]) / config.cs + 0.5f);
+    config.height = (int)((config.bmax[2] - config.bmin[2]) / config.cs + 0.5f);
+    config.tileSize = m_tileSize;
+
+    rcContext ctx;
+
+    rcHeightfield *hf = rcAllocHeightfield();
+    if(!hf) {
+        return false;
+    }
+
+    if(!rcCreateHeightfield(&ctx, *hf, config.width, config.height, config.bmin, config.bmax, config.cs, config.ch)) {
+        rcFreeHeightField(hf);
+        return false;
+    }
+
+    int numTris = (int)indices.size() / 3;
+    std::vector<unsigned char> triAreaIDs(numTris, 1);
+
+    rcRasterizeTriangles(&ctx, floatVertices, (int)vertices.size(),
+                         indices.data(), triAreaIDs.data(), (int)indices.size() / 3,
+                         *hf, config.walkableClimb);
+
+    rcFilterLowHangingWalkableObstacles(&ctx, config.walkableClimb, *hf);
+    rcFilterLedgeSpans(&ctx, config.walkableHeight, config.walkableClimb, *hf);
+    rcFilterWalkableLowHeightSpans(&ctx, config.walkableHeight, *hf);
+
+    rcCompactHeightfield *chf = rcAllocCompactHeightfield();
+    if(!chf) {
+        rcFreeHeightField(hf);
+        return false;
+    }
+
+    if(!rcBuildCompactHeightfield(&ctx, config.walkableHeight, config.walkableClimb, *hf, *chf)) {
+        rcFreeHeightField(hf);
+        rcFreeCompactHeightfield(chf);
+        return false;
+    }
+
+    rcFreeHeightField(hf);
+
+    rcErodeWalkableArea(&ctx, config.walkableRadius, *chf);
+
+    rcContourSet *cset = rcAllocContourSet();
+    if(!cset) {
+        rcFreeCompactHeightfield(chf);
+        return false;
+    }
+
+    rcPolyMesh *pmesh = rcAllocPolyMesh();
+    if(!pmesh) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        return false;
+    }
+
+    rcPolyMeshDetail *dmesh = rcAllocPolyMeshDetail();
+    if(!dmesh) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        return false;
+    }
+
+    if(!rcBuildDistanceField(&ctx, *chf)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildRegions(&ctx, *chf, 0, config.minRegionArea, config.mergeRegionArea)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildContours(&ctx, *chf, config.maxSimplificationError, config.maxEdgeLen, *cset)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    if(!rcBuildPolyMesh(&ctx, *cset, config.maxVertsPerPoly, *pmesh)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreeContourSet(cset);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreeContourSet(cset);
+
+    if(!rcBuildPolyMeshDetail(&ctx, *pmesh, *chf, config.detailSampleDist, config.detailSampleMaxError, *dmesh)) {
+        rcFreeCompactHeightfield(chf);
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreeCompactHeightfield(chf);
+
+    for(int i = 0; i < pmesh->npolys; ++i) {
+        pmesh->flags[i] = 0xFFFF;
+        pmesh->areas[i] = 1;
+    }
+
+    std::vector<float> offMeshVerts;
+    std::vector<float> offMeshRadii;
+    std::vector<uint32_t> offMeshUserIds;
+    std::vector<uint16_t> offMeshFlags;
+    std::vector<uint8_t> offMeshAreas;
+    std::vector<uint8_t> offMeshDir;
+
+    ObjectList links;
+    if(m_geometrySource == AllColliders) {
+        Scene *scene = NavMeshSurface::scene();
+        if(scene) {
+            static const uint32_t linkHash = Mathf::hashString("navmeshlink");
+            links = scene->getObjectsInGroupByHash(linkHash);
+        }
+    } else if(m_geometrySource == CollidersInHierarchy) {
+        for(Component *component : actor()->componentsInChild("NavMeshLink")) {
+            links.push_back(static_cast<Object *>(component));
+        }
+    }
+
+    for(Object *obj : links) {
+        NavMeshLink *link = dynamic_cast<NavMeshLink *>(obj);
+        if(!link || !link->isEnabled() || link->agentType() != m_agentType) continue;
+
+        Vector3 worldPosition = link->transform()->worldPosition();
+
+        Vector3 start = worldPosition + link->startPoint();
+        Vector3 end = worldPosition + link->endPoint();
+        bool bidirectional = link->isBidirectional();
+
+        offMeshVerts.push_back(start.x);
+        offMeshVerts.push_back(start.y);
+        offMeshVerts.push_back(start.z);
+        offMeshVerts.push_back(end.x);
+        offMeshVerts.push_back(end.y);
+        offMeshVerts.push_back(end.z);
+
+        offMeshFlags.push_back(0xFFFF);
+        offMeshFlags.push_back(0xFFFF);
+
+        offMeshAreas.push_back(1);
+        offMeshAreas.push_back(1);
+
+        offMeshDir.push_back(bidirectional ? 1 : 0);
+        offMeshDir.push_back(bidirectional ? 1 : 0);
+
+        offMeshRadii.push_back(agent.radius);
+        offMeshRadii.push_back(agent.radius);
+
+        offMeshUserIds.push_back(0);
+        offMeshUserIds.push_back(0);
+    }
+
+    if(!offMeshVerts.empty()) {
+        aInfo() << "Navigation: Adding " << (int)offMeshVerts.size() / 6 << " off-mesh links";
+    }
+
+    dtNavMeshCreateParams createParams;
+    memset(&createParams, 0, sizeof(createParams));
+    createParams.verts = pmesh->verts;
+    createParams.vertCount = pmesh->nverts;
+    createParams.polys = pmesh->polys;
+    createParams.polyAreas = pmesh->areas;
+    createParams.polyFlags = pmesh->flags;
+    createParams.polyCount = pmesh->npolys;
+    createParams.nvp = pmesh->nvp;
+    createParams.detailMeshes = dmesh->meshes;
+    createParams.detailVerts = dmesh->verts;
+    createParams.detailVertsCount = dmesh->nverts;
+    createParams.detailTris = dmesh->tris;
+    createParams.detailTriCount = dmesh->ntris;
+    createParams.walkableHeight = config.walkableHeight;
+    createParams.walkableRadius = config.walkableRadius;
+    createParams.walkableClimb = config.walkableClimb;
+    createParams.bmin[0] = pmesh->bmin[0];
+    createParams.bmin[1] = pmesh->bmin[1];
+    createParams.bmin[2] = pmesh->bmin[2];
+    createParams.bmax[0] = pmesh->bmax[0];
+    createParams.bmax[1] = pmesh->bmax[1];
+    createParams.bmax[2] = pmesh->bmax[2];
+    createParams.cs = config.cs;
+    createParams.ch = config.ch;
+    createParams.buildBvTree = true;
+
+    if(!offMeshVerts.empty()) {
+        createParams.offMeshConVerts = offMeshVerts.data();
+        createParams.offMeshConRad = offMeshRadii.data();
+        createParams.offMeshConFlags = offMeshFlags.data();
+        createParams.offMeshConAreas = offMeshAreas.data();
+        createParams.offMeshConDir = offMeshDir.data();
+        createParams.offMeshConUserID = offMeshUserIds.data();
+        createParams.offMeshConCount = offMeshVerts.size() / 6;
+    }
+
+    unsigned char *navData = nullptr;
+    int navDataSize = 0;
+    if(!dtCreateNavMeshData(&createParams, &navData, &navDataSize)) {
+        rcFreePolyMesh(pmesh);
+        rcFreePolyMeshDetail(dmesh);
+        return false;
+    }
+
+    rcFreePolyMesh(pmesh);
+    rcFreePolyMeshDetail(dmesh);
+
+    ByteArray outData;
+    outData.assign(navData, navData + navDataSize);
+    dtFree(navData);
+
+    if(!m_navMesh->setData(outData)) {
+        return false;
+    }
+
+    onNavMeshChanged();
+
+    return true;
+}

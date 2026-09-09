@@ -115,7 +115,9 @@ private:
 
         QStringList tags;
 
-        std::list<std::pair<TString, TString>> objects;
+        std::map<TString, TString> dependencies;
+
+        std::map<TString, TString> objects;
 
         QLibrary *library;
 

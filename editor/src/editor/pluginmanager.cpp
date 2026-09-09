@@ -20,6 +20,8 @@
 
 namespace {
     const char *gComponents("components");
+    const char *gDependencies("dependencies");
+    const char *gObjects("objects");
     const char *gLabel("[PluginManager]");
 }
 
@@ -193,7 +195,7 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                 plug.enabled = std::find(m_whiteList.begin(), m_whiteList.end(), plug.name) != m_whiteList.end();
 
                 if(plug.enabled) {
-                    for(auto &it : metaInfo["objects"].toMap()) {
+                    for(auto &it : metaInfo[gObjects].toMap()) {
                         bool fault = false;
                         if(it.second == "system") {
                             if(!registerSystem(plugin, it.first.data())) {
@@ -208,7 +210,7 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                             }
 
                         } else {
-                            plug.objects.push_back(std::make_pair(it.first, it.second.toString()));
+                            plug.objects[it.first] = it.second.toString();
                         }
 
                         if(fault) {
@@ -218,6 +220,10 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                             delete lib;
                             return true;
                         }
+                    }
+
+                    for(auto &it : metaInfo[gDependencies].toMap()) {
+                        plug.dependencies[it.first] = it.second.toString();
                     }
 
                     for(auto &it : metaInfo[gComponents].toList()) {
@@ -256,7 +262,7 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
 }
 
 void PluginManager::reloadPlugin(const TString &path) {
-    Url info(path.toStdString());
+    Url info(path);
 
     TString dest(m_pluginPath + "/" + info.name());
     TString temp(dest + ".tmp");
