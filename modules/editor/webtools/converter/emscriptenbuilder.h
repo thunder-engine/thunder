@@ -19,6 +19,8 @@ protected:
 
     StringList platforms() const override { return {"webgl"}; }
 
+    StringList platformLibraries() const override { return {"glfm", "glad"}; }
+
     PackagingMode packagingMode() const override { return None; }
 
 protected:

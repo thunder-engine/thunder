@@ -54,6 +54,8 @@ public:
 
     StringList plugins() const;
 
+    StringList dependencies(const TString &type, const StringList &modules = StringList()) const;
+
     StringList extensions(const TString &type) const;
 
     void *getPluginObject(const TString &name);

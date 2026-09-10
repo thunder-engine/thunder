@@ -50,21 +50,6 @@ NativeCodeBuilder::NativeCodeBuilder() {
         sdk + "/include/next/core"
     };
 
-    m_libs = {
-        "engine",
-        "next",
-        "physfs",
-        "glfm",
-        "bullet",
-        "bullet3",
-        "rendergl",
-        "freetype",
-        "uikit",
-        "media",
-        "angel",
-        "angelscript"
-    };
-
     m_defines = {
         TString("COMPANY_NAME=\"\\\"%1\\\"\"").arg(mgr->projectCompany()),
         TString("PRODUCT_NAME=\"\\\"%1\\\"\"").arg(mgr->projectName()),
@@ -106,6 +91,41 @@ void NativeCodeBuilder::generateProject() {
 
     m_values[gSdkPath] = mgr->sdkPath();
 
+    StringList modules = mgr->modules();
+    StringList dependencyModules = Editor::plugins()->dependencies("module", mgr->targetPath().isEmpty() ? StringList() : modules);
+    StringList processedModules;
+    while(!dependencyModules.empty()) {
+        TString module = dependencyModules.front();
+        dependencyModules.erase(dependencyModules.begin());
+        if(std::find(processedModules.begin(), processedModules.end(), module) == processedModules.end()) {
+            processedModules.push_back(module);
+            if(std::find(modules.begin(), modules.end(), module) == modules.end()) {
+                modules.push_back(module);
+            }
+            for(auto &dependency : Editor::plugins()->dependencies("module", { module })) {
+                if(std::find(dependencyModules.begin(), dependencyModules.end(), dependency) == dependencyModules.end()) {
+                    dependencyModules.push_back(dependency);
+                }
+            }
+        }
+    }
+
+    m_libs = Editor::plugins()->dependencies("lib", mgr->targetPath().isEmpty() ? StringList() : modules);
+    for(auto &module : modules) {
+        TString library = module.remove(' ').toLower();
+        if(mgr->targetPath().isEmpty()) {
+            library += "-editor";
+        }
+        if(std::find(m_libs.begin(), m_libs.end(), library) == m_libs.end()) {
+            m_libs.push_back(library);
+        }
+    }
+    for(auto &library : platformLibraries()) {
+        if(std::find(m_libs.begin(), m_libs.end(), library) == m_libs.end()) {
+            m_libs.push_back(library);
+        }
+    }
+
     m_values[gIncludePaths] = formatList(m_incPath, m_incPathPref, m_incPathSuff, m_incPathSep);
     m_values[gLibraryPaths] = formatList(m_libPath, m_libPathPref, m_libPathSuff, m_libPathSep);
     m_values[gLibraries] = formatList(m_libs, m_libsPref, m_libsSuff, m_libsSep);
@@ -118,7 +138,7 @@ void NativeCodeBuilder::generateProject() {
         m_values[TString("${%1}").arg(property.name())] = property.read(mgr).toString();
     }
 
-    generateLoader(mgr->templatePath(), mgr->modules());
+    generateLoader(mgr->templatePath(), modules);
 }
 
 void NativeCodeBuilder::generateLoader(const TString &dst, const StringList &modules) {

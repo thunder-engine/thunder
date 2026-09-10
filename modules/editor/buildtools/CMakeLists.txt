@@ -19,7 +19,6 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
     "../../../thirdparty/zlib/src"
-    "../../../thirdparty/minizip"
 )
 
 # This path is only needed on the BSDs

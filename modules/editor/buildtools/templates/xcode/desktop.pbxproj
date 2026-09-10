@@ -277,11 +277,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"${sdkPath}/include/engine",
-					"${sdkPath}/include/modules",
-					"${sdkPath}/include/next",
-					"${sdkPath}/include/next/math",
-					"${sdkPath}/include/next/core",
+					${includePaths}
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LIBRARY_SEARCH_PATHS = "";
@@ -344,11 +340,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"${sdkPath}/include/engine",
-					"${sdkPath}/include/modules",
-					"${sdkPath}/include/next",
-					"${sdkPath}/include/next/math",
-					"${sdkPath}/include/next/core",
+					${includePaths}
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
 				LIBRARY_SEARCH_PATHS = "";
@@ -375,21 +367,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					${libraryPaths}
 				);
 				OTHER_LDFLAGS = (
-					"-L${sdkPath}/${platformName}/arm64/static/",
-					"-langel",
-					"-langelscript",
-					"-lengine",
-					"-lfreetype",
-                                        "-lglfm",
-					"-lmedia",
-					"-lnext",
-					"-lphysfs",
-					"-lrendermt",
-                                        "-lbullet",
-                                        "-lbullet3",
-                                        "-luikit",
+					${libraries}
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.thunderengine.${idName};
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -412,21 +393,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					${libraryPaths}
 				);
 				OTHER_LDFLAGS = (
-					"-L${sdkPath}/${platformName}/arm64/static/",
-					"-langel",
-					"-langelscript",
-					"-lengine",
-					"-lfreetype",
-                                        "-lglfm",
-					"-lmedia",
-					"-lnext",
-					"-lphysfs",
-					"-lrendermt",
-                                        "-lbullet",
-                                        "-lbullet3",
-                                        "-luikit",
+					${libraries}
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.thunderengine.${idName};
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -456,11 +426,7 @@
                                 );
                                 GCC_SYMBOLS_PRIVATE_EXTERN = NO;
                                 HEADER_SEARCH_PATHS = (
-                                        "${sdkPath}/include/engine",
-                                        "${sdkPath}/include/modules",
-                                        "${sdkPath}/include/next",
-                                        "${sdkPath}/include/next/math",
-                                        "${sdkPath}/include/next/core",
+									${includePaths}
                                 );
                                 INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -470,29 +436,12 @@
                                 LIBRARY_SEARCH_PATHS = (
                                         "$(inherited)",
                                         "$(PROJECT_DIR)",
+									${libraryPaths}
                                 );
                                 LIBRARY_STYLE = DYNAMIC;
                                 ONLY_ACTIVE_ARCH = NO;
                                 OTHER_LDFLAGS = (
-                                        "-L${sdkPath}/macos/arm64/bin/WorldEditor.app/Contents/MacOS",
-                                        "-L${sdkPath}/macos/arm64/bin/WorldEditor.app/Contents/MacOS/plugins",
-                                        "-luikit-editor",
-                                        "-langel-editor",
-                                        "-lbullet-editor",
-                                        "-lmedia-editor",
-                                        "-lmotiontools",
-                                        "-lnetwork-editor",
-                                        "-lparticletools",
-                                        "-lpipelinetools",
-                                        "-lshadertools",
-                                        "-lspineimporter",
-                                        "-ltexteditor",
-                                        "-ltexturetools",
-                                        "-ltiledimporter",
-                                        "-ltimeline",
-                                        "-lwebtools",
-                                        "-lnext-editor",
-                                        "-lengine-editor",
+									${libraries}
                                 );
                                 OTHER_REZFLAGS = "";
                                 PRODUCT_NAME = "${projectName}-editor";
@@ -524,12 +473,7 @@
                                 );
                                 GCC_SYMBOLS_PRIVATE_EXTERN = NO;
                                 HEADER_SEARCH_PATHS = (
-                                        "${sdkPath}/include/engine",
-                                        "${sdkPath}/include/modules",
-                                        "${sdkPath}/include/next",
-                                        "${sdkPath}/include/next/math",
-                                        "${sdkPath}/include/next/core",
-                                        "${sdkPath}/include/next/anim",
+									${includePaths}
                                         "$(inherited)",
                                 );
                                 INSTALL_PATH = "@rpath";
@@ -540,28 +484,11 @@
                                 LIBRARY_SEARCH_PATHS = (
                                         "$(inherited)",
                                         "$(PROJECT_DIR)",
+									${libraryPaths}
                                 );
                                 LIBRARY_STYLE = DYNAMIC;
                                 OTHER_LDFLAGS = (
-                                        "-L${sdkPath}/macos/arm64/bin/WorldEditor.app/Contents/MacOS",
-                                        "-L${sdkPath}/macos/arm64/bin/WorldEditor.app/Contents/MacOS/plugins",
-                                        "-luikit-editor",
-                                        "-langel-editor",
-                                        "-lbullet-editor",
-                                        "-lmedia-editor",
-                                        "-lmotiontools",
-                                        "-lnetwork-editor",
-                                        "-lparticletools",
-                                        "-lpipelinetools",
-                                        "-lshadertools",
-                                        "-lspineimporter",
-                                        "-ltexteditor",
-                                        "-ltexturetools",
-                                        "-ltiledimporter",
-                                        "-ltimeline",
-                                        "-lwebtools",
-                                        "-lnext-editor",
-                                        "-lengine-editor",
+									${libraries}
                                 );
                                 OTHER_REZFLAGS = "";
                                 PRODUCT_NAME = "${projectName}-editor";

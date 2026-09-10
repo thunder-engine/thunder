@@ -52,6 +52,8 @@ protected:
 
     virtual void generateProject();
 
+    virtual StringList platformLibraries() const { return {}; }
+
     void generateLoader(const TString &dst, const StringList &modules);
 
     TString formatList(const StringList &list, const TString &pref, const TString &suff, const TString &sep) const;

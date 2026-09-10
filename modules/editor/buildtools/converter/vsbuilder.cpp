@@ -40,11 +40,22 @@ VsBuilder::VsBuilder() {
 
     m_filePref = "    <ClCompile Include=\""; m_fileSuff = "\" />"; m_fileSep = "";
     m_incPathSep = ";";
-    m_libPathPref = ";";
+    m_libPathSep = ";";
     m_libsPref = ""; m_libsSuff = ".lib"; m_libsSep = ";";
     m_defSep = ";";
 
     ProjectSettings *mgr = Editor::project();
+    TString sdk = mgr->sdkPath();
+    if(mgr->targetPath().isEmpty()) {
+        m_libPath = {
+            sdk + "/windows/x86_64/lib",
+            sdk + "/windows/x86_64/bin",
+            sdk + "/windows/x86_64/bin/plugins"
+        };
+    } else {
+        m_libPath = { sdk + "/windows/x86_64/static" };
+    }
+
     m_defines = {
         TString("COMPANY_NAME=\"%1\"").arg(mgr->projectCompany()),
         TString("PRODUCT_NAME=\"%1\"").arg(mgr->projectName()),
@@ -93,6 +104,6 @@ void VsBuilder::generateProject() {
     m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
 
     updateTemplate(":/templates/windows/project.sln", m_project + mgr->projectName() + ".sln");
-    updateTemplate(":/templates/windows/project.vcxproj", m_project + "project.vcxproj");
-    updateTemplate(":/templates/windows/project-editor.vcxproj", m_project + "project-editor.vcxproj");
+    updateTemplate(":/templates/windows/project.vcxproj", m_project + "project.vcxproj", true);
+    updateTemplate(":/templates/windows/project-editor.vcxproj", m_project + "project-editor.vcxproj", true);
 }

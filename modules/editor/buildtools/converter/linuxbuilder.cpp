@@ -30,6 +30,10 @@ LinuxBuilder::LinuxBuilder() {
     m_libs.push_back("zlib");
 }
 
+    StringList LinuxBuilder::platformLibraries() const {
+        return Editor::project()->targetPath().isEmpty() ? StringList() : StringList({"glad"});
+    }
+
 bool LinuxBuilder::isEmpty() const {
     return (Editor::project()->currentPlatformName() != "linux");
 }
