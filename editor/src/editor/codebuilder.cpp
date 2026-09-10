@@ -76,19 +76,41 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
 }
 
 void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fromSource) {
-    QFile file(dst.data());
-    if(fromSource || !file.exists()) {
-        file.setFileName(src.data());
-    }
+    bool exists = QFile::exists(dst.data());
+    QFile file((fromSource || !exists) ? src.data() : dst.data());
 
     if(file.open(QFile::ReadOnly | QFile::Text)) {
-        QString data = file.readLine();
+        QStringList source;
+        while(!file.atEnd()) {
+            source.push_back(file.readLine());
+        }
+        file.close();
+
+        if(fromSource && exists) {
+            QFile destination(dst.data());
+            if(destination.open(QFile::ReadOnly | QFile::Text)) {
+                QStringList current;
+                while(!destination.atEnd()) {
+                    current.push_back(destination.readLine());
+                }
+                destination.close();
+
+                for(int i = 0; i < source.size() && i < current.size(); i++) {
+                    if(source[i].contains("${includePaths}") ||
+                       source[i].contains("${libraryPaths}") ||
+                       source[i].contains("${libraries}")) {
+                        current[i] = source[i];
+                    }
+                }
+                source = current;
+            }
+        }
 
         TString out;
 
         int begin = -1;
         int row = 0;
-        while(!data.isNull()) {
+        for(auto data : source) {
             int index = -1;
             if(begin > -1) {
                 index = data.indexOf(QByteArray("//-"));
@@ -119,10 +141,8 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fr
                 }
             }
 
-            data = file.readLine();
             row++;
         }
-        file.close();
 
         File::mkPath(Url(dst).dir());
 
