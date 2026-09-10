@@ -104,6 +104,7 @@
         <file>styles/dark/icons/point_add.png</file>
         <file>styles/dark/icons/point_remove.png</file>
         <file>styles/dark/icons/point_break.png</file>
+        <file>styles/dark/icons/question.png</file>
     </qresource>
     <qresource prefix="/Workspaces">
         <file alias="Default.ws">workspaces/Default.ws</file>

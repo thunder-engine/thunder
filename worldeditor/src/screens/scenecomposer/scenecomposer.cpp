@@ -11,6 +11,7 @@
 
 #include <log.h>
 #include <url.h>
+#include <aprocess.h>
 #include <file.h>
 #include <json.h>
 #include <bson.h>
@@ -709,25 +710,39 @@ QWidget *SceneComposer::propertiesWidget() {
 
 std::list<QWidget *> SceneComposer::propertiesActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
-    if(dynamic_cast<Component *>(object) == nullptr || dynamic_cast<Transform *>(object) != nullptr) {
+
+    Component *component = dynamic_cast<Component *>(object);
+    if(component == nullptr) {
         return result;
     }
 
-    QMenu *menu = new QMenu();
-    QAction *del = new QAction(tr("Remove Component"));
-    del->setProperty(gComponent, object->typeName().data());
-    menu->addAction(del);
+    QToolButton *help = new QToolButton(parent);
+    TString url = TString("https://docs.thunderengine.org/en/reference/%1.html")
+            .arg(component->typeName().toLower().data());
+    help->setIcon(QIcon(":/Style/styles/dark/icons/question.png"));
+    help->setToolTip(tr("Open component documentation"));
+    connect(help, &QToolButton::clicked, [url]() {
+        Process::openUrl(url);
+    });
+    result.push_back(help);
 
-    connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
+    if(dynamic_cast<Transform *>(component) == nullptr) {
+        QMenu *menu = new QMenu();
+        QAction *del = new QAction(tr("Remove Component"));
+        del->setProperty(gComponent, object->typeName().data());
+        menu->addAction(del);
 
-    QToolButton *toolButton = new QToolButton(parent);
-    toolButton->setMenu(menu);
-    toolButton->show();
-    toolButton->setProperty("actions", true);
-    toolButton->setText("⋮");
-    toolButton->setPopupMode(QToolButton::InstantPopup);
+        connect(del, SIGNAL(triggered(bool)), this, SLOT(onDeleteComponent()));
 
-    result.push_back(toolButton);
+        QToolButton *toolButton = new QToolButton(parent);
+        toolButton->setMenu(menu);
+        toolButton->show();
+        toolButton->setProperty("actions", true);
+        toolButton->setText("⋮");
+        toolButton->setPopupMode(QToolButton::InstantPopup);
+
+        result.push_back(toolButton);
+    }
 
     return result;
 }
