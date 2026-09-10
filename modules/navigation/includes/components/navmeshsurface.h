@@ -42,19 +42,19 @@ public:
     NavMeshSurface();
     ~NavMeshSurface();
 
-    bool autoBuild() const { return m_autoBuild; }
+    bool autoBuild() const;
     void setAutoBuild(bool autoBuild);
 
-    int tileSize() const { return m_tileSize; }
+    int tileSize() const;
     void setTileSize(int tileSize);
 
-    int agentType() const { return m_agentType; }
+    int agentType() const;
     void setAgentType(int type);
 
-    int geometrySource() const { return m_geometrySource; }
+    int geometrySource() const;
     void setGeometrySource(int source);
 
-    NavMesh *navMesh() const { return m_navMesh; }
+    NavMesh *navMesh() const;
     void setNavMesh(NavMesh *navMesh);
 
     bool build();

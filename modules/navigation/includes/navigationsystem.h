@@ -45,6 +45,13 @@ public:
     static AgentType agentType(int index);
     static void setAgentType(int index, const AgentType &type);
 
+    static unsigned short agentFlag(int index) {
+        if(index < 0 || index >= 16) {
+            return 0x0001;
+        }
+        return static_cast<unsigned short>(1u << index);
+    }
+
     uint32_t addObstacle(NavMeshObstacle &obstacle);
     bool removeObstacle(uint32_t obstacleId);
 

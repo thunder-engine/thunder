@@ -13,6 +13,21 @@
 #include <DetourNavMeshBuilder.h>
 #include <DetourNavMeshQuery.h>
 
+/*!
+    \class NavMesh
+    \brief The NavMesh class stores a Detour navigation mesh resource.
+    \inmodule Navigation
+
+    A navigation mesh resource owns the Detour mesh and its query object. It
+    can load and save serialized tile data and provides access to the mesh,
+    query object, and tile reference used by the navigation system.
+
+    \sa NavMeshSurface, NavMeshAgent, NavigationSystem
+*/
+
+/*!
+    Constructs an empty navigation mesh resource.
+*/
 NavMesh::NavMesh() :
         Resource(),
         m_navMesh(nullptr),
@@ -20,10 +35,34 @@ NavMesh::NavMesh() :
         m_tileRef(0) {
 }
 
+/*!
+    Destroys the navigation mesh resource and releases its Detour objects.
+*/
 NavMesh::~NavMesh() {
     cleanup();
 }
 
+/*!
+    Returns the underlying Detour navigation mesh, or nullptr when it is not
+    loaded.
+*/
+dtNavMesh *NavMesh::navMesh() const {
+    return m_navMesh;
+}
+
+/*!
+    Returns the Detour navigation query object, or nullptr when it is not
+    initialized.
+*/
+dtNavMeshQuery *NavMesh::query() const {
+    return m_query;
+}
+
+/*!
+    Loads serialized navigation mesh tile \a data from resource user data.
+
+    The data map contains the serialized resource user data and its tile data.
+*/
 void NavMesh::loadUserData(const VariantMap &data) {
     if(m_navMesh) {
         cleanup();
@@ -42,6 +81,9 @@ void NavMesh::loadUserData(const VariantMap &data) {
     switchState(Ready);
 }
 
+/*!
+    Saves the first available navigation mesh tile as resource user data.
+*/
 VariantMap NavMesh::saveUserData() const {
     VariantMap result;
 
@@ -61,6 +103,9 @@ VariantMap NavMesh::saveUserData() const {
     return result;
 }
 
+/*!
+    Releases the Detour navigation mesh and query objects owned by the resource.
+*/
 void NavMesh::cleanup() {
     if(m_query) {
         dtFreeNavMeshQuery(m_query);
@@ -75,6 +120,12 @@ void NavMesh::cleanup() {
     m_tileRef = 0;
 }
 
+/*!
+    Returns the Detour reference for the tile at coordinates \a tileX and \a tileY.
+
+    Returns zero when the navigation mesh is not loaded or no tile exists at
+    the requested coordinates.
+*/
 dtTileRef NavMesh::tileRef(int tileX, int tileY) const {
     if(!m_navMesh) {
         return 0;
@@ -88,6 +139,13 @@ dtTileRef NavMesh::tileRef(int tileX, int tileY) const {
     return m_navMesh->getTileRef(tile);
 }
 
+/*!
+    Loads serialized Detour tile data into the navigation mesh.
+
+    The \a data replaces the currently loaded tile. The method returns true when
+    it is added successfully, or false when the data is invalid or Detour
+    rejects the tile.
+*/
 bool NavMesh::setData(const ByteArray &data) {
     if(!m_navMesh) {
         m_navMesh = dtAllocNavMesh();
