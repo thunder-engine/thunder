@@ -16,8 +16,8 @@ public:
     NavMesh();
     ~NavMesh();
 
-    dtNavMesh *navMesh() const { return m_navMesh; }
-    dtNavMeshQuery *query() const { return m_query; }
+    dtNavMesh *navMesh() const;
+    dtNavMeshQuery *query() const;
 
     dtTileRef tileRef(int tileX, int tileY) const;
 
