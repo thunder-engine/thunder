@@ -26,6 +26,10 @@ XcodeBuilder::XcodeBuilder() {
 
     connect(&m_process, _SIGNAL(finished(int)), this, _SLOT(onBuildFinished(int)));
 
+    m_incPathPref = "\t\t\t\t\t\""; m_incPathSuff = "\","; m_incPathSep = ",\n";
+    m_libPathPref = "\t\t\t\t\t\""; m_libPathSuff = "\","; m_libPathSep = ",\n";
+    m_libsPref = "\t\t\t\t\t\"-l"; m_libsSuff = "\","; m_libsSep = ",\n";
+
     m_defPref = TString(5, '\t'); m_defSep = ",\n";
 
     ProjectSettings *mgr = Editor::project();
@@ -34,6 +38,15 @@ XcodeBuilder::XcodeBuilder() {
         TString("PRODUCT_NAME=\"%1\"").arg(mgr->projectName()),
         TString("PRODUCT_VERSION=\"%1\"").arg(mgr->projectVersion())
     };
+}
+
+StringList XcodeBuilder::platformLibraries() const {
+    ProjectSettings *mgr = Editor::project();
+    if(mgr->targetPath().isEmpty()) {
+        return {};
+    }
+
+    return {"glfm"};
 }
 
 bool XcodeBuilder::buildProject() {
@@ -87,9 +100,19 @@ bool XcodeBuilder::buildProject() {
 }
 
 void XcodeBuilder::generateProject() {
-    NativeCodeBuilder::generateProject();
-
     ProjectSettings *mgr = Editor::project();
+
+    m_libPath.clear();
+    if(mgr->targetPath().isEmpty()) {
+        m_libPath = {
+            mgr->sdkPath() + "/macos/arm64/bin/WorldEditor.app/Contents/MacOS",
+            mgr->sdkPath() + "/macos/arm64/bin/WorldEditor.app/Contents/MacOS/plugins"
+        };
+    } else {
+        m_libPath = { mgr->sdkPath() + "/" + mgr->currentPlatformName() + "/arm64/static" };
+    }
+
+    NativeCodeBuilder::generateProject();
 
     if(mgr->currentPlatformName() == "tvos") {
         m_values[gSdkName] = "appletvos";
@@ -114,10 +137,10 @@ void XcodeBuilder::generateProject() {
     m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
 
     if(mgr->currentPlatformName() == "macos") {
-        updateTemplate(":/templates/xcode/desktop.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
+        updateTemplate(":/templates/xcode/desktop.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", true);
         updateTemplate(":/templates/xcode/macos.plist", m_project + "Info.plist");
     } else {
-        updateTemplate(":/templates/xcode/mobile.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
+        updateTemplate(":/templates/xcode/mobile.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", true);
         updateTemplate(":/templates/xcode/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
         updateTemplate(":/templates/xcode/ios.plist", m_project + "Info.plist");
     }

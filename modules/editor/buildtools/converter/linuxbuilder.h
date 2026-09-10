@@ -16,6 +16,8 @@ protected:
     bool buildProject() override;
 
     StringList platforms() const override { return {"linux"}; }
+
+    StringList platformLibraries() const override;
 };
 
 #endif // LINUXBUILDER_H

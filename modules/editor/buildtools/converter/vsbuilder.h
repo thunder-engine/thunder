@@ -2,6 +2,7 @@
 #define VSBUILDER_H
 
 #include <editor/nativecodebuilder.h>
+#include <editor/projectsettings.h>
 
 class VsBuilder : public NativeCodeBuilder {
     A_OBJECT(VsBuilder, NativeCodeBuilder, Core)
@@ -15,6 +16,8 @@ protected:
     StringList platforms() const override { return {"windows"}; }
 
     void generateProject() override;
+
+    StringList platformLibraries() const override { return Editor::project()->targetPath().isEmpty() ? StringList() : StringList({"glfw", "glad"}); }
 
 protected:
     TString m_vsPath;

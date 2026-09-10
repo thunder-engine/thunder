@@ -28,12 +28,6 @@ AndroidBuilder::AndroidBuilder() {
     settings->registerValue(gAndroidSdk, "", gEditorPath);
     settings->registerValue(gAndroidNdk, "", gEditorPath);
 
-    m_libs.push_back("atomic");
-    m_libs.push_back("m");
-    m_libs.push_back("EGL");
-    m_libs.push_back("GLESv3");
-    m_libs.push_back("android");
-    m_libs.push_back("log");
 }
 
 bool AndroidBuilder::buildProject() {

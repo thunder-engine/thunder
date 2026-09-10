@@ -418,6 +418,22 @@ StringList PluginManager::plugins() const {
     return result;
 }
 
+StringList PluginManager::dependencies(const TString &type, const StringList &modules) const {
+    StringList result;
+
+    for(auto &plugin : m_plugins) {
+        if(plugin.enabled && (modules.empty() || std::find(modules.begin(), modules.end(), plugin.name) != modules.end())) {
+            for(auto &dependency : plugin.dependencies) {
+                if(dependency.second == type && std::find(result.begin(), result.end(), dependency.first) == result.end()) {
+                    result.push_back(dependency.first);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 StringList PluginManager::extensions(const TString &type) const {
     StringList result;
 

@@ -26,6 +26,8 @@ protected:
 
     void generateProject() override;
 
+    StringList platformLibraries() const override { return {"atomic", "m", "EGL", "GLESv3", "android", "log", "glfm", "glad"}; }
+
     PackagingMode packagingMode() const override { return None; }
     bool isEmbedded() const override { return true; }
 

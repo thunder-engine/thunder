@@ -22,11 +22,6 @@ EmscriptenBuilder::EmscriptenBuilder() {
     settings->registerValue(gEmscriptenPath, "", "editor=Path");
 
     m_libPath.push_back(Editor::project()->sdkPath() + "/emscripten/x86/static");
-
-    m_libs.push_back("vorbis");
-    m_libs.push_back("vorbisfile");
-    m_libs.push_back("ogg");
-    m_libs.push_back("zlib");
 }
 
 bool EmscriptenBuilder::isEmpty() const {

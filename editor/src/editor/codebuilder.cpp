@@ -75,9 +75,9 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
     }
 }
 
-void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
+void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fromSource) {
     QFile file(dst.data());
-    if(!file.exists()) {
+    if(fromSource || !file.exists()) {
         file.setFileName(src.data());
     }
 
