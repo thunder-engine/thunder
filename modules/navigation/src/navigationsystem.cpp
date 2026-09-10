@@ -204,7 +204,7 @@ std::vector<Vector3> NavigationSystem::findPathOnNavMesh(NavMesh *navMesh, const
     if(dtStatusFailed(query.init(dtNavMesh, 2048))) return result;
 
     dtQueryFilter filter;
-    filter.setIncludeFlags(0xFFFF);
+    filter.setIncludeFlags(agentFlag(agentType));
     filter.setExcludeFlags(0);
 
     dtPolyRef startRef, endRef;
@@ -326,6 +326,8 @@ bool NavigationSystem::rebuildTileCacheTiles(NavMesh *navMesh) {
 NavMesh *NavigationSystem::findNavMeshAtPosition(const Vector3 &position, int agentType) const {
     std::lock_guard<std::mutex> lock(m_dataMutex);
 
+    unsigned short flag = agentFlag(agentType);
+
     for(auto &pair : m_surfaceNavMeshes) {
         NavMeshSurface *surface = pair.first;
         if(!surface || !surface->isEnabled()) continue;
@@ -342,7 +344,7 @@ NavMesh *NavigationSystem::findNavMeshAtPosition(const Vector3 &position, int ag
         if(dtStatusFailed(query.init(dtNavMesh, 2048))) continue;
 
         dtQueryFilter filter;
-        filter.setIncludeFlags(0xFFFF);
+        filter.setIncludeFlags(flag);
         filter.setExcludeFlags(0);
 
         float pos[3] = {position.x, position.y, position.z};

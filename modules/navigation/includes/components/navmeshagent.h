@@ -70,10 +70,10 @@ public:
     void stop();
     void pause(bool paused);
 
-    Vector3 velocity() const { return m_velocity; }
-    NavigationState state() const { return m_state; }
-    const Vector3 &target() const { return m_target; }
-    const Vector3Vector &path() const { return m_path; }
+    Vector3 velocity() const;
+    NavigationState state() const;
+    const Vector3 &target() const;
+    const Vector3Vector &path() const;
 
 public: // signals
     void pathFound();
