@@ -41,7 +41,7 @@ ProjectSettings::ProjectSettings() {
 
     m_sdkPath = dir.absolutePath().toStdString();
     m_resourcePath = m_sdkPath + "/resources";
-    m_templatePath = m_resourcePath + "/editor/templates";
+    m_templatePath = m_resourcePath + "/templates";
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();

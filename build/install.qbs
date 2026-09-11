@@ -268,10 +268,10 @@ Product {
     Group {
         name: "Templates Editor"
         files: [
-            install.RESOURCE_ROOT + "/editor/templates/*"
+            install.RESOURCE_ROOT + "/templates/*"
         ]
         qbs.install: true
-        qbs.installDir: install.SDK_PATH + "/resources/editor/templates"
+        qbs.installDir: install.SDK_PATH + "/resources/templates"
         qbs.installPrefix: install.PREFIX
     }
     Group {
