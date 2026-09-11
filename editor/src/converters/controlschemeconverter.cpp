@@ -41,11 +41,11 @@ AssetConverter::ReturnCode ControlSchemeConverter::convertFile(AssetConverterSet
 
         VariantMap map;
         map[gData] = Json::load(src.readAll());
-        scheme->loadUserData(map);
+        ResourceSystem::loadResourceData(scheme, map);
 
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(scheme), settings->absoluteDestination());
+        return settings->saveBinary(scheme, settings->absoluteDestination());
     }
     return InternalError;
 }

@@ -420,9 +420,10 @@ void Actor::loadObjectData(const VariantMap &data) {
 
     auto it = data.find(gPrefab);
     if(it != data.end()) {
+        Prefab *oldPrefab = m_prefab;
         setPrefab(Engine::loadResource<Prefab>((*it).second.toString()));
 
-        if(m_prefab) {
+        if(m_prefab && m_prefab != oldPrefab) {
             Actor *actor = static_cast<Actor *>(m_prefab->actor()->clone());
 
             it = data.find(gDeleted);

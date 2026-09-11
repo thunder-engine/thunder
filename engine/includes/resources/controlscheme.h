@@ -14,9 +14,8 @@ public:
     int bindingCode(int action, int binding);
     bool bindingNegative(int action, int binding);
 
-    void loadUserData(const VariantMap &data) override;
-
 protected:
+    void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:

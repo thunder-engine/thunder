@@ -57,9 +57,9 @@ AssetConverter::ReturnCode PipelineConverter::convertFile(AssetConverterSettings
         Engine::replaceUUID(pipeline, uuid);
     }
 
-    pipeline->loadUserData(data);
+    ResourceSystem::loadResourceData(pipeline, data);
 
-    return settings->saveBinary(Engine::toVariant(pipeline), settings->absoluteDestination());
+    return settings->saveBinary(pipeline, settings->absoluteDestination());
 }
 
 AssetConverterSettings *PipelineConverter::createSettings() {

@@ -63,7 +63,7 @@ void TimelineEdit::saveClip() {
     if(clip) {
         File file(Editor::assets()->uuidToPath(Engine::reference(clip)));
         if(file.open(File::Write)) {
-            VariantMap data = clip->saveUserData();
+            VariantMap data = ResourceSystem::saveResourceData(clip);
 
             file.write(Json::save(data["Tracks"], 0));
             file.close();

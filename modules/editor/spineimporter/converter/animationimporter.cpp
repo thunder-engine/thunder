@@ -421,7 +421,7 @@ void importAttachmentsTimeline(const VariantMap &attachments, AnimationClip &cli
                             TString spriteUuid(Engine::reference(sprite));
 
                             Url dst(settings->absoluteDestination());
-                            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + spriteUuid);
+                            AssetConverter::ReturnCode result = settings->saveBinary(sprite, dst.absoluteDir() + "/" + spriteUuid);
                             if(result != AssetConverter::Success) {
                                 aError() << "Unable to update sprite";
                             }
@@ -477,7 +477,7 @@ void SpineConverter::importAnimations(const VariantMap &animations, SpineConvert
 
         Url dst(settings->absoluteDestination());
 
-        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + info.uuid);
+        AssetConverter::ReturnCode result = settings->saveBinary(clip, dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = clip->uuid();
             settings->setSubItem(animation.first, info, 0);

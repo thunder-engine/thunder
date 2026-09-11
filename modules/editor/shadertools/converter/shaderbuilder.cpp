@@ -329,30 +329,26 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
 
     compileData(data);
 
+    builderSettings->setRhi(currentRhi());
+
+    Material *material = Engine::loadResource<Material>(settings->destination());
+    if(material == nullptr) {
+        material = Engine::objectCreate<Material>(settings->destination());
+    }
+
     uint32_t uuid = settings->info().id;
     if(uuid == 0) {
         uuid = Engine::generateUUID();
         settings->info().id = uuid;
     }
 
-    VariantList object;
+    if(material->uuid() != uuid) {
+        Engine::replaceUUID(material, uuid);
+    }
 
-    object.push_back(Material::metaClass()->name()); // type
-    object.push_back(uuid); // id
-    object.push_back(0); // parent
-    object.push_back(builderSettings->destination()); // name
+    ResourceSystem::loadResourceData(material, data);
 
-    object.push_back(VariantMap()); // properties
-
-    object.push_back(VariantList()); // links
-    object.push_back(data); // user data
-
-    VariantList result;
-    result.push_back(object);
-
-    builderSettings->setRhi(currentRhi());
-
-    return settings->saveBinary(result, settings->absoluteDestination());
+    return settings->saveBinary(material, settings->absoluteDestination());
 }
 
 void ShaderBuilder::compileData(VariantMap &data) {

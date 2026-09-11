@@ -232,6 +232,9 @@ SceneComposer::SceneComposer(QWidget *parent) :
 }
 
 SceneComposer::~SceneComposer() {
+    delete m_worldObserver;
+    delete m_controller;
+
     delete ui;
 }
 

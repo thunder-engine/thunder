@@ -73,8 +73,6 @@ public:
 
     void composeMesh(Mesh *mesh, const TString &text, const Settings &settings);
 
-    void loadUserData(const VariantMap &data) override;
-
 private:
     void clear();
 
@@ -88,6 +86,7 @@ private:
 
     void packSheets(int padding);
 
+    void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:

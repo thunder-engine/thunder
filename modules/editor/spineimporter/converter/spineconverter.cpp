@@ -117,7 +117,7 @@ AssetConverter::ReturnCode SpineConverter::convertFile(AssetConverterSettings *s
                 Engine::replaceUUID(prefab, uuid);
             }
 
-            return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
+            return settings->saveBinary(prefab, settings->absoluteDestination());
         }
     }
 
@@ -305,7 +305,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         mesh->recalcBounds();
                     }
 
-                    AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + resSprite.uuid);
+                    AssetConverter::ReturnCode result = settings->saveBinary(sprite, dst.absoluteDir() + "/" + resSprite.uuid);
                     if(result == AssetConverter::Success) {
                         resSprite.id = sprite->uuid();
                         settings->setSubItem(attachmentName, resSprite, 0);
@@ -704,7 +704,7 @@ Pose *SpineConverter::importMesh(const VariantMap &fields, const TString &itemNa
 
             Url dst(settings->absoluteDestination());
 
-            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
+            AssetConverter::ReturnCode result = settings->saveBinary(pose, dst.absoluteDir() + "/" + info.uuid);
             if(result == AssetConverter::Success) {
                 info.id = pose->uuid();
                 settings->setSubItem(poseName, info, 0);

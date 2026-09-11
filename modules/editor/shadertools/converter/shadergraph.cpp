@@ -714,7 +714,7 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
                     VariantMap data = ShaderGraph::data(true, &m_previewSettings);
                     ShaderBuilder::compileData(data);
 
-                    it.second.material->loadUserData(data);
+                    ResourceSystem::loadResourceData(it.second.material, data);
                     if(it.second.instance) {
                         delete it.second.instance;
                     }

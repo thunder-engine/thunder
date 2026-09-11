@@ -349,6 +349,19 @@ void ResourceSystem::unsubscribe(void *object) {
     }
 }
 
+void ResourceSystem::loadResourceData(Resource *resource, const VariantMap &data) {
+    if(resource) {
+        resource->loadUserData(data);
+    }
+}
+
+VariantMap ResourceSystem::saveResourceData(Resource *resource) {
+    if(resource) {
+        return resource->saveUserData();
+    }
+    return VariantMap();
+}
+
 Resource *ResourceSystem::resource(TString &path) const {
     if(path.front() != '{') {
         path = reference(path);

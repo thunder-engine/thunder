@@ -47,7 +47,7 @@ AssetConverter::ReturnCode TextConverter::convertFile(AssetConverterSettings *se
             memcpy(text->data(), content.data(), content.size());
         }
 
-        return settings->saveBinary(Engine::toVariant(text), settings->absoluteDestination());
+        return settings->saveBinary(text, settings->absoluteDestination());
     }
 
     return InternalError;

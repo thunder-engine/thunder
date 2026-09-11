@@ -197,7 +197,7 @@ StringList AnimationControllerGraph::nodeList() const {
     return m_nodeTypes;
 }
 
-Variant AnimationControllerGraph::data() const {
+VariantMap AnimationControllerGraph::data() const {
     VariantMap result;
 
     VariantList machine;

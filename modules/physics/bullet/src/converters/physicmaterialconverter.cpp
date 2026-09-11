@@ -51,7 +51,7 @@ AssetConverter::ReturnCode PhysicMaterialConverter::convertFile(AssetConverterSe
         material->setRestitution(map["Restitution"].toFloat());
         material->setDensity(map["Density"].toFloat());
 
-        return settings->saveBinary(Engine::toVariant(material), settings->absoluteDestination());
+        return settings->saveBinary(material, settings->absoluteDestination());
     }
 
     return InternalError;

@@ -98,7 +98,7 @@ public:
     Variant subItemData(const TString &key) const;
     virtual void setSubItemData(const TString &name, const Variant &data);
 
-    AssetConverter::ReturnCode saveBinary(const Variant &data, const TString &path);
+    AssetConverter::ReturnCode saveBinary(Resource *resource, const TString &path);
 
     bool loadSettings();
     void saveSettings();

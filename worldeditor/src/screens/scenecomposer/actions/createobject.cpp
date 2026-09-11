@@ -24,6 +24,10 @@ CreateObject::CreateObject(const TString &type, Object *parent, const Vector3 &p
 void CreateObject::undo() {
     std::set<Scene *> scenes;
 
+    // Need to clear selection before delete
+    m_controller->clear(false);
+    m_controller->selectActors(m_selected);
+
     for(auto uuid : m_objects) {
         Object *object = Engine::findObject(uuid);
         if(object) {
@@ -43,9 +47,6 @@ void CreateObject::undo() {
             delete object;
         }
     }
-
-    m_controller->clear(false);
-    m_controller->selectActors(m_selected);
 
     for(auto it : scenes) {
         emit m_controller->sceneUpdated(it);

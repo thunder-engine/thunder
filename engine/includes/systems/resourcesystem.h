@@ -59,6 +59,9 @@ public:
     void subscribe(BundleUpdatedCallback callback, void *object);
     void unsubscribe(void *object);
 
+    static void loadResourceData(Resource *resource, const VariantMap &data);
+    static VariantMap saveResourceData(Resource *resource);
+
 private:
     void update(World *) override;
 

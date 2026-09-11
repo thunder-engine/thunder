@@ -45,7 +45,7 @@ AssetConverter::ReturnCode TranslatorConverter::convertFile(AssetConverterSettin
         }
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(loc), settings->absoluteDestination());
+        return settings->saveBinary(loc, settings->absoluteDestination());
     }
 
     return InternalError;

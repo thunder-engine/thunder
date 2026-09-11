@@ -26,14 +26,13 @@ public:
     bool loadAudioData();
     bool unloadAudioData();
 
-    void loadUserData(const VariantMap &data) override;
-
 private:
     static size_t read(void *ptr, size_t size, size_t nmemb, void *datasource);
     static int seek(void *datasource, int64_t offset, int whence);
     static int close(void *datasource);
     static long tell(void *datasource);
 
+    void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
     File m_clip;
