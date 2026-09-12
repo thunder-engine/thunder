@@ -109,7 +109,6 @@ void CreateObject::redo() {
         m_objects.push_back(object->uuid());
     }
 
-
     m_controller->clear(false);
     m_controller->selectActors(list);
 
@@ -132,6 +131,14 @@ Object *CreateObject::createObject(Object *parent) {
         Prefab *prefab = Engine::loadResource<Prefab>(type);
         if(prefab) {
             object = prefab->actor()->clone(parent);
+
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                Object::ObjectList children = actor->getChildren(); // Need to copy a list
+                for(auto &it : children) {
+                    it->blockSerialization(true);
+                }
+            }
         }
     } else {
         object = Engine::composeActor(type, m_controller->findFreeObjectName(m_type, parent), parent);

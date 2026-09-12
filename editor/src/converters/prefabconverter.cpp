@@ -94,7 +94,13 @@ Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, cons
 
     Prefab *prefab = Engine::loadResource<Prefab>(guid);
     if(prefab && prefab->actor()) {
-        return static_cast<Actor *>(prefab->actor()->clone());
+        Actor *actor = static_cast<Actor *>(prefab->actor()->clone());
+
+        Object::ObjectList children = actor->getChildren(); // Need to copy a list
+        for(auto &it : children) {
+            it->blockSerialization(true);
+        }
+        return actor;
     }
     return AssetConverter::createActor(settings, guid);
 }
