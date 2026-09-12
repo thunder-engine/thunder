@@ -57,7 +57,7 @@ AssetConverter::ReturnCode TiledSetConverter::convertFile(AssetConverterSettings
 
                 TiledMapConverter::parseTileset(ts, settings->source(), *tileSet);
 
-                return settings->saveBinary(Engine::toVariant(tileSet), settings->absoluteDestination());
+                return settings->saveBinary(tileSet, settings->absoluteDestination());
             }
         }
     }

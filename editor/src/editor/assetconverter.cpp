@@ -321,7 +321,7 @@ TString AssetConverterSettings::source() const {
 */
 void AssetConverterSettings::setSource(const TString &source) {
     m_source = source;
-    m_suffix = Url(m_source).suffix();
+    m_suffix = Url(m_source).suffix().toLower();
 }
 /*!
     Returns the destination file path (relative).
@@ -409,20 +409,23 @@ void AssetConverterSettings::setSubItemData(const TString &name, const Variant &
     Q_UNUSED(data)
 }
 
-AssetConverter::ReturnCode AssetConverterSettings::saveBinary(const Variant &data, const TString &path) {
-    File file(path);
-    if(file.open(File::Write)) {
-        std::set<TString> types;
-        for(auto &it : data.toList()) {
-            types.insert(it.toList().begin()->toString());
+AssetConverter::ReturnCode AssetConverterSettings::saveBinary(Resource *resource, const TString &path) {
+    if(resource) {
+        File file(path);
+        if(file.open(File::Write)) {
+            std::set<TString> types;
+            Variant data = Engine::toVariant(resource);
+            for(auto &it : data.toList()) {
+                types.insert(it.toList().begin()->toString());
+            }
+
+            Editor::project()->reportTypes(types);
+
+            file.write(Bson::save(data));
+            file.close();
+
+            return AssetConverter::Success;
         }
-
-        Editor::project()->reportTypes(types);
-
-        file.write(Bson::save(data));
-        file.close();
-
-        return AssetConverter::Success;
     }
 
     return AssetConverter::InternalError;

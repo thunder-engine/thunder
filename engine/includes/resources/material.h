@@ -208,11 +208,13 @@ public:
 
     virtual MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static);
 
-    void loadUserData(const VariantMap &data) override;
-
     void initInstance(MaterialInstance *instance);
 
 protected:
+    void loadUserData(const VariantMap &data) override;
+
+    VariantMap saveUserData() const override;
+
     void switchState(Resource::State state) override;
     bool isUnloadable() override;
 

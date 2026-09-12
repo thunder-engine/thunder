@@ -415,6 +415,77 @@ void VisualEffect::loadUserData(const VariantMap &data) {
 /*!
     \internal
 */
+VariantMap VisualEffect::saveUserData() const {
+    VariantMap result(Resource::saveUserData());
+
+    auto saveOperations = [this](const std::vector<Operator> &operations) {
+        VariantList list;
+        for(const Operator &op : operations) {
+            VariantList fields;
+            fields.push_back(op.op);
+            fields.push_back(op.resultSpace);
+            fields.push_back(op.resultSize);
+            fields.push_back(op.resultOffset);
+
+            VariantList arguments;
+            for(const Argument &argument : op.arguments) {
+                VariantList data;
+                data.push_back(argument.space);
+                data.push_back(argument.size);
+                if(argument.space == Constant || argument.space == Random) {
+                    for(int i = 0; i < argument.size; i++) {
+                        data.push_back(op.constData[argument.offset + i]);
+                    }
+                    if(argument.space == Random) {
+                        for(int i = 0; i < argument.size; i++) {
+                            int offset = argument.offset + i;
+                            if(m_capacity > 1) {
+                                offset += (m_capacity - 1) * argument.size;
+                            }
+                            data.push_back(op.constData[offset]);
+                        }
+                    }
+                } else {
+                    data.push_back(argument.offset);
+                }
+                arguments.push_back(data);
+            }
+            fields.push_back(arguments);
+            list.push_back(fields);
+        }
+        return list;
+    };
+
+    VariantList renderables;
+    for(const Renderable &renderable : m_renderables) {
+        VariantList fields;
+        fields.push_back(static_cast<int>(renderable.type));
+        fields.push_back(Engine::reference(renderable.mesh));
+        fields.push_back(Engine::reference(renderable.material));
+        renderables.push_back(fields);
+    }
+
+    VariantList emitter;
+    emitter.push_back(m_gpu);
+    emitter.push_back(m_local);
+    emitter.push_back(m_continous);
+    emitter.push_back(m_capacity);
+    emitter.push_back(m_systemStride);
+    emitter.push_back(m_emitterStride);
+    emitter.push_back(m_particleStride);
+    emitter.push_back(renderables);
+    emitter.push_back(saveOperations(m_emitterSpawnOperations));
+    emitter.push_back(saveOperations(m_emitterUpdateOperations));
+    emitter.push_back(saveOperations(m_particleSpawnOperations));
+    emitter.push_back(saveOperations(m_particleUpdateOperations));
+    emitter.push_back(saveOperations(m_renderOperations));
+
+    VariantList emitters;
+    emitters.push_back(emitter);
+    result[gEmitters] = emitters;
+    return result;
+}
+
 void VisualEffect::loadOperations(const VariantList &list, std::vector<Operator> &operations) {
     operations.clear();
 

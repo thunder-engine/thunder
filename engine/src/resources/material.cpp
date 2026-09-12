@@ -472,6 +472,72 @@ void Material::loadUserData(const VariantMap &data) {
 /*!
     \internal
 */
+VariantMap Material::saveUserData() const {
+    VariantMap result;
+
+    VariantList properties;
+    properties.push_back(m_materialType);
+    properties.push_back(m_doubleSided);
+    properties.push_back(m_lightModel);
+    result[gProperties] = properties;
+
+    VariantList textures;
+    for(const TextureItem &item : m_textures) {
+        VariantList texture;
+        texture.push_back(item.texture ? Engine::reference(item.texture) : TString());
+        texture.push_back(item.name);
+        texture.push_back(item.binding);
+        texture.push_back(item.flags);
+        textures.push_back(texture);
+    }
+    result[gTextures] = textures;
+
+    VariantList uniforms;
+    for(const UniformItem &item : m_uniforms) {
+        VariantList uniform;
+        uniform.push_back(item.defaultValue);
+        uniform.push_back(static_cast<int32_t>(item.size));
+        uniform.push_back(item.name);
+        uniforms.push_back(uniform);
+    }
+    result[gUniforms] = uniforms;
+
+    VariantList blendState;
+    blendState.push_back(m_blendState.alphaOperation);
+    blendState.push_back(m_blendState.colorOperation);
+    blendState.push_back(m_blendState.destinationAlphaBlendMode);
+    blendState.push_back(m_blendState.destinationColorBlendMode);
+    blendState.push_back(m_blendState.sourceAlphaBlendMode);
+    blendState.push_back(m_blendState.sourceColorBlendMode);
+    blendState.push_back(m_blendState.enabled);
+    result[gBlendState] = blendState;
+
+    VariantList depthState;
+    depthState.push_back(m_depthState.compareFunction);
+    depthState.push_back(m_depthState.writeEnabled);
+    depthState.push_back(m_depthState.enabled);
+    result[gDepthState] = depthState;
+
+    VariantList stencilState;
+    stencilState.push_back(m_stencilState.compareFunctionBack);
+    stencilState.push_back(m_stencilState.compareFunctionFront);
+    stencilState.push_back(m_stencilState.failOperationBack);
+    stencilState.push_back(m_stencilState.failOperationFront);
+    stencilState.push_back(m_stencilState.passOperationBack);
+    stencilState.push_back(m_stencilState.passOperationFront);
+    stencilState.push_back(m_stencilState.zFailOperationBack);
+    stencilState.push_back(m_stencilState.zFailOperationFront);
+    stencilState.push_back(m_stencilState.readMask);
+    stencilState.push_back(m_stencilState.writeMask);
+    stencilState.push_back(m_stencilState.reference);
+    stencilState.push_back(m_stencilState.enabled);
+    result[gStencilState] = stencilState;
+
+    return result;
+}
+/*!
+    \internal
+*/
 void Material::loadBlendState(const VariantList &data) {
     auto i = data.begin();
     m_blendState.alphaOperation = (*i).toInt();

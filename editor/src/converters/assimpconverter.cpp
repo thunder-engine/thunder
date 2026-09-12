@@ -286,7 +286,7 @@ AssetConverter::ReturnCode AssimpConverter::convertFile(AssetConverterSettings *
         stabilizeUUID(root);
         root->setName(name);
 
-        return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
+        return settings->saveBinary(prefab, settings->absoluteDestination());
     }
     return InternalError;
 }
@@ -630,7 +630,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
         Url dst(fbxSettings->absoluteDestination());
 
-        AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(mesh), dst.absoluteDir() + "/" + info.uuid);
+        AssetConverter::ReturnCode result = fbxSettings->saveBinary(mesh, dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = mesh->uuid();
             TString name(actor->name());
@@ -869,7 +869,7 @@ void AssimpConverter::importAnimation(const aiScene *scene, AssimpImportSettings
 
         Url dst(fbxSettings->absoluteDestination());
 
-        AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(clip), dst.absoluteDir() + "/" + info.uuid);
+        AssetConverter::ReturnCode result = fbxSettings->saveBinary(clip, dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = clip->uuid();
             fbxSettings->setSubItem(animation->mName.C_Str(), info, 0);
@@ -909,7 +909,7 @@ void AssimpConverter::importPose(AssimpImportSettings *fbxSettings) {
 
     Url dst(fbxSettings->absoluteDestination());
 
-    AssetConverter::ReturnCode result = fbxSettings->saveBinary(Engine::toVariant(pose), dst.absoluteDir() + "/" + info.uuid);
+    AssetConverter::ReturnCode result = fbxSettings->saveBinary(pose, dst.absoluteDir() + "/" + info.uuid);
     if(result == AssetConverter::Success) {
         info.id = pose->uuid();
         fbxSettings->setSubItem(poseName, info, 0);

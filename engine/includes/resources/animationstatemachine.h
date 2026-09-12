@@ -92,6 +92,8 @@ public:
 
     void loadUserData(const VariantMap &data) override;
 
+    VariantMap saveUserData() const override;
+
     static void registerSuper(ObjectSystem *system);
 
 private:

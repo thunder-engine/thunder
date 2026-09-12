@@ -160,7 +160,8 @@ void MaterialMt::loadUserData(const VariantMap &data) {
             Shader shader;
 
             auto field = fields.begin(); // Shader data
-            shader.function = buildShader(field->toString());
+            shader.source = field->toString();
+            shader.function = buildShader(shader.source);
             ++field; // Uniform locations
             for(auto uniform : field->toList()) {
                 VariantList list = uniform.toList();
@@ -186,6 +187,51 @@ void MaterialMt::loadUserData(const VariantMap &data) {
             m_pipelineFunctions[pair.second] = shader;
         }
     }
+}
+/*!
+    \internal
+*/
+VariantMap MaterialMt::saveUserData() const {
+    VariantMap result(Material::saveUserData());
+
+    static const std::map<uint16_t, const char *> names = {
+        {FragmentVisibility, "Visibility"},
+        {FragmentDefault, "Default"},
+        {VertexStatic, "Static"},
+        {VertexSkinned, "Skinned"},
+        {VertexParticle, "Particle"}
+    };
+
+    for(const auto &pipeline : m_pipelineFunctions) {
+        auto name = names.find(pipeline.first);
+        if(name != names.end()) {
+            const Shader &shader = pipeline.second;
+            VariantList fields;
+            fields.push_back(shader.source);
+
+            VariantList uniforms;
+            for(const Uniform &uniform : shader.uniforms) {
+                VariantList data;
+                data.push_back(uniform.name);
+                data.push_back(uniform.location);
+                uniforms.push_back(data);
+            }
+            fields.push_back(uniforms);
+
+            VariantList attributes;
+            for(const Attribute &attribute : shader.attributes) {
+                VariantList data;
+                data.push_back(static_cast<int32_t>(attribute.format));
+                data.push_back(attribute.location);
+                attributes.push_back(data);
+            }
+            fields.push_back(attributes);
+
+            result[name->second] = fields;
+        }
+    }
+
+    return result;
 }
 
 MTL::RenderPipelineState *MaterialMt::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target) {

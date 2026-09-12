@@ -63,6 +63,44 @@ void MaterialVk::loadUserData(const VariantMap &data) {
 
     setState(ToBeUpdated);
 }
+/*!
+    \internal
+*/
+VariantMap MaterialVk::saveUserData() const {
+    VariantMap result(Material::saveUserData());
+
+    static const std::map<uint16_t, const char *> names = {
+        {FragmentVisibility, "Visibility"},
+        {FragmentDefault, "Default"},
+        {VertexStatic, "Static"},
+        {VertexSkinned, "Skinned"},
+        {VertexParticle, "Particle"}
+    };
+
+    for(const auto &source : m_shaderSources) {
+        auto name = names.find(source.first);
+        if(name != names.end()) {
+            VariantList fields;
+            fields.push_back(source.second);
+            fields.push_back(VariantList());
+
+            VariantList attributes;
+            auto attributeIt = m_attributes.find(source.first);
+            if(attributeIt != m_attributes.end()) {
+                for(const Attribute &attribute : attributeIt->second) {
+                    VariantList data;
+                    data.push_back(static_cast<int32_t>(attribute.format));
+                    data.push_back(attribute.location);
+                    attributes.push_back(data);
+                }
+            }
+            fields.push_back(attributes);
+            result[name->second] = fields;
+        }
+    }
+
+    return result;
+}
 
 void MaterialVk::switchState(State state) {
     switch(state) {

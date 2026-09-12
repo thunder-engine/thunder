@@ -21,7 +21,7 @@ public:
 
     StringList nodeList() const override;
 
-    Variant data() const;
+    VariantMap data() const;
 
 public: // signals
     void variableChanged();

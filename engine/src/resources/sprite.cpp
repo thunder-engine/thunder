@@ -3,6 +3,8 @@
 #include "engine.h"
 #include "texture.h"
 
+#include "systems/resourcesystem.h"
+
 namespace  {
     const char *gTexture("Texture");
 }
@@ -37,7 +39,7 @@ Sprite::~Sprite() {
 */
 void Sprite::loadUserData(const VariantMap &data) {
     if(m_mode == Complex) {
-        m_mesh->loadUserData(data);
+        ResourceSystem::loadResourceData(m_mesh, data);
     }
 
     auto it = data.find(gTexture);
@@ -53,7 +55,7 @@ VariantMap Sprite::saveUserData() const {
     VariantMap result;
 
     if(m_mode == Complex) {
-        result = m_mesh->saveUserData();
+        result = ResourceSystem::saveResourceData(m_mesh);
     }
 
     if(m_texture) {

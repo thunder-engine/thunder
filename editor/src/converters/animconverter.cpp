@@ -49,10 +49,10 @@ AssetConverter::ReturnCode AnimConverter::convertFile(AssetConverterSettings *se
 
         VariantMap map;
         map[gTracks] = readJson(src.readAll(), settings).toList();
-        clip->loadUserData(map);
+        ResourceSystem::loadResourceData(clip, map);
         src.close();
 
-        return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
+        return settings->saveBinary(clip, settings->absoluteDestination());
     }
 
     return InternalError;

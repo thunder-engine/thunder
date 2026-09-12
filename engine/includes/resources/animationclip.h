@@ -100,6 +100,7 @@ public:
 
     AnimationTracks &tracks();
 
+protected:
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 

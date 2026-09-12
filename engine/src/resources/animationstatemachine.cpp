@@ -2,6 +2,10 @@
 
 namespace {
     const char *gMachine("Machine");
+
+    int stateHash(const Variant &value) {
+        return value.type() == MetaType::INTEGER ? value.toInt() : Mathf::hashString(value.toString());
+    }
 }
 
 bool AnimationTransitionCondition::check(const Variant &value) {
@@ -63,7 +67,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 i++;
                 if(type == "BaseState") {
                     state = new AnimationState;
-                    state->m_hash = Mathf::hashString((*i).toString());
+                    state->m_hash = stateHash(*i);
                     i++;
                     state->m_clip = Engine::loadResource<AnimationClip>((*i).toString());
                     i++;
@@ -75,7 +79,11 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             block++;
             // Unpack variables
             for(auto &it : (*block).value<VariantMap>()) {
-                m_variables[Mathf::hashString(it.first)] = it.second;
+                int hash = Mathf::hashString(it.first);
+                if(TString::number(it.first.toInt()) == it.first) {
+                    hash = it.first.toInt();
+                }
+                m_variables[hash] = it.second;
             }
             block++;
             // Unpack transitions
@@ -83,10 +91,10 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 VariantList valueList(it.value<VariantList>());
                 auto i = valueList.begin();
 
-                AnimationState *source = findState(Mathf::hashString((*i).toString()));
+                AnimationState *source = findState(stateHash(*i));
                 if(source) {
                     i++;
-                    AnimationState *target = findState(Mathf::hashString((*i).toString()));
+                    AnimationState *target = findState(stateHash(*i));
                     if(target) {
                         AnimationTransition transition;
                         transition.m_targetState = target;
@@ -105,7 +113,7 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
                 }
             }
             block++;
-            m_initialState = findState(Mathf::hashString((*block).toString()));
+            m_initialState = findState(stateHash(*block));
 
             switchState(ToBeUpdated);
         }
@@ -118,13 +126,66 @@ AnimationTransitionCondition AnimationStateMachine::loadCondition(const VariantL
     AnimationTransitionCondition condition;
 
     auto it = data.begin();
-    condition.m_hash = Mathf::hashString(it->toString());
+    condition.m_hash = stateHash(*it);
     ++it;
     condition.m_rule = it->toInt();
     ++it;
     condition.m_value = *it;
 
     return condition;
+}
+/*!
+    \internal
+*/
+VariantMap AnimationStateMachine::saveUserData() const {
+    VariantMap result;
+
+    VariantList states;
+    for(const AnimationState *state : m_states) {
+        VariantList data;
+        data.push_back(TString("BaseState"));
+        data.push_back(state->m_hash);
+        data.push_back(state->m_clip ? Engine::reference(state->m_clip) : TString());
+        data.push_back(state->m_loop);
+        states.push_back(data);
+    }
+
+    VariantMap variables;
+    for(const auto &variable : m_variables) {
+        variables[TString::number(variable.first)] = variable.second;
+    }
+
+    VariantList transitions;
+    for(const AnimationState *state : m_states) {
+        for(const AnimationTransition &transition : state->m_transitions) {
+            VariantList data;
+            data.push_back(state->m_hash);
+            data.push_back(transition.m_targetState ? transition.m_targetState->m_hash : 0);
+            data.push_back(transition.m_duration);
+
+            if(!transition.m_conditions.empty()) {
+                VariantList conditions;
+                for(const AnimationTransitionCondition &condition : transition.m_conditions) {
+                    VariantList conditionData;
+                    conditionData.push_back(condition.m_hash);
+                    conditionData.push_back(condition.m_rule);
+                    conditionData.push_back(condition.m_value);
+                    conditions.push_back(conditionData);
+                }
+                data.push_back(conditions);
+            }
+            transitions.push_back(data);
+        }
+    }
+
+    VariantList machine;
+    machine.push_back(states);
+    machine.push_back(variables);
+    machine.push_back(transitions);
+    machine.push_back(m_initialState ? m_initialState->m_hash : 0);
+    result[gMachine] = machine;
+
+    return result;
 }
 /*!
     Returns a state for the provided \a hash.

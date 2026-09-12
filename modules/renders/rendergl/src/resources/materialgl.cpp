@@ -41,6 +41,31 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
     switchState(ToBeUpdated);
 }
+/*!
+    \internal
+*/
+VariantMap MaterialGL::saveUserData() const {
+    VariantMap result(Material::saveUserData());
+
+    static const std::map<uint16_t, const char *> names = {
+        {FragmentVisibility, "Visibility"},
+        {FragmentDefault, "Default"},
+        {VertexStatic, "Static"},
+        {VertexSkinned, "Skinned"},
+        {VertexParticle, "Particle"}
+    };
+
+    for(const auto &source : m_shaderSources) {
+        auto it = names.find(source.first);
+        if(it != names.end()) {
+            VariantList fields;
+            fields.push_back(source.second);
+            result[it->second] = fields;
+        }
+    }
+
+    return result;
+}
 
 uint32_t MaterialGL::getProgram(uint32_t type, int32_t &global, int32_t &local) {
     switch(state()) {

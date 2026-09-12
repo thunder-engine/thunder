@@ -174,9 +174,9 @@ AssetConverter::ReturnCode AudioConverter::convertFile(AssetConverterSettings *s
         Engine::replaceUUID(clip, uuid);
     }
 
-    clip->loadUserData(convertResource(static_cast<AudioImportSettings *>(settings), channels, sampleRate, buffer));
+    ResourceSystem::loadResourceData(clip, convertResource(static_cast<AudioImportSettings *>(settings), channels, sampleRate, buffer));
 
-    return settings->saveBinary(Engine::toVariant(clip), settings->absoluteDestination());
+    return settings->saveBinary(clip, settings->absoluteDestination());
 }
 
 VariantMap AudioConverter::convertResource(AudioImportSettings *settings, int32_t srcChanels, int32_t sampleRate, const ByteArray &buffer) {

@@ -93,7 +93,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                             Url dst(settings->absoluteDestination());
 
-                            AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileSet), dst.absoluteDir() + "/" + resInfo.uuid);
+                            AssetConverter::ReturnCode result = settings->saveBinary(tileSet, dst.absoluteDir() + "/" + resInfo.uuid);
                             if(result == AssetConverter::Success) {
                                 resInfo.id = tileSet->uuid();
                                 settings->setSubItem(tilesetName, resInfo, 0);
@@ -140,7 +140,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
 
                         Url dst(settings->absoluteDestination());
 
-                        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(tileMap), dst.absoluteDir() + "/" + resInfo.uuid);
+                        AssetConverter::ReturnCode result = settings->saveBinary(tileMap, dst.absoluteDir() + "/" + resInfo.uuid);
                         if(result == AssetConverter::Success) {
                             resInfo.id = tileMap->uuid();
                             settings->setSubItem(tilemapName, resInfo, 0);
@@ -179,7 +179,7 @@ AssetConverter::ReturnCode TiledMapConverter::convertFile(AssetConverterSettings
                     }
                 }
 
-                return settings->saveBinary(Engine::toVariant(prefab), settings->absoluteDestination());
+                return settings->saveBinary(prefab, settings->absoluteDestination());
             }
         }
     }

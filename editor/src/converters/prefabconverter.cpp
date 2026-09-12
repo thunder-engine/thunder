@@ -102,30 +102,19 @@ Actor *PrefabConverter::createActor(const AssetConverterSettings *settings, cons
 AssetConverter::ReturnCode PrefabConverter::convertFile(AssetConverterSettings *settings) {
     PROFILE_FUNCTION();
 
-    AssetConverter::ReturnCode result = InternalError;
-
     File src(settings->source());
     if(src.open(File::Read)) {
-        Variant variant = readJson(src.readAll(), settings);
+        Variant data = readJson(src.readAll(), settings);
         src.close();
 
-        uint32_t uuid = 0;
-        VariantList objects = variant.value<VariantList>();
-        for(auto &it : objects) {
-            VariantList o  = it.value<VariantList>();
-            if(o.size() >= 5) {
-                auto i = o.begin();
-                i++;
-                uuid = static_cast<uint32_t>((*i).toInt());
-                break;
-            }
+        Resource *resource = dynamic_cast<Resource *>(Engine::toObject(data));
+        if(resource) {
+            settings->info().id = resource->uuid();
+
+            return settings->saveBinary(resource, settings->absoluteDestination());
         }
-
-        settings->info().id = uuid;
-
-        return settings->saveBinary(variant, settings->absoluteDestination());
     }
-    return result;
+    return InternalError;
 }
 
 Variant PrefabConverter::readJson(const TString &data, AssetConverterSettings *settings) {

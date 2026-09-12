@@ -32,9 +32,8 @@ public:
 
     Pipeline::Link renderTaskLink(int index) const;
 
-    void loadUserData(const VariantMap &data) override;
-
 protected:
+    void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:

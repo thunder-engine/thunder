@@ -52,6 +52,8 @@ class MaterialMt : public Material {
     };
 
     struct Shader {
+        TString source;
+
         std::vector<Attribute> attributes;
 
         std::vector<Uniform> uniforms;
@@ -61,6 +63,8 @@ class MaterialMt : public Material {
 
 public:
     void loadUserData(const VariantMap &data) override;
+
+    VariantMap saveUserData() const override;
 
     Shader *shader(uint16_t type);
 

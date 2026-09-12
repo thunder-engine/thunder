@@ -93,8 +93,6 @@ public:
 
     AABBox bound() const;
 
-    void loadUserData(const VariantMap &data) override;
-
 protected:
     std::vector<Operator> m_emitterSpawnOperations;
     std::vector<Operator> m_emitterUpdateOperations;
@@ -121,6 +119,10 @@ protected:
     bool m_continous;
 
 private:
+    void loadUserData(const VariantMap &data) override;
+
+    VariantMap saveUserData() const override;
+
     void apply(std::vector<Operator> &operations, Buffers &buffers, int particle = 0, int render = 0, int stride = 0) const;
 
     void loadOperations(const VariantList &list, std::vector<Operator> &operations);

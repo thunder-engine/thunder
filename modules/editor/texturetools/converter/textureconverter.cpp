@@ -258,7 +258,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
             Engine::replaceUUID(texture, uuid);
         }
 
-        return settings->saveBinary(Engine::toVariant(texture), settings->absoluteDestination());
+        return settings->saveBinary(texture, settings->absoluteDestination());
     }
 
     return InternalError;
@@ -475,7 +475,7 @@ void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *se
         sprite->setPivot(value.pivot);
         sprite->setMode(Sprite::Sliced);
 
-        AssetConverter::ReturnCode result = settings->saveBinary(Engine::toVariant(sprite), dst.absoluteDir() + "/" + info.uuid);
+        AssetConverter::ReturnCode result = settings->saveBinary(sprite, dst.absoluteDir() + "/" + info.uuid);
         if(result == AssetConverter::Success) {
             info.id = sprite->uuid();
             settings->setSubItem(it.first, info, 0);

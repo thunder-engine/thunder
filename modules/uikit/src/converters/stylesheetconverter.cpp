@@ -44,7 +44,7 @@ AssetConverter::ReturnCode StyleSheetConverter::convertFile(AssetConverterSettin
             style->setData(array);
         }
 
-        return settings->saveBinary(Engine::toVariant(style), settings->absoluteDestination());
+        return settings->saveBinary(style, settings->absoluteDestination());
     }
 
     return InternalError;

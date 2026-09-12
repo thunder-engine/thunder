@@ -275,7 +275,7 @@ void ParticleEdit::saveAsset(const TString &path) {
 void ParticleEdit::onUpdateTemplate() {
     VisualEffect *effect = m_render->effect();
     if(effect) {
-        effect->loadUserData(m_builder->graph().data());
+        ResourceSystem::loadResourceData(effect, m_builder->graph().data());
         m_render->setEffect(effect);
 
         emit updated();

@@ -64,6 +64,8 @@ class MaterialGL : public Material {
 public:
     void loadUserData(const VariantMap &data) override;
 
+    VariantMap saveUserData() const override;
+
     uint32_t getProgram(uint32_t type, int32_t &global, int32_t &local);
 
     Textures &textures() { return m_textures; }

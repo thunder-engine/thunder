@@ -222,7 +222,7 @@ void MaterialEdit::onGraphUpdated() {
         m_codeDlg.setData(data);
 
         ShaderBuilder::compileData(data);
-        m_material->loadUserData(data);
+        ResourceSystem::loadResourceData(m_material, data);
 
         MeshRender *mesh = m_mesh->getComponent<MeshRender>();
         if(mesh) {

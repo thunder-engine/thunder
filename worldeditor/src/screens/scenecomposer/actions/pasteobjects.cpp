@@ -100,18 +100,20 @@ Object *PasteObjects::buildObject(const Variant &data, Object *parent, bool gene
     Object *object = Engine::toObject(data, parent);
     Engine::blockObjectCache(false);
 
-    Object::ObjectList objects;
-    Object::enumObjects(object, objects);
-    for(auto it : objects) {
-        uint32_t oldUuid = it->uuid();
-        uint32_t newUuid = 0;
-        if(generate) {
-            newUuid = Engine::generateUUID();
-            m_uuidPairs[oldUuid] = newUuid;
-        } else {
-            newUuid = m_uuidPairs[oldUuid];
+    if(object) {
+        Object::ObjectList objects;
+        Object::enumObjects(object, objects);
+        for(auto it : objects) {
+            uint32_t oldUuid = it->uuid();
+            uint32_t newUuid = 0;
+            if(generate) {
+                newUuid = Engine::generateUUID();
+                m_uuidPairs[oldUuid] = newUuid;
+            } else {
+                newUuid = m_uuidPairs[oldUuid];
+            }
+            detachObjectUUID(it, newUuid);
         }
-        detachObjectUUID(it, newUuid);
     }
 
     return object;
