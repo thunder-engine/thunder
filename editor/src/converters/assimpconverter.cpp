@@ -191,7 +191,13 @@ AssetConverterSettings *AssimpConverter::createSettings() {
 Actor *AssimpConverter::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     Resource *resource = Engine::loadResource<Resource>(guid);
     if(dynamic_cast<Prefab *>(resource) != nullptr) {
-        return static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
+        Actor *actor = static_cast<Actor *>(static_cast<Prefab *>(resource)->actor()->clone());
+
+        Object::ObjectList children = actor->getChildren(); // Need to copy a list
+        for(auto &it : children) {
+            it->blockSerialization(true);
+        }
+        return actor;
     } else if(dynamic_cast<Mesh *>(resource) != nullptr) {
         Actor *object = Engine::composeActor<MeshRender>("");
         MeshRender *render = object->getComponent<MeshRender>();
