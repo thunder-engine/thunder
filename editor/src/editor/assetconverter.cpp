@@ -321,7 +321,7 @@ TString AssetConverterSettings::source() const {
 */
 void AssetConverterSettings::setSource(const TString &source) {
     m_source = source;
-    m_suffix = Url(m_source).suffix();
+    m_suffix = Url(m_source).suffix().toLower();
 }
 /*!
     Returns the destination file path (relative).
