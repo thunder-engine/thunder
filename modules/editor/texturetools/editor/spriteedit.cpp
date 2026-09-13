@@ -11,6 +11,8 @@
 #include <resources/texture.h>
 #include <resources/material.h>
 
+#include <pipelinecontext.h>
+
 #include "../converter/textureconverter.h"
 
 #include "spritecontroller.h"
@@ -59,6 +61,7 @@ SpriteEdit::SpriteEdit() :
     object = Engine::composeActor<SpriteRender>("CheckerBoard", m_scene);
     m_checker = object->getComponent<SpriteRender>();
     m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
+    m_checker->setMesh(PipelineContext::defaultPlane());
 
     setAcceptDrops(true);
     setMouseTracking(true);

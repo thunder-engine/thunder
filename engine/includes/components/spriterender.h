@@ -62,6 +62,7 @@ public:
     void setBlendShapeWeight(size_t index, float weight);
 
     void setMaterial(Material *material) override;
+    void setMesh(Mesh *mesh);
 
     MaterialInstance *materialInstance(int index) override;
 
