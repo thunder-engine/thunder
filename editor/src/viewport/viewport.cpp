@@ -211,9 +211,7 @@ void Viewport::onDraw() {
                 m_controller->update();
             }
             onCursorSet(instance.mouseCursor());
-            if(!m_gameView) {
-                instance.update();
-            }
+            instance.update();
         }
 
         if(m_screenInProgress && m_color) {

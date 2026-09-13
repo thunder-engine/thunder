@@ -182,6 +182,8 @@ int keyToInput(int key) {
 void onFrame(GLFMDisplay *display) {
     Engine::update(Engine::world());
 
+    Engine::platformAdaptor()->update();
+
     glfmSwapBuffers(display);
 }
 

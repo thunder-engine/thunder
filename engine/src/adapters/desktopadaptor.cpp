@@ -110,6 +110,8 @@ void DesktopAdaptor::loop() {
     while(!glfwWindowShouldClose(m_window)) {
         Engine::update(Engine::world());
 
+        Engine::platformAdaptor()->update();
+
         glfwPollEvents();
     }
 }
