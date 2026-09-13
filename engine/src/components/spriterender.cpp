@@ -262,6 +262,13 @@ void SpriteRender::setMaterial(Material *material) {
 /*!
     \internal
 */
+void SpriteRender::setMesh(Mesh *mesh) {
+    m_mesh = mesh;
+    m_dirtyMesh = false;
+}
+/*!
+    \internal
+*/
 void SpriteRender::setMaterialsList(const std::list<Material *> &materials) {
     Renderable::setMaterialsList(materials);
 
