@@ -1,10 +1,16 @@
 #include "editor/propertyedit.h"
 
+#include <QAbstractButton>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+
 std::list<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
 PropertyEdit::PropertyEdit(QWidget *parent) :
         QWidget(parent),
-        m_object(nullptr) {
+    m_object(nullptr),
+    m_mixedValue(false) {
 
 }
 
@@ -18,6 +24,34 @@ Variant PropertyEdit::data() const {
 
 void PropertyEdit::setData(const Variant &data) {
     A_UNUSED(data);
+}
+
+void PropertyEdit::setMixedValue(bool mixed) {
+    m_mixedValue = mixed;
+    if(!mixed) {
+        return;
+    }
+
+    for(QLineEdit *line : findChildren<QLineEdit *>()) {
+        line->clear();
+        line->setPlaceholderText("--");
+    }
+    for(QCheckBox *check : findChildren<QCheckBox *>()) {
+        check->setTristate(true);
+        check->setCheckState(Qt::PartiallyChecked);
+    }
+    for(QComboBox *combo : findChildren<QComboBox *>()) {
+        combo->setCurrentIndex(-1);
+    }
+    for(QAbstractButton *button : findChildren<QAbstractButton *>()) {
+        if(button->isCheckable() && !qobject_cast<QCheckBox *>(button)) {
+            button->setChecked(false);
+        }
+    }
+}
+
+bool PropertyEdit::isMixedValue() const {
+    return m_mixedValue;
 }
 
 void PropertyEdit::setEditorHint(const TString &hint) {

@@ -109,7 +109,47 @@ void PropertyEditor::updateAndExpand() {
 void PropertyEditor::onSelectionChanged() {
     Object::ObjectList objects = m_editor->selected();
     if(!objects.empty()) {
-        onObjectSelected(objects.front());
+        m_nextModel->clear();
+        m_item = objects.front();
+        setTopWidget(m_editor->propertiesWidget());
+        m_nextModel->addObjects(objects);
+
+        Actor *firstActor = dynamic_cast<Actor *>(objects.front());
+        if(firstActor && objects.size() > 1) {
+            for(Object *child : firstActor->getChildren()) {
+                if(dynamic_cast<Actor *>(child) != nullptr) {
+                    continue;
+                }
+
+                TString type = child->typeName();
+                Object::ObjectList components = {child};
+                bool presentOnAllActors = true;
+
+                auto object = objects.begin();
+                ++object;
+                for(; object != objects.end(); ++object) {
+                    Actor *actor = dynamic_cast<Actor *>(*object);
+                    Component *component = actor ? actor->component(type) : nullptr;
+                    if(component == nullptr) {
+                        presentOnAllActors = false;
+                        break;
+                    }
+                    components.push_back(component);
+                }
+
+                if(presentOnAllActors) {
+                    m_nextModel->addObjects(components);
+                }
+            }
+        } else {
+            for(auto it : m_item->getChildren()) {
+                if(dynamic_cast<Actor *>(it) == nullptr) {
+                    m_nextModel->addObject(it);
+                }
+            }
+        }
+
+        updateAndExpand();
     } else {
         m_nextModel->clear();
         setTopWidget(nullptr);

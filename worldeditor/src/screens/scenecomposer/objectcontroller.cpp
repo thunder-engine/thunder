@@ -542,20 +542,34 @@ void ObjectController::onUpdated(Object *object) {
 }
 
 void ObjectController::onCreateComponent(QString type) {
-    Actor *actor = dynamic_cast<Actor *>(selected().front());
-    if(actor) {
-        std::string typeName(qPrintable(type));
-        if(actor->component(typeName) == nullptr) {
-            undoRedo()->push(new CreateObject(TString("c.") + typeName, actor, Vector3(), this));
-        } else {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText(tr("Creation Component Failed"));
-            msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for this actor.")).arg(type));
-            msgBox.setStandardButtons(QMessageBox::Ok);
+    std::string typeName(qPrintable(type));
+    UndoCommand *group = new UndoCommand(TString("Create Component ") + type.toStdString());
+    bool created = false;
+    bool alreadyExists = false;
 
-            msgBox.exec();
+    for(Object *object : selected()) {
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor && actor->component(typeName) == nullptr) {
+            new CreateObject(TString("c.") + typeName, actor, Vector3(), this, group);
+            created = true;
+        } else if(actor) {
+            alreadyExists = true;
         }
+    }
+
+    if(created) {
+        undoRedo()->push(group);
+    } else {
+        delete group;
+    }
+
+    if(alreadyExists && !created) {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(tr("Creation Component Failed"));
+        msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for the selected actors.")).arg(type));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
     }
 }
 

@@ -16,6 +16,7 @@ public:
     ~NextModel();
 
     void addObject(Object *propertyObject);
+    void addObjects(const Object::ObjectList &propertyObjects);
 
     void clear();
 
