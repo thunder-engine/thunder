@@ -312,9 +312,6 @@ void Engine::update(World *world) {
 
             world->setActive(false);
         }
-
-        m_platform->update();
-
     } catch(...) {
         aError() << "Unable to process game cycle";
     }
@@ -483,6 +480,12 @@ void Engine::reloadResource(const TString &path) {
 */
 bool Engine::isResourceExist(const TString &path) {
     return m_resourceSystem->isResourceExist(path);
+}
+/*!
+    Return the current platform adaptor.
+*/
+PlatformAdaptor *Engine::platformAdaptor() {
+    return m_platform;
 }
 /*!
     Replaces a current \a platform adaptor with new one;

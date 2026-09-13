@@ -147,6 +147,8 @@ Vector2 Layout::sizeHint() {
 
     bool first = true;
     for(auto it : m_items) {
+        it->cleanDirtySize();
+
         Actor *actor = it->actor();
         if(actor && !actor->isEnabled()) {
             continue;

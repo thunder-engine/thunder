@@ -113,6 +113,7 @@ public:
 
     static void addModule(Module *module);
 
+    static PlatformAdaptor *platformAdaptor();
     static bool setPlatformAdaptor(PlatformAdaptor *platform);
 
     static Actor *composeActor(const TString &component, const TString &name, Object *parent = nullptr);
