@@ -5,10 +5,25 @@
 #include <components/component.h>
 #include <components/transform.h>
 
+#include <editor/assetmanager.h>
+#include <url.h>
+
 #include <set>
 
+namespace {
+    TString createObjectLabel(const TString &type) {
+        if(!type.isEmpty() && type.front() == '{') {
+            TString path = Editor::assets()->uuidToPath(type);
+            if(!path.isEmpty()) {
+                return Url(path).baseName();
+            }
+        }
+        return type;
+    }
+}
+
 CreateObject::CreateObject(const TString &type, Object *parent, const Vector3 &position, ObjectController *ctrl) :
-        UndoCommand(TString("Create %1").arg(type)),
+        UndoCommand(TString("Create %1").arg(createObjectLabel(type))),
         m_type(type),
         m_position(position),
         m_controller(ctrl),
@@ -131,6 +146,11 @@ Object *CreateObject::createObject(Object *parent) {
         Prefab *prefab = Engine::loadResource<Prefab>(type);
         if(prefab) {
             object = prefab->actor()->clone(parent);
+
+            TString path = Editor::assets()->uuidToPath(type);
+            if(!path.isEmpty()) {
+                object->setName(m_controller->findFreeObjectName(Url(path).baseName(), parent));
+            }
 
             Actor *actor = dynamic_cast<Actor *>(object);
             if(actor) {
