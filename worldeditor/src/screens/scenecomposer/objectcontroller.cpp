@@ -367,7 +367,7 @@ VariantList ObjectController::dumpSelected() const {
     VariantList list;
     for(auto &it : m_selected) {
         if(it.object) {
-            list.push_back(Engine::toVariant(it.object));
+            list.push_back(Engine::toVariant(it.object, true));
         }
     }
 

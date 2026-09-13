@@ -37,6 +37,12 @@ void DeleteObjects::undo() {
                 if(origin != m_cloneCache.end()) {
                     Engine::replaceClonedUUID(child, origin->second);
                 }
+
+                auto position = m_positions.find(child->uuid());
+                Object *parent = child->parent();
+                if(position != m_positions.end() && parent) {
+                    child->setParent(parent, position->second);
+                }
             }
 
             Actor *actor = dynamic_cast<Actor *>(object);
@@ -70,6 +76,7 @@ void DeleteObjects::redo() {
 
     m_dump.clear();
     m_cloneCache.clear();
+    m_positions.clear();
 
     std::list<uint32_t> list;
     bool isComponent = false;
@@ -78,6 +85,26 @@ void DeleteObjects::redo() {
         Object *object = Engine::findObject(it);
         if(object) {
             m_dump.push_back(Engine::toVariant(object, true));
+
+            Object::ObjectList children;
+            Engine::enumObjects(object, children);
+            for(auto child : children) {
+                if(child->clonedFrom() != 0) {
+                    m_cloneCache[child->uuid()] = child->clonedFrom();
+                }
+
+                Object *parent = child->parent();
+                if(parent) {
+                    int32_t position = 0;
+                    for(auto sibling : parent->getChildren()) {
+                        if(sibling == child) {
+                            m_positions[child->uuid()] = position;
+                            break;
+                        }
+                        position++;
+                    }
+                }
+            }
 
             list.push_back(object->parent()->uuid());
 
@@ -108,7 +135,19 @@ void DeleteObjects::redo() {
                 Engine::enumObjects(clone, children);
 
                 for(auto child : children) {
-                    if(prefab->contains(child->uuid())) {
+                    Object *parent = child->parent();
+                    if(parent) {
+                        int32_t position = 0;
+                        for(auto sibling : parent->getChildren()) {
+                            if(sibling == child) {
+                                m_positions[child->uuid()] = position;
+                                break;
+                            }
+                            position++;
+                        }
+                    }
+
+                    if(prefab->contains(child->clonedFrom())) {
                         m_cloneCache[child->uuid()] = child->clonedFrom();
                     } else if(cloneRoot && dynamic_cast<Actor *>(child) != nullptr) {
                         // This child Actor isn't belongs to current prefab. Moving to instance root.

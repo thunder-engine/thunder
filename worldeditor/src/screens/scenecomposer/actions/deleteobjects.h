@@ -16,6 +16,7 @@ protected:
 
     std::list<uint32_t> m_objects;
     std::unordered_map<uint32_t, uint32_t> m_cloneCache;
+    std::unordered_map<uint32_t, int32_t> m_positions;
 
     ObjectController *m_controller;
 
