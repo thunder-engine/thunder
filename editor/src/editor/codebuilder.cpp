@@ -1,9 +1,6 @@
 /*
     This file is part of Thunder Engine.
 
-/*!
-    Returns the code builder that owns these settings.
-*/
     Copyright 2008-2026 Evgeniy Prikazchikov
 
     Licensed under the Apache License, Version 2.0 (the "License");
