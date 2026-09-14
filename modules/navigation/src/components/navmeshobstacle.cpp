@@ -30,7 +30,7 @@
     shape. The obstacle can be represented by a cylinder or a box and is
     automatically re-registered when its transform or geometry changes.
 
-    \sa NavMeshAgent, NavigationSystem
+    \sa NavMeshAgent
 */
 
 /*! \enum NavMeshObstacle::Shape

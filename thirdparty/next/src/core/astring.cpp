@@ -222,7 +222,7 @@ bool TString::startsWith(const TString &str) const {
     return m_data.compare(0, str.length(), str.m_data) == 0;
 }
 /*!
-    Returns the index position of the first occurrence of the string \a str in this string. Returns -1 if \a str is not found.
+    Returns the index position of the first occurrence of the string \a str at specific \a offset in this string. Returns -1 if \a str is not found.
 */
 int TString::indexOf(const TString &str, uint32_t offset) const {
      return m_data.find(str.m_data, offset);

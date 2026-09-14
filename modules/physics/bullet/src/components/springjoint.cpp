@@ -46,7 +46,7 @@ float SpringJoint::damper() const {
 }
 
 /*!
-    Sets the damping coefficient of the spring joint.
+    Sets the \a damper coefficient of the spring joint.
 */
 void SpringJoint::setDamper(float damper) {
     m_damper = damper;
@@ -62,7 +62,7 @@ float SpringJoint::spring() const {
 }
 
 /*!
-    Sets the spring stiffness of the joint.
+    Sets the \a spring stiffness of the joint.
 */
 void SpringJoint::setSpring(float spring) {
     m_spring = spring;

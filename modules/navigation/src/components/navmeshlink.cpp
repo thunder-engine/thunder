@@ -34,7 +34,7 @@
     Links are useful for navigation routes that are not represented by the
     regular navigation mesh, such as jumps, doors, or teleport connections.
 
-    \sa NavMeshAgent, NavigationSystem
+    \sa NavMeshAgent
 */
 
 /*!

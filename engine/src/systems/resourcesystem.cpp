@@ -83,7 +83,7 @@ ResourceSystem::~ResourceSystem() {
         it.first->setState(Resource::ToBeDeleted);
     }
 }
-/*!
+/*
     This loads the resource bundle at given \a path.
     Returns true in case of success; otherwise returns false.
 */
@@ -322,7 +322,7 @@ void ResourceSystem::deleteFromCahe(Resource *resource) {
 void ResourceSystem::setCleanImport(bool flag) {
     m_clean = flag;
 }
-/*!
+/*
     Returns index of resource \a type in registry.
     This index is not persistent across projects and should only be used for asset grouping.
 */

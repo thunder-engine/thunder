@@ -214,7 +214,8 @@ bool FileSystemWatcher::removePath(const TString &path) {
 }
 
 /*!
-    \brief Remove multiple watched \a paths.
+    Remove multiple watched \a paths.
+    Returns true if all paths were being watched and were removed; otherwise returns false.
 */
 bool FileSystemWatcher::removePaths(const StringList &paths) {
     bool allSuccess = true;
@@ -254,13 +255,13 @@ StringList FileSystemWatcher::files() const {
     return result;
 }
 /*!
-    Emit the `fileChanged` signal for the given path.
+    Emit the `fileChanged` signal for the given \a path.
 */
 void FileSystemWatcher::fileChanged(const TString &path) {
     emitSignal(_SIGNAL(fileChanged(TString)), path);
 }
 /*!
-    Emit the `directoryChanged` signal for the given directory path.
+    Emit the `directoryChanged` signal for the given directory \a path.
 */
 void FileSystemWatcher::directoryChanged(const TString &path) {
     emitSignal(_SIGNAL(directoryChanged(TString)), path);

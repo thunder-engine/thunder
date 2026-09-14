@@ -42,6 +42,12 @@
     \value Destroy \c Reseiver object must be deleted immediately.
     \value LanguageChange \c The application translation changed.
     \value FileSystemWatcher \c Some file or directory was chanded.
+    \value MouseDown \c A mouse button was pressed.
+    \value MouseUp \c A mouse button was released.
+    \value MouseMove \c The mouse cursor moved.
+    \value MouseDoubleClick \c A mouse button was double-clicked.
+    \value MouseWheel \c The mouse wheel was moved.
+    \value KeyEvent \c A keyboard key event occurred.
     \value UserType \c User defined event.
 */
 /*!

@@ -85,7 +85,7 @@ RigidBody *Joint::connectedBody() const {
 }
 
 /*!
-    Sets the rigid body connected to the joint.
+    Sets the rigid \a body connected to the joint.
 */
 void Joint::setConnectedBody(RigidBody *body) {
     m_rigidBodyA = body;
@@ -101,7 +101,7 @@ bool Joint::autoConfigureConnectedAnchor() const {
 }
 
 /*!
-    Enables or disables automatic configuration of the connected anchor.
+    Enables or disables automatic configuration of the connected \a anchor.
 */
 void Joint::setAutoConfigureConnectedAnchor(bool anchor) {
     m_autoConfigureConnectedAnchor = anchor;
@@ -112,7 +112,9 @@ void Joint::setAutoConfigureConnectedAnchor(bool anchor) {
         m_connectedAnchor = Vector3();
     }
 }
-
+/*!
+    \internal
+*/
 void Joint::setBulletWorld(btDynamicsWorld *world) {
     destroyConstraint();
 
