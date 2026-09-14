@@ -83,7 +83,7 @@ Animator *TimelineEdit::findAnimator(Object *object) {
 }
 
 void TimelineEdit::onUpdated() {
-
+    onSelectionChanged();
 }
 
 void TimelineEdit::onSelectionChanged() {
