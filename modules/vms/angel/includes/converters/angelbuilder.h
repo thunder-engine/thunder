@@ -21,7 +21,7 @@
 #include <QObject>
 #include <QAbstractItemModel>
 
-#include <editor/codebuilder.h>
+#include <editor/assetconverter.h>
 
 class asSMessageInfo;
 class asIScriptEngine;
@@ -78,15 +78,15 @@ private:
     AngelClassItem *m_pRootItem;
 };
 
-class AngelScriptImportSettings : public BuilderSettings {
+class AngelScriptImportSettings : public AssetConverterSettings {
 public:
-    explicit AngelScriptImportSettings(CodeBuilder *builder);
+    AngelScriptImportSettings() = default;
 
     StringList typeNames() const override;
 
 };
 
-class AngelBuilder : public CodeBuilder {
+class AngelBuilder : public AssetConverter {
 public:
     AngelBuilder(AngelSystem *system);
     ~AngelBuilder() override;
@@ -94,10 +94,9 @@ public:
 protected:
     void init() override;
 
-    bool buildProject() override;
+    ReturnCode convertFile(AssetConverterSettings *settings) override;
 
     StringList suffixes() const override { return {"as"}; }
-    QAbstractItemModel *classMap() const override;
 
     AssetConverterSettings *createSettings() override;
 
@@ -108,8 +107,6 @@ protected:
     AngelSystem *m_system;
 
     asIScriptEngine *m_scriptEngine;
-
-    AngelClassMapModel *m_classModel;
 
 };
 

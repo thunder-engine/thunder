@@ -176,106 +176,155 @@ int AngelSystem::threadPolicy() const {
     return Pool;
 }
 
+void AngelSystem::loadModule(const TString &moduleName, AngelScript *script) {
+    PROFILE_FUNCTION();
+
+    if(!script || script->m_array.empty()) {
+        aError() << __FUNCTION__ << "Invalid or empty AngelScript resource:" << moduleName;
+        return;
+    }
+
+    asIScriptModule *mod = m_scriptEngine->GetModule(moduleName.data(), asGM_CREATE_IF_NOT_EXISTS);
+    if(mod) {
+        AngelStream stream(script->m_array);
+        int result = mod->LoadByteCode(&stream);
+        if(result < 0) {
+            aError() << __FUNCTION__ << "Failed to load bytecode for module:" << moduleName;
+            return;
+        }
+
+        // Track this module
+        m_modules[moduleName] = mod;
+
+        // Process the module for Behaviour classes
+        processModule(mod);
+    }
+}
+
+void AngelSystem::unloadModule(const TString &moduleName) {
+    PROFILE_FUNCTION();
+
+    auto it = m_modules.find(moduleName);
+    if(it != m_modules.end()) {
+        asIScriptModule *mod = it->second;
+        
+        // Unregister Behaviour classes from this module
+        for(uint32_t i = 0; i < mod->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = mod->GetObjectTypeByIndex(i);
+            if(info && isBehaviour(info)) {
+                factoryRemove(info->GetName(), TString(gUri) + info->GetName());
+            }
+        }
+
+        mod->Discard();
+        m_modules.erase(it);
+    }
+}
+
+void AngelSystem::processModule(asIScriptModule *module) {
+    PROFILE_FUNCTION();
+
+    if(!module) return;
+
+    for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
+        asITypeInfo *info = module->GetObjectTypeByIndex(i);
+        if(info && isBehaviour(info)) {
+            {
+                MetaType::Table staticTable = {
+                    expose_props_method<AngelBehaviour>::exec(),
+                    expose_method<AngelBehaviour>::exec(),
+                    expose_enum<AngelBehaviour>::exec(),
+                    TypeFuncs<AngelBehaviour>::size,
+                    TypeFuncs<AngelBehaviour>::static_new,
+                    TypeFuncs<AngelBehaviour>::construct,
+                    TypeFuncs<AngelBehaviour>::static_delete,
+                    TypeFuncs<AngelBehaviour>::destruct,
+                    TypeFuncs<AngelBehaviour>::clone,
+                    TypeFuncs<AngelBehaviour>::compare,
+                    TypeFuncs<AngelBehaviour>::index,
+                    info->GetName(),
+                    MetaType::BASE_OBJECT,
+                    nullptr
+                };
+
+                MetaType::registerType(staticTable);
+            }
+
+            {
+                int length = strlen(info->GetName());
+                char *type = new char[length + 3];
+                memcpy(type, info->GetName(), length);
+                type[length] = ' ';
+                type[length + 1] = '*';
+                type[length + 2] = 0;
+
+                MetaType::Table staticTable = {
+                    expose_props_method<AngelBehaviour *>::exec(),
+                    expose_method<AngelBehaviour *>::exec(),
+                    expose_enum<AngelBehaviour *>::exec(),
+                    TypeFuncs<AngelBehaviour *>::size,
+                    TypeFuncs<AngelBehaviour *>::static_new,
+                    TypeFuncs<AngelBehaviour *>::construct,
+                    TypeFuncs<AngelBehaviour *>::static_delete,
+                    TypeFuncs<AngelBehaviour *>::destruct,
+                    TypeFuncs<AngelBehaviour *>::clone,
+                    TypeFuncs<AngelBehaviour *>::compare,
+                    TypeFuncs<AngelBehaviour *>::index,
+                    type,
+                    MetaType::POINTER | MetaType::BASE_OBJECT,
+                    nullptr
+                };
+
+                MetaType::registerType(staticTable);
+            }
+
+            factoryAdd(info->GetName(), std::string(gUri) + info->GetName(), AngelBehaviour::metaClass());
+        }
+    }
+}
+
 void AngelSystem::reload() {
     PROFILE_FUNCTION();
 
     unloadAll(true);
-    asIScriptModule *module = m_scriptEngine->GetModule("AngelData", asGM_CREATE_IF_NOT_EXISTS);
-
-    if(Engine::isResourceExist(gTemplate)) {
-        if(m_script) {
-            Engine::reloadResource(gTemplate);
-        } else {
-            m_script = Engine::loadResource<AngelScript>(gTemplate);
-            if(m_script) {
-                m_script->incRef();
-            }
-        }
-    } else {
-        return;
-    }
 
     m_context = m_scriptEngine->CreateContext();
 
-    if(m_script) {
-        AngelStream stream(m_script->m_array);
-        module->LoadByteCode(&stream);
-
-        for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = module->GetObjectTypeByIndex(i);
-            if(info && isBehaviour(info)) {
-                {
-                    MetaType::Table staticTable = {
-                        expose_props_method<AngelBehaviour>::exec(),
-                        expose_method<AngelBehaviour>::exec(),
-                        expose_enum<AngelBehaviour>::exec(),
-                        TypeFuncs<AngelBehaviour>::size,
-                        TypeFuncs<AngelBehaviour>::static_new,
-                        TypeFuncs<AngelBehaviour>::construct,
-                        TypeFuncs<AngelBehaviour>::static_delete,
-                        TypeFuncs<AngelBehaviour>::destruct,
-                        TypeFuncs<AngelBehaviour>::clone,
-                        TypeFuncs<AngelBehaviour>::compare,
-                        TypeFuncs<AngelBehaviour>::index,
-                        info->GetName(),
-                        MetaType::BASE_OBJECT,
-                        nullptr
-                    };
-
-                    MetaType::registerType(staticTable);
-                }
-
-                {
-                    int length = strlen(info->GetName());
-                    char *type = new char[length + 3];
-                    memcpy(type, info->GetName(), length);
-                    type[length] = ' ';
-                    type[length + 1] = '*';
-                    type[length + 2] = 0;
-
-                    MetaType::Table staticTable = {
-                        expose_props_method<AngelBehaviour *>::exec(),
-                        expose_method<AngelBehaviour *>::exec(),
-                        expose_enum<AngelBehaviour *>::exec(),
-                        TypeFuncs<AngelBehaviour *>::size,
-                        TypeFuncs<AngelBehaviour *>::static_new,
-                        TypeFuncs<AngelBehaviour *>::construct,
-                        TypeFuncs<AngelBehaviour *>::static_delete,
-                        TypeFuncs<AngelBehaviour *>::destruct,
-                        TypeFuncs<AngelBehaviour *>::clone,
-                        TypeFuncs<AngelBehaviour *>::compare,
-                        TypeFuncs<AngelBehaviour *>::index,
-                        type,
-                        MetaType::POINTER | MetaType::BASE_OBJECT,
-                        nullptr
-                    };
-
-                    MetaType::registerType(staticTable);
-                }
-
-                factoryAdd(info->GetName(), std::string(gUri) + info->GetName(), AngelBehaviour::metaClass());
+    // Enumerate and load all AngelScript resources from the resource system
+    // Each resource has a UUID in its filename and is stored in importPath + "/" + UUID
+    ResourceSystem *resourceSystem = Engine::resourceSystem();
+    ResourceSystem::Dictionary &indices = resourceSystem->indices();
+    
+    // Iterate through all registered resources and load AngelScript ones
+    for(auto &it : indices) {
+        const ResourceSystem::ResourceInfo &info = it.second;
+        
+        // Check if this is an AngelScript resource
+        if(info.type == "AngelScript") {
+            TString moduleUUID = info.uuid;
+            AngelScript *script = Engine::loadResource<AngelScript>(moduleUUID);
+            if(script) {
+                loadModule(moduleUUID, script);
             }
         }
+    }
 
-        processEvents();
+    processEvents();
 
-        for(auto it : m_objectList) {
-            static_cast<AngelBehaviour *>(it)->awakeObject();
+    for(auto it : m_objectList) {
+        static_cast<AngelBehaviour *>(it)->awakeObject();
+    }
+
+    // We need to copy list
+    Object::ObjectList list = AngelSystem::invalidObjects();
+    for(auto it : list) {
+        TString type(it->typeName());
+        const MetaObject *meta = getMetaObject(type);
+        if(meta) {
+            Variant v = Engine::toVariant(it);
+            delete it;
+            Engine::toObject(v);
         }
-
-        // We need to copy list
-        Object::ObjectList list = AngelSystem::invalidObjects();
-        for(auto it : list) {
-            TString type(it->typeName());
-            const MetaObject *meta = getMetaObject(type);
-            if(meta) {
-                Variant v = Engine::toVariant(it);
-                delete it;
-                Engine::toObject(v);
-            }
-        }
-    } else {
-        aError() << __FUNCTION__ << "Filed to load a script";
     }
 }
 
@@ -476,17 +525,13 @@ void AngelSystem::unloadAll(bool reload) {
         m_context = nullptr;
     }
 
-    for(uint32_t m = 0; m < m_scriptEngine->GetModuleCount(); m++) {
-        asIScriptModule *module = m_scriptEngine->GetModuleByIndex(m);
-        if(module) {
-            for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
-                asITypeInfo *info = module->GetObjectTypeByIndex(i);
-                if(info && isBehaviour(info)) {
-                    factoryRemove(info->GetName(), TString(gUri) + info->GetName());
-                }
-            }
-            module->Discard();
-        }
+    // Unload all tracked modules
+    std::vector<TString> moduleNames;
+    for(auto &it : m_modules) {
+        moduleNames.push_back(it.first);
+    }
+    for(auto &name : moduleNames) {
+        unloadModule(name);
     }
 
     for(auto it : m_metaObjects) {
@@ -899,5 +944,22 @@ void AngelSystem::messageCallback(const asSMessageInfo *msg, void *param) {
 }
 
 void AngelSystem::bundleUpdated(const TString &path, bool unload, void *ptr) {
-    //AngelSystem *system = reinterpret_cast<AngelSystem *>(ptr);
+    AngelSystem *system = reinterpret_cast<AngelSystem *>(ptr);
+    if(!system) return;
+
+    if(!unload) {
+        // Bundle is being loaded
+        // Reload to discover new AngelScript resources in the loaded bundle
+        if(system->m_inited) {
+            system->reload();
+        }
+    } else {
+        // Bundle is being unloaded
+        // Unload modules that belong to this bundle
+        // For now, we'll do a full reload to ensure consistency
+        // In future: track which modules came from which bundle and selectively unload
+        if(system->m_inited) {
+            system->unloadAll(true);
+        }
+    }
 }

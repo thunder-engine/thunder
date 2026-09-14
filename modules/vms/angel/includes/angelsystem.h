@@ -23,6 +23,7 @@
 #include "components/angelbehaviour.h"
 
 class asIScriptEngine;
+class asIScriptModule;
 class asIScriptContext;
 class asIScriptFunction;
 class asIScriptObject;
@@ -71,6 +72,10 @@ protected:
 
     MetaType::Table *metaType(const TString &typeName);
 
+    void loadModule(const TString &moduleName, AngelScript *script);
+    void unloadModule(const TString &moduleName);
+    void processModule(asIScriptModule *module);
+
     static void messageCallback(const asSMessageInfo *msg, void *param);
 
     static void bundleUpdated(const TString &path, bool unload, void *ptr);
@@ -78,6 +83,7 @@ protected:
 private:
     std::unordered_map<asITypeInfo *, MetaObject *> m_metaObjects;
     std::unordered_map<TString, MetaType::Table *> m_metaTypes;
+    std::unordered_map<TString, asIScriptModule *> m_modules;
 
     asIScriptEngine *m_scriptEngine;
 
