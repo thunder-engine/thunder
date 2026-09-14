@@ -15,9 +15,13 @@ BooleanEdit::~BooleanEdit() {
 }
 
 Variant BooleanEdit::data() const {
+    if(ui->checkBox->checkState() == Qt::PartiallyChecked) {
+        return Variant();
+    }
     return ui->checkBox->isChecked();
 }
 
 void BooleanEdit::setData(const Variant &data) {
+    ui->checkBox->setTristate(false);
     ui->checkBox->setChecked(data.toBool());
 }

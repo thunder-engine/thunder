@@ -46,7 +46,12 @@ Property::Property(const TString &name, Property *parent, bool root) :
 }
 
 void Property::setPropertyObject(Object *propertyObject) {
-    m_nextObject = propertyObject;
+    setPropertyObjects({propertyObject});
+}
+
+void Property::setPropertyObjects(const Object::ObjectList &propertyObjects) {
+    m_nextObjects = propertyObjects;
+    m_nextObject = m_nextObjects.empty() ? nullptr : m_nextObjects.front();
 
     Invalid *invalid = dynamic_cast<Invalid *>(m_nextObject);
     if(invalid) {
@@ -90,24 +95,31 @@ void Property::setEditorHints(const TString &hints) {
 }
 
 Variant Property::value() const {
-    if(m_nextObject) {
-        return m_nextObject->property(qPrintable(objectName()));
+    if(!m_nextObject) {
+        return Variant();
     }
 
-    return Variant();
+    Variant result = m_nextObject->property(qPrintable(objectName()));
+    auto object = m_nextObjects.begin();
+    ++object;
+    for(; object != m_nextObjects.end(); ++object) {
+        Variant value = (*object)->property(qPrintable(objectName()));
+        if(!value.isValid() || value != result) {
+            return Variant();
+        }
+    }
+    return result;
 }
 
 void Property::setValue(const Variant &value) {
-    if(m_nextObject) {
-        Variant current(m_nextObject->property(qPrintable(objectName())));
-
-        if(value != current) {
-            AssetConverterSettings *settings = dynamic_cast<AssetConverterSettings *>(m_nextObject);
-            if(settings) {
-                m_nextObject->setProperty(m_name.data(), value);
-            } else {
-                emit propertyChanged({m_nextObject}, objectName().toStdString(), value);
+    if(m_nextObject && value.isValid() && value != this->value()) {
+        bool isAssetSettings = dynamic_cast<AssetConverterSettings *>(m_nextObject) != nullptr;
+        if(isAssetSettings) {
+            for(Object *object : m_nextObjects) {
+                object->setProperty(m_name.data(), value);
             }
+        } else {
+            emit propertyChanged(m_nextObjects, objectName().toStdString(), value);
         }
     }
 }
@@ -146,7 +158,7 @@ PropertyEdit *Property::createEditor(QWidget *parent) const {
     int32_t type = 0;
 
     if(m_nextObject) {
-        Variant data = value();
+        Variant data = m_nextObject->property(qPrintable(objectName()));
         if(data.isValid()) {
             type = data.userType();
         }
@@ -203,7 +215,16 @@ void Property::updateEditor() {
     PropertyEdit *e = dynamic_cast<PropertyEdit *>(m_editor);
     if(e) {
         e->blockSignals(true);
-        e->setData(value());
+        Variant current = value();
+        if(current.isValid()) {
+            e->setMixedValue(false);
+            e->setData(current);
+        } else {
+            if(m_nextObject) {
+                e->setData(m_nextObject->property(qPrintable(objectName())));
+            }
+            e->setMixedValue(true);
+        }
         e->blockSignals(false);
     }
 }
@@ -235,6 +256,7 @@ void Property::setChecked(bool value) {
 void Property::onDataChanged() {
     PropertyEdit *e = dynamic_cast<PropertyEdit *>(m_editor);
     if(e) {
+        e->setMixedValue(false);
         setValue(e->data());
     }
 }

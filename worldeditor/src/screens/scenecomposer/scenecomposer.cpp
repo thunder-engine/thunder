@@ -298,14 +298,18 @@ void SceneComposer::onDragLeave(QDragLeaveEvent *event) {
 }
 
 void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
+    bool hasActor = false;
     if(!objects.empty()) {
-        Actor *actor = dynamic_cast<Actor *>(objects.front());
-        if(actor) {
-            for(auto it : m_toolButtons) {
-                bool visible = actor->component(it->property(gComponent).toString().toStdString()) != nullptr;
-                it->setVisible(visible);
-                if(m_controller->activeTool()->name() == it->objectName().toStdString() && !visible) {
-                    m_toolButtons.front()->click();
+        for(Object *object : objects) {
+            Actor *actor = dynamic_cast<Actor *>(object);
+            if(actor) {
+                hasActor = true;
+                for(auto it : m_toolButtons) {
+                    bool visible = actor->component(it->property(gComponent).toString().toStdString()) != nullptr;
+                    it->setVisible(visible);
+                    if(m_controller->activeTool()->name() == it->objectName().toStdString() && !visible) {
+                        m_toolButtons.front()->click();
+                    }
                 }
             }
         }
@@ -315,6 +319,10 @@ void SceneComposer::onSelectionChanged(const Object::ObjectList &objects) {
             it->setVisible(it->property(gComponent).toString().toStdString() == t);
         }
         m_toolButtons.front()->click();
+    }
+
+    if(m_componentButton) {
+        m_componentButton->setVisible(hasActor);
     }
 
     emit selectionChanged();
@@ -706,7 +714,14 @@ QWidget *SceneComposer::propertiesWidget() {
         connect(comp, &ComponentBrowser::componentSelected, m_controller, &ObjectController::onCreateComponent);
         connect(comp, SIGNAL(componentSelected(QString)), menu, SLOT(hide()));
 
-        m_componentButton->setVisible(false);
+        bool hasActor = false;
+        for(Object *object : m_controller->selected()) {
+            if(dynamic_cast<Actor *>(object)) {
+                hasActor = true;
+                break;
+            }
+        }
+        m_componentButton->setVisible(hasActor);
     }
     return m_componentButton;
 }
@@ -753,6 +768,10 @@ std::list<QWidget *> SceneComposer::propertiesActionWidgets(Object *object, QWid
 void SceneComposer::onDeleteComponent() {
     Object::ObjectList list;
     TString component(sender()->property(gComponent).toString().toStdString());
+
+    if(component == Transform::metaClass()->name()) {
+        return;
+    }
 
     for(auto it : m_controller->selected()) {
         Actor *actor = dynamic_cast<Actor *>(it);

@@ -18,6 +18,9 @@ public:
     virtual Variant data() const;
     virtual void setData(const Variant &data);
 
+    virtual void setMixedValue(bool mixed);
+    bool isMixedValue() const;
+
     virtual void setEditorHint(const TString &hint);
 
     virtual void setObject(Object *object, const TString &property);
@@ -36,6 +39,7 @@ protected:
     static std::list<UserTypeCallback> m_userCallbacks;
 
     Object *m_object;
+    bool m_mixedValue;
 
 };
 

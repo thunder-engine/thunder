@@ -30,6 +30,15 @@ NextModel::~NextModel() {
 }
 
 void NextModel::addObject(Object *propertyObject) {
+    addObjects({propertyObject});
+}
+
+void NextModel::addObjects(const Object::ObjectList &propertyObjects) {
+    if(propertyObjects.empty()) {
+        return;
+    }
+
+    Object *propertyObject = propertyObjects.front();
     const MetaObject *metaObject = propertyObject->metaObject();
 
     TString name = propertyObject->typeName();
@@ -38,7 +47,7 @@ void NextModel::addObject(Object *propertyObject) {
     }
 
     Property *propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
-    propertyItem->setPropertyObject(propertyObject);
+    propertyItem->setPropertyObjects(propertyObjects);
     addItem(propertyItem);
 
     int count = metaObject->propertyCount();
@@ -49,10 +58,23 @@ void NextModel::addObject(Object *propertyObject) {
             MetaProperty property = metaObject->property(i);
 
             if(!TString(property.name()).toLower().contains("enable")) {
+                bool presentOnAllObjects = true;
+                auto object = propertyObjects.begin();
+                ++object;
+                for(; object != propertyObjects.end(); ++object) {
+                    if((*object)->metaObject()->indexOfProperty(property.name()) < 0) {
+                        presentOnAllObjects = false;
+                        break;
+                    }
+                }
+                if(!presentOnAllObjects) {
+                    continue;
+                }
+
                 uint32_t type = property.read(propertyObject).type();
                 if(type < MetaType::QUATERNION || type >= MetaType::OBJECT) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
-                    p->setPropertyObject(propertyObject);
+                    p->setPropertyObjects(propertyObjects);
                     addItem(p);
 
                     const char *annotation = property.table()->annotation;

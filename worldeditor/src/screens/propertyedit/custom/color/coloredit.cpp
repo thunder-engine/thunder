@@ -18,7 +18,16 @@ Variant ColorEdit::data() const {
 }
 
 void ColorEdit::setData(const Variant &data) {
+    m_mixed = false;
     m_color = data.toVector4();
+}
+
+void ColorEdit::setMixedValue(bool mixed) {
+    PropertyEdit::setMixedValue(mixed);
+    m_mixed = mixed;
+    if(mixed) {
+        update();
+    }
 }
 
 void ColorEdit::paintEvent(QPaintEvent *ev) {
@@ -31,11 +40,13 @@ void ColorEdit::paintEvent(QPaintEvent *ev) {
     painter.setPen(Qt::NoPen);
     painter.setBrush(m_brush);
     painter.drawRect(r);
-    painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z, m_color.w));
-    painter.drawRect(r);
-    r.setWidth(r.width() / 2);
-    painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z));
-    painter.drawRect(r);
+    if(!m_mixed) {
+        painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z, m_color.w));
+        painter.drawRect(r);
+        r.setWidth(r.width() / 2);
+        painter.setBrush(QColor::fromRgbF(m_color.x, m_color.y, m_color.z));
+        painter.drawRect(r);
+    }
     painter.end();
 }
 

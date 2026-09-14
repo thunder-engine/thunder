@@ -14,6 +14,7 @@ public:
     explicit Property(const TString &name, Property *parent, bool root);
 
     void setPropertyObject(Object *propertyObject);
+    void setPropertyObjects(const Object::ObjectList &propertyObjects);
 
     TString name() const;
 
@@ -56,6 +57,7 @@ protected:
 
 protected:
     Object *m_nextObject;
+    Object::ObjectList m_nextObjects;
 
     TString m_hints;
     TString m_name;

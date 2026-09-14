@@ -22,8 +22,8 @@ namespace {
     }
 }
 
-CreateObject::CreateObject(const TString &type, Object *parent, const Vector3 &position, ObjectController *ctrl) :
-        UndoCommand(TString("Create %1").arg(createObjectLabel(type))),
+CreateObject::CreateObject(const TString &type, Object *parent, const Vector3 &position, ObjectController *ctrl, UndoCommand *group) :
+        UndoCommand(TString("Create %1").arg(createObjectLabel(type)), group),
         m_type(type),
         m_position(position),
         m_controller(ctrl),
