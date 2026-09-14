@@ -2,8 +2,9 @@
 #define ATLAS_H
 
 #include <cstdint>
+#include "engine.h"
 
-class AtlasNode {
+class ENGINE_EXPORT AtlasNode {
 public:
     AtlasNode();
     ~AtlasNode();

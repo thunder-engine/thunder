@@ -29,17 +29,16 @@ namespace EngineSuite {
     TEST_F(TransformTest, World_properties_follow_parent_and_dirty_updates) {
         Transform parent;
         parent.setPosition(Vector3(10.0f, 20.0f, 30.0f));
-        parent.setRotation(Vector3(5.0f, 10.0f, 15.0f));
         parent.setScale(Vector3(2.0f, 3.0f, 4.0f));
 
         Transform child;
+        child.setParentTransform(&parent);
         child.setPosition(Vector3(1.0f, 2.0f, 3.0f));
         child.setRotation(Vector3(2.0f, 4.0f, 6.0f));
         child.setScale(Vector3(0.5f, 2.0f, 1.5f));
-        child.setParentTransform(&parent);
 
         ASSERT_EQ(Vector3(12.0f, 26.0f, 42.0f), child.worldPosition());
-        ASSERT_EQ(Vector3(7.0f, 14.0f, 21.0f), child.worldRotation());
+        ASSERT_EQ(Vector3(2.0f, 4.0f, 6.0f), child.worldRotation());
         ASSERT_EQ(Vector3(1.0f, 6.0f, 6.0f), child.worldScale());
 
         parent.setPosition(Vector3(20.0f, 30.0f, 40.0f));

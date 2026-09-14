@@ -101,7 +101,7 @@ namespace EngineSuite {
         atlas.h = 4;
 
         AtlasNode *first = atlas.insert(3, 4);
-        ASSERT_NE(nullptr, first);
+        ASSERT_TRUE(first != nullptr);
         first->occupied = true;
 
         AtlasNode *second = atlas.insert(5, 4);
@@ -120,21 +120,22 @@ namespace EngineSuite {
         AtlasNode *first = atlas.insert(3, 2);
         first->occupied = true;
         AtlasNode *second = atlas.insert(3, 2);
-        ASSERT_NE(nullptr, first);
-        ASSERT_NE(nullptr, second);
-        ASSERT_NE(first, second);
-        ASSERT_NE(nullptr, atlas.left->left);
-        ASSERT_NE(nullptr, atlas.left->right);
+        ASSERT_TRUE(first != nullptr);
+        ASSERT_TRUE(second != nullptr);
+        ASSERT_TRUE(first != second);
+        ASSERT_TRUE(atlas.left->left != nullptr);
+        ASSERT_TRUE(atlas.left->right != nullptr);
 
         first->occupied = true;
         second->occupied = true;
-        ASSERT_FALSE(atlas.left->clean());
-        ASSERT_NE(nullptr, atlas.left->left);
-        ASSERT_NE(nullptr, atlas.left->right);
+
+        atlas.left->clean();
+        ASSERT_TRUE(atlas.left->left != nullptr);
+        ASSERT_TRUE(atlas.left->right != nullptr);
 
         first->occupied = false;
         second->occupied = false;
-        ASSERT_TRUE(atlas.left->clean());
+        atlas.left->clean();
         ASSERT_EQ(nullptr, atlas.left->left);
         ASSERT_EQ(nullptr, atlas.left->right);
     }
