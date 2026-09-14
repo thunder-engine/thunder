@@ -70,7 +70,7 @@ public:
     bool isAbsolute() const;
 
 private:
-    TString m_url;
+    std::string m_url;
 
     std::smatch m_result;
 

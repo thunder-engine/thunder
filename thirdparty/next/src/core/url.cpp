@@ -18,6 +18,8 @@
 
 #include "core/url.h"
 
+#include <algorithm>
+
 /*!
     \class Url
     \brief Url class provides an interface for working with Url's.
@@ -30,14 +32,14 @@ Url::Url() {
 }
 
 Url::Url(const TString &url) :
-        m_url(url) {
+    m_url(url.toStdString()) {
 
     PROFILE_FUNCTION();
 
-    m_url.replace('\\', '/');
+    std::replace(m_url.begin(), m_url.end(), '\\', '/');
 
     static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-    std::regex_match(m_url.toStdString(), m_result, reg);
+    std::regex_match(m_url, m_result, reg);
 }
 
 Url::~Url() {
