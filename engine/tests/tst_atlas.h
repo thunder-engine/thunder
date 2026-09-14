@@ -118,6 +118,7 @@ namespace EngineSuite {
         atlas.h = 4;
 
         AtlasNode *first = atlas.insert(3, 2);
+        first->occupied = true;
         AtlasNode *second = atlas.insert(3, 2);
         ASSERT_NE(nullptr, first);
         ASSERT_NE(nullptr, second);

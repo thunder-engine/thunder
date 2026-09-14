@@ -38,13 +38,13 @@ namespace EngineSuite {
         child.setScale(Vector3(0.5f, 2.0f, 1.5f));
         child.setParentTransform(&parent);
 
-        ASSERT_EQ(Vector3(11.0f, 22.0f, 33.0f), child.worldPosition());
+        ASSERT_EQ(Vector3(12.0f, 26.0f, 42.0f), child.worldPosition());
         ASSERT_EQ(Vector3(7.0f, 14.0f, 21.0f), child.worldRotation());
         ASSERT_EQ(Vector3(1.0f, 6.0f, 6.0f), child.worldScale());
 
         parent.setPosition(Vector3(20.0f, 30.0f, 40.0f));
 
-        ASSERT_EQ(Vector3(21.0f, 32.0f, 43.0f), child.worldPosition());
+        ASSERT_EQ(Vector3(22.0f, 36.0f, 52.0f), child.worldPosition());
     }
 
     TEST_F(TransformTest, Quaternion_properties_follow_parent) {
