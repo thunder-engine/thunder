@@ -82,7 +82,9 @@ bool AtlasNode::clean() {
     if(parent) {
         if(left && right && left->clean() && right->clean()) {
             delete left;
+            left = nullptr;
             delete right;
+            right = nullptr;
         }
 
         return !occupied;

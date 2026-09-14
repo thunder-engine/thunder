@@ -1,3 +1,4 @@
+#include "tst_atlas.h"
 #include "tst_actor.h"
 #include "tst_transform.h"
 #include "tst_animationtrack.h"

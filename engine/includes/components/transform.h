@@ -66,6 +66,7 @@ protected:
     virtual void cleanDirty() const;
 
 protected:
+    friend class TransformTest;
     friend class Actor;
 
     Vector3 m_position;
