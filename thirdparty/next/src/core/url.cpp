@@ -158,6 +158,16 @@ TString Url::relativeDir(const TString &base) const {
     basePath.replace('\\', '/');
     fullPath.replace('\\', '/');
 
+    bool pathHasTrailingSlash = fullPath.size() > 1 && fullPath.back() == '/';
+    if(!pathHasTrailingSlash) {
+        int lastSlash = fullPath.lastIndexOf('/');
+        if(lastSlash != -1) {
+            fullPath = fullPath.left(lastSlash);
+        } else {
+            fullPath.clear();
+        }
+    }
+
     bool baseIsRoot = basePath == "/";
     if(basePath.size() > 1 && basePath.back() == '/') {
         basePath = basePath.left(basePath.size() - 1);
