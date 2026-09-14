@@ -58,6 +58,9 @@ void Layout::insertTransform(int index, RectTransform *transform) {
         }
 
         invalidate();
+        if(m_rectTransform) {
+            m_rectTransform->cleanDirty();
+        }
     }
 }
 /*!
