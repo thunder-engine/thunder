@@ -23,26 +23,47 @@
 
 #include <gizmos.h>
 
+/*!
+    \class SpringJoint
+    \brief The SpringJoint component connects two rigid bodies with spring forces.
+    \inmodule Components
+
+    A SpringJoint uses spring and damper parameters to control the relative
+    movement of the connected rigid bodies.
+*/
+
 SpringJoint::SpringJoint() :
         m_damper(0.2f),
         m_spring(10.0f) {
 
 }
 
+/*!
+    Returns the damping coefficient of the spring joint.
+*/
 float SpringJoint::damper() const {
     return m_damper;
 }
 
+/*!
+    Sets the damping coefficient of the spring joint.
+*/
 void SpringJoint::setDamper(float damper) {
     m_damper = damper;
 
     updateParams();
 }
 
+/*!
+    Returns the spring stiffness of the joint.
+*/
 float SpringJoint::spring() const {
     return m_spring;
 }
 
+/*!
+    Sets the spring stiffness of the joint.
+*/
 void SpringJoint::setSpring(float spring) {
     m_spring = spring;
 

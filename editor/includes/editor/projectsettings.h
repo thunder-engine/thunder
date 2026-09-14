@@ -48,16 +48,16 @@ public:
     void loadPlatforms();
 
     TString projectName() const;
-    void setProjectName(const TString &value);
+    void setProjectName(const TString &name);
 
     TString projectId() const;
-    void setProjectId(const TString &value);
+    void setProjectId(const TString &project);
 
     TString projectCompany() const;
-    void setProjectCompany(const TString &value);
+    void setProjectCompany(const TString &name);
 
     TString projectVersion() const;
-    void setProjectVersion(const TString &value);
+    void setProjectVersion(const TString &version);
 
     TString firstMap() const;
     void setFirstMap(const TString &value);
@@ -96,7 +96,7 @@ public:
     void reportTypes(const std::set<TString> &types);
 
     StringList artifacts() const;
-    void setArtifacts(const StringList &value);
+    void setArtifacts(const StringList &artifacts);
 
     void loadSettings();
     void saveSettings();

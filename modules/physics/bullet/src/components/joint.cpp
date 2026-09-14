@@ -23,6 +23,15 @@
 
 #include "rigidbody.h"
 
+/*!
+    \class Joint
+    \brief The Joint component connects two rigid bodies with a physics constraint.
+    \inmodule Components
+
+    The Joint class provides common anchor and connected-body settings for
+    physics joints. The base joint behaves as a point-to-point constraint.
+*/
+
 Joint::Joint() :
         m_constraint(nullptr),
         m_world(nullptr),
@@ -38,38 +47,62 @@ Joint::~Joint() {
     destroyConstraint();
 }
 
+/*!
+    Returns the anchor position of the joint on its own rigid body.
+*/
 Vector3 Joint::anchor() const {
     return m_anchor;
 }
 
-void Joint::setAnchor(const Vector3 anchor) {
+/*!
+    Sets the \a anchor position of the joint on its own rigid body.
+*/
+void Joint::setAnchor(const Vector3 &anchor) {
     m_anchor = anchor;
 
     updateAnchors();
 }
 
+/*!
+    Returns the anchor position of the joint on the connected rigid body.
+*/
 Vector3 Joint::connectedAnchor() const {
     return m_connectedAnchor;
 }
 
-void Joint::setConnectedAnchor(Vector3 anchor) {
+/*!
+    Sets the \a anchor position of the joint on the connected rigid body.
+*/
+void Joint::setConnectedAnchor(const Vector3 &anchor) {
     m_connectedAnchor = anchor;
 }
 
+/*!
+    Returns the rigid body connected to the joint.
+*/
 RigidBody *Joint::connectedBody() const {
     return m_rigidBodyA;
 }
 
+/*!
+    Sets the rigid body connected to the joint.
+*/
 void Joint::setConnectedBody(RigidBody *body) {
     m_rigidBodyA = body;
 
     updateAnchors();
 }
 
+/*!
+    Returns true when the connected anchor is calculated automatically.
+*/
 bool Joint::autoConfigureConnectedAnchor() const {
     return m_autoConfigureConnectedAnchor;
 }
 
+/*!
+    Enables or disables automatic configuration of the connected anchor.
+*/
 void Joint::setAutoConfigureConnectedAnchor(bool anchor) {
     m_autoConfigureConnectedAnchor = anchor;
 

@@ -17,6 +17,21 @@
 */
 #include "undostack.h"
 
+/*!
+    \class UndoCommand
+    \brief Represents an undoable editor operation.
+    \inmodule Editor
+*/
+
+/*!
+    \class UndoStack
+    \brief Maintains the undo and redo history of an asset editor.
+    \inmodule Editor
+*/
+
+/*!
+    Constructs a command with the specified display \a text and optional \a parent.
+*/
 UndoCommand::UndoCommand(const TString &text, UndoCommand *parent) :
         m_text(text) {
 
@@ -25,42 +40,66 @@ UndoCommand::UndoCommand(const TString &text, UndoCommand *parent) :
     }
 }
 
+/*!
+    Destroys the command and all child commands owned by it.
+*/
 UndoCommand::~UndoCommand() {
     for(auto it : m_childs) {
         delete it;
     }
 }
 
+/*!
+    Returns the display text of the command.
+*/
 TString UndoCommand::text() const {
     return m_text;
 }
 
+/*!
+    Reverts this command and its child commands.
+*/
 void UndoCommand::undo() {
     for(int i = m_childs.size() - 1; i >= 0; i--) {
         m_childs[i]->undo();
     }
 }
 
+/*!
+    Applies this command and its child commands.
+*/
 void UndoCommand::redo() {
     for(auto it : m_childs) {
         it->redo();
     }
 }
 
+/*!
+    Returns the number of child commands.
+*/
 size_t UndoCommand::childCount() const {
     return m_childs.size();
 }
 
+/*!
+    Constructs an empty undo and redo stack.
+*/
 UndoStack::UndoStack() :
         m_currentIndex(-1),
         m_cleanIndex(-1) {
 
 }
 
+/*!
+    Destroys the stack and all commands it owns.
+*/
 UndoStack::~UndoStack() {
     clear();
 }
 
+/*!
+    Adds \a cmd to the stack and applies it.
+*/
 void UndoStack::push(UndoCommand *cmd) {
     if(!cmd) {
         return;
@@ -79,6 +118,9 @@ void UndoStack::push(UndoCommand *cmd) {
     m_currentIndex++;
 }
 
+/*!
+    Undoes the current command when one is available.
+*/
 void UndoStack::undo() {
     if(m_currentIndex >= 0) {
         m_commands[m_currentIndex]->undo();
@@ -86,6 +128,9 @@ void UndoStack::undo() {
     }
 }
 
+/*!
+    Redoes the next command when one is available.
+*/
 void UndoStack::redo() {
     if((m_currentIndex + 1) < m_commands.size()) {
         m_currentIndex++;
@@ -93,14 +138,23 @@ void UndoStack::redo() {
     }
 }
 
+/*!
+    Returns true if the stack is at its clean state.
+*/
 bool UndoStack::isClean() const {
     return m_cleanIndex == m_currentIndex;
 }
 
+/*!
+    Marks the current stack position as clean.
+*/
 void UndoStack::setClean() {
     m_cleanIndex = m_currentIndex;
 }
 
+/*!
+    Returns the text of the command that will be undone.
+*/
 TString UndoStack::undoText() const {
     if(m_currentIndex >= 0) {
         return m_commands[m_currentIndex]->text();
@@ -108,6 +162,9 @@ TString UndoStack::undoText() const {
     return TString();
 }
 
+/*!
+    Returns the text of the command that will be redone.
+*/
 TString UndoStack::redoText() const {
     if((m_currentIndex + 1) < m_commands.size()) {
         return m_commands[m_currentIndex + 1]->text();
@@ -115,6 +172,9 @@ TString UndoStack::redoText() const {
     return TString();
 }
 
+/*!
+    Removes all commands and resets the stack to its initial state.
+*/
 void UndoStack::clear() {
     for(auto it : m_commands) {
         delete it;

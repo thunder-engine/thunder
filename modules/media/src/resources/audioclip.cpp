@@ -26,7 +26,7 @@ namespace  {
 /*!
     \class AudioClip
     \brief The AudioClip class represents an audio clip, handling loading, streaming, and accessing audio data.
-    \inmodule Resources
+    \inmodule Media
 
     The AudioClip class provides methods to access and manipulate audio data, supporting loading and streaming from disk.
 */

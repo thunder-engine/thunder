@@ -55,14 +55,6 @@ bool KeyEvent::isAltPressed() const {
 }
 
 /*!
-    \module Gui
-
-    \title Graphical User Interface for Thunder Engine SDK
-
-    \brief Contains classes related to Graphical User Interfaces.
-*/
-
-/*!
     \class Widget
     \brief The Widget class is the base class of all user interface objects.
     \inmodule Gui

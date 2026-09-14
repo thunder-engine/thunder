@@ -74,6 +74,14 @@ static const char *meta = \
 "   ]"
 "}";
 
+/*!
+    \module Gui
+
+    \title Graphical User Interface for Thunder Engine
+
+    \brief Contains classes related to Graphical User Interfaces.
+*/
+
 UiKit::UiKit(Engine *engine) :
         Module(engine) {
 

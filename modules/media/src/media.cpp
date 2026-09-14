@@ -44,6 +44,12 @@ static const char *meta = \
 "   ]"
 "}";
 
+/*!
+    \module Media
+
+    \brief Provides audio playback and media processing functionality for Thunder Engine.
+*/
+
 Media::Media(Engine *engine) :
         Module(engine),
         m_system(nullptr) {

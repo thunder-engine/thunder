@@ -27,7 +27,7 @@
 /*!
     \class BoxCollider
     \brief The BoxCollider component represents a box-shaped collision volume attached to an actor.
-    \inmodule Components
+    \inmodule Bullet
 
     The BoxCollider class provides methods to manipulate the size of the box collider and obtain its associated collision shape.
     This class is designed for use in 3D physics simulations and game development.

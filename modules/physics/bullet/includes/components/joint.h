@@ -40,10 +40,10 @@ public:
     ~Joint() override;
 
     Vector3 anchor() const;
-    void setAnchor(const Vector3 anchor);
+    void setAnchor(const Vector3 &anchor);
 
     Vector3 connectedAnchor() const;
-    void setConnectedAnchor(Vector3 anchor);
+    void setConnectedAnchor(const Vector3 &anchor);
 
     RigidBody *connectedBody() const;
     void setConnectedBody(RigidBody *body);

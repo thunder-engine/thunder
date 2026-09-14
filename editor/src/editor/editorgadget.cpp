@@ -17,6 +17,47 @@
 */
 #include "editor/editorgadget.h"
 
+/*!
+    \class EditorGadget
+    \brief Provides the base interface for dockable editor gadgets.
+    \inmodule Editor
+
+    EditorGadget receives editor updates and selection changes and can publish
+    object selection and property change notifications.
+
+    \fn void EditorGadget::setCurrentEditor(AssetEditor *editor)
+
+    Assigns the current asset editor to the gadget.
+
+    \fn void EditorGadget::updated()
+
+    Emitted when the gadget's displayed data has been updated.
+
+    \fn void EditorGadget::objectsSelected(const Object::ObjectList &objects, bool force)
+
+    Emitted when the gadget selects \a objects. If \a force is true, the selection
+    is applied even when it matches the current selection.
+
+    \fn void EditorGadget::objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+
+    Emitted when \a property changes it's \a value on the supplied \a objects.
+
+    \fn void EditorGadget::onUpdated()
+
+    Handles an update notification from the editor.
+
+    \fn void EditorGadget::onSelectionChanged()
+
+    Handles a change to the editor selection.
+
+    \fn void EditorGadget::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+
+    Handles changes of \a value to \a property on the supplied \a objects.
+*/
+
+/*!
+    Constructs an editor gadget with the specified Qt \a parent.
+*/
 EditorGadget::EditorGadget(QWidget *parent) :
     QWidget(parent) {
 

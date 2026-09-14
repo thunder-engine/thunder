@@ -23,16 +23,31 @@
 
 #include <gizmos.h>
 
+/*!
+    \class HingeJoint
+    \brief The HingeJoint component connects two rigid bodies around one axis.
+    \inmodule Components
+
+    A HingeJoint allows angular movement around its configured axis while
+    constraining the connected bodies at their anchor positions.
+*/
+
 HingeJoint::HingeJoint() :
         m_axis(Vector3(1.0f, 0.0f, 0.0f)) {
 
 }
 
+/*!
+    Returns the hinge rotation axis.
+*/
 Vector3 HingeJoint::axis() const {
     return m_axis;
 }
 
-void HingeJoint::setAxis(Vector3 axis) {
+/*!
+    Sets the hinge rotation \a axis.
+*/
+void HingeJoint::setAxis(const Vector3 &axis) {
     m_axis = axis;
 
     updateParams();

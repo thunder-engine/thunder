@@ -29,7 +29,7 @@
 /*!
     \class CharacterController
     \brief The CharacterController class represents a kinematic character controller for controlling character movement in a 3D physics environment.
-    \inmodule Components
+    \inmodule Bullet
 
     The CharacterController class provides methods to control the movement and properties of a character in a 3D physics environment.
 */

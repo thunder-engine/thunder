@@ -46,6 +46,23 @@ PluginManager *PluginManager::m_instance = nullptr;
 
 typedef Module *(*ModuleHandler) (Engine *engine);
 
+/*!
+    \class PluginManager
+    \brief Discovers, loads, and manages editor and engine plugins.
+    \inmodule Editor
+
+    PluginManager resolves plugin dependencies and provides access to plugin
+    modules, systems, components, and editor extensions.
+
+    \fn void PluginManager::pluginReloaded()
+
+    Emitted after a plugin has been reloaded.
+
+    \fn void PluginManager::listChanged()
+
+    Emitted when the plugin list or plugin state changes.
+*/
+
 PluginManager::PluginManager() :
         QAbstractItemModel(),
         m_engine(nullptr),
@@ -166,6 +183,9 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
     return QModelIndex();
 }
 
+/*!
+    Initializes the manager and loads the built-in editor plugins.
+*/
 void PluginManager::init(Engine *engine) {
     m_engine = engine;
 
@@ -175,12 +195,19 @@ void PluginManager::init(Engine *engine) {
     rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());
 }
 
+/*!
+    Sets the project plugin directory and rescans it for plugins.
+*/
 bool PluginManager::rescanProject(const TString &path) {
     m_pluginPath = path;
 
     return rescanPath(m_pluginPath);
 }
 
+/*!
+    Loads the plugin at \a path. If \a reload is true, preserves its components
+    while replacing the loaded plugin.
+*/
 bool PluginManager::loadPlugin(const TString &path, bool reload) {
     QLibrary *lib = new QLibrary(path.data());
     if(lib->load()) {
@@ -278,6 +305,9 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
     return false;
 }
 
+/*!
+    Replaces the installed project plugin with the plugin at \a path.
+*/
 void PluginManager::reloadPlugin(const TString &path) {
     Url info(path);
 
@@ -341,6 +371,9 @@ void PluginManager::reloadPlugin(const TString &path) {
     }
 }
 
+/*!
+    Scans \a path and loads all shared-library plugins found there.
+*/
 bool PluginManager::rescanPath(const TString &path) {
     bool result = true;
     for(auto &it : File::list(path)) {
@@ -363,6 +396,9 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
     return true;
 }
 
+/*!
+    Initializes all systems provided by enabled plugins.
+*/
 void PluginManager::initSystems() {
     for(auto &it : m_systems) {
         it.second->init();
@@ -397,6 +433,9 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
     emit pluginReloaded();
 }
 
+/*!
+    Synchronizes the enabled plugin whitelist with project settings.
+*/
 void PluginManager::syncWhiteList() {
     StringList toRemove;
 
@@ -425,6 +464,9 @@ void PluginManager::syncWhiteList() {
     Editor::project()->saveSettings();
 }
 
+/*!
+    Returns paths of all plugins known to the manager.
+*/
 StringList PluginManager::plugins() const {
     StringList result;
 
@@ -435,6 +477,9 @@ StringList PluginManager::plugins() const {
     return result;
 }
 
+/*!
+    Returns dependencies of the specified \a type for the requested modules.
+*/
 StringList PluginManager::dependencies(const TString &type, const StringList &modules) const {
     StringList result;
 
@@ -451,6 +496,9 @@ StringList PluginManager::dependencies(const TString &type, const StringList &mo
     return result;
 }
 
+/*!
+    Returns plugin extensions registered for the specified \a type.
+*/
 StringList PluginManager::extensions(const TString &type) const {
     StringList result;
 
@@ -467,6 +515,9 @@ StringList PluginManager::extensions(const TString &type) const {
     return result;
 }
 
+/*!
+    Creates and returns the plugin object registered under \a name.
+*/
 void *PluginManager::getPluginObject(const TString &name) {
     for(auto &it : m_plugins) {
         if(it.enabled) {
@@ -481,6 +532,9 @@ void *PluginManager::getPluginObject(const TString &name) {
     return nullptr;
 }
 
+/*!
+    Returns the plugin module that provides the specified component \a type.
+*/
 TString PluginManager::getModuleName(const TString &type) const {
     for(auto &it : m_plugins) {
         if(std::find(it.components.begin(), it.components.end(), type) != it.components.end()) {

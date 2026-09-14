@@ -33,7 +33,7 @@ static const char *meta = \
 "{"
 "   \"module\": \"Bullet\","
 "   \"version\": \"1.0\","
-"   \"description\": \"BulletPhysics Module\","
+"   \"description\": \"Bullet Physics Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"BulletSystem\": \"system\","
@@ -47,9 +47,21 @@ static const char *meta = \
 "       \"SphereCollider\","
 "       \"VolumeCollider\","
 "       \"CharacterController\","
-"       \"MaterialrCollider\""
+"       \"MeshCollider\","
+"       \"Joint\","
+"       \"SpringJoint\","
+"       \"HingeJoint\","
+"       \"FixedJoint\","
 "   ]"
 "}";
+
+/*!
+    \module Bullet
+
+    \title Bullet physics module for Thunder Engine
+
+    \brief Contains classes related to physics simulation.
+*/
 
 Bullet::Bullet(Engine *engine) :
         Module(engine),

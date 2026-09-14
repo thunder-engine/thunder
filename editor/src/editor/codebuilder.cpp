@@ -1,6 +1,9 @@
 /*
     This file is part of Thunder Engine.
 
+/*!
+    Returns the code builder that owns these settings.
+*/
     Copyright 2008-2026 Evgeniy Prikazchikov
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,6 +29,16 @@
 
 #include <QFile>
 
+/*!
+    \class CodeBuilder
+    \brief Provides the base interface for generating project code.
+    \inmodule Editor
+
+    \fn bool CodeBuilder::buildProject()
+
+    Builds the generated project.
+*/
+
 BuilderSettings::BuilderSettings(CodeBuilder *builder) :
         m_builder(builder) {
 
@@ -48,6 +61,9 @@ CodeBuilder::CodeBuilder() :
 
 }
 
+/*!
+    Initializes the code builder and registers icons for its file types.
+*/
 void CodeBuilder::init() {
     AssetConverter::init();
 
@@ -56,12 +72,18 @@ void CodeBuilder::init() {
     }
 }
 
+    /*!
+        Marks the builder as outdated and requests a project rebuild.
+    */
 AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     makeOutdated();
     return Skipped;
 }
 
 void CodeBuilder::buildSuccessful(bool flag) {
+/*!
+    Notifies the asset manager that the build finished with the specified result.
+*/
     Editor::assets()->onBuildSuccessful(flag, this);
 }
 
@@ -179,14 +201,23 @@ void CodeBuilder::copyTempalte(const TString &src, const TString &dst) {
     }
 }
 
+/*!
+    Returns the target platforms supported by the builder.
+*/
 StringList CodeBuilder::platforms() const {
     return StringList();
 }
 
+/*!
+    Returns the generated project path.
+*/
 TString CodeBuilder::project() const {
     return m_project;
 }
 
+/*!
+    Returns the source files tracked by the builder.
+*/
 StringList CodeBuilder::sources() const {
     StringList list;
     for(auto &it : m_sources) {
@@ -195,6 +226,9 @@ StringList CodeBuilder::sources() const {
     return list;
 }
 
+/*!
+    Scans the specified directory for source files supported by the builder.
+*/
 void CodeBuilder::rescanSources(const TString &path) {
     m_sources.clear();
 
@@ -209,18 +243,30 @@ void CodeBuilder::rescanSources(const TString &path) {
     }
 }
 
+/*!
+    Returns true if the builder has no tracked source files.
+*/
 bool CodeBuilder::isEmpty() const {
     return m_sources.empty();
 }
 
+/*!
+    Marks the project as requiring a code build.
+*/
 void CodeBuilder::makeOutdated() {
     m_outdated = true;
 }
 
+/*!
+    Returns true if the project requires a code build.
+*/
 bool CodeBuilder::isOutdated() const {
     return m_outdated;
 }
 
+/*!
+    Returns a model describing the classes known to the builder.
+*/
 QAbstractItemModel *CodeBuilder::classMap() const {
     return nullptr;
 }
