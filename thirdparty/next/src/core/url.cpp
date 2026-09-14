@@ -178,7 +178,7 @@ TString Url::relativeDir(const TString &base) const {
 
     if(basePath.isEmpty() || baseIsRoot) {
         if(baseIsRoot && !fullPath.isEmpty() && fullPath.front() == '/') {
-            fullPath = fullPath.right(fullPath.size() - 1);
+            fullPath = fullPath.mid(1, fullPath.size() - 1);
         }
         if(!fullPath.isEmpty() && fullPath.back() != '/') {
             fullPath += "/";
