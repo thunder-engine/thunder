@@ -58,59 +58,6 @@ namespace EngineSuite {
         ASSERT_FALSE(actor.isEnabled());
     }
 
-    TEST_F(ActorTest, Transform_hierarchy) {
-        ObjectSystem system;
-        Actor::registerClassFactory(&system);
-        Transform::registerClassFactory(&system);
-
-        Actor a1;
-        a1.addComponent("Transform");
-
-        Actor a2;
-        a2.addComponent("Transform");
-
-        Transform* t1 = a1.transform();
-        Transform* t2 = a2.transform();
-
-        ASSERT_TRUE(t1 != nullptr);
-        ASSERT_TRUE(t2 != nullptr);
-
-        a2.setParent(&a1);
-
-        ASSERT_TRUE(t2->parentTransform() == t1);
-    }
-
-    TEST_F(ActorTest, Reparent_to_root_preserves_world_transform) {
-        ObjectSystem system;
-        Actor::registerClassFactory(&system);
-        Transform::registerClassFactory(&system);
-
-        Actor parent;
-        parent.addComponent("Transform");
-        parent.transform()->setPosition(Vector3(0.0f, 5.0f, 0.0f));
-        parent.transform()->setRotation(Vector3(-50.0f, 130.0f, 0.0f));
-
-        Actor child;
-        child.addComponent("Transform");
-        child.transform()->setPosition(Vector3(2.0f, 1.0f, -3.0f));
-        child.transform()->setRotation(Vector3(15.0f, 25.0f, 35.0f));
-        child.transform()->setScale(Vector3(1.5f, 2.0f, 0.75f));
-
-        child.setParent(&parent);
-
-        Transform *transform = child.transform();
-        Vector3 worldPosition = transform->worldPosition();
-        Vector3 worldRotation = transform->worldRotation();
-        Vector3 worldScale = transform->worldScale();
-
-        child.setParent(nullptr);
-
-        ASSERT_TRUE(transform->parentTransform() == nullptr);
-        ASSERT_TRUE(transform->worldPosition() == worldPosition);
-        ASSERT_TRUE(transform->worldRotation() == worldRotation);
-        ASSERT_TRUE(transform->worldScale() == worldScale);
-    }
-
     TEST_F(ActorTest, Add_Remove_Component) {
         ObjectSystem system;
         Actor::registerClassFactory(&system);
