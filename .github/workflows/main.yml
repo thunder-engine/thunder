@@ -89,6 +89,13 @@ jobs:
     - name: Build Thunder
       run: |
         qbs install --all-products config:release
+
+    - name: Run unit tests
+      run: |
+        release/install-root/sdk/${VERSION}/linux/x86_64/bin/tests
+
+    - name: Pack Thunder
+      run: |
         7z a -t7z ThunderEngine-linux-x86_64.7z release/install-root/
         
     - name: Upload Thunder

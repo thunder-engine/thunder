@@ -2,6 +2,8 @@
 
 #include "components/recttransform.h"
 
+#include <components/actor.h>
+
 /*!
     \class Layout
     \brief The Layout class is a base class for managing the layout and positioning of widgets within a graphical user interface.
@@ -49,10 +51,16 @@ void Layout::insertTransform(int index, RectTransform *transform) {
         } else {
             m_items.push_back(transform);
         }
-        // Tranfering the ownership
-        transform->setParentTransform(rectTransform());
+        // Transfer ownership without re-entering RectTransform::updateHierarchy.
+        RectTransform *parent = rectTransform();
+        if(parent && transform->actor() && transform->actor()->parent() != parent->actor()) {
+            transform->actor()->setParent(parent->actor(), index);
+        }
 
         invalidate();
+        if(m_rectTransform) {
+            m_rectTransform->cleanDirty();
+        }
     }
 }
 /*!

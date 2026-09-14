@@ -72,11 +72,7 @@ const char *UiKit::metaInfo() const {
 
 void *UiKit::getObject(const char *name) {
     if(strcmp(name, "UiSystem") == 0) {
-        static UiSystem *system = nullptr;
-        if(system == nullptr) {
-            system = new UiSystem;
-        }
-        return system;
+        return new UiSystem;
     }
 #ifdef SHARED_DEFINE
     if(strcmp(name, "UiEdit") == 0) {

@@ -18,6 +18,8 @@
 
 #include "core/url.h"
 
+#include <algorithm>
+
 /*!
     \class Url
     \brief Url class provides an interface for working with Url's.
@@ -30,14 +32,14 @@ Url::Url() {
 }
 
 Url::Url(const TString &url) :
-        m_url(url) {
+    m_url(url.toStdString()) {
 
     PROFILE_FUNCTION();
 
-    m_url.replace('\\', '/');
+    std::replace(m_url.begin(), m_url.end(), '\\', '/');
 
     static const std::regex reg("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
-    std::regex_match(m_url.toStdString(), m_result, reg);
+    std::regex_match(m_url, m_result, reg);
 }
 
 Url::~Url() {
@@ -147,28 +149,59 @@ TString Url::absoluteDir() const {
 TString Url::relativeDir(const TString &base) const {
     PROFILE_FUNCTION();
 
-    TString fullPath = absoluteDir();
+    TString fullPath = filePath();
+    if(!host().isEmpty() && host().back() == ':') {
+        fullPath = host() + fullPath;
+    }
     TString basePath = base;
 
     basePath.replace('\\', '/');
     fullPath.replace('\\', '/');
 
-    if(!basePath.isEmpty() && basePath.back() == '/') {
+    bool pathHasTrailingSlash = fullPath.size() > 1 && fullPath.back() == '/';
+    if(!pathHasTrailingSlash) {
+        int lastSlash = fullPath.lastIndexOf('/');
+        if(lastSlash != -1) {
+            fullPath = fullPath.left(lastSlash);
+        } else {
+            fullPath.clear();
+        }
+    }
+
+    bool baseIsRoot = basePath == "/";
+    if(basePath.size() > 1 && basePath.back() == '/') {
         basePath = basePath.left(basePath.size() - 1);
     }
-    if(!fullPath.isEmpty() && fullPath.back() == '/') {
+    if(fullPath.size() > 1 && fullPath.back() == '/') {
         fullPath = fullPath.left(fullPath.size() - 1);
     }
 
-    if(basePath.isEmpty()) {
+    if(basePath.isEmpty() || baseIsRoot) {
+        if(baseIsRoot && !fullPath.isEmpty() && fullPath.front() == '/') {
+            fullPath = fullPath.mid(1, fullPath.size() - 1);
+        }
+        if(!fullPath.isEmpty() && fullPath.back() != '/') {
+            fullPath += "/";
+        }
         return fullPath;
     }
 
     StringList baseParts = basePath.split('/');
     StringList fullParts = fullPath.split('/');
 
-    std::vector<TString> baseVec(baseParts.begin(), baseParts.end());
-    std::vector<TString> fullVec(fullParts.begin(), fullParts.end());
+    std::vector<TString> baseVec;
+    for(const TString &part : baseParts) {
+        if(!part.isEmpty()) {
+            baseVec.push_back(part);
+        }
+    }
+
+    std::vector<TString> fullVec;
+    for(const TString &part : fullParts) {
+        if(!part.isEmpty()) {
+            fullVec.push_back(part);
+        }
+    }
 
     size_t common = 0;
     size_t minSize = std::min(baseVec.size(), fullVec.size());
@@ -177,6 +210,9 @@ TString Url::relativeDir(const TString &base) const {
     }
 
     if(common == 0) {
+        if(!fullPath.isEmpty() && fullPath.back() != '/') {
+            fullPath += "/";
+        }
         return fullPath;
     }
 
@@ -195,6 +231,8 @@ TString Url::relativeDir(const TString &base) const {
 
     if(result.isEmpty()) {
         result = ".";
+    } else if(result.back() != '/') {
+        result += "/";
     }
 
     return result;

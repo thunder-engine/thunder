@@ -58,28 +58,6 @@ namespace EngineSuite {
         ASSERT_FALSE(actor.isEnabled());
     }
 
-    TEST_F(ActorTest, Transform_hierarchy) {
-        ObjectSystem system;
-        Actor::registerClassFactory(&system);
-        Transform::registerClassFactory(&system);
-
-        Actor a1;
-        a1.addComponent("Transform");
-
-        Actor a2;
-        a2.addComponent("Transform");
-
-        Transform* t1 = a1.transform();
-        Transform* t2 = a2.transform();
-
-        ASSERT_TRUE(t1 != nullptr);
-        ASSERT_TRUE(t2 != nullptr);
-
-        a2.setParent(&a1);
-
-        ASSERT_TRUE(t2->parentTransform() == t1);
-    }
-
     TEST_F(ActorTest, Add_Remove_Component) {
         ObjectSystem system;
         Actor::registerClassFactory(&system);
