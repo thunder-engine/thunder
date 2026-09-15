@@ -526,6 +526,17 @@ int MetaType::flags() const {
 */
 uint32_t MetaType::registerType(Table &table) {
     PROFILE_FUNCTION();
+
+    auto registered = s_Names.find(table.name);
+    if(registered != s_Names.end()) {
+        auto type = s_Types.find(registered->second);
+        if(type != s_Types.end()) {
+            type->second = table;
+            return registered->second;
+        }
+        s_Names.erase(registered);
+    }
+
     uint32_t result = ++MetaType::s_nextId;
     s_Types[result] = table;
     s_Names[table.name] = result;

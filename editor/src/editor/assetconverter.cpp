@@ -236,12 +236,9 @@ void AssetConverterSettings::setVersion(uint32_t version) {
     m_version = version;
 }
 /*!
-    \fn TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve)
-
     Fixes \a uuid according it's \a type and \a lod level.
-    Optinal parameter can help to \a solve dependecies.
 */
-TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type, int lod, bool solve) {
+TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type, int lod) {
     Uuid result(uuid);
 
     if(!result.isNull()) {
@@ -256,12 +253,13 @@ TString AssetConverterSettings::fixUuid(const TString &uuid, const TString &type
         result.fromByteArray(array);
     }
 
-    TString str(result.toString());
-    if(str != uuid && solve) {
-        m_changedUuids.push_back(std::make_pair(uuid, str));
-    }
+    return result.toString();
+}
 
-    return str;
+void AssetConverterSettings::solveUuid(const TString &from, const TString &to) {
+    if(from != to) {
+        m_changedUuids.push_back(std::make_pair(from, to));
+    }
 }
 
 QImage AssetConverterSettings::renderDocumentIcon(const TString &path, const TString &color) {
@@ -393,7 +391,7 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
     if(!type.isEmpty()) {
         ResourceSystem::ResourceInfo info;
         info.type = type;
-        info.uuid = fixUuid(Uuid::createUuid().toString(), info.type, 0, false);
+        info.uuid = fixUuid(Uuid::createUuid().toString(), info.type, 0);
         info.md5 = m_info.md5;
         info.bundle = m_info.bundle;
         return info;
@@ -406,7 +404,9 @@ ResourceSystem::ResourceInfo AssetConverterSettings::subItem(const TString &key,
 void AssetConverterSettings::setSubItem(const TString &name, const ResourceSystem::ResourceInfo &info, int lod) {
     if(!name.isEmpty() && !info.uuid.isEmpty()) {
         ResourceSystem::ResourceInfo fixedInfo(info);
+        TString from = fixedInfo.uuid;
         fixedInfo.uuid = fixUuid(fixedInfo.uuid, fixedInfo.type, lod);
+        solveUuid(from, fixedInfo.uuid);
 
         m_subItems[name] = {fixedInfo, QImage(), false};
     }
@@ -509,8 +509,9 @@ bool AssetConverterSettings::loadSettings() {
         if(it != object.end()) {
             setCurrentVersion(it->second.toInt());
         }
-
+        TString from(m_info.uuid);
         m_info.uuid = fixUuid(m_info.uuid, m_info.type, 0);
+        solveUuid(from, m_info.uuid);
 
         it = object.find(gMeta);
         if(it != object.end()) {
@@ -606,7 +607,7 @@ void AssetConverterSettings::saveSettings() {
 
 void AssetConverterSettings::newSettings() {
     m_info.type = typeName();
-    m_info.uuid = fixUuid(Uuid::createUuid().toString(), m_info.type, 0, false);
+    m_info.uuid = fixUuid(Uuid::createUuid().toString(), m_info.type, 0);
     m_info.md5 = TString();
     m_info.id = 0;
 }

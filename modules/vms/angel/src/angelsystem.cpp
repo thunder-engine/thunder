@@ -48,7 +48,6 @@
 #include "bindings/angelbindings.h"
 
 namespace {
-    const char *gTemplate("AngelBinary");
     const char *gUri("thor://Components/");
     const char *gLabel("[AngelScript]");
 }
@@ -92,7 +91,6 @@ AngelSystem::AngelSystem(Engine *engine) :
         System(),
         m_scriptEngine(nullptr),
         m_context(nullptr),
-        m_script(nullptr),
         m_inited(false),
         m_generic(false) {
     PROFILE_FUNCTION();
@@ -184,20 +182,16 @@ void AngelSystem::loadModule(const TString &moduleName, AngelScript *script) {
         return;
     }
 
-    asIScriptModule *mod = m_scriptEngine->GetModule(moduleName.data(), asGM_CREATE_IF_NOT_EXISTS);
-    if(mod) {
+    asIScriptModule *module = m_scriptEngine->GetModule(moduleName.data(), asGM_CREATE_IF_NOT_EXISTS);
+    if(module) {
         AngelStream stream(script->m_array);
-        int result = mod->LoadByteCode(&stream);
-        if(result < 0) {
+        if(module->LoadByteCode(&stream) < 0) {
             aError() << __FUNCTION__ << "Failed to load bytecode for module:" << moduleName;
             return;
         }
 
-        // Track this module
-        m_modules[moduleName] = mod;
-
-        // Process the module for Behaviour classes
-        processModule(mod);
+        m_modules[moduleName] = module;
+        processModule(module);
     }
 }
 
@@ -206,17 +200,14 @@ void AngelSystem::unloadModule(const TString &moduleName) {
 
     auto it = m_modules.find(moduleName);
     if(it != m_modules.end()) {
-        asIScriptModule *mod = it->second;
-        
-        // Unregister Behaviour classes from this module
-        for(uint32_t i = 0; i < mod->GetObjectTypeCount(); i++) {
-            asITypeInfo *info = mod->GetObjectTypeByIndex(i);
+        asIScriptModule *module = it->second;
+        for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
+            asITypeInfo *info = module->GetObjectTypeByIndex(i);
             if(info && isBehaviour(info)) {
                 factoryRemove(info->GetName(), TString(gUri) + info->GetName());
             }
         }
-
-        mod->Discard();
+        module->Discard();
         m_modules.erase(it);
     }
 }
@@ -224,59 +215,55 @@ void AngelSystem::unloadModule(const TString &moduleName) {
 void AngelSystem::processModule(asIScriptModule *module) {
     PROFILE_FUNCTION();
 
-    if(!module) return;
+    if(!module) {
+        return;
+    }
 
     for(uint32_t i = 0; i < module->GetObjectTypeCount(); i++) {
         asITypeInfo *info = module->GetObjectTypeByIndex(i);
         if(info && isBehaviour(info)) {
-            {
-                MetaType::Table staticTable = {
-                    expose_props_method<AngelBehaviour>::exec(),
-                    expose_method<AngelBehaviour>::exec(),
-                    expose_enum<AngelBehaviour>::exec(),
-                    TypeFuncs<AngelBehaviour>::size,
-                    TypeFuncs<AngelBehaviour>::static_new,
-                    TypeFuncs<AngelBehaviour>::construct,
-                    TypeFuncs<AngelBehaviour>::static_delete,
-                    TypeFuncs<AngelBehaviour>::destruct,
-                    TypeFuncs<AngelBehaviour>::clone,
-                    TypeFuncs<AngelBehaviour>::compare,
-                    TypeFuncs<AngelBehaviour>::index,
-                    info->GetName(),
-                    MetaType::BASE_OBJECT,
-                    nullptr
-                };
+            MetaType::Table staticTable = {
+                expose_props_method<AngelBehaviour>::exec(),
+                expose_method<AngelBehaviour>::exec(),
+                expose_enum<AngelBehaviour>::exec(),
+                TypeFuncs<AngelBehaviour>::size,
+                TypeFuncs<AngelBehaviour>::static_new,
+                TypeFuncs<AngelBehaviour>::construct,
+                TypeFuncs<AngelBehaviour>::static_delete,
+                TypeFuncs<AngelBehaviour>::destruct,
+                TypeFuncs<AngelBehaviour>::clone,
+                TypeFuncs<AngelBehaviour>::compare,
+                TypeFuncs<AngelBehaviour>::index,
+                info->GetName(),
+                MetaType::BASE_OBJECT,
+                nullptr
+            };
+            MetaType::registerType(staticTable);
 
-                MetaType::registerType(staticTable);
-            }
+            int length = strlen(info->GetName());
+            char *type = new char[length + 3];
+            memcpy(type, info->GetName(), length);
+            type[length] = ' ';
+            type[length + 1] = '*';
+            type[length + 2] = 0;
 
-            {
-                int length = strlen(info->GetName());
-                char *type = new char[length + 3];
-                memcpy(type, info->GetName(), length);
-                type[length] = ' ';
-                type[length + 1] = '*';
-                type[length + 2] = 0;
-
-                MetaType::Table staticTable = {
-                    expose_props_method<AngelBehaviour *>::exec(),
-                    expose_method<AngelBehaviour *>::exec(),
-                    expose_enum<AngelBehaviour *>::exec(),
-                    TypeFuncs<AngelBehaviour *>::size,
-                    TypeFuncs<AngelBehaviour *>::static_new,
-                    TypeFuncs<AngelBehaviour *>::construct,
-                    TypeFuncs<AngelBehaviour *>::static_delete,
-                    TypeFuncs<AngelBehaviour *>::destruct,
-                    TypeFuncs<AngelBehaviour *>::clone,
-                    TypeFuncs<AngelBehaviour *>::compare,
-                    TypeFuncs<AngelBehaviour *>::index,
-                    type,
-                    MetaType::POINTER | MetaType::BASE_OBJECT,
-                    nullptr
-                };
-
-                MetaType::registerType(staticTable);
-            }
+            MetaType::Table pointerTable = {
+                expose_props_method<AngelBehaviour *>::exec(),
+                expose_method<AngelBehaviour *>::exec(),
+                expose_enum<AngelBehaviour *>::exec(),
+                TypeFuncs<AngelBehaviour *>::size,
+                TypeFuncs<AngelBehaviour *>::static_new,
+                TypeFuncs<AngelBehaviour *>::construct,
+                TypeFuncs<AngelBehaviour *>::static_delete,
+                TypeFuncs<AngelBehaviour *>::destruct,
+                TypeFuncs<AngelBehaviour *>::clone,
+                TypeFuncs<AngelBehaviour *>::compare,
+                TypeFuncs<AngelBehaviour *>::index,
+                type,
+                MetaType::POINTER | MetaType::BASE_OBJECT,
+                nullptr
+            };
+            MetaType::registerType(pointerTable);
 
             factoryAdd(info->GetName(), std::string(gUri) + info->GetName(), AngelBehaviour::metaClass());
         }
@@ -290,32 +277,22 @@ void AngelSystem::reload() {
 
     m_context = m_scriptEngine->CreateContext();
 
-    // Enumerate and load all AngelScript resources from the resource system
-    // Each resource has a UUID in its filename and is stored in importPath + "/" + UUID
-    ResourceSystem *resourceSystem = Engine::resourceSystem();
-    ResourceSystem::Dictionary &indices = resourceSystem->indices();
-    
-    // Iterate through all registered resources and load AngelScript ones
+    ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
     for(auto &it : indices) {
         const ResourceSystem::ResourceInfo &info = it.second;
-        
-        // Check if this is an AngelScript resource
         if(info.type == "AngelScript") {
-            TString moduleUUID = info.uuid;
-            AngelScript *script = Engine::loadResource<AngelScript>(moduleUUID);
+            AngelScript *script = Engine::loadResource<AngelScript>(info.uuid);
             if(script) {
-                loadModule(moduleUUID, script);
+                loadModule(info.uuid, script);
             }
         }
     }
 
     processEvents();
-
     for(auto it : m_objectList) {
         static_cast<AngelBehaviour *>(it)->awakeObject();
     }
 
-    // We need to copy list
     Object::ObjectList list = AngelSystem::invalidObjects();
     for(auto it : list) {
         TString type(it->typeName());
@@ -525,7 +502,6 @@ void AngelSystem::unloadAll(bool reload) {
         m_context = nullptr;
     }
 
-    // Unload all tracked modules
     std::vector<TString> moduleNames;
     for(auto &it : m_modules) {
         moduleNames.push_back(it.first);

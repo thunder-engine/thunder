@@ -417,7 +417,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
         ResourceSystem::ResourceInfo info = fbxSettings->subItem(actor->name(), MetaType::name<Mesh>());
         if(lod > 0) {
-            info.uuid = fbxSettings->fixUuid(info.uuid, info.type, lod, false);
+            info.uuid = AssimpImportSettings::fixUuid(info.uuid, info.type, lod);
         }
 
         Mesh *mesh = nullptr;
