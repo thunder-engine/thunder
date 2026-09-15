@@ -9,13 +9,14 @@ outputdir = html
 outputformats = HTML
 
 headerdirs += \
-    ../ \
     ../engine/includes \
     ../engine/includes/components \
+	../engine/includes/resources \
     ../thirdparty/next/inc \
     ../thirdparty/next/inc/math \
     ../thirdparty/next/inc/core \
     ../thirdparty/next/inc/anim \
+	../thirdparty/next/inc/network \
     ../thirdparty/next/inc/os \
     ../modules/media/includes \
     ../modules/media/includes/components \
@@ -23,6 +24,9 @@ headerdirs += \
     ../modules/physics/bullet/includes \
     ../modules/physics/bullet/includes/components \
     ../modules/physics/bullet/includes/resources \
+	../modules/navigation/includes \
+    ../modules/navigation/includes/components \
+    ../modules/navigation/includes/resources \
     ../modules/uikit/includes \
     ../modules/uikit/includes/components \
     ../modules/uikit/includes/resources \
@@ -30,10 +34,12 @@ headerdirs += \
 includepaths +=	\
     ../engine/includes \
     ../engine/includes/components \
+	../engine/includes/resources \
     ../thirdparty/next/inc \
     ../thirdparty/next/inc/math \
     ../thirdparty/next/inc/core \
     ../thirdparty/next/inc/anim \
+	../thirdparty/next/inc/network \
     ../thirdparty/next/inc/os \
     ../modules/media/includes \
     ../modules/media/includes/components \
@@ -41,6 +47,9 @@ includepaths +=	\
     ../modules/physics/bullet/includes \
     ../modules/physics/bullet/includes/components \
     ../modules/physics/bullet/includes/resources \
+	../modules/navigation/includes \
+    ../modules/navigation/includes/components \
+    ../modules/navigation/includes/resources \
     ../modules/uikit/includes \
     ../modules/uikit/includes/components \
     ../modules/uikit/includes/resources \
@@ -50,6 +59,7 @@ sourcedirs += \
     ../thirdparty/next/src \
     ../modules/media/src \
     ../modules/uikit/src \
+	../modules/navigation/src \
     ../modules/physics/bullet/src \
     ../modules/editor/grapheditor/editor/graph
 

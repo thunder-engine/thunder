@@ -32,7 +32,7 @@ public:
     HingeJoint();
 
     Vector3 axis() const;
-    void setAxis(Vector3 axis);
+    void setAxis(const Vector3 &axis);
 
 private:
     void createConstraint() override;

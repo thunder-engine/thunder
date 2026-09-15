@@ -19,12 +19,6 @@
 
 class ProcessPrivate {
 public:
-    /*!
-        \brief Release OS resources, join monitor thread and reset internal handles.
-
-        This method ensures that any running monitor thread is joined, open
-        handles/pipes are closed and internal state is reset to not running.
-    */
     void cleanup() {
         if(m_monitorThread && m_monitorThread->joinable()) {
             m_monitorThread->join();
@@ -338,7 +332,7 @@ bool Process::openExplorer(const TString &path) {
 #endif
 }
 /*!
-    Open the given \a url using the system default handler.
+    Open the given \a url using the system default handler; returns true if succeed.
 */
 bool Process::openUrl(const TString &url) {
     StringList args;

@@ -58,7 +58,7 @@
     agentType() and geometrySource() determine which navigation configuration
     and source geometry are used.
 
-    \sa NavMesh, NavMeshAgent, NavMeshLink, NavigationSystem
+    \sa NavMesh, NavMeshAgent, NavMeshLink
 */
 
 /*! \enum NavMeshSurface::GeometrySource
@@ -374,7 +374,7 @@ bool NavMeshSurface::collectGeometry(Vector3Vector &outVertices, std::vector<int
 
 
 /*!
-    Appends box collider geometry to the build buffers.
+    Appends box \a collider geometry to the build buffers.
 
     The collider geometry is converted into vertices appended to \a outVertices
     and triangle indices appended to \a outIndices.
@@ -417,7 +417,7 @@ void NavMeshSurface::addBoxColliderGeometry(BoxCollider *collider, Vector3Vector
 }
 
 /*!
-    Appends mesh collider geometry to the build buffers.
+    Appends mesh \a collider geometry to the build buffers.
 
     The collider geometry is converted into vertices appended to \a outVertices
     and triangle indices appended to \a outIndices.
@@ -444,7 +444,7 @@ void NavMeshSurface::addMeshColliderGeometry(MeshCollider *collider, Vector3Vect
 }
 
 /*!
-    Appends capsule collider geometry to the build buffers.
+    Appends capsule \a collider geometry to the build buffers.
 
     The collider geometry would be appended to \a outVertices and \a outIndices.
 
@@ -455,7 +455,7 @@ void NavMeshSurface::addCapsuleColliderGeometry(CapsuleCollider *collider, Vecto
 }
 
 /*!
-    Appends sphere collider geometry to the build buffers.
+    Appends sphere \a collider geometry to the build buffers.
 
     The collider geometry would be appended to \a outVertices and \a outIndices.
 

@@ -28,6 +28,15 @@
 #include <url.h>
 #include <aprocess.h>
 
+/*!
+    \class DocumentModel
+    \brief Manages the asset documents opened in the editor.
+    \inmodule Editor
+
+    DocumentModel tracks open asset editors and emits notifications when the
+    document set or selection changes.
+*/
+
 DocumentModel::DocumentModel() {
     for(auto &it : Editor::plugins()->extensions("editor")) {
         addEditor(reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject(it)));

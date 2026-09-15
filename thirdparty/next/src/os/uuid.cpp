@@ -73,7 +73,7 @@ Uuid Uuid::createUuid() {
 }
 
 /*!
-    Check whether the UUID is the null UUID (all bytes zero).
+    Returns true if UUID is the null UUID (all bytes zero).
 */
 bool Uuid::isNull() const {
     return std::all_of(data.begin(), data.end(), [](uint8_t byte) { return byte == 0; });
@@ -137,21 +137,24 @@ void Uuid::fromByteArray(const ByteArray &array) {
 }
 
 /*!
-    Equality comparison of UUIDs.
+    Equality comparison with \a other UUID.
+    Returns true if the UUIDs are equal; otherwise returns false.
 */
 bool Uuid::operator== (const Uuid &other) const {
     return data == other.data;
 }
 
 /*!
-    Inequality comparison of UUIDs.
+    Inequality comparison with \a other UUIDs.
+    Returns true if the UUIDs are different; otherwise returns false.
 */
 bool Uuid::operator!= (const Uuid &other) const {
     return !(*this == other);
 }
 
 /*!
-    Strict weak ordering for UUIDs (lexicographical by bytes).
+    Ordering with \a other UUID (lexicographical by bytes).
+    Returns true if this UUID is lexicographically less than \a other; otherwise returns false.
 */
 bool Uuid::operator< (const Uuid &other) const {
     return data < other.data;

@@ -54,6 +54,7 @@ int WebRequest::errorCode() const {
 }
 /*!
      Checks if the HTTP request has been completed (i.e., response fully received or some error happened).
+    Returns true if the request is complete; otherwise returns false.
 */
 bool WebRequest::isDone() {
     if(m_state >= State::Done) {

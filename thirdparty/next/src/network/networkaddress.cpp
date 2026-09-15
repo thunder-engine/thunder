@@ -81,6 +81,7 @@ bool NetworkAddress::operator!=(const NetworkAddress &right) const {
 }
 /*!
     Compares this NetworkAddress with \a right object to determine if the current object is "less than" the provided object based on the IP address alone.
+    Returns true if the address is less than \a right; otherwise returns false.
 */
 bool NetworkAddress::operator<(const NetworkAddress &right) const {
     return (m_address < right.m_address);

@@ -29,19 +29,19 @@
     \code
         class MoveTool : public EditorTool {
         public:
-            std::string icon() const override {
+            TString icon() const override {
                 return ":/Images/editor/Move.png";
             }
 
-            std::string name() const override {
+            TString name() const override {
                 return "Move Tool";
             }
 
-            std::string toolTip() const override {
+            TString toolTip() const override {
                 return "Moves selected objects";
             }
 
-            std::string shortcut() const override {
+            TString shortcut() const override {
                 return "Shift+T";
             }
 

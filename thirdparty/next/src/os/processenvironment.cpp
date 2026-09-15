@@ -16,11 +16,11 @@
 /*!
     Copy-assign environment variables from another instance.
 
-    Performs a deep copy of the internal environment variable map.
+    Performs a deep \a copy of the internal environment variable map.
 */
-ProcessEnvironment &ProcessEnvironment::operator=(const ProcessEnvironment &other) {
-    if(this != &other) {
-        m_envVars = other.m_envVars;
+ProcessEnvironment &ProcessEnvironment::operator=(const ProcessEnvironment &copy) {
+    if(this != &copy) {
+        m_envVars = copy.m_envVars;
     }
     return *this;
 }

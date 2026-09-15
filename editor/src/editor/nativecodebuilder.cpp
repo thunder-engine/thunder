@@ -47,6 +47,44 @@ namespace {
     const char *gIncludes("${Includes}");
 }
 
+/*!
+    \class NativeCodeBuilder
+    \brief Generates native project source files for the editor project.
+    \inmodule Editor
+
+    \enum NativeCodeBuilder::RHI
+
+    Identifies the rendering hardware interface used by the generated project.
+
+    \value Invalid No rendering hardware interface was selected.
+    \value OpenGL The OpenGL rendering interface.
+    \value Vulkan The Vulkan rendering interface.
+    \value Metal The Metal rendering interface.
+
+    \enum NativeCodeBuilder::PackagingMode
+
+    Defines when generated project packaging is performed.
+
+    \value None No packaging step is performed.
+    \value Before Packaging is performed before the build.
+    \value After Packaging is performed after the build.
+
+    \fn NativeCodeBuilder::PackagingMode NativeCodeBuilder::packagingMode() const
+
+    Returns the packaging mode used by the builder.
+
+    \fn bool NativeCodeBuilder::isEmbedded() const
+
+    Returns true if the generated project is embedded in the editor project.
+
+    \fn NativeCodeBuilder::RHI NativeCodeBuilder::defaultRhi() const
+
+    Returns the default rendering hardware interface for the generated project.
+*/
+
+/*!
+    Constructs a native code builder and initializes project generation settings.
+*/
 NativeCodeBuilder::NativeCodeBuilder() {
     connect(&m_process, _SIGNAL(readyReadStandardOutput()), this, _SLOT(onReadOutput()) );
     connect(&m_process, _SIGNAL(readyReadStandardError()), this, _SLOT(onReadError()) );
@@ -74,6 +112,9 @@ NativeCodeBuilder::NativeCodeBuilder() {
     };
 }
 
+/*!
+    Builds the generated native project.
+*/
 bool NativeCodeBuilder::buildProject() {
     return false;
 }

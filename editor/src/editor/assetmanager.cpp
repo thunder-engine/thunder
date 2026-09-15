@@ -47,6 +47,19 @@
 #include "converters/mapconverter.h"
 #include "converters/controlschemeconverter.h"
 
+/*!
+    \class AssetManager
+    \brief Manages asset discovery, conversion, importing, and project paths.
+    \inmodule Editor
+
+    AssetManager coordinates asset providers and converters and maintains the
+    mapping between project assets, UUIDs, and local files.
+
+    \fn void AssetManager::createFromTemplate(const TString &destination)
+
+    Creates a project asset from a registered template at the specified destination.
+*/
+
 #define INDEX_VERSION 2
 
 #define VERSION_CHECK(major, minor) ((major<<8)|(minor))
@@ -79,6 +92,9 @@ AssetManager::~AssetManager() {
     }
 }
 
+/*!
+    Registers the built-in and plugin-provided asset converters.
+*/
 void AssetManager::init() {
     registerConverter(new AnimConverter);
     registerConverter(new TextConverter);
@@ -97,6 +113,9 @@ void AssetManager::init() {
     }
 }
 
+/*!
+    Rescans project assets and starts the import process.
+*/
 void AssetManager::rescan() {
     m_force = false;
 
@@ -123,6 +142,9 @@ void AssetManager::rescan() {
     reimport();
 }
 
+/*!
+    Returns the asset type associated with the specified source path.
+*/
 TString AssetManager::assetTypeName(const TString &source) {
     Url url(source);
 
@@ -143,11 +165,17 @@ TString AssetManager::assetTypeName(const TString &source) {
     return TString();
 }
 
+/*!
+    Queues a source path for import and returns true when it was accepted.
+*/
 bool AssetManager::pushToImport(const TString &source) {
     m_assetProvider->onFileChangedForce(source, true);
     return true;
 }
 
+/*!
+    Queues converter settings for import and returns true when accepted.
+*/
 bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     if(settings && std::find(m_importQueue.begin(), m_importQueue.end(), settings) == m_importQueue.end()) {
         m_importQueue.push_back(settings);
@@ -155,6 +183,9 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     return true;
 }
 
+/*!
+    Converts an asset source path to its local project path.
+*/
 TString AssetManager::pathToLocal(const TString &source) const {
     Url info(source);
     if(!source.contains(Editor::project()->contentPath())) {
@@ -246,6 +277,9 @@ void AssetManager::fixUUIDs() {
     m_changedUUIDs.clear();
 }
 
+/*!
+    Starts importing all queued assets.
+*/
 void AssetManager::reimport() {
     m_importQueue.sort([](AssetConverterSettings *left, AssetConverterSettings *right) {
         return left->type() < right->type();
@@ -256,6 +290,9 @@ void AssetManager::reimport() {
     m_timer->start(10);
 }
 
+/*!
+    Handles the result of a code builder operation.
+*/
 void AssetManager::onBuildSuccessful(bool flag, CodeBuilder *builder) {
     for(auto &it : builder->sources()) {
         AssetConverterSettings *settings = fetchSettings(it);
@@ -267,20 +304,32 @@ void AssetManager::onBuildSuccessful(bool flag, CodeBuilder *builder) {
     emit buildSuccessful(flag);
 }
 
+/*!
+    Removes the resource identified by the source path.
+*/
 void AssetManager::removeResource(const TString &source) {
     m_assetProvider->removeResource(source);
 }
 
+/*!
+    Renames a resource and updates its asset registration.
+*/
 void AssetManager::renameResource(const TString &oldName, const TString &newName) {
     if(oldName != newName) {
         m_assetProvider->renameResource(oldName, newName);
     }
 }
 
+/*!
+    Duplicates the resource identified by the source path.
+*/
 void AssetManager::duplicateResource(const TString &source) {
     m_assetProvider->duplicateResource(source);
 }
 
+/*!
+    Creates a prefab from an actor source and stores it at the target path.
+*/
 void AssetManager::makePrefab(const TString &source, const TString &target) {
     int index = source.indexOf(':');
     TString id = source.left(index);
@@ -311,6 +360,11 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     }
 }
 
+/*!
+    Imports a source file into the target project directory.
+
+    Returns true when the file is copied successfully.
+*/
 bool AssetManager::import(const TString &source, const TString &target) {
     TString path;
     if(!Url(target).isAbsolute()) {
@@ -327,6 +381,9 @@ bool AssetManager::import(const TString &source, const TString &target) {
     return File::copy(source, path + name + suff);
 }
 
+/*!
+    Returns converter settings for the specified source path.
+*/
 AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     if(source.isEmpty()) {
         return nullptr;
@@ -383,6 +440,9 @@ AssetConverterSettings *AssetManager::fetchSettings(const TString &source) {
     return settings;
 }
 
+/*!
+    Registers an asset converter with the manager.
+*/
 void AssetManager::registerConverter(AssetConverter *converter) {
     if(converter) {
         CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
@@ -403,6 +463,9 @@ void AssetManager::registerConverter(AssetConverter *converter) {
     }
 }
 
+/*!
+    Finds an unused file name by appending a numeric suffix to \a name.
+*/
 void AssetManager::findFreeName(TString &name, const TString &path, const TString &suff) {
     TString base = name;
     int it = 1;
@@ -412,6 +475,9 @@ void AssetManager::findFreeName(TString &name, const TString &path, const TStrin
     }
 }
 
+/*!
+    Returns the source path associated with a resource UUID.
+*/
 TString AssetManager::uuidToPath(const TString &uuid) const {
     auto it = m_paths.find(uuid);
     if(it != m_paths.end()) {
@@ -420,6 +486,9 @@ TString AssetManager::uuidToPath(const TString &uuid) const {
     return TString();
 }
 
+/*!
+    Returns the resource UUID associated with a source path.
+*/
 TString AssetManager::pathToUuid(const TString &path) const {
     ResourceSystem::Aliases &aliases = Engine::resourceSystem()->aliases();
     auto it = aliases.find(path);
@@ -434,6 +503,9 @@ TString AssetManager::pathToUuid(const TString &path) const {
     return TString();
 }
 
+/*!
+    Creates an actor from an imported asset source or UUID.
+*/
 Actor *AssetManager::createActor(const TString &source) {
     if(!source.isEmpty()) {
         TString uuid;
@@ -456,10 +528,16 @@ Actor *AssetManager::createActor(const TString &source) {
     return nullptr;
 }
 
+/*!
+    Returns the asset type labels currently registered by the manager.
+*/
 StringList AssetManager::labels() const {
     return StringList(m_labels.begin(), m_labels.end());
 }
 
+/*!
+    Writes the current resource index and project settings to the import bundle.
+*/
 void AssetManager::dumpBundle() {
     VariantMap root;
 
@@ -559,6 +637,9 @@ void AssetManager::onPerform() {
     }
 }
 
+/*!
+    Returns the converter registered for the specified source path.
+*/
 AssetConverter *AssetManager::getConverter(const TString &source) {
     auto it = m_converters.find(Url(source).completeSuffix().toLower());
     if(it != m_converters.end()) {
@@ -615,6 +696,9 @@ void AssetManager::convert(AssetConverterSettings *settings) {
     }
 }
 
+/*!
+    Returns the registered asset converters.
+*/
 std::list<AssetConverter *> AssetManager::converters() const {
     std::set<AssetConverter *> result;
     for(auto &it : m_converters) {
@@ -624,10 +708,16 @@ std::list<AssetConverter *> AssetManager::converters() const {
     return std::list<AssetConverter *>(result.begin(), result.end());
 }
 
+/*!
+    Returns the registered code builders.
+*/
 std::list<CodeBuilder *> AssetManager::builders() const {
     return m_builders;
 }
 
+/*!
+    Registers an imported asset and its resource metadata.
+*/
 void AssetManager::registerAsset(const TString &source, const ResourceSystem::ResourceInfo &info) {
     if(File::exists(Editor::project()->importPath() + "/" + info.uuid)) {
         TString path = pathToLocal(source);
@@ -643,6 +733,9 @@ void AssetManager::registerAsset(const TString &source, const ResourceSystem::Re
     }
 }
 
+/*!
+    Removes an asset registration and returns its UUID.
+*/
 TString AssetManager::unregisterAsset(const TString &source) {
     TString uuid(pathToUuid(source));
     if(!uuid.isEmpty()) {

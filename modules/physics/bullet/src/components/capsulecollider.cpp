@@ -27,7 +27,7 @@
 /*!
     \class CapsuleCollider
     \brief The CapsuleCollider class represents a capsule-shaped collision volume attached to an actor.
-    \inmodule Components
+    \inmodule Bullet
 
     The CapsuleCollider class provides methods to manipulate the height of the capsule collider and obtain its associated collision shape.
     This class is designed for use in 3D physics simulations and game development.

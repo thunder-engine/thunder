@@ -27,7 +27,7 @@
 /*!
     \class SphereCollider
     \brief The SphereCollider class represents a spherical collider component, defining a spherical shape for collision detection.
-    \inmodule Components
+    \inmodule Bullet
 
     The SphereCollider class provides functionality to define a sphere collider with a specific radius.
     It supports retrieving and setting the radius.

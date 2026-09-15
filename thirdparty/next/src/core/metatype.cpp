@@ -30,7 +30,7 @@
     Registers a new type with type T and \a typeName as MetaType.
     After registration it can be used as Variant in MetaObject system.
 */
-/*!
+/*
     Returns the type ID for type T.
 */
 #define DECLARE_BUILT_TYPE(TYPE) \

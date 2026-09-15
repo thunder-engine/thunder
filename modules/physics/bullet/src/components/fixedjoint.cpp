@@ -23,6 +23,15 @@
 
 #include <gizmos.h>
 
+/*!
+    \class FixedJoint
+    \brief The FixedJoint component keeps two rigid bodies together.
+    \inmodule Components
+
+    A FixedJoint removes relative movement between the connected rigid bodies
+    while preserving their configured anchor positions.
+*/
+
 FixedJoint::FixedJoint() {
 
 }

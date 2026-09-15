@@ -45,6 +45,12 @@ namespace {
     const char *gModules("modules");
 }
 
+/*!
+    \class ProjectSettings
+    \brief Stores settings and paths for the current editor project.
+    \inmodule Editor
+*/
+
 ProjectSettings::ProjectSettings() {
     QDir dir(QCoreApplication::applicationDirPath());
     dir.cdUp();
@@ -65,6 +71,9 @@ ProjectSettings::ProjectSettings() {
     m_myProjectsPath = path.toStdString();
 }
 
+/*!
+    Initializes settings for a \a project and optional build \a target.
+*/
 void ProjectSettings::init(const TString &project, const TString &target) {
     m_projectPath = project;
 
@@ -97,6 +106,9 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     loadSettings();
 }
 
+/*!
+    Loads platforms supported by the registered code builders.
+*/
 void ProjectSettings::loadPlatforms() {
     for(auto &it : Editor::assets()->builders()) {
         for(auto &platform : it->platforms()) {
@@ -105,6 +117,9 @@ void ProjectSettings::loadPlatforms() {
     }
 }
 
+/*!
+    Loads project settings from disk.
+*/
 void ProjectSettings::loadSettings() {
     blockSignals(true);
 
@@ -153,6 +168,9 @@ void ProjectSettings::loadSettings() {
     blockSignals(false);
 }
 
+/*!
+    Saves project settings to disk.
+*/
 void ProjectSettings::saveSettings() {
     if(isSignalsBlocked()) {
         return;
@@ -221,61 +239,97 @@ void ProjectSettings::saveSettings() {
     }
 }
 
+/*!
+    Returns project build artifacts.
+*/
 StringList ProjectSettings::artifacts() const {
     return m_artifacts;
 }
 
-void ProjectSettings::setArtifacts(const StringList &value) {
-    m_artifacts = value;
+/*!
+    Sets project build \a artifacts.
+*/
+void ProjectSettings::setArtifacts(const StringList &artifacts) {
+    m_artifacts = artifacts;
 }
 
+/*!
+    Returns the project name.
+*/
 TString ProjectSettings::projectName() const {
     return m_projectName;
 }
 
-void ProjectSettings::setProjectName(const TString &value) {
-    if(m_projectName != value) {
-        m_projectName = value;
+/*!
+    Sets the project \a name.
+*/
+void ProjectSettings::setProjectName(const TString &name) {
+    if(m_projectName != name) {
+        m_projectName = name;
         saveSettings();
     }
 }
 
+/*!
+    Returns the unique project identifier.
+*/
 TString ProjectSettings::projectId() const {
     return m_projectId;
 }
 
-void ProjectSettings::setProjectId(const TString &value) {
-    if(m_projectId != value && !value.isEmpty()) {
-        m_projectId = value;
+/*!
+    Sets the \a project identifier.
+*/
+void ProjectSettings::setProjectId(const TString &project) {
+    if(m_projectId != project && !project.isEmpty()) {
+        m_projectId = project;
         saveSettings();
     }
 }
 
+/*!
+    Returns the project company name.
+*/
 TString ProjectSettings::projectCompany() const {
     return m_companyName;
 }
 
-void ProjectSettings::setProjectCompany(const TString &value) {
-    if(m_companyName != value) {
-        m_companyName = value;
+/*!
+    Sets the project company \a name.
+*/
+void ProjectSettings::setProjectCompany(const TString &name) {
+    if(m_companyName != name) {
+        m_companyName = name;
         saveSettings();
     }
 }
 
+/*!
+    Returns the project version.
+*/
 TString ProjectSettings::projectVersion() const {
     return m_projectVersion;
 }
 
-void ProjectSettings::setProjectVersion(const TString &value) {
-    if(m_projectVersion != value) {
-        m_projectVersion = value;
+/*!
+    Sets the project \a version.
+*/
+void ProjectSettings::setProjectVersion(const TString &version) {
+    if(m_projectVersion != version) {
+        m_projectVersion = version;
         saveSettings();
     }
 }
 
+/*!
+    Returns the first map opened for the project.
+*/
 TString ProjectSettings::firstMap() const {
     return m_firstMap;
 }
+/*!
+    Sets the first map opened for the project.
+*/
 void ProjectSettings::setFirstMap(const TString &value) {
     if(m_firstMap != value) {
         m_firstMap = value;
@@ -283,66 +337,114 @@ void ProjectSettings::setFirstMap(const TString &value) {
     }
 }
 
+/*!
+    Returns the SDK version used by the project.
+*/
 TString ProjectSettings::projectSdk() const {
     return m_projectSdk;
 }
 
+/*!
+    Sets the \a sdk version used by the project.
+*/
 void ProjectSettings::setProjectSdk(const TString &sdk) {
     m_projectSdk = sdk;
 }
 
+/*!
+    Returns the project file path.
+*/
 TString ProjectSettings::projectPath() const {
     return m_projectPath;
 }
 
+/*!
+    Returns the build target path.
+*/
 TString ProjectSettings::targetPath() const {
     return m_targetPath;
 }
 
+/*!
+    Returns the project content directory.
+*/
 TString ProjectSettings::contentPath() const {
     return m_contentPath;
 }
 
+/*!
+    Returns the project cache directory.
+*/
 TString ProjectSettings::cachePath() const {
     return m_cachePath;
 }
 
+/*!
+    Returns the imported resources directory.
+*/
 TString ProjectSettings::importPath() const {
     return m_importPath;
 }
 
+/*!
+    Returns the generated asset icon directory.
+*/
 TString ProjectSettings::iconPath() const {
     return m_iconPath;
 }
 
+/*!
+    Returns the generated source directory.
+*/
 TString ProjectSettings::generatedPath() const {
     return m_generatedPath;
 }
 
+/*!
+    Returns the project plugin directory.
+*/
 TString ProjectSettings::pluginsPath() const {
     return m_pluginsPath;
 }
 
+/*!
+    Returns the project platforms directory.
+*/
 TString ProjectSettings::platformsPath() const {
     return m_platformsPath;
 }
 
+/*!
+    Returns the installed SDK directory.
+*/
 TString ProjectSettings::sdkPath() const {
     return m_sdkPath;
 }
 
+/*!
+    Returns the editor resource directory.
+*/
 TString ProjectSettings::resourcePath() const {
     return m_resourcePath;
 }
 
+/*!
+    Returns the project template directory.
+*/
 TString ProjectSettings::templatePath() const {
     return m_templatePath;
 }
 
+/*!
+    Returns the directory containing user projects.
+*/
 TString ProjectSettings::myProjectsPath() const {
     return m_myProjectsPath;
 }
 
+/*!
+    Returns the modules enabled for the project, including automatic dependencies.
+*/
 StringList ProjectSettings::modules() const {
     std::set<TString> result = m_autoModules;
     result.insert(m_modules.begin(), m_modules.end());
@@ -359,6 +461,9 @@ StringList ProjectSettings::modules() const {
     return StringList(result.begin(), result.end());
 }
 
+/*!
+    Returns the supported or selected project platforms.
+*/
 StringList ProjectSettings::platforms() const {
     StringList list;
     for(auto &it : m_supportedPlatforms) {
@@ -367,10 +472,16 @@ StringList ProjectSettings::platforms() const {
     return (m_platforms.empty()) ? list : m_platforms;
 }
 
+/*!
+    Returns the map of project plugins and their enabled states.
+*/
 std::map<TString, bool> &ProjectSettings::plugins() {
     return m_plugins;
 }
 
+/*!
+    Selects the current platform and updates its import directory.
+*/
 void ProjectSettings::setCurrentPlatform(const TString &platform) {
     if(platform.isEmpty()) {
 #if defined(PLATFORM_WINDOWS)
@@ -390,10 +501,16 @@ void ProjectSettings::setCurrentPlatform(const TString &platform) {
     File::mkPath(m_importPath);
 }
 
+/*!
+    Returns the name of the current platform.
+*/
 TString ProjectSettings::currentPlatformName() const {
     return m_currentPlatform;
 }
 
+/*!
+    Returns the code builder registered for the specified or current platform.
+*/
 NativeCodeBuilder *ProjectSettings::currentBuilder(const TString &platform) const {
     TString key(platform.isEmpty() ? m_currentPlatform : platform);
     auto it = m_supportedPlatforms.find(key);
@@ -403,6 +520,9 @@ NativeCodeBuilder *ProjectSettings::currentBuilder(const TString &platform) cons
     return nullptr;
 }
 
+/*!
+    Reports component types used by the project for automatic module discovery.
+*/
 void ProjectSettings::reportTypes(const std::set<TString> &types) {
     TString projectModule = TString("Module") + projectName();
     for(auto &it : types) {

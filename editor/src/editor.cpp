@@ -35,6 +35,15 @@
     \brief Contains Editor management classes.
 */
 
+/*!
+    \class Editor
+    \brief Provides access to the editor's documents, gadgets, settings, and plugins.
+    \inmodule Editor
+
+    The Editor class coordinates the main editor services and the currently
+    opened asset editors.
+*/
+
 std::list<EditorGadget *> Editor::s_gadgets;
 
 AssetEditor *Editor::s_currentEditor = nullptr;

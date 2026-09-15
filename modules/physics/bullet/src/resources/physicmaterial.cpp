@@ -26,7 +26,7 @@ namespace  {
 /*!
     \class PhysicMaterial
     \brief The PhysicMaterial class represents physical properties for collision and interaction with rigid bodies.
-    \inmodule Resource
+    \inmodule Bullet
 
     The PhysicMaterial class provides a convenient way to manage physical properties such as friction, restitution, and density for materials used in physics simulations.
     It can be associated with colliders or rigid bodies to control their behavior during interactions with other physical entities.

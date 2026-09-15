@@ -26,11 +26,25 @@ namespace {
     const char *gEditorSettings("EditorSettings");
 }
 
+/*!
+    \class EditorSettings
+    \brief Stores and manages editor-specific settings and translations.
+    \inmodule Editor
+
+    \fn void EditorSettings::updated()
+
+    Emitted when an editor setting changes.
+*/
+
 EditorSettings::EditorSettings() :
         m_translator(new QTranslator()) {
 
 }
 
+/*!
+    Registers a setting named \a name with its initial \a value and optional
+    editor \a annotation.
+*/
 void EditorSettings::registerValue(const TString &name, const Variant &value, const TString &annotation) {
     blockSignals(true);
     setProperty(name.data(), value);
@@ -38,10 +52,16 @@ void EditorSettings::registerValue(const TString &name, const Variant &value, co
     blockSignals(false);
 }
 
+/*!
+    Returns the value of the setting named \a name.
+*/
 Variant EditorSettings::value(const TString &name) {
     return property(name.data());
 }
 
+/*!
+    Sets the \a value of the setting named \a name.
+*/
 void EditorSettings::setValue(const TString &name, const Variant &value) {
     Variant current = EditorSettings::value(name);
     if(current != value) {
@@ -82,6 +102,9 @@ void EditorSettings::saveSettings() {
     Engine::syncValues();
 }
 
+/*!
+    Changes the interface language to \a locale and reloads translations.
+*/
 void EditorSettings::setLanguage(const QLocale &locale) {
     if(m_translator && m_locale != locale) {
         m_locale = locale;
@@ -90,11 +113,20 @@ void EditorSettings::setLanguage(const QLocale &locale) {
         QCoreApplication::installTranslator(m_translator);
     }
 }
+    /*!
+        Loads all registered settings from the engine configuration.
+    */
 
+/*!
+    Sets a \a value for the property with \a name and emits updated() after persistence.
+*/
 void EditorSettings::setProperty(const char *name, const Variant &value) {
     Object::setProperty(name, value);
 
     TString editor = propertyTag(dynamicPropertyInfo(name), "editor=");
+/*!
+    Saves all registered settings to the engine configuration.
+*/
     if(editor == "Locale") {
         setLanguage(QLocale(value.toString().data()));
     }

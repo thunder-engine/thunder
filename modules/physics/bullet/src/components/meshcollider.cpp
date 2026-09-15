@@ -30,7 +30,7 @@
 /*!
     \class MeshCollider
     \brief The MeshCollider class represents a collider based on a 3D mesh.
-    \inmodule Components
+    \inmodule Bullet
 
     The MeshCollider class provides a way to create a collider based on a 3D mesh.
     The collider can be attached to a physics world, and its properties, such as the mesh, material, and enabled state, can be manipulated dynamically.

@@ -52,6 +52,14 @@ static const char *meta = \
     "   ]"
     "}";
 
+/*!
+    \module Navigation
+
+    \title Navigation Module
+
+    \brief Provides navigation and pathfinding functionality for Thunder Engine.
+*/
+
 Navigation::Navigation(Engine *engine) :
         Module(engine),
         m_system(nullptr),

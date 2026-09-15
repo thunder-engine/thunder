@@ -31,7 +31,7 @@
 /*!
     \class BaseAssetProvider
     \brief Manages asset discovery and lifecycle in the editor
-    \module Editor
+    \inmodule Editor
 
     This class monitors the project file system and manages asset operations including
     imports, registration, and removal. It works closely with AssetManager and
@@ -63,8 +63,10 @@ BaseAssetProvider::~BaseAssetProvider() {
     delete m_dirWatcher;
 }
 /*!
-    This method performs initial asset discovery and sets up directory watching for:
-    Argument \a force If true, forces re-import of all assets; if false, only imports outdated assets
+    Performs initial asset discovery and sets up directory watching.
+
+    If \a force is true, all assets are re-imported. Otherwise, only outdated
+    assets are imported.
 
     \sa onDirectoryChangedForce()
 */
@@ -98,7 +100,7 @@ void BaseAssetProvider::onFileChanged(const TString &path) {
     Editor::assets()->reimport();
 }
 /*!
-    Internal file change handler with \a force import option
+    Handles a file change with an optional forced import.
 
     Checks if file exists and is not a metadata file (.meta extension).
     Accepts only absolute file \a path.
@@ -128,7 +130,7 @@ void BaseAssetProvider::onFileChangedForce(const TString &path, bool force) {
     }
 }
 /*!
-    Slot called when directorycontents change
+    Handles changes to directory contents.
 
     Processes all files in the directory \a path and notifies AssetManager of the directory change.
     Files are processed with default (non-force) settings, importing only if they are outdated.
@@ -145,7 +147,7 @@ void BaseAssetProvider::onDirectoryChanged(const TString &path) {
     Editor::assets()->directoryChanged(path);
 }
 /*!
-    Internal directory change handler with optional watching and force import
+    Handles a directory change with optional watching and forced import.
 
     Optionally adds the \a path to the file system \a watch. Recursively processes all files
     in the directory hierarchy, applying import settings based on \a force parameter.

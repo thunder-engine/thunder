@@ -43,7 +43,7 @@
     the end of the path. When autoRepath() is enabled, it recalculates the
     path after detecting a deviation or a stalled movement.
 
-    \sa NavigationSystem, NavMeshObstacle, NavMeshSurface
+    \sa NavMeshObstacle, NavMeshSurface
 */
 
 /*! \enum NavMeshAgent::NavigationState

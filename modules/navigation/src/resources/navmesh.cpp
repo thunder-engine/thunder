@@ -39,7 +39,7 @@
     can load and save serialized tile data and provides access to the mesh,
     query object, and tile reference used by the navigation system.
 
-    \sa NavMeshSurface, NavMeshAgent, NavigationSystem
+    \sa NavMeshSurface, NavMeshAgent
 */
 
 /*!
