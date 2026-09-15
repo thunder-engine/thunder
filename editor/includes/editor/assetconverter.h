@@ -135,9 +135,11 @@ public:
     std::list<std::pair<TString, TString>> &changedUuids();
     void clearChangedUuids();
 
-    TString fixUuid(const TString &uuid, const TString &type, int lod, bool solve = true);
+    static TString fixUuid(const TString &uuid, const TString &type, int lod);
 
 protected:
+    void solveUuid(const TString &from, const TString &to);
+
     virtual TString propertyAllias(const TString &name) const;
 
     static TString defaultIconPath(const TString &type);

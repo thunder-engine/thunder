@@ -448,6 +448,14 @@ void AssetManager::registerConverter(AssetConverter *converter) {
         CodeBuilder *builder = dynamic_cast<CodeBuilder *>(converter);
         if(builder) {
             m_builders.push_back(builder);
+            TString asset = builder->persistentAsset();
+            if(!asset.isEmpty()) {
+                ResourceSystem::ResourceInfo info;
+                info.uuid = asset;
+                info.type = builder->persistentName();
+
+                registerAsset(info.type, info);
+            }
         } else {
             bool valid = false;
             for(TString &format : converter->suffixes()) {

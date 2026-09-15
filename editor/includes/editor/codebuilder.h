@@ -48,6 +48,9 @@ public:
 
     void buildSuccessful(bool flag);
 
+    virtual TString persistentName() const;
+    virtual TString persistentAsset() const;
+
 private:
     AssetConverterSettings *createSettings() override;
 

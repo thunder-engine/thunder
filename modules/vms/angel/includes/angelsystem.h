@@ -89,8 +89,6 @@ private:
 
     asIScriptContext *m_context;
 
-    AngelScript *m_script;
-
     bool m_inited;
 
     bool m_generic;

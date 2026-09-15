@@ -84,8 +84,10 @@ void AngelBehaviour::createObject() {
 }
 
 void AngelBehaviour::hibernateObject() {
-    m_data = saveUserData();
-    destroyObject();
+    if(m_object) {
+        m_data = saveUserData();
+        destroyObject();
+    }
 }
 
 void AngelBehaviour::awakeObject() {
