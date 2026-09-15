@@ -123,7 +123,7 @@ bool AngelBuilder::buildProject() {
     if(m_outdated) {
         AssetManager *assetMgr = Editor::assets();
         ProjectSettings *project = Editor::project();
-        TString persistentUUID = AssetConverterSettings::fixUuid(project->projectId(), "AngelScript", 0);
+        TString persistentUUID = persistentAsset();
 
         if(m_sources.empty()) {
             File::remove(project->importPath() + "/" + persistentUUID);
@@ -193,6 +193,14 @@ bool AngelBuilder::buildProject() {
         mod->Discard();
     }
     return true;
+}
+
+TString AngelBuilder::persistentName() const {
+    return Editor::project()->projectName();
+}
+
+TString AngelBuilder::persistentAsset() const {
+    return AssetConverterSettings::fixUuid(Editor::project()->projectId(), "AngelScript", 0);
 }
 
 QAbstractItemModel *AngelBuilder::classMap() const {

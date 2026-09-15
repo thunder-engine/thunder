@@ -69,18 +69,29 @@ void CodeBuilder::init() {
     }
 }
 
-    /*!
-        Marks the builder as outdated and requests a project rebuild.
-    */
+/*!
+    Marks the builder as outdated and requests a project rebuild.
+*/
 AssetConverter::ReturnCode CodeBuilder::convertFile(AssetConverterSettings *) {
     makeOutdated();
     return Skipped;
 }
-
-void CodeBuilder::buildSuccessful(bool flag) {
+/*!
+    Returns persistent asset name or empty if not applicable;
+*/
+TString CodeBuilder::persistentName() const {
+    return TString();
+}
+/*!
+    Returns persistent asset UUID or empty if not applicable;
+*/
+TString CodeBuilder::persistentAsset() const {
+    return TString();
+}
 /*!
     Notifies the asset manager that the build finished with the specified result.
 */
+void CodeBuilder::buildSuccessful(bool flag) {
     Editor::assets()->onBuildSuccessful(flag, this);
 }
 

@@ -153,7 +153,7 @@ TString Url::relativeDir(const TString &base) const {
     if(!host().isEmpty() && host().back() == ':') {
         fullPath = host() + fullPath;
     }
-    TString basePath = base;
+    TString basePath = Url(base).filePath();
 
     basePath.replace('\\', '/');
     fullPath.replace('\\', '/');

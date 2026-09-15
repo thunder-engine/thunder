@@ -96,6 +96,9 @@ protected:
 
     bool buildProject() override;
 
+    TString persistentName() const override;
+    TString persistentAsset() const override;
+
     StringList suffixes() const override { return {"as"}; }
     QAbstractItemModel *classMap() const override;
 
