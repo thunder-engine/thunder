@@ -152,7 +152,10 @@ TString Url::relativeDir(const TString &base) const {
     TString fullPath = filePath();
     if(!host().isEmpty() && host().back() == ':') {
         fullPath = host() + fullPath;
+    } else if(scheme().size() == 1 && scheme().back() >= 'A' && scheme().back() <= 'Z') {
+        fullPath = scheme() + TString(":") + fullPath;
     }
+
     Url baseUrl(base);
     TString basePath = baseUrl.filePath();
     if(!baseUrl.host().isEmpty() && baseUrl.host().back() == ':') {

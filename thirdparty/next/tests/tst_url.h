@@ -213,4 +213,12 @@ namespace NextSuite {
         TString result = url.relativeDir(base);
         ASSERT_TRUE(result == TString("/home/user/"));
     }
+
+    TEST_F(UrlTest, RelativeFilePath_WindowsPath) {
+        Url url("D:/Projects/thunder-samples/2d/flappy/content/Level.map");
+        TString base = "D:/Projects/thunder-samples/2d/flappy/content";
+
+        TString result = url.relativeFilePath(base);
+        ASSERT_TRUE(result == TString("Level.map"));
+    }
 }
