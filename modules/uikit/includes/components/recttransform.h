@@ -53,6 +53,8 @@ public:
     ~RectTransform();
 
     void setPosition(const Vector3 &position) override;
+    void setRotation(const Vector3 &angles) override;
+    void setScale(const Vector3 &scale) override;
 
     Vector2 size() const;
     void setSize(const Vector2 &size);

@@ -81,6 +81,30 @@ void RectTransform::setPosition(const Vector3 &position) {
         }
     }
 #endif
+
+    if(!m_subscribers.empty()) {
+        m_subscribers.front()->repaint();
+    }
+}
+/*!
+    Changes rotation \a angles of the Transform in local space.
+*/
+void RectTransform::setRotation(const Vector3 &angles) {
+    Transform::setRotation(angles);
+
+    if(!m_subscribers.empty()) {
+        m_subscribers.front()->repaint();
+    }
+}
+/*!
+    Changes \a scale of the Transform in local space.
+*/
+void RectTransform::setScale(const Vector3 &scale) {
+    Transform::setScale(scale);
+
+    if(!m_subscribers.empty()) {
+        m_subscribers.front()->repaint();
+    }
 }
 /*!
     Returns the size of the associated UI element.
@@ -420,6 +444,10 @@ void RectTransform::setEnabled(bool enabled) {
         m_attachedLayout->invalidate();
     }
     cleanDirty();
+
+    if(!m_subscribers.empty()) {
+        m_subscribers.front()->repaint();
+    }
 }
 /*!
     Returns vertical size policy.
