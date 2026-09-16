@@ -34,13 +34,13 @@ public:
     virtual void setPosition(const Vector3 &position);
 
     Vector3 rotation() const;
-    void setRotation(const Vector3 &angles);
+    virtual void setRotation(const Vector3 &angles);
 
     Quaternion quaternion() const;
     void setQuaternion(const Quaternion &quaternion);
 
     Vector3 scale() const;
-    void setScale(const Vector3 &scale);
+    virtual void setScale(const Vector3 &scale);
 
     Transform *parentTransform() const;
     virtual void setParentTransform(Transform *parent, bool force = false);

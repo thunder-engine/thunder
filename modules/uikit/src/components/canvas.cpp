@@ -77,7 +77,7 @@ void Canvas::markDirty() {
     Propagates the update call to all child widgets, setting their canvas reference before updating.
 */
 void Canvas::update(const Vector2 &position) {
-    for(auto it : m_transform->children()) {
+    for(auto it : rectTransform()->children()) {
         RectTransform *rect = dynamic_cast<RectTransform *>(it);
         if(rect) {
             Widget *widget = rect->widget();
@@ -136,9 +136,9 @@ void Canvas::draw(CommandBuffer *buffer) {
         m_buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
         m_buffer->setRenderTarget(m_target);
 
-        for(auto it : m_transform->children()) {
+        for(auto it : rectTransform()->children()) {
             RectTransform *rect = dynamic_cast<RectTransform *>(it);
-            if(rect) {
+            if(rect && rect->isEnabled()) {
                 Widget *widget = rect->widget();
                 if(widget) {
                     widget->draw();
@@ -192,6 +192,7 @@ void Canvas::setSize(int width, int height) {
         }
 
         m_texture->resize(width, height);
+        m_dirty = true;
     }
 
     RectTransform *rect = dynamic_cast<RectTransform *>(transform());

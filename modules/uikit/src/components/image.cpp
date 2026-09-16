@@ -171,6 +171,10 @@ Sprite *Image::sprite() const {
     Replaces the current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
+    if(rectTransform() == nullptr) {
+        return;
+    }
+
     if(m_sprite != sprite) {
         if(m_sprite) {
             m_sprite->unsubscribe(this);
