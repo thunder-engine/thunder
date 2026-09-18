@@ -50,14 +50,14 @@ TString MapConverter::templatePath() const {
 }
 
 bool MapConverter::toVersion3(Variant &variant) {
-    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+    VariantList objects = variant.toList();
     int32_t root = 0; // First object is a root
     for(auto object = objects.begin(); object != objects.end(); ++object) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
         if(o.size() >= 5) {
             auto i = o.begin();
             TString type = i->toString();
-            if(root == 0) {
+            if(root == 0 && type != "Map") {
                 *i = "Chunk";
             }
             ++i;
@@ -76,7 +76,7 @@ bool MapConverter::toVersion3(Variant &variant) {
 }
 
 bool MapConverter::toVersion4(Variant &variant) {
-    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+    VariantList objects = variant.toList();
     for(auto object = objects.begin(); object != objects.end(); ++object) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object->data()));
         if(o.size() >= 5) {
