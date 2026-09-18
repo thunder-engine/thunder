@@ -273,7 +273,7 @@ void Transform::updateHierarchy(Transform *parent, bool force) {
     Vector3 e;
     Vector3 s;
 
-    if(!force) {
+    if(parent) {
         p = worldPosition();
         e = worldRotation();
         s = worldScale();
@@ -297,15 +297,7 @@ void Transform::updateHierarchy(Transform *parent, bool force) {
             m_scale = s * scale;
             setRotation(e - m_parent->worldRotation());
         } else {
-            m_position = p;
-            m_scale = s;
-            setRotation(e);
             setDirty();
         }
-    } else if(!force) {
-        m_position = p;
-        m_scale = s;
-        setRotation(e);
-        setDirty();
     }
 }
