@@ -170,7 +170,7 @@ bool PrefabConverter::toVersion1(Variant &variant) {
     PROFILE_FUNCTION();
 
     // Create all declared objects
-    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+    VariantList objects = variant.toList();
     for(auto &object : objects) {
         VariantList &o = *(reinterpret_cast<VariantList *>(object.data()));
         if(o.size() >= 5) {
@@ -217,27 +217,17 @@ bool PrefabConverter::toVersion4(Variant &variant) {
 }
 
 bool PrefabConverter::toVersion5(Variant &variant) {
-    VariantList &objects = *(reinterpret_cast<VariantList *>(variant.data()));
+    Object *object = Engine::toObject(variant);
+    if(object) {
+        if(object->typeName() == "Actor") {
+            Prefab *resource = Engine::objectCreate<Prefab>();
 
-    VariantList prefab;
-    prefab.push_back("Prefab");
-    prefab.push_back(ObjectSystem::generateUUID());
-    prefab.push_back(0);
-    prefab.push_back("");
-    prefab.push_back(VariantMap());
-    prefab.push_back(VariantList());
+            object->setParent(resource);
+            resource->setActor(dynamic_cast<Actor *>(object));
 
-    VariantList actor = *(reinterpret_cast<VariantList *>(objects.front().data()));
-    auto it = actor.begin();
-    ++it;
-
-    int32_t uuid = (*it).toInt();
-
-    VariantMap fields;
-    fields["Actor"] = uuid;
-    prefab.push_back(fields);
-
-    objects.push_front(prefab);
+            variant = Engine::toVariant(resource);
+        }
+    }
 
     return true;
 }
