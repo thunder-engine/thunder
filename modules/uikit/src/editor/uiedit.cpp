@@ -82,7 +82,7 @@ private:
         }
 
         // need to keep it non constant because of Variant::fromValue
-        static Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
+        //static Sprite *sprite = Engine::loadResource<Sprite>("Sprites/Tower2.png/Tower2");
 
         switch(role) {
             case DisplayRole: {
@@ -91,7 +91,7 @@ private:
                 }
                 return TString("Child #") + TString::number(index.row());
             }
-            case DecorationRole: return Variant::fromValue(sprite);
+            //case DecorationRole: return Variant::fromValue(sprite);
             default: break;
         }
 
