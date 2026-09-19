@@ -65,8 +65,10 @@ void loadElementHelper(pugi::xml_node &node, Actor *actor, bool root = false) {
                     default: {
                         if(annotation == "editor=Asset") {
                             Resource *resource = Engine::loadResource(it.as_string());
-                            uint32_t type = MetaType::type(resource->typeName().data()) + 1;
-                            widget->setProperty(property.name(), Variant(type, &resource));
+                            if(resource) {
+                                uint32_t type = MetaType::type(resource->typeName().data()) + 1;
+                                widget->setProperty(property.name(), Variant(type, &resource));
+                            }
                         }
                     } break;
                 }
