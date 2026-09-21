@@ -132,15 +132,20 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
     // Add properties left in the list
 
     for(const TString &dynProp : dynamicPropertiesFiltered) {
-        QStringList list = QString(dynProp.data()).split('/');
+        uint32_t type = propertyObject->property(dynProp.data()).type();
+        if(type == MetaType::VARIANTMAP) {
+            continue;
+        }
+
+        StringList list = TString(dynProp).split('/');
 
         Property *s = it;
         for(int i = 0; i < list.size(); i++) {
             Property *p = nullptr;
 
             if(it && i < list.size() - 1) {
-                QString path = list.mid(0, i + 1).join('/');
-                Property *child = it->findChild<Property *>(path);
+                TString path = TString::join(StringList(list.begin(), std::next(list.begin(), i + 1)), "/");
+                Property *child = it->findChild<Property *>(path.data());
                 if(child) {
                     it = child;
                 } else {
@@ -150,7 +155,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
 
                     it = p;
                 }
-            } else if(!list[i].isEmpty()) {
+            } else if(!std::next(list.begin(), i)->isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
                 p->setEditorHints(propertyObject->dynamicPropertyInfo(dynProp.data()));
