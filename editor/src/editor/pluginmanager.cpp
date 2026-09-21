@@ -484,7 +484,7 @@ StringList PluginManager::dependencies(const TString &type, const StringList &mo
     StringList result;
 
     for(auto &plugin : m_plugins) {
-        if(plugin.enabled && (modules.empty() || std::find(modules.begin(), modules.end(), plugin.name) != modules.end())) {
+        if(plugin.enabled && std::find(modules.begin(), modules.end(), plugin.name) != modules.end()) {
             for(auto &dependency : plugin.dependencies) {
                 if(dependency.second == type && std::find(result.begin(), result.end(), dependency.first) == result.end()) {
                     result.push_back(dependency.first);

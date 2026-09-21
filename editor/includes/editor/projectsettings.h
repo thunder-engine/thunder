@@ -35,8 +35,6 @@ class EDITOR_EXPORT ProjectSettings : public Object {
         A_PROPERTYEX(TString, projectId, ProjectSettings::projectId, ProjectSettings::setProjectId, "ReadOnly"),
         A_PROPERTYEX(TString, projectSdk, ProjectSettings::projectSdk, ProjectSettings::setProjectSdk, "ReadOnly"),
         A_PROPERTYEX(TString, firstMap, ProjectSettings::firstMap, ProjectSettings::setFirstMap, "editor=Asset,type=Map")
-        //A_PROPERTY(TString[], modules, ProjectSettings::getModules, ProjectSettings::setModules),
-        //A_PROPERTY(TString[], platforms, ProjectSettings::getPlatforms, ProjectSettings::setPlatforms)
     )
 
 public:
@@ -101,22 +99,25 @@ public:
     void loadSettings();
     void saveSettings();
 
+    Variant property(const char *name) const override;
+    void setProperty(const char *name, const Variant &value) override;
+
 private:
     VariantList getModules() const;
-    void setModules(VariantList modules);
+    void setModules(const VariantList &modules);
 
     VariantList getPlatforms() const;
-    void setPlatforms(VariantList platforms);
+    void setPlatforms(const VariantList &platforms);
 
 private:
     StringList m_platforms;
     StringList m_artifacts;
 
+    StringList m_modules;
+    StringList m_autoModules;
+
     std::map<TString, bool> m_plugins;
     std::map<TString, CodeBuilder *> m_supportedPlatforms;
-
-    std::set<TString> m_modules;
-    std::set<TString> m_autoModules;
 
     TString m_projectId;
     TString m_projectName;

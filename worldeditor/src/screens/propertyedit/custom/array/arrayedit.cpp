@@ -201,8 +201,9 @@ void ArrayEdit::onEditFinished() {
 
 void ArrayEdit::onDeleteElement() {
     ArrayElement *element = dynamic_cast<ArrayElement *>(sender());
-    if(element) {
+    if(element && element->index() < m_list.size()) {
         m_list.erase( std::next(m_list.begin(), element->index()) );
+        setData(m_list);
     }
     emit editFinished();
 }

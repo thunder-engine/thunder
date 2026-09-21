@@ -150,7 +150,7 @@ void ProjectSettings::loadSettings() {
             auto it = object.find(gModules);
             if(it != object.end()) {
                 for(auto &module : it->second.toList()) {
-                    m_modules.insert(module.toString());
+                    m_modules.push_back(module.toString());
                 }
             }
         }
@@ -446,7 +446,8 @@ TString ProjectSettings::myProjectsPath() const {
     Returns the modules enabled for the project, including automatic dependencies.
 */
 StringList ProjectSettings::modules() const {
-    std::set<TString> result = m_autoModules;
+    std::set<TString> result;
+    result.insert(m_autoModules.begin(), m_autoModules.end());
     result.insert(m_modules.begin(), m_modules.end());
     NativeCodeBuilder *builder = currentBuilder();
     if(builder) {
@@ -528,9 +529,33 @@ void ProjectSettings::reportTypes(const std::set<TString> &types) {
     for(auto &it : types) {
         TString name = Editor::plugins()->getModuleName(it);
         if(!name.isEmpty() && name != projectModule) {
-            m_autoModules.insert(name);
+            if(std::find(m_autoModules.begin(), m_autoModules.end(), name) == m_autoModules.end()) {
+                m_autoModules.push_back(name);
+            }
         }
     }
+}
+
+Variant ProjectSettings::property(const char *name) const {
+    TString str(name);
+    if(str == gModules) {
+        return getModules();
+    } else if(str == gPlatforms) {
+        return getPlatforms();
+    }
+
+    return Object::property(name);
+}
+
+void ProjectSettings::setProperty(const char *name, const Variant &value) {
+    TString str(name);
+    if(str == gModules) {
+        setModules(value.toList());
+    } else if(str == gPlatforms) {
+        setPlatforms(value.toList());
+    }
+
+    Object::setProperty(name, value);
 }
 
 VariantList ProjectSettings::getModules() const {
@@ -541,10 +566,13 @@ VariantList ProjectSettings::getModules() const {
     return result;
 }
 
-void ProjectSettings::setModules(VariantList modules) {
+void ProjectSettings::setModules(const VariantList &modules) {
     m_modules.clear();
     for(auto &it : modules) {
-        m_modules.insert(it.toString());
+        TString module(it.toString());
+        if(std::find(m_modules.begin(), m_modules.end(), module) == m_modules.end()) {
+            m_modules.push_back(module);
+        }
     }
     saveSettings();
 }
@@ -557,10 +585,13 @@ VariantList ProjectSettings::getPlatforms() const {
     return result;
 }
 
-void ProjectSettings::setPlatforms(VariantList platforms) {
+void ProjectSettings::setPlatforms(const VariantList &platforms) {
     m_platforms.clear();
     for(auto &it : platforms) {
-        m_platforms.push_back(it.toString());
+        TString platform(it.toString());
+        if(std::find(m_platforms.begin(), m_platforms.end(), platform) == m_platforms.end()) {
+            m_platforms.push_back(platform);
+        }
     }
     saveSettings();
 }
