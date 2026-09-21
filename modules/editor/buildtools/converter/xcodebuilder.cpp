@@ -4,6 +4,9 @@
 
 #include <log.h>
 #include <file.h>
+#include <url.h>
+
+#include <QCryptographicHash>
 
 namespace {
     const char *gPlatformName("${platformName}");
@@ -114,6 +117,28 @@ void XcodeBuilder::generateProject() {
 
     NativeCodeBuilder::generateProject();
 
+    TString buildFiles;
+    TString fileReferences;
+    TString groupFiles;
+    TString sourceFiles;
+    for(const TString &source : m_sources) {
+        QByteArray sourceData = QByteArray::fromStdString(source.toStdString());
+        TString fileId = QCryptographicHash::hash(sourceData + "-file", QCryptographicHash::Sha1).toHex().toUpper().left(24).toStdString();
+        TString buildId = QCryptographicHash::hash(sourceData + "-build", QCryptographicHash::Sha1).toHex().toUpper().left(24).toStdString();
+        TString fileType = Url(source).completeSuffix().toLower() == "h" ? "sourcecode.c.h" : "sourcecode.cpp.cpp";
+
+        fileReferences += TString("\t\t%1 /* %2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = %3; path = %2; sourceTree = SOURCE_ROOT; };\n").arg(fileId).arg(source).arg(fileType);
+        groupFiles += TString("\t\t\t\t%1 /* %2 */,\n").arg(fileId).arg(source);
+        if(fileType != "sourcecode.c.h") {
+            buildFiles += TString("\t\t%1 /* %2 in Sources */ = {isa = PBXBuildFile; fileRef = %3 /* %2 */; };\n").arg(buildId).arg(source).arg(fileId);
+            sourceFiles += TString("\t\t\t\t%1 /* %2 in Sources */,\n").arg(buildId).arg(source);
+        }
+    }
+    m_values["${XcodeBuildFiles}"] = buildFiles;
+    m_values["${XcodeFileReferences}"] = fileReferences;
+    m_values["${XcodeGroupFiles}"] = groupFiles;
+    m_values["${XcodeSourceFiles}"] = sourceFiles;
+
     if(mgr->currentPlatformName() == "tvos") {
         m_values[gSdkName] = "appletvos";
         m_values[gPlatformName] = "tvos";
@@ -137,10 +162,10 @@ void XcodeBuilder::generateProject() {
     m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
 
     if(mgr->currentPlatformName() == "macos") {
-        updateTemplate(":/templates/xcode/desktop.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", true);
+        updateTemplate(":/templates/xcode/desktop.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
         updateTemplate(":/templates/xcode/macos.plist", m_project + "Info.plist");
     } else {
-        updateTemplate(":/templates/xcode/mobile.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj", true);
+        updateTemplate(":/templates/xcode/mobile.pbxproj", m_project + mgr->projectName() + ".xcodeproj/project.pbxproj");
         updateTemplate(":/templates/xcode/LaunchScreen.storyboard", m_project + "LaunchScreen.storyboard");
         updateTemplate(":/templates/xcode/ios.plist", m_project + "Info.plist");
     }

@@ -118,6 +118,6 @@ void VsBuilder::generateProject() {
     m_project = mgr->cachePath() + "/" + mgr->currentPlatformName() + "/";
 
     updateTemplate(":/templates/windows/project.sln", m_project + mgr->projectName() + ".sln");
-    updateTemplate(":/templates/windows/project.vcxproj", m_project + "project.vcxproj", true);
-    updateTemplate(":/templates/windows/project-editor.vcxproj", m_project + "project-editor.vcxproj", true);
+    updateTemplate(":/templates/windows/project.vcxproj", m_project + "project.vcxproj");
+    updateTemplate(":/templates/windows/project-editor.vcxproj", m_project + "project-editor.vcxproj");
 }

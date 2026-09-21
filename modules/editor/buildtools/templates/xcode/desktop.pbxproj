@@ -7,48 +7,50 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-                04830BC82EEBE1A000654D02 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04830BC72EEBE1A000654D02 /* Carbon.framework */; };
-                049B70D02ED383710082C7C2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CE2ED383710082C7C2 /* Metal.framework */; };
+		04830BC82EEBE1A000654D02 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04830BC72EEBE1A000654D02 /* Carbon.framework */; };
+		049B70D02ED383710082C7C2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CE2ED383710082C7C2 /* Metal.framework */; };
 		049B70D12ED383710082C7C2 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CF2ED383710082C7C2 /* MetalKit.framework */; };
 		049B70F82ED4819C0082C7C2 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70F72ED4819C0082C7C2 /* Cocoa.framework */; };
-                04A84C012ED9DD6E00D534D4 /* base.pak in Resources */ = {isa = PBXBuildFile; fileRef = 04A84C002ED9DD6E00D534D4 /* base.pak */; };
-                049B70FA2ED481DF0082C7C2 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70F92ED481DF0082C7C2 /* IOKit.framework */; };
+		04A84C012ED9DD6E00D534D4 /* base.pak in Resources */ = {isa = PBXBuildFile; fileRef = 04A84C002ED9DD6E00D534D4 /* base.pak */; };
+		049B70FA2ED481DF0082C7C2 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70F92ED481DF0082C7C2 /* IOKit.framework */; };
 		C03F228C22F4A09200366493 /* ../generated/plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C03F228B22F4A09200366493 /* ../generated/plugin.cpp */; };
-		C03F228E22F4A09F00366493 /* ../generated/application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C03F228D22F4A09F00366493 /* ../generated/application.cpp */; };																																				
+		C03F228E22F4A09F00366493 /* ../generated/application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C03F228D22F4A09F00366493 /* ../generated/application.cpp */; };
+${XcodeBuildFiles}
 		C03F22A722F4A55600366493 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22A622F4A55600366493 /* CoreGraphics.framework */; };
 		C03F22A922F4A56E00366493 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22A822F4A56E00366493 /* QuartzCore.framework */; };
 		C03F22AB22F4A58100366493 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22AA22F4A58100366493 /* Foundation.framework */; };
 		C099B0C222F5977200EE7EAB /* libz.1.1.3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */; };
 		C05464FC23012CDC00AEE963 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C05464FB23012CDC00AEE963 /* Assets.xcassets */; };
-                BBD9E635A32A4086B9B4B90D /* ../generated/plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */; };
+		BBD9E635A32A4086B9B4B90D /* ../generated/plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-                04830BC72EEBE1A000654D02 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		04830BC72EEBE1A000654D02 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		049B70CE2ED383710082C7C2 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		049B70CF2ED383710082C7C2 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		049B70F72ED4819C0082C7C2 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		049B70F92ED481DF0082C7C2 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };																																																			 
-                04A84C002ED9DD6E00D534D4 /* base.pak */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.pak; sourceTree = SOURCE_ROOT; };
-                C03F227222F4A00900366493 /* ${projectName}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ${projectName}.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04A84C002ED9DD6E00D534D4 /* base.pak */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.pak; sourceTree = SOURCE_ROOT; };
+		C03F227222F4A00900366493 /* ${projectName}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ${projectName}.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C03F228B22F4A09200366493 /* ../generated/plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../generated/plugin.cpp; sourceTree = SOURCE_ROOT; };
 		C03F228D22F4A09F00366493 /* ../generated/application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../generated/application.cpp; sourceTree = SOURCE_ROOT; };
+${XcodeFileReferences}
 		C03F22A622F4A55600366493 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		C03F22A822F4A56E00366493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C03F22AA22F4A58100366493 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-                C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ${platformsPath}/${platformName}/Assets.xcassets; sourceTree = "<group>"; };
+		C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ${platformsPath}/${platformName}/Assets.xcassets; sourceTree = "<group>"; };
 		C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.1.3.tbd; path = usr/lib/libz.1.1.3.tbd; sourceTree = SDKROOT; };
-                D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = ../generated/plugin.cpp; sourceTree = SOURCE_ROOT; };
+		D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = ../generated/plugin.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-                322CD30682E64F438C83A306 /* Frameworks */ = {
-                        isa = PBXFrameworksBuildPhase;
-                        buildActionMask = 2147483647;
-                        files = (
-                        );
-                        runOnlyForDeploymentPostprocessing = 0;
-                };
+			322CD30682E64F438C83A306 /* Frameworks */ = {
+					isa = PBXFrameworksBuildPhase;
+					buildActionMask = 2147483647;
+					files = (
+					);
+					runOnlyForDeploymentPostprocessing = 0;
+			};
 		C03F226F22F4A00800366493 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -61,7 +63,7 @@
 				C03F22AB22F4A58100366493 /* Foundation.framework in Frameworks */,
 				C03F22A922F4A56E00366493 /* QuartzCore.framework in Frameworks */,
 				C03F22A722F4A55600366493 /* CoreGraphics.framework in Frameworks */,
-                                04830BC82EEBE1A000654D02 /* Carbon.framework in Frameworks */,
+				04830BC82EEBE1A000654D02 /* Carbon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,7 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				C03F227422F4A00900366493 /* ${projectName} */,
-                                B9D34E69C8BF4D8981EFFCBD /* ${projectName}-editor */,
+				B9D34E69C8BF4D8981EFFCBD /* ${projectName}-editor */,
 				C03F227322F4A00900366493 /* Products */,
 				C03F228F22F4A4F300366493 /* Frameworks */,
 			);
@@ -82,7 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				C03F227222F4A00900366493 /* ${projectName}.app */,
-                                C04CF766E6B4F0B85977A95 /* lib${projectName}-editor.dylib */,
+				C04CF766E6B4F0B85977A95 /* lib${projectName}-editor.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -91,21 +93,22 @@
 			isa = PBXGroup;
 			children = (
 				C05464FB23012CDC00AEE963 /* Assets.xcassets */,
-                                04A84C002ED9DD6E00D534D4 /* base.pak */,
+				04A84C002ED9DD6E00D534D4 /* base.pak */,
 				C03F228D22F4A09F00366493 /* ../generated/application.cpp */,
 				C03F228B22F4A09200366493 /* ../generated/plugin.cpp */,
+${XcodeGroupFiles}
 			);
 			path = ${projectName};
 			sourceTree = "<group>";
 		};
-                B9D34E69C8BF4D8981EFFCBD /* ${projectName}-editor */ = {
-                        isa = PBXGroup;
-                        children = (
-                                D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */,
-                        );
-                        name = "${projectName}-editor";
-                        sourceTree = "<group>";
-                };
+			B9D34E69C8BF4D8981EFFCBD /* ${projectName}-editor */ = {
+					isa = PBXGroup;
+					children = (
+						D6872193B3DE4504904D4BA0 /* ../generated/plugin.cpp */,
+					);
+					name = "${projectName}-editor";
+					sourceTree = "<group>";
+			};
 		C03F228F22F4A4F300366493 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -113,7 +116,7 @@
 				049B70F72ED4819C0082C7C2 /* Cocoa.framework */,								   
 				049B70CF2ED383710082C7C2 /* MetalKit.framework */,
 				049B70CE2ED383710082C7C2 /* Metal.framework */,
-                                04830BC72EEBE1A000654D02 /* Carbon.framework */,
+				04830BC72EEBE1A000654D02 /* Carbon.framework */,
 				C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */,
 				C03F22AA22F4A58100366493 /* Foundation.framework */,
 				C03F22A822F4A56E00366493 /* QuartzCore.framework */,
@@ -125,7 +128,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-                C03F227122F4A00800366493 /* ${projectName} */ = {
+			C03F227122F4A00800366493 /* ${projectName} */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "${projectName}" */;
 			buildPhases = (
@@ -142,22 +145,22 @@
 			productReference = C03F227222F4A00900366493 /* ${projectName}.app */;
 			productType = "com.apple.product-type.application";
 		};
-                F8CEDE2FC2C5384A6064ACFF /* ${projectName}-editor */ = {
-                        isa = PBXNativeTarget;
-                        buildConfigurationList = 34266BA08907493282C99C1A /* Build configuration list for PBXNativeTarget "${projectName}-editor" */;
-                        buildPhases = (
-                                16EFB3AA2CD84DFDBB3E2B53 /* Sources */,
-                                322CD30682E64F438C83A306 /* Frameworks */,
-                        );
-                        buildRules = (
-                        );
-                        dependencies = (
-                        );
-                        name = "${projectName}-editor";
-                        productName = "${projectName}-editor";
-                        productReference = 1C04CF766E6B4F0B85977A95 /* lib${projectName}-editor.dylib */;
-                        productType = "com.apple.product-type.library.dynamic";
-                };
+			F8CEDE2FC2C5384A6064ACFF /* ${projectName}-editor */ = {
+					isa = PBXNativeTarget;
+					buildConfigurationList = 34266BA08907493282C99C1A /* Build configuration list for PBXNativeTarget "${projectName}-editor" */;
+					buildPhases = (
+						16EFB3AA2CD84DFDBB3E2B53 /* Sources */,
+						322CD30682E64F438C83A306 /* Frameworks */,
+					);
+					buildRules = (
+					);
+					dependencies = (
+					);
+					name = "${projectName}-editor";
+					productName = "${projectName}-editor";
+					productReference = 1C04CF766E6B4F0B85977A95 /* lib${projectName}-editor.dylib */;
+					productType = "com.apple.product-type.library.dynamic";
+			};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -186,7 +189,7 @@
 			projectRoot = "";
 			targets = (
 				C03F227122F4A00800366493 /* ${projectName} */,
-                                F8CEDE2FC2C5384A6064ACFF /* ${projectName}-editor */,
+				F8CEDE2FC2C5384A6064ACFF /* ${projectName}-editor */,
 			);
 		};
 /* End PBXProject section */
@@ -197,27 +200,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				C05464FC23012CDC00AEE963 /* Assets.xcassets in Resources */,
-                                04A84C012ED9DD6E00D534D4 /* base.pak in Resources */,
+				04A84C012ED9DD6E00D534D4 /* base.pak in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-                16EFB3AA2CD84DFDBB3E2B53 /* Sources */ = {
-                        isa = PBXSourcesBuildPhase;
-                        buildActionMask = 2147483647;
-                        files = (
-                                BBD9E635A32A4086B9B4B90D /* ../generated/plugin.cpp in Sources */,
-                        );
-                        runOnlyForDeploymentPostprocessing = 0;
-                };
+			16EFB3AA2CD84DFDBB3E2B53 /* Sources */ = {
+					isa = PBXSourcesBuildPhase;
+					buildActionMask = 2147483647;
+					files = (
+						BBD9E635A32A4086B9B4B90D /* ../generated/plugin.cpp in Sources */,
+					);
+					runOnlyForDeploymentPostprocessing = 0;
+			};
 		C03F226E22F4A00800366493 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C03F228E22F4A09F00366493 /* ../generated/application.cpp in Sources */,
 				C03F228C22F4A09200366493 /* ../generated/plugin.cpp in Sources */,
+${XcodeSourceFiles}
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,7 +260,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-                                CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_BITCODE = NO;
@@ -267,7 +271,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-				        THUNDER_MOBILE,
+					THUNDER_MOBILE,
 					${defines}
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -321,7 +325,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-                                CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_BITCODE = NO;
@@ -330,7 +334,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-				        THUNDER_MOBILE,
+					THUNDER_MOBILE,
 					${defines}
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -404,113 +408,113 @@
 			};
 			name = Release;
 		};
-                A494F34C8E6842F49F90A9D9 /* Release */ = {
-                        isa = XCBuildConfiguration;
-                        buildSettings = {
-                                ALWAYS_SEARCH_USER_PATHS = NO;
-                                ARCHS = arm64;
-                                CONFIGURATION_BUILD_DIR = "${cachePath}/${platformName}/build";
-                                CODE_SIGN_IDENTITY = "-";
-                                COMBINE_HIDPI_IMAGES = YES;
-                                DYLIB_COMPATIBILITY_VERSION = "";
-                                DYLIB_CURRENT_VERSION = "";
-                                EXECUTABLE_PREFIX = lib;
-                                EXECUTABLE_SUFFIX = .dylib;
-                                GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-                                GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-                                GCC_OPTIMIZATION_LEVEL = 3;
-                                GCC_PREPROCESSOR_DEFINITIONS = (
-				        "$(inherited)",
+			A494F34C8E6842F49F90A9D9 /* Release */ = {
+					isa = XCBuildConfiguration;
+					buildSettings = {
+							ALWAYS_SEARCH_USER_PATHS = NO;
+							ARCHS = arm64;
+							CONFIGURATION_BUILD_DIR = "${cachePath}/${platformName}/build";
+							CODE_SIGN_IDENTITY = "-";
+							COMBINE_HIDPI_IMAGES = YES;
+							DYLIB_COMPATIBILITY_VERSION = "";
+							DYLIB_CURRENT_VERSION = "";
+							EXECUTABLE_PREFIX = lib;
+							EXECUTABLE_SUFFIX = .dylib;
+							GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+							GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+							GCC_OPTIMIZATION_LEVEL = 3;
+							GCC_PREPROCESSOR_DEFINITIONS = (
+						"$(inherited)",
 					SHARED_DEFINE,
 					${defines}
-                                );
-                                GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-                                HEADER_SEARCH_PATHS = (
-									${includePaths}
-                                );
-                                INSTALL_PATH = "@rpath";
+							);
+							GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+							HEADER_SEARCH_PATHS = (
+						${includePaths}
+							);
+							INSTALL_PATH = "@rpath";
 				LD_RUNPATH_SEARCH_PATHS = (
-                                        "$(inherited)",
-                                        "@executable_path/plugins",
-                                );
-                                LIBRARY_SEARCH_PATHS = (
-                                        "$(inherited)",
-                                        "$(PROJECT_DIR)",
-									${libraryPaths}
-                                );
-                                LIBRARY_STYLE = DYNAMIC;
-                                ONLY_ACTIVE_ARCH = NO;
-                                OTHER_LDFLAGS = (
-									${libraries}
-                                );
-                                OTHER_REZFLAGS = "";
-                                PRODUCT_NAME = "${projectName}-editor";
-                                SECTORDER_FLAGS = "";
-                                USE_HEADERMAP = NO;
-                                WARNING_CFLAGS = "$(inherited)";
-                        };
-                        name = Release;
-                };
-                E799E7E6404F4139A7CCF7E6 /* Debug */ = {
-                        isa = XCBuildConfiguration;
-                        buildSettings = {
-                                ALWAYS_SEARCH_USER_PATHS = NO;
-                                ARCHS = arm64;
-                                CONFIGURATION_BUILD_DIR = "${cachePath}/${platformName}/build";
-                                CODE_SIGN_IDENTITY = "-";
-                                COMBINE_HIDPI_IMAGES = YES;
-                                DYLIB_COMPATIBILITY_VERSION = "";
-                                DYLIB_CURRENT_VERSION = "";
-                                EXECUTABLE_PREFIX = lib;
-                                EXECUTABLE_SUFFIX = .dylib;
-                                GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-                                GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-                                GCC_OPTIMIZATION_LEVEL = 0;
-                                GCC_PREPROCESSOR_DEFINITIONS = (
-				        "$(inherited)",
-                                        SHARED_DEFINE,
+									"$(inherited)",
+									"@executable_path/plugins",
+							);
+							LIBRARY_SEARCH_PATHS = (
+									"$(inherited)",
+									"$(PROJECT_DIR)",
+					${libraryPaths}
+							);
+							LIBRARY_STYLE = DYNAMIC;
+							ONLY_ACTIVE_ARCH = NO;
+							OTHER_LDFLAGS = (
+						${libraries}
+							);
+							OTHER_REZFLAGS = "";
+							PRODUCT_NAME = "${projectName}-editor";
+							SECTORDER_FLAGS = "";
+							USE_HEADERMAP = NO;
+							WARNING_CFLAGS = "$(inherited)";
+					};
+					name = Release;
+			};
+			E799E7E6404F4139A7CCF7E6 /* Debug */ = {
+					isa = XCBuildConfiguration;
+					buildSettings = {
+							ALWAYS_SEARCH_USER_PATHS = NO;
+							ARCHS = arm64;
+							CONFIGURATION_BUILD_DIR = "${cachePath}/${platformName}/build";
+							CODE_SIGN_IDENTITY = "-";
+							COMBINE_HIDPI_IMAGES = YES;
+							DYLIB_COMPATIBILITY_VERSION = "";
+							DYLIB_CURRENT_VERSION = "";
+							EXECUTABLE_PREFIX = lib;
+							EXECUTABLE_SUFFIX = .dylib;
+							GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+							GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+							GCC_OPTIMIZATION_LEVEL = 0;
+							GCC_PREPROCESSOR_DEFINITIONS = (
+							"$(inherited)",
+							SHARED_DEFINE,
 					${defines}
-                                );
-                                GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-                                HEADER_SEARCH_PATHS = (
-									${includePaths}
-                                        "$(inherited)",
-                                );
-                                INSTALL_PATH = "@rpath";
-                                LD_RUNPATH_SEARCH_PATHS = (
-                                        "$(inherited)",
-                                        "@executable_path/plugins",
-                                );
-                                LIBRARY_SEARCH_PATHS = (
-                                        "$(inherited)",
-                                        "$(PROJECT_DIR)",
-									${libraryPaths}
-                                );
-                                LIBRARY_STYLE = DYNAMIC;
-                                OTHER_LDFLAGS = (
-									${libraries}
-                                );
-                                OTHER_REZFLAGS = "";
-                                PRODUCT_NAME = "${projectName}-editor";
-                                SECTORDER_FLAGS = "";
-                                USE_HEADERMAP = NO;
-                                WARNING_CFLAGS = "$(inherited)";
-                        };
-                        name = Debug;
-                };
+							);
+							GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+							HEADER_SEARCH_PATHS = (
+						${includePaths}
+								"$(inherited)",
+							);
+							INSTALL_PATH = "@rpath";
+							LD_RUNPATH_SEARCH_PATHS = (
+								"$(inherited)",
+								"@executable_path/plugins",
+							);
+							LIBRARY_SEARCH_PATHS = (
+									"$(inherited)",
+									"$(PROJECT_DIR)",
+					${libraryPaths}
+							);
+							LIBRARY_STYLE = DYNAMIC;
+							OTHER_LDFLAGS = (
+						${libraries}
+							);
+							OTHER_REZFLAGS = "";
+							PRODUCT_NAME = "${projectName}-editor";
+							SECTORDER_FLAGS = "";
+							USE_HEADERMAP = NO;
+							WARNING_CFLAGS = "$(inherited)";
+					};
+					name = Debug;
+			};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-                34266BA08907493282C99C1A /* Build configuration list for PBXNativeTarget "${projectName}-editor" */ = {
-                        isa = XCConfigurationList;
-                        buildConfigurations = (
-                                E799E7E6404F4139A7CCF7E6 /* Debug */,
-                                A494F34C8E6842F49F90A9D9 /* Release */,
-                        );
-                        defaultConfigurationIsVisible = 0;
-                        defaultConfigurationName = Release;
-                };
-                C03F226D22F4A00800366493 /* Build configuration list for PBXProject "${projectName}" */ = {
+			34266BA08907493282C99C1A /* Build configuration list for PBXNativeTarget "${projectName}-editor" */ = {
+					isa = XCConfigurationList;
+					buildConfigurations = (
+							E799E7E6404F4139A7CCF7E6 /* Debug */,
+							A494F34C8E6842F49F90A9D9 /* Release */,
+					);
+					defaultConfigurationIsVisible = 0;
+					defaultConfigurationName = Release;
+			};
+			C03F226D22F4A00800366493 /* Build configuration list for PBXProject "${projectName}" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C03F228622F4A02900366493 /* Debug */,
@@ -522,8 +526,8 @@
 		C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "${projectName}" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-                                C03F228922F4A02900366493 /* Debug */,
-                                C03F228A22F4A02900366493 /* Release */,
+							C03F228922F4A02900366493 /* Debug */,
+							C03F228A22F4A02900366493 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

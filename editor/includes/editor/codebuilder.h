@@ -59,7 +59,7 @@ private:
 protected:
     void init() override;
 
-    void updateTemplate(const TString &src, const TString &dst, bool fromSource = false);
+    void updateTemplate(const TString &src, const TString &dst);
 
     void copyTempalte(const TString &src, const TString &dst);
 
