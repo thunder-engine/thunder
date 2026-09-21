@@ -182,8 +182,8 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="../generated/plugin.cpp" />
     <ClCompile Include="../generated/application.cpp" />
+    <ClCompile Include="../generated/plugin.cpp" />
 ${FilesList}
   </ItemGroup>
   <ItemGroup />

@@ -122,9 +122,8 @@ void CodeBuilder::renameAsset(AssetConverterSettings *settings, const TString &o
     }
 }
 
-void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fromSource) {
-    bool exists = QFile::exists(dst.data());
-    QFile file((fromSource || !exists) ? src.data() : dst.data());
+void CodeBuilder::updateTemplate(const TString &src, const TString &dst) {
+    QFile file(src.data());
 
     if(file.open(QFile::ReadOnly | QFile::Text)) {
         QStringList source;
@@ -133,34 +132,14 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fr
         }
         file.close();
 
-        if(fromSource && exists) {
-            QFile destination(dst.data());
-            if(destination.open(QFile::ReadOnly | QFile::Text)) {
-                QStringList current;
-                while(!destination.atEnd()) {
-                    current.push_back(destination.readLine());
-                }
-                destination.close();
-
-                for(int i = 0; i < source.size() && i < current.size(); i++) {
-                    if(source[i].contains("${includePaths}") ||
-                       source[i].contains("${libraryPaths}") ||
-                       source[i].contains("${libraries}")) {
-                        current[i] = source[i];
-                    }
-                }
-                source = current;
-            }
-        }
-
         TString out;
 
         int begin = -1;
         int row = 0;
-        for(auto data : source) {
+        for(auto &data : source) {
             int index = -1;
             if(begin > -1) {
-                index = data.indexOf(QByteArray("//-"));
+                index = data.indexOf("//-");
                 if(index != -1) {
                     begin = -1;
                     out += data.toStdString();
@@ -177,7 +156,7 @@ void CodeBuilder::updateTemplate(const TString &src, const TString &dst, bool fr
                 out += data.toStdString();
             }
 
-            index = data.indexOf(QByteArray("//+"));
+            index = data.indexOf("//+");
             if(index != -1) {
                 begin = row;
 

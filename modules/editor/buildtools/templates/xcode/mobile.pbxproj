@@ -10,9 +10,10 @@
 		C029CA3122F9EB5E00E3857A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C029CA3022F9EB5E00E3857A /* LaunchScreen.storyboard */; };
 		C03F228C22F4A09200366493 /* ../generated/plugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C03F228B22F4A09200366493 /* ../generated/plugin.cpp */; };
 		C03F228E22F4A09F00366493 /* ../generated/application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C03F228D22F4A09F00366493 /* ../generated/application.cpp */; };
-                04A84B772ED74A4C00D534D4 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A84B762ED74A4C00D534D4 /* CoreMotion.framework */; };
-                04A84B792ED74A7400D534D4 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A84B782ED74A7400D534D4 /* CoreHaptics.framework */; };
-                049B70D02ED383710082C7C2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CE2ED383710082C7C2 /* Metal.framework */; };
+${XcodeBuildFiles}
+		04A84B772ED74A4C00D534D4 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A84B762ED74A4C00D534D4 /* CoreMotion.framework */; };
+		04A84B792ED74A7400D534D4 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A84B782ED74A7400D534D4 /* CoreHaptics.framework */; };
+		049B70D02ED383710082C7C2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CE2ED383710082C7C2 /* Metal.framework */; };
 		049B70D12ED383710082C7C2 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 049B70CF2ED383710082C7C2 /* MetalKit.framework */; };
 		C03F22A322F4A53500366493 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22A222F4A53500366493 /* OpenGLES.framework */; };
 		C03F22A522F4A54700366493 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22A422F4A54700366493 /* UIKit.framework */; };
@@ -21,26 +22,27 @@
 		C03F22AB22F4A58100366493 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C03F22AA22F4A58100366493 /* Foundation.framework */; };
 		C099B0C222F5977200EE7EAB /* libz.1.1.3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */; };
 		C05464FC23012CDC00AEE963 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C05464FB23012CDC00AEE963 /* Assets.xcassets */; };
-                04A84C012ED9DD6E00D534D4 /* base.pak in Resources */ = {isa = PBXBuildFile; fileRef = 04A84C002ED9DD6E00D534D4 /* base.pak */; };
+		04A84C012ED9DD6E00D534D4 /* base.pak in Resources */ = {isa = PBXBuildFile; fileRef = 04A84C002ED9DD6E00D534D4 /* base.pak */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		049B70CE2ED383710082C7C2 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		049B70CF2ED383710082C7C2 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-                04A84B762ED74A4C00D534D4 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
-                04A84B782ED74A7400D534D4 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
-                C029CA3022F9EB5E00E3857A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		04A84B762ED74A4C00D534D4 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		04A84B782ED74A7400D534D4 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
+		C029CA3022F9EB5E00E3857A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C03F227222F4A00900366493 /* ${projectName}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ${projectName}.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C03F228B22F4A09200366493 /* ../generated/plugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../generated/plugin.cpp; sourceTree = SOURCE_ROOT; };
 		C03F228D22F4A09F00366493 /* ../generated/application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../generated/application.cpp; sourceTree = SOURCE_ROOT; };
+${XcodeFileReferences}
 		C03F22A222F4A53500366493 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		C03F22A422F4A54700366493 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		C03F22A622F4A55600366493 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		C03F22A822F4A56E00366493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		C03F22AA22F4A58100366493 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-                C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ${platformsPath}/${platformName}/Assets.xcassets; sourceTree = "<group>"; };
+		C05464FB23012CDC00AEE963 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ${platformsPath}/${platformName}/Assets.xcassets; sourceTree = "<group>"; };
 		C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.1.3.tbd; path = usr/lib/libz.1.1.3.tbd; sourceTree = SDKROOT; };
-                04A84C002ED9DD6E00D534D4 /* base.pak */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.pak; sourceTree = SOURCE_ROOT; };
+		04A84C002ED9DD6E00D534D4 /* base.pak */ = {isa = PBXFileReference; lastKnownFileType = file; path = base.pak; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,8 +51,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				049B70D02ED383710082C7C2 /* Metal.framework */,
-                                04A84B772ED74A4C00D534D4 /* CoreMotion.framework in Frameworks */,
-                                04A84B792ED74A7400D534D4 /* CoreHaptics.framework in Frameworks */,
+				04A84B772ED74A4C00D534D4 /* CoreMotion.framework in Frameworks */,
+				04A84B792ED74A7400D534D4 /* CoreHaptics.framework in Frameworks */,
 				049B70D12ED383710082C7C2 /* MetalKit.framework */,
 				C099B0C222F5977200EE7EAB /* libz.1.1.3.tbd in Frameworks */,
 				C03F22AB22F4A58100366493 /* Foundation.framework in Frameworks */,
@@ -86,9 +88,10 @@
 			children = (
 				C05464FB23012CDC00AEE963 /* Assets.xcassets */,
 				C029CA3022F9EB5E00E3857A /* LaunchScreen.storyboard */,
-                                04A84C002ED9DD6E00D534D4 /* base.pak */,
+				04A84C002ED9DD6E00D534D4 /* base.pak */,
 				C03F228D22F4A09F00366493 /* ../generated/application.cpp */,
 				C03F228B22F4A09200366493 /* ../generated/plugin.cpp */,
+${XcodeGroupFiles}
 			);
 			path = ${projectName};
 			sourceTree = "<group>";
@@ -96,15 +99,15 @@
 		C03F228F22F4A4F300366493 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-                                04A84B782ED74A7400D534D4 /* CoreHaptics.framework */,
-                                04A84B762ED74A4C00D534D4 /* CoreMotion.framework */,
+				04A84B782ED74A7400D534D4 /* CoreHaptics.framework */,
+				04A84B762ED74A4C00D534D4 /* CoreMotion.framework */,
 				049B70CF2ED383710082C7C2 /* MetalKit.framework */,
 				049B70CE2ED383710082C7C2 /* Metal.framework */,
 				C099B0C122F5977200EE7EAB /* libz.1.1.3.tbd */,
 				C03F22AA22F4A58100366493 /* Foundation.framework */,
 				C03F22A822F4A56E00366493 /* QuartzCore.framework */,
 				C03F22A622F4A55600366493 /* CoreGraphics.framework */,
-                                C03F22A422F4A54700366493 /* UIKit.framework */,
+				C03F22A422F4A54700366493 /* UIKit.framework */,
 				C03F22A222F4A53500366493 /* OpenGLES.framework */,
 			);
 			name = Frameworks;
@@ -113,7 +116,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-                C03F227122F4A00800366493 /* ${projectName} */ = {
+			C03F227122F4A00800366493 /* ${projectName} */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C03F228822F4A02900366493 /* Build configuration list for PBXNativeTarget "${projectName}" */;
 			buildPhases = (
@@ -168,7 +171,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C05464FC23012CDC00AEE963 /* Assets.xcassets in Resources */,
-                                04A84C012ED9DD6E00D534D4 /* base.pak in Resources */,
+				04A84C012ED9DD6E00D534D4 /* base.pak in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,6 +184,7 @@
 			files = (
 				C03F228E22F4A09F00366493 /* ../generated/application.cpp in Sources */,
 				C03F228C22F4A09200366493 /* ../generated/plugin.cpp in Sources */,
+${XcodeSourceFiles}
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,7 +234,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-				        THUNDER_MOBILE,
+					THUNDER_MOBILE,
 					${defines}
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -293,7 +297,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-				        THUNDER_MOBILE,
+					THUNDER_MOBILE,
 					${defines}
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
