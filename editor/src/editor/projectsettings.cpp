@@ -149,6 +149,7 @@ void ProjectSettings::loadSettings() {
         {
             auto it = object.find(gModules);
             if(it != object.end()) {
+                m_modules.clear();
                 for(auto &module : it->second.toList()) {
                     m_modules.push_back(module.toString());
                 }
@@ -567,14 +568,18 @@ VariantList ProjectSettings::getModules() const {
 }
 
 void ProjectSettings::setModules(const VariantList &modules) {
-    m_modules.clear();
+    StringList list;
     for(auto &it : modules) {
         TString module(it.toString());
-        if(std::find(m_modules.begin(), m_modules.end(), module) == m_modules.end()) {
-            m_modules.push_back(module);
+        if(std::find(list.begin(), list.end(), module) == list.end()) {
+            list.push_back(module);
         }
     }
-    saveSettings();
+
+    if(list != m_modules) {
+        m_modules = list;
+        saveSettings();
+    }
 }
 
 VariantList ProjectSettings::getPlatforms() const {
@@ -586,12 +591,15 @@ VariantList ProjectSettings::getPlatforms() const {
 }
 
 void ProjectSettings::setPlatforms(const VariantList &platforms) {
-    m_platforms.clear();
+    StringList list;
     for(auto &it : platforms) {
         TString platform(it.toString());
-        if(std::find(m_platforms.begin(), m_platforms.end(), platform) == m_platforms.end()) {
-            m_platforms.push_back(platform);
+        if(std::find(list.begin(), list.end(), platform) == list.end()) {
+            list.push_back(platform);
         }
     }
-    saveSettings();
+    if(list != m_platforms) {
+        m_platforms = list;
+        saveSettings();
+    }
 }
