@@ -182,15 +182,21 @@ void NativeCodeBuilder::generateProject() {
         }
     }
 
-    m_values[gIncludePaths] = formatList(m_incPath, m_incPathPref, m_incPathSuff, m_incPathSep);
-    m_values[gLibraryPaths] = formatList(m_libPath, m_libPathPref, m_libPathSuff, m_libPathSep);
-    m_values[gLibraries] = formatList(m_libs, m_libsPref, m_libsSuff, m_libsSep);
-
     StringList editor = m_libs;
     for(auto &it : editor) {
         it += "-editor";
     }
     m_values[gLibrariesEditor] = formatList(editor, m_libsPref, m_libsSuff, m_libsSep);
+
+    for(auto &stat : Editor::plugins()->dependencies("static", modules)) {
+        if(std::find(m_libs.begin(), m_libs.end(), stat) == m_libs.end()) {
+            m_libs.push_back(stat);
+        }
+    }
+
+    m_values[gIncludePaths] = formatList(m_incPath, m_incPathPref, m_incPathSuff, m_incPathSep);
+    m_values[gLibraryPaths] = formatList(m_libPath, m_libPathPref, m_libPathSuff, m_libPathSep);
+    m_values[gLibraries] = formatList(m_libs, m_libsPref, m_libsSuff, m_libsSep);
 
     m_values[gFilesList] = formatList(StringList(m_sources.begin(), m_sources.end()), m_filePref, m_fileSuff, m_fileSep);
     m_values[gDefines] = formatList(m_defines, m_defPref, m_defSuff, m_defSep);

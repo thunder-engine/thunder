@@ -284,6 +284,16 @@ bool Variant::operator==(const Variant &right) const {
     if(m_data.type == right.m_data.type) {
         if(m_data.type < MetaType::STRING) {
             return MetaType::compare(&m_data.ptr, &right.m_data.ptr, m_data.type);
+        } else if(m_data.type == MetaType::VARIANTLIST) {
+            const VariantList *leftList  = static_cast<const VariantList *>(data());
+            const VariantList *rightList = static_cast<const VariantList *>(right.data());
+
+            if(leftList == nullptr || rightList == nullptr) {
+                return leftList == rightList;
+            }
+
+            return leftList->size() == rightList->size() &&
+                   std::equal(leftList->begin(), leftList->end(), rightList->begin());
         } else {
             return MetaType::compare(data(), right.data(), m_data.type);
         }
