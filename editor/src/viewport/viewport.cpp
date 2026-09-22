@@ -190,9 +190,10 @@ void Viewport::onDraw() {
 
         if(m_gameView) {
             Camera::setCurrent(Camera::findActiveCamera(Engine::world()));
-            Engine::update(m_world);
 
             if(!m_gamePaused && isFocused()) {
+                Engine::update(m_world);
+
                 QPoint p = mapFromGlobal(QCursor::pos());
                 instance.setMousePosition(p);
                 instance.setMouseDelta(p - m_savedMousePos);
@@ -207,6 +208,12 @@ void Viewport::onDraw() {
 
                     m_rhiWindow->setCursor(Qt::ArrowCursor);
                 }
+            } else {
+                Engine::instance().processEvents();
+                Engine::resourceSystem()->setActiveWorld(m_world);
+                Engine::resourceSystem()->processEvents();
+                Engine::renderSystem()->setActiveWorld(m_world);
+                Engine::renderSystem()->processEvents();
             }
         } else {
             if(m_controller) {
