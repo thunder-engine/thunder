@@ -226,7 +226,7 @@ bool NextModel::setData(const QModelIndex &index, const QVariant &value, int rol
     }
     Property *item = static_cast<Property *>(getObject(index));
     if(role == Qt::EditRole) {
-        emit dataChanged(index, index);
+        emit dataChanged(index, index, {Qt::EditRole, Qt::SizeHintRole});
         return true;
     } else if(role == Qt::CheckStateRole) {
         Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());

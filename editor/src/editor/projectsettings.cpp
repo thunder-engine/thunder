@@ -549,14 +549,16 @@ Variant ProjectSettings::property(const char *name) const {
 }
 
 void ProjectSettings::setProperty(const char *name, const Variant &value) {
+    Object::setProperty(name, value);
+
     TString str(name);
     if(str == gModules) {
         setModules(value.toList());
+        setDynamicPropertyInfo("platforms", "editor=TString");
     } else if(str == gPlatforms) {
         setPlatforms(value.toList());
+        setDynamicPropertyInfo("modules", "editor=TString");
     }
-
-    Object::setProperty(name, value);
 }
 
 VariantList ProjectSettings::getModules() const {
@@ -571,7 +573,7 @@ void ProjectSettings::setModules(const VariantList &modules) {
     StringList list;
     for(auto &it : modules) {
         TString module(it.toString());
-        if(std::find(list.begin(), list.end(), module) == list.end()) {
+        if(!module.isEmpty() && std::find(list.begin(), list.end(), module) == list.end()) {
             list.push_back(module);
         }
     }
@@ -594,7 +596,7 @@ void ProjectSettings::setPlatforms(const VariantList &platforms) {
     StringList list;
     for(auto &it : platforms) {
         TString platform(it.toString());
-        if(std::find(list.begin(), list.end(), platform) == list.end()) {
+        if(!platform.isEmpty() && std::find(list.begin(), list.end(), platform) == list.end()) {
             list.push_back(platform);
         }
     }
