@@ -129,14 +129,16 @@ Variant Property::value() const {
 }
 
 void Property::setValue(const Variant &value) {
-    if(m_nextObject && value.isValid() && value != this->value()) {
-        bool isAssetSettings = dynamic_cast<AssetConverterSettings *>(m_nextObject) != nullptr;
-        if(isAssetSettings) {
-            for(Object *object : m_nextObjects) {
-                object->setProperty(m_name.data(), value);
+    if(m_nextObject && value.isValid()) {
+        if(value != Property::value()) {
+            bool isAssetSettings = dynamic_cast<AssetConverterSettings *>(m_nextObject) != nullptr;
+            if(isAssetSettings) {
+                for(Object *object : m_nextObjects) {
+                    object->setProperty(m_name.data(), value);
+                }
+            } else {
+                emit propertyChanged(m_nextObjects, objectName().toStdString(), value);
             }
-        } else {
-            emit propertyChanged(m_nextObjects, objectName().toStdString(), value);
         }
     }
 }

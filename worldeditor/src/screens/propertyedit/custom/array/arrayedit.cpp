@@ -99,6 +99,14 @@ void ArrayEdit::setObject(Object *object, const TString &name) {
             if(it == m_propertyName) {
                 m_dynamic = true;
                 m_editorName = Property::editorName(m_object->dynamicPropertyInfo(it.data()), m_typeName);
+                if(m_typeName.isEmpty()) {
+                    m_typeName = m_editorName;
+                    m_metaType = MetaType::type(m_typeName.data());
+                    auto factory = Engine::metaFactory(m_typeName);
+                    if(factory) {
+                        m_metaType++;
+                    }
+                }
                 break;
             }
         }
