@@ -76,7 +76,13 @@ Project {
     DynamicLibrary {
         name: "engine-editor"
         condition: engine.desktop
-        files: engine.srcFiles
+        files: {
+            var result = engine.srcFiles
+            if(qbs.targetOS.contains("darwin")) {
+                result.push("../thirdparty/physfs/src/*.m")
+            }
+            return result
+        }
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
@@ -120,8 +126,8 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["IOKit", "Foundation"]
-            cpp.sonamePrefix: "@executable_path"
             cpp.defines: outer.concat(["PHYSFS_DARWIN"])
+            cpp.sonamePrefix: "@executable_path"
         }
 
         Group {
@@ -162,7 +168,7 @@ Project {
         cpp.minimumMacosVersion: engine.osxVersion
         cpp.minimumIosVersion: engine.iosVersion
         cpp.minimumTvosVersion: engine.tvosVersion
-        cpp.defines: ["NEXT_LIBRARY", "FT2_BUILD_LIBRARY", "PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
+        cpp.defines: ["ENGINE_LIBRARY", "FT2_BUILD_LIBRARY", "PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
@@ -174,27 +180,32 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("android")
             files: outer.concat(["src/adapters/mobileadaptor.cpp"])
-            cpp.defines: ["THUNDER_MOBILE"]
+            cpp.defines: outer.concat(["THUNDER_MOBILE"])
             Android.ndk.appStl: engine.ANDROID_STL
             Android.ndk.platform: engine.ANDROID
         }
 
         Properties {
+            condition: qbs.targetOS.contains("darwin")
+            files: outer.concat(["../thirdparty/physfs/src/*.m"])
+        }
+
+        Properties {
             condition: qbs.targetOS.contains("darwin") && !(qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos"))
             files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
-            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_OSX"]
+            cpp.defines: outer.concat(["THUNDER_MOBILE", "TARGET_OS_OSX"])
         }
 
         Properties {
             condition: qbs.targetOS.contains("ios")
             files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
-            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_IOS"]
+            cpp.defines: outer.concat(["THUNDER_MOBILE", "TARGET_OS_IOS"])
         }
 
         Properties {
             condition: qbs.targetOS.contains("tvos")
             files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
-            cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_TV"]
+            cpp.defines: outer.concat(["THUNDER_MOBILE", "TARGET_OS_TV"])
         }
 
         Group {
