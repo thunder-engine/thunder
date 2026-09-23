@@ -86,7 +86,7 @@ add_definitions (
     -DSDK_VERSION="${SDK_VERSION}"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
 
 if(desktop)
     # This path is only needed on the BSDs
