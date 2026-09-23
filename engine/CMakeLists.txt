@@ -12,47 +12,51 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
     "src/adapters/platform*.cpp"
-    "../thirdparty/freetype/src/base/*tbase.c"
-    "../thirdparty/freetype/src/base/*tinit.c"
-    "../thirdparty/freetype/src/base/*tsystem.c"
-    "../thirdparty/freetype/src/base/*tbbox.c"
-    "../thirdparty/freetype/src/base/*tbdf.c"
-    "../thirdparty/freetype/src/base/*tbitmap.c"
-    "../thirdparty/freetype/src/base/*tcid.c"
-    "../thirdparty/freetype/src/base/*tdebug.c"
-    "../thirdparty/freetype/src/base/*tfstype.c"
-    "../thirdparty/freetype/src/base/*tgasp.c"
-    "../thirdparty/freetype/src/base/*tglyph.c"
-    "../thirdparty/freetype/src/base/*tgxval.c"
-    "../thirdparty/freetype/src/base/*tmm.c"
-    "../thirdparty/freetype/src/base/*totval.c"
-    "../thirdparty/freetype/src/base/*tpatent.c"
-    "../thirdparty/freetype/src/base/*tpfr.c"
-    "../thirdparty/freetype/src/base/*tstroke.c"
-    "../thirdparty/freetype/src/base/*tsynth.c"
-    "../thirdparty/freetype/src/base/*ttype1.c"
-    "../thirdparty/freetype/src/base/*twinfnt.c"
-    "../thirdparty/freetype/src/autofit/*utofit.c"
-    "../thirdparty/freetype/src/bdf/*df.c"
-    "../thirdparty/freetype/src/cff/*ff.c"
-    "../thirdparty/freetype/src/cache/*tcache.c"
-    "../thirdparty/freetype/src/lzw/*tlzw.c"
-    "../thirdparty/freetype/src/pcf/*cf.c"
-    "../thirdparty/freetype/src/pfr/*fr.c"
-    "../thirdparty/freetype/src/psaux/*saux.c"
-    "../thirdparty/freetype/src/pshinter/*shinter.c"
-    "../thirdparty/freetype/src/psnames/*smodule.c"
-    "../thirdparty/freetype/src/raster/raste*.c"
-    "../thirdparty/freetype/src/sdf/sd*.c"
-    "../thirdparty/freetype/src/sfnt/sfn*.c"
-    "../thirdparty/freetype/src/smooth/smoot*.c"
-    "../thirdparty/freetype/src/svg/sv*.c"
-    "../thirdparty/freetype/src/truetype/*ruetype.c"
-    "../thirdparty/freetype/src/type1/*ype1.c"
-    "../thirdparty/freetype/src/cid/*ype1cid.c"
-    "../thirdparty/freetype/src/type42/*ype42.c"
-    "../thirdparty/freetype/src/winfonts/*infnt.c"
     "../thirdparty/physfs/src/*.c"
+)
+
+set(freetypeFiles
+    "../thirdparty/freetype/src/base/ftbase.c"
+    "../thirdparty/freetype/src/base/ftinit.c"
+    "../thirdparty/freetype/src/base/ftsystem.c"
+    "../thirdparty/freetype/src/base/ftbbox.c"
+    "../thirdparty/freetype/src/base/ftbdf.c"
+    "../thirdparty/freetype/src/base/ftbitmap.c"
+    "../thirdparty/freetype/src/base/ftcid.c"
+    "../thirdparty/freetype/src/base/ftdebug.c"
+    "../thirdparty/freetype/src/base/ftfstype.c"
+    "../thirdparty/freetype/src/base/ftgasp.c"
+    "../thirdparty/freetype/src/base/ftglyph.c"
+    "../thirdparty/freetype/src/base/ftgxval.c"
+    "../thirdparty/freetype/src/base/ftmm.c"
+    "../thirdparty/freetype/src/base/ftotval.c"
+    "../thirdparty/freetype/src/base/ftpatent.c"
+    "../thirdparty/freetype/src/base/ftpfr.c"
+    "../thirdparty/freetype/src/base/ftstroke.c"
+    "../thirdparty/freetype/src/base/ftsynth.c"
+    "../thirdparty/freetype/src/base/fttype1.c"
+    "../thirdparty/freetype/src/base/ftwinfnt.c"
+    "../thirdparty/freetype/src/autofit/autofit.c"
+    "../thirdparty/freetype/src/bdf/bdf.c"
+    "../thirdparty/freetype/src/cff/cff.c"
+    "../thirdparty/freetype/src/cache/ftcache.c"
+    "../thirdparty/freetype/src/gzip/ftgzip.c"
+    "../thirdparty/freetype/src/lzw/ftlzw.c"
+    "../thirdparty/freetype/src/pcf/pcf.c"
+    "../thirdparty/freetype/src/pfr/pfr.c"
+    "../thirdparty/freetype/src/psaux/psaux.c"
+    "../thirdparty/freetype/src/pshinter/pshinter.c"
+    "../thirdparty/freetype/src/psnames/psmodule.c"
+    "../thirdparty/freetype/src/raster/raster.c"
+    "../thirdparty/freetype/src/sdf/sdf.c"
+    "../thirdparty/freetype/src/sfnt/sfnt.c"
+    "../thirdparty/freetype/src/smooth/smooth.c"
+    "../thirdparty/freetype/src/svg/svg.c"
+    "../thirdparty/freetype/src/truetype/truetype.c"
+    "../thirdparty/freetype/src/type1/type1.c"
+    "../thirdparty/freetype/src/cid/type1cid.c"
+    "../thirdparty/freetype/src/type42/type42.c"
+    "../thirdparty/freetype/src/winfonts/winfnt.c"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -79,7 +83,7 @@ add_definitions (
     -DSDK_VERSION="${SDK_VERSION}"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles})
 
 if(desktop)
     # This path is only needed on the BSDs
@@ -89,7 +93,6 @@ if(desktop)
             ${Qt5Gui_INCLUDE_DIRS}
             ${Qt5Svg_INCLUDE_DIRS}
             ${Qt5Widgets_INCLUDE_DIRS}
-            ${Qt5Xml_INCLUDE_DIRS}
             "/usr/local/include"
         )
     endif()
