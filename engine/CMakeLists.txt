@@ -12,7 +12,6 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
     "src/adapters/platform*.cpp"
-    "../thirdparty/physfs/src/*.c"
 )
 
 set(freetypeFiles
@@ -59,6 +58,10 @@ set(freetypeFiles
     "../thirdparty/freetype/src/winfonts/winfnt.c"
 )
 
+file(GLOB physfs_srcFiles
+    "../thirdparty/physfs/src/*.c"
+)
+
 set(${PROJECT_NAME}_incPaths
     "../"
     "../thirdparty/next/inc"
@@ -83,7 +86,7 @@ add_definitions (
     -DSDK_VERSION="${SDK_VERSION}"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
 
 if(desktop)
     # This path is only needed on the BSDs
