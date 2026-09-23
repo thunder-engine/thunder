@@ -6,7 +6,12 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-        "src/utils/*.cpp"
+        "src/utils/*.cpp",
+        "../../thirdparty/recast/Detour/Source/*.cpp",
+        "../../thirdparty/recast/DetourCrowd/Source/*.cpp",
+        "../../thirdparty/recast/DetourTileCache/Source/*.cpp",
+        "../../thirdparty/recast/Recast/Source/*.cpp",
+        "../../thirdparty/recast/DebugUtils/Source/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -47,7 +52,6 @@ Project {
         Depends { name: "bullet-editor" }
         Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
-        Depends { name: "recast" }
         bundle.isBundle: false
 
         cpp.defines: ["SHARED_DEFINE", "NAVIGATION_LIBRARY"]

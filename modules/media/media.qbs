@@ -6,6 +6,29 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
+        "../../thirdparty/libogg/src/*.c",
+        "../../thirdparty/libvorbis/src/mapping0.c",
+        "../../thirdparty/libvorbis/src/lsp.c",
+        "../../thirdparty/libvorbis/src/lpc.c",
+        "../../thirdparty/libvorbis/src/lookup.c",
+        "../../thirdparty/libvorbis/src/info.c",
+        "../../thirdparty/libvorbis/src/floor1.c",
+        "../../thirdparty/libvorbis/src/floor0.c",
+        "../../thirdparty/libvorbis/src/envelope.c",
+        "../../thirdparty/libvorbis/src/codebook.c",
+        "../../thirdparty/libvorbis/src/block.c",
+        "../../thirdparty/libvorbis/src/bitrate.c",
+        "../../thirdparty/libvorbis/src/analysis.c",
+        "../../thirdparty/libvorbis/src/window.c",
+        "../../thirdparty/libvorbis/src/vorbisenc.c",
+        "../../thirdparty/libvorbis/src/synthesis.c",
+        "../../thirdparty/libvorbis/src/smallft.c",
+        "../../thirdparty/libvorbis/src/sharedbook.c",
+        "../../thirdparty/libvorbis/src/res0.c",
+        "../../thirdparty/libvorbis/src/registry.c",
+        "../../thirdparty/libvorbis/src/psy.c",
+        "../../thirdparty/libvorbis/src/mdct.c",
+        "../../thirdparty/libvorbis/src/vorbisfile.c"
     ]
 
     property stringList incPaths: [
@@ -36,9 +59,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "ogg-editor" }
-        Depends { name: "vorbis-editor" }
-        Depends { name: "vorbisfile-editor" }
         Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false

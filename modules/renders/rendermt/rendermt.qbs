@@ -17,8 +17,6 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../thirdparty/glfw/include",
-        "../../../thirdparty/glfm/include",
         "../../../thirdparty/metal/metal-cpp",
         "../../../thirdparty/metal/metal-cpp-extensions"
     ]
@@ -37,7 +35,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "glfw-editor" }
         Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false

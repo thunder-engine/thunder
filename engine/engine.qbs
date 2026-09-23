@@ -9,7 +9,49 @@ Project {
         "src/systems/*.cpp",
         "src/filters/*.cpp",
         "src/pipelinetasks/*.cpp",
-        "src/utils/*.cpp"
+        "src/utils/*.cpp",
+        "src/adapters/platform*.cpp",
+        "../thirdparty/freetype/src/base/*tbase.c",
+        "../thirdparty/freetype/src/base/*tinit.c",
+        "../thirdparty/freetype/src/base/*tsystem.c",
+        "../thirdparty/freetype/src/base/*tbbox.c",
+        "../thirdparty/freetype/src/base/*tbdf.c",
+        "../thirdparty/freetype/src/base/*tbitmap.c",
+        "../thirdparty/freetype/src/base/*tcid.c",
+        "../thirdparty/freetype/src/base/*tdebug.c",
+        "../thirdparty/freetype/src/base/*tfstype.c",
+        "../thirdparty/freetype/src/base/*tgasp.c",
+        "../thirdparty/freetype/src/base/*tglyph.c",
+        "../thirdparty/freetype/src/base/*tgxval.c",
+        "../thirdparty/freetype/src/base/*tmm.c",
+        "../thirdparty/freetype/src/base/*totval.c",
+        "../thirdparty/freetype/src/base/*tpatent.c",
+        "../thirdparty/freetype/src/base/*tpfr.c",
+        "../thirdparty/freetype/src/base/*tstroke.c",
+        "../thirdparty/freetype/src/base/*tsynth.c",
+        "../thirdparty/freetype/src/base/*ttype1.c",
+        "../thirdparty/freetype/src/base/*twinfnt.c",
+        "../thirdparty/freetype/src/autofit/*utofit.c",
+        "../thirdparty/freetype/src/bdf/*df.c",
+        "../thirdparty/freetype/src/cff/*ff.c",
+        "../thirdparty/freetype/src/cache/*tcache.c",
+        "../thirdparty/freetype/src/lzw/*tlzw.c",
+        "../thirdparty/freetype/src/pcf/*cf.c",
+        "../thirdparty/freetype/src/pfr/*fr.c",
+        "../thirdparty/freetype/src/psaux/*saux.c",
+        "../thirdparty/freetype/src/pshinter/*shinter.c",
+        "../thirdparty/freetype/src/psnames/*smodule.c",
+        "../thirdparty/freetype/src/raster/raste*.c",
+        "../thirdparty/freetype/src/sdf/sd*.c",
+        "../thirdparty/freetype/src/sfnt/sfn*.c",
+        "../thirdparty/freetype/src/smooth/smoot*.c",
+        "../thirdparty/freetype/src/svg/sv*.c",
+        "../thirdparty/freetype/src/truetype/*ruetype.c",
+        "../thirdparty/freetype/src/type1/*ype1.c",
+        "../thirdparty/freetype/src/cid/*ype1cid.c",
+        "../thirdparty/freetype/src/type42/*ype42.c",
+        "../thirdparty/freetype/src/winfonts/*infnt.c",
+        "../thirdparty/physfs/src/*.c"
     ]
 
     property stringList incPaths: [
@@ -39,15 +81,16 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "glfw-editor" }
-        Depends { name: "zlib-editor" }
-        Depends { name: "physfs-editor" }
-        Depends { name: "freetype-editor" }
         bundle.isBundle: false
 
         cpp.defines: {
             var result = engine.defines
             result.push("SHARED_DEFINE")
             result.push("ENGINE_LIBRARY")
+            result.push("FT2_BUILD_LIBRARY")
+            result.push("PHYSFS_SUPPORTS_ZIP")
+            result.push("PHYSFS_SUPPORTS_DEFAULT=0")
+            result.push("PHYSFS_NO_CDROM_SUPPORT")
             return result
         }
         cpp.includePaths: engine.incPaths
@@ -59,13 +102,13 @@ Project {
 
         Properties {
             condition: engine.desktop
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
         }
 
         Properties {
             condition: qbs.targetOS.contains("windows")
             cpp.dynamicLibraries: outer.concat([
-                "Shell32"
+                "Shell32", "Advapi32"
             ])
         }
 
@@ -118,18 +161,18 @@ Project {
         cpp.minimumMacosVersion: engine.osxVersion
         cpp.minimumIosVersion: engine.iosVersion
         cpp.minimumTvosVersion: engine.tvosVersion
-        cpp.defines: ["NEXT_LIBRARY"]
+        cpp.defines: ["NEXT_LIBRARY", "FT2_BUILD_LIBRARY", "PHYSFS_SUPPORTS_ZIP", "PHYSFS_SUPPORTS_DEFAULT=0", "PHYSFS_NO_CDROM_SUPPORT"]
         cpp.debugInformation: true
         cpp.separateDebugInformation: qbs.buildVariant === "release"
 
         Properties {
             condition: qbs.targetOS.contains("windows") || (qbs.targetOS.contains("linux") && !qbs.targetOS.contains("android"))
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
         }
 
         Properties {
             condition: qbs.targetOS.contains("android")
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp"])
+            files: outer.concat(["src/adapters/mobileadaptor.cpp"])
             cpp.defines: ["THUNDER_MOBILE"]
             Android.ndk.appStl: engine.ANDROID_STL
             Android.ndk.platform: engine.ANDROID
@@ -137,19 +180,19 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin") && !(qbs.targetOS.contains("ios") || qbs.targetOS.contains("tvos"))
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
             cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_OSX"]
         }
 
         Properties {
             condition: qbs.targetOS.contains("ios")
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
             cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_IOS"]
         }
 
         Properties {
             condition: qbs.targetOS.contains("tvos")
-            files: outer.concat(["src/adapters/platformadaptor.cpp", "src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
+            files: outer.concat(["src/adapters/mobileadaptor.cpp", "src/adapters/appleplatform.mm"])
             cpp.defines: ["THUNDER_MOBILE", "TARGET_OS_TV"]
         }
 
