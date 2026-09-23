@@ -119,8 +119,9 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("darwin")
-            cpp.weakFrameworks: ["IOKit"]
+            cpp.weakFrameworks: ["IOKit", "Foundation"]
             cpp.sonamePrefix: "@executable_path"
+            cpp.defines: outer.concat(["PHYSFS_DARWIN"])
         }
 
         Group {
