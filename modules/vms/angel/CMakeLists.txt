@@ -7,6 +7,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/bindings/*.cpp"
     "src/components/*.cpp"
     "src/resources/*.cpp"
+    "../../../thirdparty/angelscript/source/*.cpp"
 )
 
 file(GLOB ${PROJECT_NAME}_modules
@@ -17,6 +18,15 @@ file(GLOB ${PROJECT_NAME}_modules
     "../../../thirdparty/angelscript/modules/scriptmath/*.cpp"
     "../../../thirdparty/angelscript/modules/scriptstdstring/*.cpp"
 )
+
+if(MSVC AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+    enable_language(ASM_MASM)
+    if(CMAKE_ASM_MASM_COMPILER_WORKS)
+        list(APPEND ${PROJECT_NAME}_srcFiles
+            "../../../thirdparty/angelscript/source/as_callfunc_x64_msvc_asm.asm"
+        )
+    endif()
+endif()
 
 set(${PROJECT_NAME}_incPaths
     "includes"
@@ -66,7 +76,6 @@ if(desktop)
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        angelscript-editor
         editor
         Qt::Core
         Qt::Gui
@@ -120,12 +129,12 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    angelscript
 )
 
 if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         THUNDER_MOBILE
+        AS_NO_COMPILER
     )
 endif()
 

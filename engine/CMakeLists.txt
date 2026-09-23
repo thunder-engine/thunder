@@ -11,6 +11,48 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/filters/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
+    "src/adapters/platform*.cpp"
+    "../thirdparty/freetype/src/base/*tbase.c"
+    "../thirdparty/freetype/src/base/*tinit.c"
+    "../thirdparty/freetype/src/base/*tsystem.c"
+    "../thirdparty/freetype/src/base/*tbbox.c"
+    "../thirdparty/freetype/src/base/*tbdf.c"
+    "../thirdparty/freetype/src/base/*tbitmap.c"
+    "../thirdparty/freetype/src/base/*tcid.c"
+    "../thirdparty/freetype/src/base/*tdebug.c"
+    "../thirdparty/freetype/src/base/*tfstype.c"
+    "../thirdparty/freetype/src/base/*tgasp.c"
+    "../thirdparty/freetype/src/base/*tglyph.c"
+    "../thirdparty/freetype/src/base/*tgxval.c"
+    "../thirdparty/freetype/src/base/*tmm.c"
+    "../thirdparty/freetype/src/base/*totval.c"
+    "../thirdparty/freetype/src/base/*tpatent.c"
+    "../thirdparty/freetype/src/base/*tpfr.c"
+    "../thirdparty/freetype/src/base/*tstroke.c"
+    "../thirdparty/freetype/src/base/*tsynth.c"
+    "../thirdparty/freetype/src/base/*ttype1.c"
+    "../thirdparty/freetype/src/base/*twinfnt.c"
+    "../thirdparty/freetype/src/autofit/*utofit.c"
+    "../thirdparty/freetype/src/bdf/*df.c"
+    "../thirdparty/freetype/src/cff/*ff.c"
+    "../thirdparty/freetype/src/cache/*tcache.c"
+    "../thirdparty/freetype/src/lzw/*tlzw.c"
+    "../thirdparty/freetype/src/pcf/*cf.c"
+    "../thirdparty/freetype/src/pfr/*fr.c"
+    "../thirdparty/freetype/src/psaux/*saux.c"
+    "../thirdparty/freetype/src/pshinter/*shinter.c"
+    "../thirdparty/freetype/src/psnames/*smodule.c"
+    "../thirdparty/freetype/src/raster/raste*.c"
+    "../thirdparty/freetype/src/sdf/sd*.c"
+    "../thirdparty/freetype/src/sfnt/sfn*.c"
+    "../thirdparty/freetype/src/smooth/smoot*.c"
+    "../thirdparty/freetype/src/svg/sv*.c"
+    "../thirdparty/freetype/src/truetype/*ruetype.c"
+    "../thirdparty/freetype/src/type1/*ype1.c"
+    "../thirdparty/freetype/src/cid/*ype1cid.c"
+    "../thirdparty/freetype/src/type42/*ype42.c"
+    "../thirdparty/freetype/src/winfonts/*infnt.c"
+    "../thirdparty/physfs/src/*.c"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -65,14 +107,15 @@ if(desktop)
         assimp
         next-editor
         glfw-editor
-        zlib-editor
-        physfs-editor
-        freetype-editor
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE
         ENGINE_LIBRARY
+        FT2_BUILD_LIBRARY
+        PHYSFS_SUPPORTS_ZIP
+        PHYSFS_SUPPORTS_DEFAULT=0
+        PHYSFS_NO_CDROM_SUPPORT
     )
 
     if(UNIX AND NOT APPLE)
@@ -89,7 +132,6 @@ if(desktop)
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     target_sources(${PROJECT_NAME}-editor PRIVATE
-        "src/adapters/platformadaptor.cpp"
         "src/adapters/desktopadaptor.cpp"
     )
 
@@ -125,10 +167,10 @@ endif()
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     NEXT_LIBRARY
-)
-
-target_sources(${PROJECT_NAME} PRIVATE
-    "src/adapters/platformadaptor.cpp"
+    FT2_BUILD_LIBRARY
+    PHYSFS_SUPPORTS_ZIP
+    PHYSFS_SUPPORTS_DEFAULT=0
+    PHYSFS_NO_CDROM_SUPPORT
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})

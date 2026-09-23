@@ -10,6 +10,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/pipelinetasks/*.cpp"
     "src/resources/*.cpp"
     "src/utils/*.cpp"
+    "../../thirdparty/pugixml/src/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths

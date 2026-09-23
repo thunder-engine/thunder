@@ -7,6 +7,11 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/components/*.cpp"
     "src/resources/*.cpp"
     "src/utils/*.cpp"
+    "../../thirdparty/recast/Detour/Source/*.cpp"
+    "../../thirdparty/recast/DetourCrowd/Source/*.cpp"
+    "../../thirdparty/recast/DetourTileCache/Source/*.cpp"
+    "../../thirdparty/recast/Recast/Source/*.cpp"
+    "../../thirdparty/recast/DebugUtils/Source/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -54,7 +59,6 @@ if(desktop)
         engine-editor
         bullet-editor
         editor
-        recast
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE

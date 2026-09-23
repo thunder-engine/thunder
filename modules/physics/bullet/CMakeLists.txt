@@ -6,6 +6,23 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
     "src/resources/*.cpp"
+    "../../../thirdparty/bullet/src/LinearMath/*.cpp"
+    "../../../thirdparty/bullet/src/BulletCollision/CollisionDispatch/*.cpp"
+    "../../../thirdparty/bullet/src/BulletCollision/CollisionShapes/*.cpp"
+    "../../../thirdparty/bullet/src/BulletCollision/BroadphaseCollision/*.cpp"
+    "../../../thirdparty/bullet/src/BulletCollision/NarrowPhaseCollision/*.cpp"
+    "../../../thirdparty/bullet/src/BulletDynamics/Dynamics/*.cpp"
+    "../../../thirdparty/bullet/src/BulletDynamics/ConstraintSolver/*.cpp"
+    "../../../thirdparty/bullet/src/BulletDynamics/Character/*.cpp"
+    "../../../thirdparty/bullet/src/LinearMath/*.h"
+    "../../../thirdparty/bullet/src/BulletCollision/CollisionDispatch/*.h"
+    "../../../thirdparty/bullet/src/BulletCollision/CollisionShapes/*.h"
+    "../../../thirdparty/bullet/src/BulletCollision/BroadphaseCollision/*.h"
+    "../../../thirdparty/bullet/src/BulletCollision/NarrowPhaseCollision/*.h"
+    "../../../thirdparty/bullet/src/BulletDynamics/Dynamics/*.h"
+    "../../../thirdparty/bullet/src/BulletDynamics/ConstraintSolver/*.h"
+    "../../../thirdparty/bullet/src/BulletDynamics/Character/*.h"
+    "../../../thirdparty/bullet/src/*.h"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -56,7 +73,6 @@ if(desktop)
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        bullet3
         editor
         Qt::Core
         Qt::Gui
@@ -107,10 +123,6 @@ endif()
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
-
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    bullet3
-)
 
 if(NOT desktop)
     target_compile_definitions(${PROJECT_NAME} PRIVATE

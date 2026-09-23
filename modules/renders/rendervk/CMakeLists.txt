@@ -20,8 +20,6 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
-    "../../../thirdparty/glfw/include"
-    "../../../thirdparty/glfm/include"
     "$ENV{VULKAN_SDK}/include"
 )
 
@@ -51,8 +49,6 @@ if(desktop)
     set(${PROJECT_NAME}_libs
         next-editor
         engine-editor
-        glfw-editor
-        glad
         Qt::Core
         Qt::Widgets
     )
@@ -103,8 +99,6 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    glfw
-    glad
 )
 
 # Solve build error using Clang on BSDs

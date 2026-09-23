@@ -17,8 +17,6 @@ set(${PROJECT_NAME}_incPaths
     "../../../thirdparty/next/inc"
     "../../../thirdparty/next/inc/math"
     "../../../thirdparty/next/inc/core"
-    "../../../thirdparty/glfw/include"
-    "../../../thirdparty/glfm/include"
     "../../../thirdparty/metal/metal-cpp"
     "../../../thirdparty/metal/metal-cpp-extensions"
 )
@@ -42,7 +40,6 @@ if(desktop)
     set(${PROJECT_NAME}_libs
         next-editor
         engine-editor
-        glfw-editor
         Qt::Core
         Qt::Widgets
     )
@@ -76,7 +73,6 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    glfw
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})

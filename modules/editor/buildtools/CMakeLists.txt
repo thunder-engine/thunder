@@ -47,7 +47,6 @@ if (desktop)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         next-editor
         engine-editor
-        zlib-editor
         minizip
         editor
         Qt::Gui
