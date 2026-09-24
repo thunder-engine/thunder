@@ -36,7 +36,6 @@ static const char *meta = \
 "   \"description\": \"Angel Script Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"dependencies\": {"
-"       \"angelscript\": \"lib\","
 "       \"engine\": \"lib\","
 "       \"next\": \"lib\""
 "   },"
