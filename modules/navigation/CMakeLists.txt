@@ -49,9 +49,15 @@ if(desktop)
 
     set(CMAKE_AUTOUIC ON)
 
+    QT_WRAP_CPP(MOC_SRCS
+        "editor/property/agenttypeedit.h"
+        "editor/navigationpanel.h"
+    )
+
     add_library(${PROJECT_NAME}-editor SHARED
         ${${PROJECT_NAME}_srcFiles}
         ${${PROJECT_NAME}_editorFiles}
+        ${MOC_SRCS}
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
@@ -59,6 +65,7 @@ if(desktop)
         engine-editor
         bullet-editor
         editor
+        Qt::Widgets
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE

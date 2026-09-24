@@ -62,6 +62,69 @@ file(GLOB physfs_srcFiles
     "../thirdparty/physfs/src/*.c"
 )
 
+set(glfwFiles
+    "../thirdparty/glfw/src/context.c"
+    "../thirdparty/glfw/src/init.c"
+    "../thirdparty/glfw/src/input.c"
+    "../thirdparty/glfw/src/monitor.c"
+    "../thirdparty/glfw/src/null_init.c"
+    "../thirdparty/glfw/src/null_joystick.c"
+    "../thirdparty/glfw/src/null_monitor.c"
+    "../thirdparty/glfw/src/null_window.c"
+    "../thirdparty/glfw/src/platform.c"
+    "../thirdparty/glfw/src/vulkan.c"
+    "../thirdparty/glfw/src/window.c"
+    "../thirdparty/glfw/src/osmesa_context.c"
+    "../thirdparty/glfw/src/egl_context.c"
+    "../thirdparty/glfw/src/internal.h"
+    "../thirdparty/glfw/src/null_platform.h"
+    "../thirdparty/glfw/include/GLFW/glfw3.h"
+    "../thirdparty/glfw/include/GLFW/glfw3native.h"
+)
+
+if (WIN32)
+    set(${PROJECT_NAME}_platform
+        "../thirdparty/glfw/src/win32_init.c"
+        "../thirdparty/glfw/src/win32_joystick.c"
+        "../thirdparty/glfw/src/win32_module.c"
+        "../thirdparty/glfw/src/win32_monitor.c"
+        "../thirdparty/glfw/src/win32_time.c"
+        "../thirdparty/glfw/src/win32_thread.c"
+        "../thirdparty/glfw/src/win32_window.c"
+        "../thirdparty/glfw/src/wgl_context.c"
+        "../thirdparty/glfw/src/win32_platform.h"
+        "../thirdparty/glfw/src/win32_joystick.h"
+    ) 
+elseif (APPLE)
+    set(${PROJECT_NAME}_platform
+        "../thirdparty/glfw/src/cocoa_init.m"
+        "../thirdparty/glfw/src/cocoa_joystick.m"
+        "../thirdparty/glfw/src/cocoa_monitor.m"
+        "../thirdparty/glfw/src/cocoa_time.c"
+        "../thirdparty/glfw/src/posix_poll.c"
+        "../thirdparty/glfw/src/posix_thread.c"
+        "../thirdparty/glfw/src/cocoa_window.m"
+        "../thirdparty/glfw/src/nsgl_context.m"
+        "../thirdparty/glfw/src/cocoa_platform.h"
+        "../thirdparty/glfw/src/cocoa_joystick.h"
+    ) 
+else ()
+    set(${PROJECT_NAME}_platform
+        "../thirdparty/glfw/src/x11_init.c"
+        "../thirdparty/glfw/src/linux_joystick.c"
+        "../thirdparty/glfw/src/xkb_unicode.c"
+        "../thirdparty/glfw/src/x11_monitor.c"
+        "../thirdparty/glfw/src/posix_module.c"
+        "../thirdparty/glfw/src/posix_poll.c"
+        "../thirdparty/glfw/src/posix_time.c"
+        "../thirdparty/glfw/src/posix_thread.c"
+        "../thirdparty/glfw/src/x11_window.c"
+        "../thirdparty/glfw/src/glx_context.c"
+        "../thirdparty/glfw/src/x11_platform.h"
+        "../thirdparty/glfw/src/linux_joystick.h"
+    ) 
+endif()
+
 set(${PROJECT_NAME}_incPaths
     "../"
     "../thirdparty/next/inc"
@@ -86,7 +149,7 @@ add_definitions (
     -DSDK_VERSION="${SDK_VERSION}"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles} ${glfwFiles} ${PROJECT_NAME}_platform)
 
 if(desktop)
     # This path is only needed on the BSDs
@@ -107,12 +170,11 @@ if(desktop)
     )
 
     # Dynamic Library
-    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles})
+    add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles} ${glfwFiles} ${${PROJECT_NAME}_platform})
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         assimp
         next-editor
-        glfw-editor
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
@@ -142,9 +204,14 @@ if(desktop)
     )
 
     if(WIN32)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE Shell32)
+		target_compile_definitions(${PROJECT_NAME}-editor PRIVATE _GLFW_WIN32)
+		target_link_libraries(${PROJECT_NAME}-editor PRIVATE Shell32 Advapi32 Gdi32 User32)
+	elseif (UNIX AND NOT APPLE)
+		target_compile_definitions(${PROJECT_NAME}-editor PRIVATE _GLFW_X11)
+		target_link_libraries(${PROJECT_NAME}-editor PRIVATE X11 Xrandr Xi Xxf86vm Xcursor Xinerama)
     elseif(APPLE)
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework IOKit")
+		target_compile_definitions(${PROJECT_NAME}-editor PRIVATE _GLFW_COCOA)
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework IOKit" "-framework Foundation" "-framework CoreFoundation" "-framework AppKit" "-framework CoreVideo")
     endif()
 
     file(GLOB ${PROJECT_NAME}_headers
@@ -170,14 +237,23 @@ if(desktop)
 endif()
 
 # Static Library
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles} ${glfwFiles} ${${PROJECT_NAME}_platform})
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    NEXT_LIBRARY
+    ENGINE_LIBRARY
     FT2_BUILD_LIBRARY
     PHYSFS_SUPPORTS_ZIP
     PHYSFS_SUPPORTS_DEFAULT=0
     PHYSFS_NO_CDROM_SUPPORT
 )
+
+if(WIN32)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE _GLFW_WIN32)
+elseif(UNIX AND NOT APPLE)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE _GLFW_X11)
+elseif(APPLE)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE _GLFW_COCOA)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
 
@@ -189,7 +265,7 @@ if(NOT desktop)
     target_sources(${PROJECT_NAME} PRIVATE
         "src/adapters/mobileadaptor.cpp"
     )
-
+	
     if(EMSCRIPTEN)
         target_sources(${PROJECT_NAME} PRIVATE
             "src/adapters/emscriptenplatform.cpp"
