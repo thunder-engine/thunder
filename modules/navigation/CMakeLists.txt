@@ -7,6 +7,11 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/components/*.cpp"
     "src/resources/*.cpp"
     "src/utils/*.cpp"
+    "../../thirdparty/recast/Detour/Source/*.cpp"
+    "../../thirdparty/recast/DetourCrowd/Source/*.cpp"
+    "../../thirdparty/recast/DetourTileCache/Source/*.cpp"
+    "../../thirdparty/recast/Recast/Source/*.cpp"
+    "../../thirdparty/recast/DebugUtils/Source/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -29,7 +34,7 @@ set(${PROJECT_NAME}_incPaths
     "../../thirdparty/recast/DebugUtils/Include"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../.. FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
 if(desktop)
@@ -54,7 +59,6 @@ if(desktop)
         engine-editor
         bullet-editor
         editor
-        recast
     )
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE

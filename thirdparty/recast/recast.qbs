@@ -6,7 +6,8 @@ Project {
         "Detour/Source/*.cpp",
         "DetourCrowd/Source/*.cpp",
         "DetourTileCache/Source/*.cpp",
-        "Recast/Source/*.cpp"
+        "Recast/Source/*.cpp",
+        "DebugUtils/Source/*.cpp"
     ]
 
     property stringList incPaths: [
@@ -36,9 +37,7 @@ Project {
 
         Properties {
             condition: recast.desktop
-            files: outer.concat([
-                "DebugUtils/Source/*.cpp"
-            ])
+            files: recast.srcFiles
         }
 
         Properties {

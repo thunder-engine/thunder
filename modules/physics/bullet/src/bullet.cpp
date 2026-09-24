@@ -36,7 +36,6 @@ static const char *meta = \
 "   \"description\": \"Bullet Physics Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"dependencies\": {"
-"       \"bullet3\": \"static\","
 "       \"engine\": \"lib\","
 "       \"next\": \"lib\""
 "   },"

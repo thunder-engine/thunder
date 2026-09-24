@@ -6,6 +6,7 @@ Project {
         "src/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
+        "../../../thirdparty/glad/src/*.c"
     ]
 
     property stringList incPaths: [
@@ -36,8 +37,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "glfw-editor" }
-        Depends { name: "glad" }
         Depends { name: "Qt"; submodules: ["core", "widgets", "opengl"]; }
         bundle.isBundle: false
 

@@ -105,6 +105,15 @@ if(desktop)
         ${${PROJECT_NAME}_editorFiles}
     )
 
+    if(APPLE)
+        file(GLOB ${PROJECT_NAME}_objectiveC_sources
+            "src/*.m"
+        )
+        target_sources(${PROJECT_NAME} PRIVATE
+            ${${PROJECT_NAME}_objectiveC_sources}
+        )
+    endif()
+
     if(WIN32)
         target_link_libraries(${PROJECT_NAME} PRIVATE Shell32)
     elseif(APPLE)

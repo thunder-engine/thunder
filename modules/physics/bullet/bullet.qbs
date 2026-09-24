@@ -5,7 +5,24 @@ Project {
     property stringList srcFiles: [
         "src/*.cpp",
         "src/components/*.cpp",
-        "src/resources/*.cpp"
+        "src/resources/*.cpp",
+        "../../../thirdparty/bullet/src/LinearMath/*.cpp",
+        "../../../thirdparty/bullet/src/BulletCollision/CollisionDispatch/*.cpp",
+        "../../../thirdparty/bullet/src/BulletCollision/CollisionShapes/*.cpp",
+        "../../../thirdparty/bullet/src/BulletCollision/BroadphaseCollision/*.cpp",
+        "../../../thirdparty/bullet/src/BulletCollision/NarrowPhaseCollision/*.cpp",
+        "../../../thirdparty/bullet/src/BulletDynamics/Dynamics/*.cpp",
+        "../../../thirdparty/bullet/src/BulletDynamics/ConstraintSolver/*.cpp",
+        "../../../thirdparty/bullet/src/BulletDynamics/Character/*.cpp",
+        "../../../thirdparty/bullet/src/LinearMath/*.h",
+        "../../../thirdparty/bullet/src/BulletCollision/CollisionDispatch/*.h",
+        "../../../thirdparty/bullet/src/BulletCollision/CollisionShapes/*.h",
+        "../../../thirdparty/bullet/src/BulletCollision/BroadphaseCollision/*.h",
+        "../../../thirdparty/bullet/src/BulletCollision/NarrowPhaseCollision/*.h",
+        "../../../thirdparty/bullet/src/BulletDynamics/Dynamics/*.h",
+        "../../../thirdparty/bullet/src/BulletDynamics/ConstraintSolver/*.h",
+        "../../../thirdparty/bullet/src/BulletDynamics/Character/*.h",
+        "../../../thirdparty/bullet/src/*.h"
     ]
 
     property stringList incPaths: [
@@ -37,7 +54,6 @@ Project {
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
         Depends { name: "editor" }
-        Depends { name: "bullet3" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
 
@@ -97,7 +113,6 @@ Project {
         name: "bullet"
         files: srcFiles
         Depends { name: "cpp" }
-        Depends { name: "bullet3" }
         Depends { name: "bundle" }
         bundle.isBundle: false
 

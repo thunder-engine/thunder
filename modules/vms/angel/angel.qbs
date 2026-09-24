@@ -7,7 +7,7 @@ Project {
         "src/bindings/*.cpp",
         "src/components/*.cpp",
         "src/resources/*.cpp",
-
+        "../../../thirdparty/angelscript/source/*.cpp",
         "../../../thirdparty/angelscript/modules/*/*.cpp"
     ]
 
@@ -38,7 +38,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "angelscript-editor" }
         Depends { name: "editor" }
         Depends { name: "Qt"; submodules: ["core", "gui"]; }
         bundle.isBundle: false
@@ -50,7 +49,8 @@ Project {
         cpp.minimumMacosVersion: angel.osxVersion
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
+            condition: qbs.architecture === "x86_64" && qbs.targetOS.contains("windows")
+            files: outer.concat(["../../../thirdparty/angelscript/source/as_callfunc_x64_msvc_asm.asm"])
         }
 
         Properties {
@@ -101,11 +101,12 @@ Project {
 
         Properties {
             condition: !angel.desktop
-            cpp.defines: ["THUNDER_MOBILE"]
+            cpp.defines: ["THUNDER_MOBILE", "AS_NO_COMPILER"]
         }
 
         Properties {
-            condition: qbs.targetOS.contains("windows")
+            condition: qbs.architecture === "x86_64" && qbs.targetOS.contains("windows")
+            files: outer.concat(["../../../thirdparty/angelscript/source/as_callfunc_x64_msvc_asm.asm"])
         }
 
         Properties {

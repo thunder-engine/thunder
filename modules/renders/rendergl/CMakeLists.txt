@@ -6,6 +6,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
     "src/resources/*.cpp"
+    "../../../thirdparty/glad/src/*.c"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -50,8 +51,6 @@ if(desktop)
     set(${PROJECT_NAME}_libs
         next-editor
         engine-editor
-        glfw-editor
-        glad
         Qt::Core
         Qt::Widgets
         Qt::OpenGL
@@ -104,8 +103,6 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    glfw
-    glad
 )
 
 # Solve build error using Clang on BSDs

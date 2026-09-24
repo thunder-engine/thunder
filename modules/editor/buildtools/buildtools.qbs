@@ -33,7 +33,6 @@ Project {
         Depends { name: "engine-editor" }
         Depends { name: "editor" }
         Depends { name: "minizip" }
-        Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["gui"]; }
         bundle.isBundle: false
 

@@ -17,8 +17,6 @@ protected:
 
     void generateProject() override;
 
-    StringList platformLibraries() const override { return Editor::project()->targetPath().isEmpty() ? StringList() : StringList({"glfw", "glad"}); }
-
 protected:
     TString m_vsPath;
 

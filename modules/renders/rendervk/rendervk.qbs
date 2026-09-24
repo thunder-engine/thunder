@@ -24,8 +24,6 @@ Project {
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
         "../../../thirdparty/next/inc/core",
-        "../../../thirdparty/glfw/include",
-        "../../../thirdparty/glfm/include",
         "../../../thirdparty/vulkan/include",
         Environment.getEnv("VULKAN_SDK") + "/include"
     ]
@@ -43,8 +41,6 @@ Project {
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "glfw-editor" }
-        Depends { name: "glad" }
         Depends { name: "Qt"; submodules: ["core", "widgets", "gui"]; }
         bundle.isBundle: false
 

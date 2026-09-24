@@ -35,12 +35,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     FOLDER "thirdparty"
 )
 
-# Install zlib library
-install(TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION ${STATIC_PATH}
-    ARCHIVE DESTINATION ${STATIC_PATH}
-)
-
 # zlib Dynamic Library (Optional)
 if(desktop)
     add_library(${PROJECT_NAME}-editor SHARED ${${PROJECT_NAME}_srcFiles})

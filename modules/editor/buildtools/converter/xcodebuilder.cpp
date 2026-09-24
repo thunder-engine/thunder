@@ -43,15 +43,6 @@ XcodeBuilder::XcodeBuilder() {
     };
 }
 
-StringList XcodeBuilder::platformLibraries() const {
-    ProjectSettings *mgr = Editor::project();
-    if(mgr->targetPath().isEmpty()) {
-        return {};
-    }
-
-    return {"glfm"};
-}
-
 bool XcodeBuilder::buildProject() {
     if(m_outdated && !m_process.isRunning()) {
         m_process.setWorkingDirectory(m_project);

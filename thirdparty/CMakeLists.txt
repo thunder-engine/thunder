@@ -1,18 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-add_subdirectory(angelscript)
-add_subdirectory(bullet)
 add_subdirectory(next)
 add_subdirectory(zlib)
-add_subdirectory(physfs)
 add_subdirectory(pugixml)
 add_subdirectory(glfm)
 add_subdirectory(glsl)
-add_subdirectory(libogg)
-add_subdirectory(libvorbis)
-add_subdirectory(glad)
-add_subdirectory(freetype)
-add_subdirectory(recast)
 
 if(desktop)
     add_subdirectory(assimp)

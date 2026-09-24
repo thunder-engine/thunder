@@ -11,6 +11,55 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/filters/*.cpp"
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
+    "src/adapters/platform*.cpp"
+)
+
+set(freetypeFiles
+    "../thirdparty/freetype/src/base/ftbase.c"
+    "../thirdparty/freetype/src/base/ftinit.c"
+    "../thirdparty/freetype/src/base/ftsystem.c"
+    "../thirdparty/freetype/src/base/ftbbox.c"
+    "../thirdparty/freetype/src/base/ftbdf.c"
+    "../thirdparty/freetype/src/base/ftbitmap.c"
+    "../thirdparty/freetype/src/base/ftcid.c"
+    "../thirdparty/freetype/src/base/ftdebug.c"
+    "../thirdparty/freetype/src/base/ftfstype.c"
+    "../thirdparty/freetype/src/base/ftgasp.c"
+    "../thirdparty/freetype/src/base/ftglyph.c"
+    "../thirdparty/freetype/src/base/ftgxval.c"
+    "../thirdparty/freetype/src/base/ftmm.c"
+    "../thirdparty/freetype/src/base/ftotval.c"
+    "../thirdparty/freetype/src/base/ftpatent.c"
+    "../thirdparty/freetype/src/base/ftpfr.c"
+    "../thirdparty/freetype/src/base/ftstroke.c"
+    "../thirdparty/freetype/src/base/ftsynth.c"
+    "../thirdparty/freetype/src/base/fttype1.c"
+    "../thirdparty/freetype/src/base/ftwinfnt.c"
+    "../thirdparty/freetype/src/autofit/autofit.c"
+    "../thirdparty/freetype/src/bdf/bdf.c"
+    "../thirdparty/freetype/src/cff/cff.c"
+    "../thirdparty/freetype/src/cache/ftcache.c"
+    "../thirdparty/freetype/src/gzip/ftgzip.c"
+    "../thirdparty/freetype/src/lzw/ftlzw.c"
+    "../thirdparty/freetype/src/pcf/pcf.c"
+    "../thirdparty/freetype/src/pfr/pfr.c"
+    "../thirdparty/freetype/src/psaux/psaux.c"
+    "../thirdparty/freetype/src/pshinter/pshinter.c"
+    "../thirdparty/freetype/src/psnames/psmodule.c"
+    "../thirdparty/freetype/src/raster/raster.c"
+    "../thirdparty/freetype/src/sdf/sdf.c"
+    "../thirdparty/freetype/src/sfnt/sfnt.c"
+    "../thirdparty/freetype/src/smooth/smooth.c"
+    "../thirdparty/freetype/src/svg/svg.c"
+    "../thirdparty/freetype/src/truetype/truetype.c"
+    "../thirdparty/freetype/src/type1/type1.c"
+    "../thirdparty/freetype/src/cid/type1cid.c"
+    "../thirdparty/freetype/src/type42/type42.c"
+    "../thirdparty/freetype/src/winfonts/winfnt.c"
+)
+
+file(GLOB physfs_srcFiles
+    "../thirdparty/physfs/src/*.c"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -37,7 +86,7 @@ add_definitions (
     -DSDK_VERSION="${SDK_VERSION}"
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
 
 if(desktop)
     # This path is only needed on the BSDs
@@ -47,7 +96,6 @@ if(desktop)
             ${Qt5Gui_INCLUDE_DIRS}
             ${Qt5Svg_INCLUDE_DIRS}
             ${Qt5Widgets_INCLUDE_DIRS}
-            ${Qt5Xml_INCLUDE_DIRS}
             "/usr/local/include"
         )
     endif()
@@ -65,14 +113,15 @@ if(desktop)
         assimp
         next-editor
         glfw-editor
-        zlib-editor
-        physfs-editor
-        freetype-editor
     )
 
     target_compile_definitions(${PROJECT_NAME}-editor PRIVATE
         SHARED_DEFINE
         ENGINE_LIBRARY
+        FT2_BUILD_LIBRARY
+        PHYSFS_SUPPORTS_ZIP
+        PHYSFS_SUPPORTS_DEFAULT=0
+        PHYSFS_NO_CDROM_SUPPORT
     )
 
     if(UNIX AND NOT APPLE)
@@ -89,7 +138,6 @@ if(desktop)
     target_include_directories(${PROJECT_NAME}-editor PRIVATE ${${PROJECT_NAME}_incPaths} ${CMAKE_CURRENT_BINARY_DIR})
 
     target_sources(${PROJECT_NAME}-editor PRIVATE
-        "src/adapters/platformadaptor.cpp"
         "src/adapters/desktopadaptor.cpp"
     )
 
@@ -125,10 +173,10 @@ endif()
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     NEXT_LIBRARY
-)
-
-target_sources(${PROJECT_NAME} PRIVATE
-    "src/adapters/platformadaptor.cpp"
+    FT2_BUILD_LIBRARY
+    PHYSFS_SUPPORTS_ZIP
+    PHYSFS_SUPPORTS_DEFAULT=0
+    PHYSFS_NO_CDROM_SUPPORT
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})

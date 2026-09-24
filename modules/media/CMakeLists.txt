@@ -6,6 +6,29 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/*.cpp"
     "src/components/*.cpp"
     "src/resources/*.cpp"
+    "../../thirdparty/libogg/src/*.c"
+    "../../thirdparty/libvorbis/src/mapping0.c"
+    "../../thirdparty/libvorbis/src/lsp.c"
+    "../../thirdparty/libvorbis/src/lpc.c"
+    "../../thirdparty/libvorbis/src/lookup.c"
+    "../../thirdparty/libvorbis/src/info.c"
+    "../../thirdparty/libvorbis/src/floor1.c"
+    "../../thirdparty/libvorbis/src/floor0.c"
+    "../../thirdparty/libvorbis/src/envelope.c"
+    "../../thirdparty/libvorbis/src/codebook.c"
+    "../../thirdparty/libvorbis/src/block.c"
+    "../../thirdparty/libvorbis/src/bitrate.c"
+    "../../thirdparty/libvorbis/src/analysis.c"
+    "../../thirdparty/libvorbis/src/window.c"
+    "../../thirdparty/libvorbis/src/vorbisenc.c"
+    "../../thirdparty/libvorbis/src/synthesis.c"
+    "../../thirdparty/libvorbis/src/smallft.c"
+    "../../thirdparty/libvorbis/src/sharedbook.c"
+    "../../thirdparty/libvorbis/src/res0.c"
+    "../../thirdparty/libvorbis/src/registry.c"
+    "../../thirdparty/libvorbis/src/psy.c"
+    "../../thirdparty/libvorbis/src/mdct.c"
+    "../../thirdparty/libvorbis/src/vorbisfile.c"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -41,7 +64,7 @@ if(UNIX AND NOT APPLE)
     endif()
 endif()
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_srcFiles})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../.. FILES ${${PROJECT_NAME}_srcFiles})
 
 # Dynamic Library
 if(desktop)
@@ -66,9 +89,6 @@ if(desktop)
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        ogg-editor
-        vorbis-editor
-        vorbisfile-editor
         editor
         Qt::Gui
     )
@@ -123,8 +143,6 @@ add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     next
     engine
-    ogg
-    vorbis
 )
 
 if(NOT desktop)

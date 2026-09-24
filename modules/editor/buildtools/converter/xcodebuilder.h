@@ -12,8 +12,6 @@ private:
 
     void generateProject() override;
 
-    StringList platformLibraries() const override;
-
     StringList platforms() const override { return {"macos", "ios", "tvos"}; }
 
     PackagingMode packagingMode() const override { return Before; }

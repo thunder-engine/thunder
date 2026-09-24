@@ -58,6 +58,9 @@ Project {
             condition: qbs.targetOS.contains("darwin")
             cpp.weakFrameworks: ["IOKit"]
             cpp.sonamePrefix: "@executable_path"
+            cpp.files: outer.concat([
+                "src/*.m"
+            ])
         }
 
         Group {
