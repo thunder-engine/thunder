@@ -32,7 +32,6 @@ if(desktop)
             ${Qt5Gui_INCLUDE_DIRS}
             ${Qt5Svg_INCLUDE_DIRS}
             ${Qt5Widgets_INCLUDE_DIRS}
-            ${Qt5Xml_INCLUDE_DIRS}
             "/usr/local/include"
         )
     endif()
@@ -49,7 +48,10 @@ if(desktop)
     )
 
     file(GLOB EDITOR_SOURCES
+        "src/coverters/*.cpp"
         "src/editor/*.cpp"
+        "src/viewport/*.cpp"
+        "src/*.cpp"
     )
 
     QT_WRAP_CPP(MOC_SRCS
@@ -60,11 +62,12 @@ if(desktop)
         "includes/editor/editorplatform.h"
         "includes/editor/pluginmanager.h"
         "includes/editor/propertyedit.h"
+        "src/documentmodel.h"
         ${MOC_HEADERS}
     )
 
     # Dynamic Library
-    add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_srcFiles} ${MOC_SRCS} ${EDITOR_SOURCES})
+    add_library(${PROJECT_NAME} SHARED ${MOC_SRCS} ${EDITOR_SOURCES})
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
         assimp
