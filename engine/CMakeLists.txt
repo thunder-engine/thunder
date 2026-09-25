@@ -234,10 +234,16 @@ if(desktop)
         DESTINATION "${INC_PATH}/engine"
     )
 
+    set(${${PROJECT_NAME}_srcFiles}
+        ${${PROJECT_NAME}_srcFiles}
+        ${glfwFiles}
+        ${${PROJECT_NAME}_platform}
+    )
+
 endif()
 
 # Static Library
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles} ${glfwFiles} ${${PROJECT_NAME}_platform})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles} ${freetypeFiles} ${physfs_srcFiles})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     ENGINE_LIBRARY
