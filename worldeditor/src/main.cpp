@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 
     TString project;
     if(argc > 1) {
-        project = QApplication::arguments().at(1).toStdString();
+        project = argv[1];
     } else {
         ProjectBrowser browser;
         if(browser.exec() == QDialog::Accepted) {

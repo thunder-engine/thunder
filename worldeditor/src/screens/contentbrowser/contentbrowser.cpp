@@ -25,7 +25,6 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QMessageBox>
-#include <QStandardPaths>
 #include <QMimeData>
 
 #include "config.h"
@@ -35,6 +34,7 @@
 #include <file.h>
 #include <aprocess.h>
 #include <filedialog.h>
+#include <standardpaths.h>
 
 #include "contenttree.h"
 #include "commitrevert.h"
@@ -545,7 +545,7 @@ void ContentBrowser::on_contentList_clicked(const QModelIndex &index) {
 
 void ContentBrowser::importAsset() {
     FileDialog dialog;
-    dialog.setDirectory(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation).toStdString());
+    dialog.setDirectory(StandardPaths::writableLocation(StandardPaths::DocumentsLocation));
     dialog.setWindowTitle("Select files to import");
     dialog.setMode(FileDialog::OpenFiles);
     dialog.addFilter("All", { "*.*" });

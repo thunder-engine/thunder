@@ -432,7 +432,7 @@ bool Viewport::processEvent(QEvent *event) {
     switch(event->type()) {
         case QEvent::DragEnter: {
             QDragEnterEvent *ev = static_cast<QDragEnterEvent *>(event);
-            EditorPlatform::instance().setMousePosition(ev->pos());
+            EditorPlatform::instance().setMousePosition(ev->position().toPoint());
 
             emit dragEnter(ev);
             return true;
@@ -440,14 +440,14 @@ bool Viewport::processEvent(QEvent *event) {
         case QEvent::DragLeave: emit dragLeave(static_cast<QDragLeaveEvent *>(event)); return true;
         case QEvent::DragMove: {
             QDragMoveEvent *ev = static_cast<QDragMoveEvent *>(event);
-            EditorPlatform::instance().setMousePosition(ev->pos());
+            EditorPlatform::instance().setMousePosition(ev->position().toPoint());
 
             emit dragMove(ev);
             return true;
         }
         case QEvent::Drop: {
             QDropEvent *ev = static_cast<QDropEvent *>(event);
-            EditorPlatform::instance().setMousePosition(ev->pos());
+            EditorPlatform::instance().setMousePosition(ev->position().toPoint());
 
             emit drop(ev);
             return true;

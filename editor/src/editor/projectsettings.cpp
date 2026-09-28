@@ -18,16 +18,15 @@
 #include "projectsettings.h"
 
 #include <QDir>
-
 #include <QCoreApplication>
-#include <QStandardPaths>
 #include <QSettings>
 
 #include <log.h>
 #include <json.h>
 #include <file.h>
 #include <url.h>
-#include <os/uuid.h>
+#include <uuid.h>
+#include <standardpaths.h>
 
 #include "config.h"
 
@@ -67,7 +66,7 @@ ProjectSettings::ProjectSettings() {
     m_templatePath = m_resourcePath + "/templates";
 
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    QString path = settings.value(gProjects, StandardPaths::writableLocation(StandardPaths::DocumentsLocation).data()).toString();
     m_myProjectsPath = path.toStdString();
 }
 

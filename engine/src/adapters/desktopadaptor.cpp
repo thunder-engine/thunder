@@ -1,22 +1,18 @@
 #include "adapters/desktopadaptor.h"
-#include <filesystem>
 
-#ifdef _WIN32
-    #include <Windows.h>
-    #include <ShlObj.h>
-#elif __GNUC__
-    #include <sys/stat.h>
-#endif
 #include <GLFW/glfw3.h>
 
 #include <timer.h>
 #include <log.h>
 #include <file.h>
 #include <json.h>
+#include <standardpaths.h>
 
+#include <filesystem>
 #include <cstring>
 
 #include "handlers/physfsfilehandler.h"
+#include "systems/resourcesystem.h"
 
 #define NONE -1
 #define RELEASE 0
@@ -117,8 +113,7 @@ void DesktopAdaptor::loop() {
 }
 
 bool DesktopAdaptor::start() {
-    PhysfsFileHandler *fileHandler = new PhysfsFileHandler;
-    fileHandler->init("");
+    PhysfsFileHandler *fileHandler = new PhysfsFileHandler("");
     File::setHandler(fileHandler);
 
     if(!Engine::resourceSystem()->loadBundle("base.pak")) {
@@ -148,9 +143,7 @@ bool DesktopAdaptor::start() {
 
     File fp(gConfigName);
     if(fp.open(File::Read)) {
-        ByteArray data(fp.readAll());
-
-        Variant var = Json::load(TString(data));
+        Variant var = Json::load(TString(fp.readAll()));
         if(var.isValid()) {
             for(auto &it : var.toMap()) {
                 Engine::setValue(it.first, it.second);
@@ -363,7 +356,7 @@ void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
 void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
     s_mouseButtons[button | 0x10000000] = action;
 
-    if (action == PRESS) {
+    if(action == PRESS) {
         int key = button | 0x10000000;
         auto it = s_mouseDoubleClick.find(key);
         if (it != s_mouseDoubleClick.end() && it->second == REPEAT) {
@@ -393,19 +386,7 @@ void DesktopAdaptor::errorCallback(int error, const char *description) {
 }
 
 TString DesktopAdaptor::locationLocalDir() const {
-    TString result;
-#if _WIN32
-    wchar_t path[MAX_PATH];
-    if(SHGetSpecialFolderPathW(nullptr, path, CSIDL_LOCAL_APPDATA, FALSE)) {
-        result = TString::fromWString(std::wstring(path));
-        result.replace('\\', '/');
-    }
-#elif __APPLE__
-    result = "~/Library/Preferences";
-#else
-    result += ::getenv("HOME");
-    result += "/.config";
-#endif
+    TString result = StandardPaths::writableLocation(StandardPaths::ConfigLocation);
 
     TString organization(Engine::organizationName());
     if(!organization.isEmpty()) {
