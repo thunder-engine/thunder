@@ -6,10 +6,8 @@
 #include <knownfolders.h>
 #include <string>
 #elif defined(__APPLE__)
-#include <Foundation/Foundation.h>
 #include <cstdlib>
-#include <unistd.h>
-#include <pwd.h>
+#include <string>
 #else
 #include <cstdlib>
 #include <unistd.h>
@@ -31,7 +29,8 @@
 
     On Windows it relies on the Known Folder API (`SHGetKnownFolderPath`)
     and `GetEnvironmentVariableW`. On macOS it uses
-    `NSSearchPathForDirectoriesInDomains` and `NSTemporaryDirectory`.
+    `NSSearchPathForDirectoriesInDomains` and `NSTemporaryDirectory`
+    (implemented in `standardpaths.mm`).
     On Linux/BSD it follows the XDG Base Directory Specification and
     XDG user directories.
 */
@@ -95,30 +94,46 @@ TString envVar(const wchar_t *name) {
 #endif // _WIN32
 
 #ifdef __APPLE__
+// Реализация — в standardpaths.mm (Objective-C++).
+extern "C" {
+
+// Возвращают malloc-строку UTF-8, которую надо освободить free().
+// dir — значение NSSearchPathDirectory (см. константы ниже).
+char *sp_mac_search_path(int dir);
+char *sp_mac_temporary_directory();
+char *sp_mac_home_directory();
+
+} // extern "C"
+
 namespace {
 
-TString nsPath(NSSearchPathDirectory dir) {
-    @autoreleasepool {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(
-            dir, NSUserDomainMask, YES);
-        if([paths count] > 0) {
-            NSString *p = [paths objectAtIndex:0];
-            return TString([p UTF8String]);
-        }
+// Значения NSSearchPathDirectory стабильны и не меняются между SDK.
+enum {
+    kNSDocumentDirectory           = 9,
+    kNSApplicationSupportDirectory = 14,
+    kNSCachesDirectory             = 13,
+    kNSDownloadsDirectory          = 15,
+    kNSMusicDirectory              = 18,
+    kNSPicturesDirectory           = 19,
+    kNSMoviesDirectory             = 17
+};
+
+// Оборачивает char* в TString и освобождает память.
+TString takeCString(char *raw) {
+    if(!raw) {
+        return TString();
     }
-    return TString();
+    TString result(raw);
+    std::free(raw);
+    return result;
+}
+
+TString nsPath(int dir) {
+    return takeCString(sp_mac_search_path(dir));
 }
 
 TString homeDir() {
-    const char *home = std::getenv("HOME");
-    if(home && *home) {
-        return TString(home);
-    }
-    struct passwd *pw = getpwuid(getuid());
-    if(pw && pw->pw_dir) {
-        return TString(pw->pw_dir);
-    }
-    return TString();
+    return takeCString(sp_mac_home_directory());
 }
 
 } // namespace
@@ -230,23 +245,18 @@ TString StandardPaths::writableLocation(StandardLocation type) {
 #elif defined(__APPLE__)
     switch(type) {
     case ApplicationsLocation:  return TString("/Applications");
-    case DocumentsLocation:     return nsPath(NSDocumentDirectory);
-    case CacheLocation:         return nsPath(NSCachesDirectory);
+    case DocumentsLocation:     return nsPath(kNSDocumentDirectory);
+    case CacheLocation:         return nsPath(kNSCachesDirectory);
     case AppDataLocation:
-    case AppLocalDataLocation:  return nsPath(NSApplicationSupportDirectory);
+    case AppLocalDataLocation:  return nsPath(kNSApplicationSupportDirectory);
     case ConfigLocation:        return homeDir() + "/Library/Preferences";
-    case DownloadLocation:      return nsPath(NSDownloadsDirectory);
-    case MusicLocation:         return nsPath(NSMusicDirectory);
-    case PicturesLocation:      return nsPath(NSPicturesDirectory);
-    case VideosLocation:        return nsPath(NSMoviesDirectory);
-    case TempLocation: {
-        @autoreleasepool {
-            NSString *tmp = NSTemporaryDirectory();
-            return tmp ? TString([tmp UTF8String]) : TString("/tmp");
-        }
-    }
+    case DownloadLocation:      return nsPath(kNSDownloadsDirectory);
+    case MusicLocation:         return nsPath(kNSMusicDirectory);
+    case PicturesLocation:      return nsPath(kNSPicturesDirectory);
+    case VideosLocation:        return nsPath(kNSMoviesDirectory);
+    case TempLocation:          return takeCString(sp_mac_temporary_directory());
     case HomeLocation:          return homeDir();
-    case RuntimeLocation:       return nsPath(NSCachesDirectory);
+    case RuntimeLocation:       return nsPath(kNSCachesDirectory);
     }
 #else
     TString home = homeDir();
