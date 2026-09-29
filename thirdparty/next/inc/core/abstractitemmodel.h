@@ -13,7 +13,7 @@ public:
     };
 
 public:
-    virtual ~AbstractItemModel() {};
+    virtual ~AbstractItemModel() {}
 
     virtual int rowCount(const ModelIndex &parent = ModelIndex()) const = 0;
     virtual int columnCount(const ModelIndex &parent = ModelIndex()) const = 0;

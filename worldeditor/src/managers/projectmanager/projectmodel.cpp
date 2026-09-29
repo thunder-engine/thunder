@@ -35,10 +35,11 @@ ProjectModel::ProjectModel() :
     QVariant value = settings.value(gProjects);
     if(value.isValid()) {
         for(auto &it : value.toStringList()) {
-            if(File::exists(it.toStdString())) {
-                s_list.push_back(it.toStdString());
+            TString path(it.toStdString());
+            if(File::exists(path)) {
+                s_list.push_back(path);
 
-                TString icon(Url(it.toStdString()).absoluteDir() + "/cache/thumbnails/auto.png");
+                TString icon(Url(path).absoluteDir() + "/cache/thumbnails/auto.png");
 
                 QImage image(":/Images/icons/thunderlight.svg");
                 if(File::exists(icon)) {
@@ -46,7 +47,7 @@ ProjectModel::ProjectModel() :
                 }
                 image = image.scaledToWidth(64);
 
-                m_iconCache[it] = image;
+                m_iconCache[path] = image;
             }
         }
     }
@@ -70,7 +71,7 @@ QVariant ProjectModel::data(const QModelIndex &index, int role) const {
         case Qt::DisplayRole: { return Url(path).baseName().data(); }
         case Qt::ToolTipRole:
         case Qt::EditRole: { return path.data(); }
-        case Qt::DecorationRole: { return m_iconCache[path.data()]; }
+        case Qt::DecorationRole: { return m_iconCache[path]; }
         case Qt::FontRole: {
             QFont font = QApplication::font("QTreeView");
             font.setBold(true);

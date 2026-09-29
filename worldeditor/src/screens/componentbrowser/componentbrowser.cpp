@@ -19,7 +19,6 @@
 #include "ui_componentbrowser.h"
 
 #include <QSortFilterProxyModel>
-#include <QDebug>
 
 #include "componentmodel.h"
 
@@ -49,7 +48,7 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QString type(model->data(model->index(sourceRow, 1, sourceParent), Qt::DisplayRole).toString());
 
-        for(TString it : m_list) {
+        for(const TString &it : m_list) {
             if(type.contains(it.data(), filterCaseSensitivity())) {
                 return true;
             }
@@ -61,11 +60,8 @@ protected:
         QAbstractItemModel *model = sourceModel();
         QModelIndex index = model->index(sourceRow, 0, sourceParent);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         QRegularExpression reg = filterRegularExpression();
-#else
-        QRegExp reg = filterRegExp();
-#endif
+
         if(reg.isValid() && index.isValid()) {
             for(int i = 0; i < model->rowCount(index); i++) {
                 if(checkNameFilter(i, index)) {
