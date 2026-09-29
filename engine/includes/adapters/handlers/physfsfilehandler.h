@@ -6,12 +6,9 @@
 #include <file.h>
 #include <log.h>
 
-#include "engine.h"
-#include "systems/resourcesystem.h"
-
 class PhysfsFileHandler : public FileHandler {
 public:
-    void init(const char *argv0) {
+    PhysfsFileHandler(const char *argv0) {
         if(!PHYSFS_init(argv0)) {
             aError() << "[ FileIO ] Can't initialize.";
         }

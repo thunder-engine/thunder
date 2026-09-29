@@ -198,14 +198,12 @@ void onCreate(GLFMDisplay *display, int width, int height) {
     Log::addHandler(new DefaultHandler());
 
 #ifdef __ANDROID__
-	File::setHandler(new AndroidFileHandler());
+    File::setHandler(new AndroidFileHandler());
 #else
     #ifdef __EMSCRIPTEN__
         File::setHandler(new DefaultFileHandler());
     #else
-        PhysfsFileHandler *handler = new PhysfsFileHandler;
-        handler->init("");
-		File::setHandler(handler);
+        File::setHandler(new PhysfsFileHandler(""));
     #endif
 #endif
 
