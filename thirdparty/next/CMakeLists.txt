@@ -46,6 +46,11 @@ if(desktop)
             SUFFIX ".dylib"
         )
         target_compile_definitions(${PROJECT_NAME}-editor PRIVATE NEXT_LIBRARY)
+
+        enable_language(OBJCXX)
+        target_sources(${PROJECT_NAME} PRIVATE
+                        ${CMAKE_CURRENT_SOURCE_DIR}/standardpaths.mm)
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Foundation")
     endif()
 
     # Solve build error using Clang on BSDs
