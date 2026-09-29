@@ -15,13 +15,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef AUDIOCONVERTER_H
-#define AUDIOCONVERTER_H
-
-#include <QObject>
-#include <QAbstractItemModel>
+#ifndef ANGELBUILDER_H
+#define ANGELBUILDER_H
 
 #include <editor/codebuilder.h>
+#include <abstractitemmodel.h>
 
 class asSMessageInfo;
 class asIScriptEngine;
@@ -29,54 +27,6 @@ class asITypeInfo;
 class asIScriptFunction;
 
 class AngelSystem;
-
-class AngelClassItem {
-public:
-    explicit AngelClassItem(const QVector<QVariant> &data, AngelClassItem *parentItem = nullptr);
-    ~AngelClassItem();
-
-    void appendChild(AngelClassItem *child);
-
-    AngelClassItem *child(int row);
-    int childCount() const;
-    QVariant data(int column) const;
-    int row() const;
-    AngelClassItem *parentItem();
-
-private:
-    QList<AngelClassItem*> m_childItems;
-    QVector<QVariant> m_itemData;
-    AngelClassItem *m_parentItem;
-};
-
-class AngelClassMapModel : public QAbstractItemModel {
-    Q_OBJECT
-public:
-    enum AngelItem {
-        Module = 0,
-        Class,
-        Method,
-        Property,
-        Enum
-    };
-
-public:
-    AngelClassMapModel();
-
-    void update(asIScriptEngine *engine);
-
-private:
-    void exportType(asITypeInfo *info, AngelItem type = Class);
-    QStringList exportParams(asIScriptFunction *method);
-
-    int columnCount(const QModelIndex &parent) const;
-    int rowCount(const QModelIndex &parent) const;
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    QModelIndex parent(const QModelIndex &index) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
-    AngelClassItem *m_pRootItem;
-};
 
 class AngelScriptImportSettings : public BuilderSettings {
 public:
@@ -100,7 +50,6 @@ protected:
     TString persistentAsset() const override;
 
     StringList suffixes() const override { return {"as"}; }
-    QAbstractItemModel *classMap() const override;
 
     AssetConverterSettings *createSettings() override;
 
@@ -112,8 +61,6 @@ protected:
 
     asIScriptEngine *m_scriptEngine;
 
-    AngelClassMapModel *m_classModel;
-
 };
 
-#endif // AUDIOCONVERTER_H
+#endif // ANGELBUILDER_H

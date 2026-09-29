@@ -111,7 +111,7 @@ void TextWidget::openFile(const QString &fileName) {
     checkClassMap();
 
     if(m_classModel) {
-        connect(m_classModel, &QAbstractItemModel::layoutChanged, this, &TextWidget::onClassModelChanged);
+        //connect(m_classModel, &QAbstractItemModel::layoutChanged, this, &TextWidget::onClassModelChanged);
         onClassModelChanged();
     }
 
@@ -869,13 +869,13 @@ void TextWidget::onClassModelChanged() {
     if(m_classModel) {
         QStringList classes;
         QStringList enums;
-        for(int row = 0; row < m_classModel->rowCount(); row++) {
-            auto index = m_classModel->index(row, 0);
-            switch(m_classModel->data(index, Qt::UserRole).toInt()) {
-                case 4: enums << m_classModel->data(index).toString(); break;
-                default: classes << m_classModel->data(index).toString(); break;
-            }
-        }
+        //for(int row = 0; row < m_classModel->rowCount(); row++) {
+        //    auto index = m_classModel->index(row, 0);
+        //    switch(m_classModel->data(index, AbstractItemModel::UserRole).toInt()) {
+        //        case 4: enums << m_classModel->data(index).toString(); break;
+        //        default: classes << m_classModel->data(index).toString(); break;
+        //    }
+        //}
         m_definition.setKeywordList("classes", classes);
         m_definition.setKeywordList("enums", enums);
         m_highlighter->rehighlight();

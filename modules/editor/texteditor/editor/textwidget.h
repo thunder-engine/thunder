@@ -115,7 +115,7 @@ private:
 
     CodeHandler *m_handler;
 
-    QAbstractItemModel *m_classModel;
+    AbstractItemModel *m_classModel;
 
     TextWidgetSidebar *m_sideBar;
 

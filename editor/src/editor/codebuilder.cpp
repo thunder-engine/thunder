@@ -254,6 +254,6 @@ bool CodeBuilder::isOutdated() const {
 /*!
     Returns a model describing the classes known to the builder.
 */
-QAbstractItemModel *CodeBuilder::classMap() const {
+AbstractItemModel *CodeBuilder::classMap() const {
     return nullptr;
 }

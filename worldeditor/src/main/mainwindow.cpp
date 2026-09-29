@@ -22,11 +22,14 @@
 #include <QSettings>
 #include <QApplication>
 #include <QMessageBox>
+#include <QCloseEvent>
+#include <QDirIterator>
 
 #include <json.h>
 #include <timer.h>
 #include <log.h>
 #include <url.h>
+#include <file.h>
 #include <filedialog.h>
 
 #include <editor/asseteditor.h>
@@ -463,8 +466,8 @@ void MainWindow::on_actionSave_Workspace_triggered() {
     if(dialog.exec()) {
         TString path = dialog.getSelectedFile();
         if(!path.isEmpty()) {
-            QFile file(path.data());
-            if(file.open(QFile::WriteOnly)) {
+            File file(path);
+            if(file.open(File::Write)) {
                 QVariantMap layout;
                 layout[gWindows] = ui->toolWidget->saveState();
 
@@ -472,7 +475,7 @@ void MainWindow::on_actionSave_Workspace_triggered() {
                 QDataStream ds(&data, QFile::WriteOnly);
                 ds << layout;
 
-                file.write(data);
+                file.write(data.data());
                 file.close();
             }
         }
