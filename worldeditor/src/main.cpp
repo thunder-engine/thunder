@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
+    Editor editor(argc, argv);
+
     TString project;
     if(argc > 1) {
         project = argv[1];

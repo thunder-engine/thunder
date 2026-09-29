@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
+    Editor editor(argc, argv);
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
     Editor::plugins()->init(&engine);

@@ -27,6 +27,8 @@
 #include "editor/asseteditor.h"
 #include "editor/assetmanager.h"
 
+#include <url.h>
+
 /*!
     \module Editor
 
@@ -55,8 +57,13 @@ PluginManager *Editor::s_pluginManager = nullptr;
 
 DocumentModel *Editor::s_documentModel = nullptr;
 
-Editor::Editor() {
+TString Editor::m_binPath;
 
+Editor::Editor(int argc, char *argv[]) {
+    if(argc > 0) {
+        Url url(argv[0]);
+        m_binPath = url.absoluteDir();
+    }
 }
 
 Editor::~Editor() {
@@ -178,4 +185,8 @@ PluginManager *Editor::plugins() {
         s_pluginManager = new PluginManager;
     }
     return s_pluginManager;
+}
+
+TString Editor::applicationDirPath() {
+    return m_binPath;
 }

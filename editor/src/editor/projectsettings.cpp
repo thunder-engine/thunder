@@ -17,9 +17,6 @@
 */
 #include "projectsettings.h"
 
-#include <QDir>
-#include <QCoreApplication>
-
 #include <log.h>
 #include <json.h>
 #include <file.h>
@@ -50,7 +47,7 @@ namespace {
 */
 
 ProjectSettings::ProjectSettings() {
-    QDir dir(QCoreApplication::applicationDirPath());
+    Url dir(Editor::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
@@ -60,7 +57,7 @@ ProjectSettings::ProjectSettings() {
     dir.cdUp();
 #endif
 
-    m_sdkPath = dir.absolutePath().toStdString();
+    m_sdkPath = dir.absoluteDir();
     m_resourcePath = m_sdkPath + "/resources";
     m_templatePath = m_resourcePath + "/templates";
     m_myProjectsPath = Engine::value(gProjects, StandardPaths::writableLocation(StandardPaths::DocumentsLocation).data()).toString();
