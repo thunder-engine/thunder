@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
 namespace {
 
-// Копирует NSString в malloc-строку UTF-8. Возвращает nullptr при пустом входе.
 char *copyUtf8(NSString *s) {
     if(!s) {
         return nullptr;

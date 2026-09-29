@@ -42,6 +42,10 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/os/*.cpp")
+            if(qbs.targetOS.contains("darwin")) {
+                sources.push("src/os/*.mm")
+            }
+
             return sources
         }
         Depends { name: "cpp" }
@@ -69,8 +73,7 @@ Project {
             cpp.sonamePrefix: "@executable_path"
             cpp.dynamicLibraries: outer.concat(["objc"])
             cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
-            cpp.files: outer.concat([ "src/os/*.mm" ])
-
+            cpp.weakFrameworks: ["Foundation"]
         }
 
         Properties {
