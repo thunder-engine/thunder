@@ -41,10 +41,8 @@ class EditorGadget;
 class DocumentModel;
 
 class EDITOR_EXPORT Editor : public Object {
-    A_OBJECT(Editor, Object, General)
-
 public:
-    Editor();
+    Editor(int argc, char *argv[]);
     ~Editor();
 
     static void init();
@@ -70,7 +68,11 @@ public:
     static AssetManager *assets();
     static PluginManager *plugins();
 
+    static TString applicationDirPath();
+
 protected:
+    static TString m_binPath;
+
     static std::list<EditorGadget *> s_gadgets;
 
     static AssetEditor *s_currentEditor;

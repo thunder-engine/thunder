@@ -31,10 +31,18 @@ Url::Url() {
 
 }
 
-Url::Url(const TString &url) :
-    m_url(url.toStdString()) {
-
+Url::Url(const TString &url) {
     PROFILE_FUNCTION();
+
+    parse(url.toStdString());
+}
+
+Url::~Url() {
+
+}
+
+void Url::parse(const std::string &url) {
+    m_url = url;
 
     std::replace(m_url.begin(), m_url.end(), '\\', '/');
 
@@ -42,9 +50,6 @@ Url::Url(const TString &url) :
     std::regex_match(m_url, m_result, reg);
 }
 
-Url::~Url() {
-
-}
 /*!
     Compares current Url with \a right hand Url; Returns true if Urls are equal.
 */
@@ -300,4 +305,60 @@ TString Url::completeSuffix() const {
 bool Url::isAbsolute() const {
     char c = filePath().front();
     return c == '/' || c == '\\';
+}
+/*!
+    Changes the Url to point to the parent directory.
+    Returns true if the directory was changed; otherwise returns false.
+    Scheme, host, query and fragment are preserved.
+*/
+bool Url::cdUp() {
+    PROFILE_FUNCTION();
+
+    TString path = filePath();
+    if(path.isEmpty() || path == "/" || path == "." || path == "..") {
+        return false;
+    }
+
+    // Убираем завершающий '/', чтобы корректно обработать "a/b/" -> "a/"
+    if(path.size() > 1 && path.back() == '/') {
+        path = path.left(path.size() - 1);
+    }
+
+    int slash = path.lastIndexOf('/');
+    if(slash == -1) {
+        // Относительный путь без слешей ("file.txt") — родителя нет.
+        return false;
+    }
+
+    // Для абсолютных путей сохраняем корневой слеш ("/a" -> "/").
+    TString parentPath = path.left(slash + 1);
+    if(parentPath.isEmpty()) {
+        parentPath = "/";
+    }
+
+    TString result;
+    TString sch = scheme();
+    if(!sch.isEmpty()) {
+        result += sch + ":";
+    }
+
+    TString hst = host();
+    if(!hst.isEmpty()) {
+        result += TString("//") + hst;
+    }
+
+    result += parentPath;
+
+    TString q = query();
+    if(!q.isEmpty()) {
+        result += TString("?") + q;
+    }
+
+    TString frag = fragment();
+    if(!frag.isEmpty()) {
+        result += TString("#") + frag;
+    }
+
+    parse(result.toStdString());
+    return true;
 }
