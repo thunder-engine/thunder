@@ -61,11 +61,16 @@ jobs:
       with:
         submodules: recursive
   
+    - name: Fetch Vulkan SDK version spec
+      shell: bash
+      run: |
+        curl -o vulkan-sdk-config.json https://vulkan.lunarg.com/sdk/latest/linux.json
+    
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
         vulkan-query-version: latest
-        vulkan-config-file: linux.json
+        vulkan-config-file: vulkan-sdk-config.json
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
   
@@ -274,11 +279,16 @@ jobs:
       with:
         submodules: recursive
     
+    - name: Fetch Vulkan SDK version spec
+      shell: bash
+      run: |
+        curl -o vulkan-sdk-config.json https://vulkan.lunarg.com/sdk/latest/windows.json
+    
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
         vulkan-query-version: latest
-        vulkan-config-file: linux.json
+        vulkan-config-file: vulkan-sdk-config.json
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
         
