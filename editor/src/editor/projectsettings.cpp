@@ -19,7 +19,6 @@
 
 #include <QDir>
 #include <QCoreApplication>
-#include <QSettings>
 
 #include <log.h>
 #include <json.h>
@@ -36,7 +35,7 @@
 #include "editor/pluginmanager.h"
 
 namespace {
-    const char *gProjects("Projects");
+    const char *gProjects("projects");
     const char *gThumbnails("thumbnails");
     const char *gGenerated("generated");
     const char *gCache("cache");
@@ -64,10 +63,7 @@ ProjectSettings::ProjectSettings() {
     m_sdkPath = dir.absolutePath().toStdString();
     m_resourcePath = m_sdkPath + "/resources";
     m_templatePath = m_resourcePath + "/templates";
-
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QString path = settings.value(gProjects, StandardPaths::writableLocation(StandardPaths::DocumentsLocation).data()).toString();
-    m_myProjectsPath = path.toStdString();
+    m_myProjectsPath = Engine::value(gProjects, StandardPaths::writableLocation(StandardPaths::DocumentsLocation).data()).toString();
 }
 
 /*!
