@@ -18,10 +18,10 @@
 #include "commitrevert.h"
 #include "ui_commitrevert.h"
 
-#include <QMessageBox>
-
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
+
+#include <message.h>
 
 CommitRevert::CommitRevert(QWidget *parent) :
         QWidget(parent),
@@ -91,23 +91,23 @@ void CommitRevert::on_revertButton_clicked() {
 
 void CommitRevert::checkImportSettings(AssetConverterSettings *settings) {
     if(settings->isModified()) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("The import settings has been modified."));
-        msgBox.setInformativeText(tr("Do you want to save your changes?"));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
+        Message msgBox;
+        msgBox.setIcon(Message::Question);
+        msgBox.setText(tr("The import settings has been modified.").toStdString());
+        msgBox.setInformativeText(tr("Do you want to save your changes?").toStdString());
+        msgBox.setStandardButtons(Message::Yes | Message::No | Message::Cancel);
+        msgBox.setDefaultButton(Message::Cancel);
 
         int result = msgBox.exec();
-        if(result == QMessageBox::Cancel) {
+        if(result == Message::Cancel) {
             return;
         }
-        if(result == QMessageBox::Yes) {
+        if(result == Message::Yes) {
             settings->saveSettings();
             Editor::assets()->pushToImport(settings);
             Editor::assets()->reimport();
         }
-        if(result == QMessageBox::No) {
+        if(result == Message::No) {
             settings->loadSettings();
         }
     }

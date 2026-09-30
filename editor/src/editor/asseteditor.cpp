@@ -17,10 +17,9 @@
 */
 #include "editor/asseteditor.h"
 
-#include <QMessageBox>
-
 #include <url.h>
 #include <filedialog.h>
+#include <message.h>
 
 #include "editor/assetconverter.h"
 #include "editor/projectsettings.h"
@@ -213,12 +212,12 @@ void AssetEditor::onPasteAction() {
 }
 
 int AssetEditor::closeAssetDialog() {
-    QMessageBox msgBox(nullptr);
-    msgBox.setIcon(QMessageBox::Question);
-    msgBox.setText(tr("The asset has been modified."));
-    msgBox.setInformativeText(tr("Do you want to save your changes?"));
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
+    Message msgBox;
+    msgBox.setIcon(Message::Question);
+    msgBox.setText(tr("The asset has been modified.").toStdString());
+    msgBox.setInformativeText(tr("Do you want to save your changes?").toStdString());
+    msgBox.setStandardButtons(Message::Yes | Message::No | Message::Cancel);
+    msgBox.setDefaultButton(Message::Cancel);
 
     return msgBox.exec();
 }
@@ -229,9 +228,9 @@ int AssetEditor::closeAssetDialog() {
 bool AssetEditor::checkSave() {
     if(isModified()) {
         int result = closeAssetDialog();
-        if(result == QMessageBox::Cancel) {
+        if(result == Message::Cancel) {
             return false;
-        } else if(result == QMessageBox::Yes) {
+        } else if(result == Message::Yes) {
             onSave();
         } else {
             cleanModified();

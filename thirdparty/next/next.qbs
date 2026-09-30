@@ -73,7 +73,7 @@ Project {
             cpp.sonamePrefix: "@executable_path"
             cpp.dynamicLibraries: outer.concat(["objc"])
             cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
-            cpp.weakFrameworks: ["Foundation"]
+            cpp.weakFrameworks: ["Foundation", "AppKit"]
         }
 
         Properties {

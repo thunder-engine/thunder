@@ -17,7 +17,6 @@
 */
 #include "objectcontroller.h"
 
-#include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
 
@@ -42,6 +41,8 @@
 #include <input.h>
 #include <log.h>
 #include <url.h>
+
+#include <message.h>
 
 #include "tools/selecttool.h"
 #include "tools/movetool.h"
@@ -559,8 +560,8 @@ void ObjectController::onUpdated(Object *object) {
 }
 
 void ObjectController::onCreateComponent(QString type) {
-    std::string typeName(qPrintable(type));
-    UndoCommand *group = new UndoCommand(TString("Create Component ") + type.toStdString());
+    TString typeName(type.toStdString());
+    UndoCommand *group = new UndoCommand(TString("Create Component ") + typeName);
     bool created = false;
     bool alreadyExists = false;
 
@@ -581,11 +582,11 @@ void ObjectController::onCreateComponent(QString type) {
     }
 
     if(alreadyExists && !created) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText(tr("Creation Component Failed"));
-        msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for the selected actors.")).arg(type));
-        msgBox.setStandardButtons(QMessageBox::Ok);
+        Message msgBox;
+        msgBox.setIcon(Message::Warning);
+        msgBox.setText(tr("Creation Component Failed").toStdString());
+        msgBox.setInformativeText(TString(tr("Component with type \"%1\" already defined for the selected actors.").toStdString()).arg(typeName));
+        msgBox.setStandardButtons(Message::Ok);
         msgBox.exec();
     }
 }
