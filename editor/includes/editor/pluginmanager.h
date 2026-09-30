@@ -24,7 +24,7 @@
 
 #include <editor.h>
 
-class QLibrary;
+class Library;
 
 class Object;
 class Module;
@@ -138,7 +138,7 @@ private:
 
         std::map<TString, TString> objects;
 
-        QLibrary *library;
+        Library *library;
 
         Module *module;
 
