@@ -50,7 +50,7 @@ if(desktop)
         enable_language(OBJCXX)
         target_sources(${PROJECT_NAME} PRIVATE
                         ${CMAKE_CURRENT_SOURCE_DIR}/standardpaths.mm)
-        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Foundation")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Foundation" "-framework AppKit")
     endif()
 
     # Solve build error using Clang on BSDs

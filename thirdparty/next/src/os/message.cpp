@@ -305,7 +305,7 @@ bool MessagePrivate::execLinux() {
     // For custom button combinations, we need to add buttons manually
     if(buttonsType == GTK_BUTTONS_NONE) {
         std::vector<TString> texts = standardButtonTexts();
-        std::vector<MessageBox::StandardButton> ids = standardButtonIds();
+        std::vector<Message::StandardButton> ids = standardButtonIds();
 
         for(size_t i = 0; i < texts.size(); i++) {
             gtk_dialog_add_button(GTK_DIALOG(dialog), texts[i].data(),
@@ -321,7 +321,7 @@ bool MessagePrivate::execLinux() {
 
     // Set default button
     if(m_defaultButton != Message::NoButton) {
-        std::vector<MessageBox::StandardButton> ids = standardButtonIds();
+        std::vector<Message::StandardButton> ids = standardButtonIds();
 
         for(size_t i = 0; i < ids.size(); i++) {
             if(ids[i] == m_defaultButton) {
@@ -342,7 +342,7 @@ bool MessagePrivate::execLinux() {
             m_clickedButtonText = m_customButtons[customIndex].text;
         }
     } else if(response > 0) {
-        std::vector<MessageBox::StandardButton> ids = standardButtonIds();
+        std::vector<Message::StandardButton> ids = standardButtonIds();
 
         int idx = response - 1;
         if(idx >= 0 && idx < static_cast<int>(ids.size())) {
