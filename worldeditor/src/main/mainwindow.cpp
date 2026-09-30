@@ -21,7 +21,6 @@
 #include <QFile>
 #include <QSettings>
 #include <QApplication>
-#include <QMessageBox>
 #include <QCloseEvent>
 #include <QDirIterator>
 
@@ -31,6 +30,7 @@
 #include <url.h>
 #include <file.h>
 #include <filedialog.h>
+#include <message.h>
 
 #include <editor/asseteditor.h>
 
@@ -655,15 +655,15 @@ void MainWindow::build(QString platform) {
 }
 
 void MainWindow::onBuildFinished(int exitCode, QProcess::ExitStatus) {
-    QMessageBox msg;
+    Message msg;
     if(exitCode == 0) {
-        msg.setText("Build Succeeded.");
-        msg.setIcon(QMessageBox::Information);
-        aInfo() << qPrintable(msg.text());
+        msg.setText(tr("Build Succeeded.").toStdString());
+        msg.setIcon(Message::Information);
+        aInfo() << msg.text();
     } else {
-        msg.setText("Build Failed. Please check log output for more details.");
-        msg.setIcon(QMessageBox::Critical);
-        aError() << qPrintable(msg.text());
+        msg.setText(tr("Build Failed. Please check log output for more details.").toStdString());
+        msg.setIcon(Message::Critical);
+        aError() << msg.text();
     }
     msg.exec();
 }

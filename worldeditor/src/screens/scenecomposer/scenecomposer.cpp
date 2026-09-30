@@ -19,7 +19,6 @@
 #include "ui_scenecomposer.h"
 
 #include <QMenu>
-#include <QMessageBox>
 #include <QWidgetAction>
 #include <QFormLayout>
 #include <QLineEdit>
@@ -33,6 +32,7 @@
 #include <json.h>
 #include <bson.h>
 #include <filedialog.h>
+#include <message.h>
 #include <engine.h>
 #include <components/actor.h>
 #include <components/world.h>
@@ -565,16 +565,16 @@ void SceneComposer::onRemoveScene() {
 void SceneComposer::onDiscardChanges() {
     Scene *scene = menuScene();
     if(scene) {
-        QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
-                .arg(scene->name().data());
-        QMessageBox msgBox(nullptr);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("Discard Changes."));
+        TString text = TString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost.").toStdString())
+                .arg(scene->name());
+        Message msgBox;
+        msgBox.setIcon(Message::Question);
+        msgBox.setText(tr("Discard Changes.").toStdString());
         msgBox.setInformativeText(text);
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
+        msgBox.setStandardButtons(Message::Yes | Message::No);
+        msgBox.setDefaultButton(Message::No);
 
-        if(msgBox.exec() == QMessageBox::Yes) {
+        if(msgBox.exec() == Message::Yes) {
             uint32_t uuid = scene->uuid();
             delete scene;
 

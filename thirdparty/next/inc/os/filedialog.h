@@ -20,7 +20,6 @@
 #define FILEDIALOG_H
 
 #include <astring.h>
-#include <memory>
 
 class FileDialogPrivate;
 

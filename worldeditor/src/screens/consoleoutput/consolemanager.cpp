@@ -22,7 +22,6 @@
 
 #include <QMenu>
 #include <QClipboard>
-#include <QMessageBox>
 
 #include "logmodel.h"
 #include "qlog.h"
