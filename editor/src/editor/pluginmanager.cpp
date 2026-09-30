@@ -17,11 +17,6 @@
 */
 #include "pluginmanager.h"
 
-#include <QCoreApplication>
-#include <QLibrary>
-
-#include <log.h>
-#include <url.h>
 #include <engine.h>
 #include <module.h>
 #include <system.h>
@@ -32,6 +27,9 @@
 
 #include <bson.h>
 #include <json.h>
+#include <library.h>
+#include <log.h>
+#include <url.h>
 
 #include "config.h"
 
@@ -191,8 +189,8 @@ void PluginManager::init(Engine *engine) {
 
     syncWhiteList();
 
-    loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared).toStdString());
-    rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());
+    loadPlugin((Editor::applicationDirPath() + "/uikit-editor" + gShared));
+    rescanPath((Editor::applicationDirPath() + "/plugins"));
 }
 
 /*!
@@ -209,7 +207,7 @@ bool PluginManager::rescanProject(const TString &path) {
     while replacing the loaded plugin.
 */
 bool PluginManager::loadPlugin(const TString &path, bool reload) {
-    QLibrary *lib = new QLibrary(path.data());
+    Library *lib = new Library(path);
     if(lib->load()) {
         ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
@@ -293,13 +291,13 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                 }
                 return true;
             } else {
-                aError() << gLabel << "Can't create plugin:" << qPrintable(lib->fileName());
+                aError() << gLabel << "Can't create plugin:" << lib->fileName();
             }
         } else {
-            aError() << gLabel << "Bad plugin:" << qPrintable(lib->fileName());
+            aError() << gLabel << "Bad plugin:" << lib->fileName();
         }
     } else {
-        aError() << gLabel << "Can't load plugin:" << qPrintable(lib->fileName()) << "With error:" << qPrintable(lib->errorString());
+        aError() << gLabel << "Can't load plugin:" << lib->fileName() << "With error:" << lib->errorString();
     }
     delete lib;
     return false;

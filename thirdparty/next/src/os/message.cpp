@@ -1,3 +1,21 @@
+/*
+    This file is part of Thunder Next.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 #include "os/message.h"
 
 #include <vector>
@@ -375,6 +393,113 @@ bool MessagePrivate::execLinux() {
 }
 #endif // __linux__
 
+/*!
+    \class Message
+    \brief Platform-independent modal message dialog.
+    \since Next 1.0
+    \inmodule OS
+
+    `Message` provides a portable interface for showing modal message
+    dialogs with a title, primary text, informative text, detailed text,
+    and a configurable set of buttons and an icon. The dialog is
+    implemented on top of the native platform APIs:
+
+    \list
+        \li Windows: `MessageBoxA` from `User32.lib`.
+        \li Linux:   GTK+ `GtkMessageDialog`.
+        \li macOS:   not implemented in this version.
+    \endlist
+
+    Typical usage:
+
+    \code
+    Message msg;
+    msg.setWindowTitle("Confirm");
+    msg.setText("Save changes?");
+    msg.setIcon(Message::Question);
+    msg.setStandardButtons(Message::Yes | Message::No);
+    msg.setDefaultButton(Message::Yes);
+
+    if(msg.exec() == Message::Yes) {
+        // user confirmed
+    }
+    \endcode
+
+    \sa StandardButton, Icon, exec()
+*/
+
+/*!
+    \enum Message::Icon
+
+    Predefined icons that can be shown in the message dialog.
+
+    \value NoIcon
+           No icon is shown.
+    \value Information
+           An informational icon (i) is shown.
+    \value Warning
+           A warning icon (!) is shown.
+    \value Critical
+           A critical error icon is shown.
+    \value Question
+           A question mark icon is shown.
+*/
+
+/*!
+    \enum Message::StandardButton
+
+    Flags describing the set of standard buttons displayed in the
+    message dialog. Values can be combined with the bitwise OR
+    operator.
+
+    \value NoButton        No button.
+    \value Ok              An "OK" button.
+    \value Save            A "Save" button.
+    \value SaveAll         A "Save All" button.
+    \value Open            An "Open" button.
+    \value Yes             A "Yes" button.
+    \value YesToAll        A "Yes to All" button.
+    \value No              A "No" button.
+    \value NoToAll         A "No to All" button.
+    \value Abort           An "Abort" button.
+    \value Retry           A "Retry" button.
+    \value Ignore          An "Ignore" button.
+    \value Close           A "Close" button.
+    \value Cancel          A "Cancel" button.
+    \value Discard         A "Discard" button.
+    \value Help            A "Help" button.
+    \value Apply           An "Apply" button.
+    \value Reset           A "Reset" button.
+    \value RestoreDefaults A "Restore Defaults" button.
+
+    \sa setStandardButtons()
+*/
+
+/*!
+    \enum Message::ButtonRole
+
+    Roles that describe the semantic meaning of a custom button.
+    The role is currently informational only; it is not used by the
+    platform backends to change button behavior.
+
+    \value InvalidRole     An invalid role.
+    \value AcceptRole      The button accepts the operation.
+    \value RejectRole      The button rejects the operation.
+    \value DestructiveRole The button triggers a destructive action.
+    \value ActionRole      The button performs a non-committing action.
+    \value HelpRole        The button opens help.
+    \value YesRole         The button answers "Yes".
+    \value NoRole          The button answers "No".
+    \value ResetRole       The button resets the dialog to defaults.
+    \value ApplyRole       The button applies the current settings.
+
+    \sa addButton()
+*/
+
+/*!
+    Constructs an empty `Message` object with default settings:
+    no text, no icon, and the \l{StandardButton}{Ok} standard button.
+*/
 Message::Message() :
     m_ptr(new MessagePrivate) {
 }
@@ -383,62 +508,191 @@ Message::~Message() {
     delete m_ptr;
 }
 
+/*!
+    Move-constructs a `Message` from \a other.
+*/
 Message::Message(Message&&) noexcept = default;
+
+/*!
+    Move-assigns \a other to this `Message`.
+*/
 Message& Message::operator=(Message&&) noexcept = default;
 
+/*!
+    Sets the dialog's window title to \a title.
+
+    If the title is empty, the platform default title is used
+    (for example, "Message" on Windows).
+
+    \sa setText()
+*/
 void Message::setWindowTitle(const TString &title) {
     m_ptr->m_windowTitle = title;
 }
 
+/*!
+    Returns the primary text shown in the dialog.
+
+    \sa setText()
+*/
 TString Message::text() const {
     return m_ptr->m_text;
 }
 
+/*!
+    Sets the primary text of the dialog to \a text.
+
+    This is the main message shown to the user.
+
+    \sa text(), setInformativeText(), setDetailedText()
+*/
 void Message::setText(const TString &text) {
     m_ptr->m_text = text;
 }
 
+/*!
+    Sets the informative text of the dialog to \a text.
+
+    The informative text is displayed below the primary text and is
+    intended to provide additional context. Platform backends concatenate
+    it with the primary text separated by a blank line.
+
+    \sa setText(), setDetailedText()
+*/
 void Message::setInformativeText(const TString &text) {
     m_ptr->m_informativeText = text;
 }
 
+/*!
+    Sets the detailed text of the dialog to \a text.
+
+    The detailed text is intended for technical details such as error
+    dumps or file paths. Platform backends concatenate it after the
+    informative text separated by a blank line.
+
+    \sa setText(), setInformativeText()
+*/
 void Message::setDetailedText(const TString &text) {
     m_ptr->m_detailedText = text;
 }
 
+/*!
+    Sets the icon shown in the dialog to \a icon.
+
+    \sa Icon
+*/
 void Message::setIcon(Icon icon) {
     m_ptr->m_icon = icon;
 }
 
+/*!
+    Sets the set of standard buttons shown in the dialog to \a buttons.
+
+    The \a buttons parameter is a bitwise OR of the \l{StandardButton}
+    values. For example, `Message::Yes | Message::No | Message::Cancel`.
+
+    Not every combination is natively supported by all platforms; the
+    backends fall back to the closest available set if necessary.
+
+    \sa StandardButton, addButton()
+*/
 void Message::setStandardButtons(int buttons) {
     m_ptr->m_standardButtons = buttons;
 }
 
+/*!
+    Adds a custom button with the given \a text and \a role to the dialog.
+
+    Custom buttons appear after all standard buttons. The \a role
+    parameter is currently informational only and does not affect
+    the button's behavior on any platform.
+
+    \sa ButtonRole, setStandardButtons()
+*/
 void Message::addButton(const TString &text, ButtonRole role) {
     m_ptr->m_customButtons.push_back({text, role});
 }
 
+/*!
+
+    Sets the default button to \a button.
+
+    The default button is focused when the dialog opens and is activated
+    when the user presses Enter (unless overridden by the platform).
+
+    \sa StandardButton, setEscapeButton()
+*/
 void Message::setDefaultButton(StandardButton button) {
     m_ptr->m_defaultButton = button;
 }
 
+/*!
+    \fn void Message::setEscapeButton(StandardButton button)
+
+    Sets the button that is activated when the user presses Escape to
+    \a button.
+
+    \note Currently this setting is stored but not forwarded to the
+    platform backend on any supported platform.
+
+    \sa StandardButton, setDefaultButton()
+*/
 void Message::setEscapeButton(StandardButton button) {
     m_ptr->m_escapeButton = button;
 }
 
+/*!
+    Shows the dialog modally and blocks until the user closes it.
+
+    Returns the \l{StandardButton} value of the button that was clicked,
+    or \l{StandardButton}{NoButton} if the dialog was closed without a
+    recognized button press.
+
+    For custom buttons added via addButton(), use
+    customButtonClicked() to obtain the index of the clicked button.
+
+    \sa standardButtonClicked(), customButtonClicked(), clickedButtonText()
+*/
 int Message::exec() {
     m_ptr->exec();
     return m_ptr->m_clickedStandardButton;
 }
 
+/*!
+    Returns the standard button that was clicked in the last exec() call,
+    or \l{StandardButton}{NoButton} if a custom button was clicked or
+    no button was pressed.
+
+    \sa exec(), customButtonClicked()
+*/
 Message::StandardButton Message::standardButtonClicked() const {
     return m_ptr->m_clickedStandardButton;
 }
 
+/*!
+    Returns the zero-based index of the custom button that was clicked
+    in the last exec() call, or -1 if a standard button was clicked or
+    no button was pressed.
+
+    Custom buttons are indexed in the order they were added via
+    addButton().
+
+    \sa exec(), addButton(), standardButtonClicked()
+*/
 int Message::customButtonClicked() const {
     return m_ptr->m_clickedCustomButton;
 }
 
+/*!
+    Returns the text of the button that was clicked in the last exec()
+    call. For standard buttons, this is the localized (or, in this
+    implementation, hard-coded English) label. For custom buttons, it
+    is the text passed to addButton().
+
+    If no button was clicked, an empty string is returned.
+
+    \sa exec(), standardButtonClicked(), customButtonClicked()
+*/
 TString Message::clickedButtonText() const {
     return m_ptr->m_clickedButtonText;
 }
