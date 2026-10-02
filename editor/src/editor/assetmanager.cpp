@@ -75,10 +75,8 @@ namespace {
 
 AssetManager::AssetManager() :
         m_assetProvider(new BaseAssetProvider),
-        m_timer(new QTimer(this)),
         m_force(false) {
 
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(onPerform()));
 }
 
 AssetManager::~AssetManager() {
@@ -111,6 +109,8 @@ void AssetManager::init() {
             registerConverter(converter);
         }
     }
+
+    Editor::project()->loadPlatforms();
 }
 
 /*!
@@ -137,9 +137,7 @@ void AssetManager::rescan() {
 
     Engine::resourceSystem()->setCleanImport(m_force);
 
-    emit directoryChanged(Editor::project()->contentPath().data());
-
-    reimport();
+    directoryChanged(Editor::project()->contentPath());
 }
 
 /*!
@@ -180,6 +178,11 @@ bool AssetManager::pushToImport(AssetConverterSettings *settings) {
     if(settings && std::find(m_importQueue.begin(), m_importQueue.end(), settings) == m_importQueue.end()) {
         m_importQueue.push_back(settings);
     }
+
+    m_importQueue.sort([](AssetConverterSettings *left, AssetConverterSettings *right) {
+        return left->type() < right->type();
+    });
+
     return true;
 }
 
@@ -278,19 +281,6 @@ void AssetManager::fixUUIDs() {
 }
 
 /*!
-    Starts importing all queued assets.
-*/
-void AssetManager::reimport() {
-    m_importQueue.sort([](AssetConverterSettings *left, AssetConverterSettings *right) {
-        return left->type() < right->type();
-    });
-
-    emit importStarted(m_importQueue.size(), tr("Importing resources").toStdString());
-
-    m_timer->start(10);
-}
-
-/*!
     Handles the result of a code builder operation.
 */
 void AssetManager::onBuildSuccessful(bool flag, CodeBuilder *builder) {
@@ -301,7 +291,33 @@ void AssetManager::onBuildSuccessful(bool flag, CodeBuilder *builder) {
         }
     }
 
-    emit buildSuccessful(flag);
+    buildSuccessful(flag);
+}
+
+void AssetManager::directoryChanged(const TString &path) {
+    emitSignal(_SIGNAL(directoryChanged(TString)), path);
+}
+
+void AssetManager::prefabCreated(uint32_t clone) {
+    emitSignal(_SIGNAL(prefabCreated(uint32_t)), clone);
+}
+
+void AssetManager::buildSuccessful(bool flag) {
+    emitSignal(_SIGNAL(buildSuccessful(bool)), flag);
+}
+
+int AssetManager::pendingImportCount() const {
+    return static_cast<int>(m_importQueue.size());
+}
+
+void AssetManager::importNext() {
+    if(m_importQueue.empty()) {
+        return;
+    }
+
+    AssetConverterSettings *settings = m_importQueue.front();
+    m_importQueue.pop_front();
+    convert(settings);
 }
 
 /*!
@@ -354,8 +370,7 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
 
             Object *parent = actor->parent();
             Actor *clone = static_cast<Actor *>(actor->clone(parent));
-
-            emit prefabCreated(id.toLong(), clone->uuid());
+            prefabCreated(clone->uuid());
         }
     }
 }
@@ -586,63 +601,52 @@ void AssetManager::dumpBundle() {
     }
 }
 
-void AssetManager::onPerform() {
+bool AssetManager::finishImport() {
+    fixUUIDs();
     if(!m_importQueue.empty()) {
-        auto settings = m_importQueue.front();
-        m_importQueue.pop_front();
-        convert(settings);
-    } else {
-        bool result = false;
+        return false;
+    }
 
-        fixUUIDs();
-        if(!m_importQueue.empty()) {
-            return;
+    for(auto &path : File::list(Editor::project()->importPath())) {
+        TString fileName(Url(path).name());
+        if(!File::isDir(path) && fileName != gIndex && uuidToPath(fileName).isEmpty()) {
+            File::remove(path);
         }
+    }
 
-        for(CodeBuilder *it : std::as_const(m_builders)) {
-            it->rescanSources(Editor::project()->contentPath());
-            NativeCodeBuilder *native = dynamic_cast<NativeCodeBuilder *>(it);
-            if(!it->isEmpty() && (native == nullptr || (native == Editor::project()->currentBuilder() && Editor::project()->targetPath().isEmpty()))) {
-                if(it->isOutdated()) {
-                    result = true;
+    ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
+    auto tmp = indices;
+    for(auto &index : tmp) {
+        if(index.second.uuid.isEmpty() || (!File::exists(Editor::project()->importPath() + "/" + index.second.uuid))) {
+            indices.erase(index.second.uuid);
+        }
+    }
 
-                    if(!it->buildProject()) {
-                        m_force = false;
-                        m_timer->stop();
-                        Engine::resourceSystem()->setCleanImport(m_force);
-                        emit importFinished();
-                    }
+    dumpBundle();
+
+    m_force = false;
+    Engine::resourceSystem()->setCleanImport(m_force);
+    emitSignal(_SIGNAL(importFinished()));
+    return true;
+}
+
+bool AssetManager::runBuilders() {
+    bool building = false;
+    for(CodeBuilder *it : std::as_const(m_builders)) {
+        it->rescanSources(Editor::project()->contentPath());
+        NativeCodeBuilder *native = dynamic_cast<NativeCodeBuilder *>(it);
+        if(!it->isEmpty() && (native == nullptr || (native == Editor::project()->currentBuilder() && Editor::project()->targetPath().isEmpty()))) {
+            if(it->isOutdated()) {
+                if(it->buildProject()) {
+                    building = true;
+                } else {
+                    m_force = false;
+                    Engine::resourceSystem()->setCleanImport(m_force);
                 }
             }
         }
-
-        // Cleanup bundle
-        for(auto &path : File::list(Editor::project()->importPath())) {
-            TString fileName(Url(path).name());
-            if(!File::isDir(path) && fileName != gIndex && uuidToPath(fileName).isEmpty()) {
-                File::remove(path);
-            }
-        }
-
-        ResourceSystem::Dictionary &indices = Engine::resourceSystem()->indices();
-        auto tmp = indices;
-        for(auto &index : tmp) {
-            if(index.second.uuid.isEmpty() || (!File::exists(Editor::project()->importPath() + "/" + index.second.uuid))) {
-                indices.erase(index.second.uuid);
-            }
-        }
-
-        dumpBundle();
-
-        if(result) {
-            return;
-        }
-
-        m_force = false;
-        m_timer->stop();
-        Engine::resourceSystem()->setCleanImport(m_force);
-        emit importFinished();
     }
+    return building;
 }
 
 /*!
@@ -677,12 +681,9 @@ void AssetManager::convert(AssetConverterSettings *settings) {
                     TString uuid = settings->subItem(it).uuid;
                     if(File::exists(Editor::project()->importPath() + "/" + uuid)) {
                         Engine::reloadResource(uuid);
-                        emit imported();
                     }
                 }
-
                 Engine::reloadResource(settings->destination());
-                emit imported();
 
                 settings->saveSettings();
                 auto &list = settings->changedUuids();

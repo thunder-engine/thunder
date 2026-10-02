@@ -71,15 +71,17 @@ namespace {
     const char *gComponent("component");
 };
 
-class WorldObserver : public Object {
-    A_OBJECT(WorldObserver, Object, Editor)
+class SceneComposerProxy : public Object {
+    A_OBJECT(SceneComposerProxy, Object, Editor)
 
     A_METHODS(
-        A_SLOT(WorldObserver::onSceneUpdated)
+        A_SLOT(SceneComposerProxy::onSceneUpdated),
+        A_SLOT(SceneComposerProxy::onBuildSuccessful),
+        A_SLOT(SceneComposerProxy::onPrefabCreated)
     )
 
 public:
-    WorldObserver() :
+    SceneComposerProxy() :
         m_sceneComposer(nullptr),
         m_world(nullptr) {
 
@@ -87,6 +89,9 @@ public:
 
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
+
+        connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+        connect(Editor::assets(), _SIGNAL(prefabCreated(uint32)), this, _SLOT(onPrefabCreated(uint32)));
 
         World *world = Engine::world();
         if(m_world != world) {
@@ -107,6 +112,14 @@ private:
         m_sceneComposer->updated();
     }
 
+    void onBuildSuccessful() {
+        m_sceneComposer->selectionChanged();
+    }
+
+    void onPrefabCreated(uint32_t clone) {
+        m_sceneComposer->m_controller->onPrefabCreated(clone);
+    }
+
 private:
     SceneComposer *m_sceneComposer;
 
@@ -117,7 +130,7 @@ private:
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
         m_controller(new ObjectController(this)),
-        m_worldObserver(new WorldObserver),
+        m_sceneComposerProxy(new SceneComposerProxy),
         m_isolationSettings(nullptr),
         m_isolationWorld(Engine::objectCreate<World>("World")),
         m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationWorld)),
@@ -151,7 +164,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     ui->renderMode->menu()->addSeparator();
 
-    m_worldObserver->setSceneComposer(this);
+    m_sceneComposerProxy->setSceneComposer(this);
 
     QWidget *snapWidget = new QWidget();
 
@@ -222,7 +235,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
     connect(Editor::plugins(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::selectionChanged);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 
@@ -249,7 +261,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 }
 
 SceneComposer::~SceneComposer() {
-    delete m_worldObserver;
+    delete m_sceneComposerProxy;
     delete m_controller;
 
     delete ui;

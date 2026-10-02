@@ -211,7 +211,6 @@ ObjectController::ObjectController(SceneComposer *editor) :
         m_canceled(false),
         m_local(false) {
 
-    connect(Editor::assets(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
     Editor::settings()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
@@ -398,13 +397,14 @@ void ObjectController::onApplySettings() {
     }
 }
 
-void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
+void ObjectController::onPrefabCreated(uint32_t clone) {
     Scene *scene = nullptr;
     bool swapped = false;
-    for(auto &it : m_selected) {
-        if(it.uuid == uuid) {
-            Object *object = Engine::findObject(clone);
-            if(object) {
+    Object *object = Engine::findObject(clone);
+    if(object) {
+        uint32_t uuid = object->clonedFrom();
+        for(auto &it : m_selected) {
+            if(it.uuid == uuid) {
                 it.object = static_cast<Actor *>(object);
                 it.uuid = object->uuid();
                 scene = it.object->scene();

@@ -23,7 +23,8 @@
 #include <QMenu>
 
 class ObjectController;
-class WorldObserver;
+class SceneComposerProxy;
+
 class Prefab;
 class Scene;
 
@@ -142,6 +143,8 @@ private:
     Scene *menuScene() const;
 
 private:
+    friend class SceneComposerProxy;
+
     Ui::SceneComposer *ui;
 
     QMenu m_actorMenu;
@@ -158,7 +161,7 @@ private:
 
     ObjectController *m_controller;
 
-    WorldObserver *m_worldObserver;
+    SceneComposerProxy *m_sceneComposerProxy;
 
     QAction *m_activeSceneAction;
 

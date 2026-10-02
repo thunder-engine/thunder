@@ -96,8 +96,6 @@ void BaseAssetProvider::init(bool force) {
 */
 void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
-
-    Editor::assets()->reimport();
 }
 /*!
     Handles a file change with an optional forced import.
