@@ -71,7 +71,6 @@ void CommitRevert::on_commitButton_clicked() {
     if(settings && settings->isModified()) {
         settings->saveSettings();
         Editor::assets()->pushToImport(settings);
-        Editor::assets()->reimport();
     }
 
     ui->commitButton->setEnabled(false);
@@ -105,7 +104,6 @@ void CommitRevert::checkImportSettings(AssetConverterSettings *settings) {
         if(result == Message::Yes) {
             settings->saveSettings();
             Editor::assets()->pushToImport(settings);
-            Editor::assets()->reimport();
         }
         if(result == Message::No) {
             settings->loadSettings();
