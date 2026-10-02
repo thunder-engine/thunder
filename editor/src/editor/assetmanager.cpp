@@ -298,6 +298,10 @@ void AssetManager::directoryChanged(const TString &path) {
     emitSignal(_SIGNAL(directoryChanged(TString)), path);
 }
 
+void AssetManager::importFinished() {
+    emitSignal(_SIGNAL(importFinished()));
+}
+
 void AssetManager::prefabCreated(uint32_t clone) {
     emitSignal(_SIGNAL(prefabCreated(uint32_t)), clone);
 }
@@ -626,7 +630,7 @@ bool AssetManager::finishImport() {
 
     m_force = false;
     Engine::resourceSystem()->setCleanImport(m_force);
-    emitSignal(_SIGNAL(importFinished()));
+    importFinished();
     return true;
 }
 

@@ -33,12 +33,34 @@ namespace {
     const char *gName("name");
 };
 
+class AssetListProxy : public Object {
+    A_OBJECT(AssetListProxy, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(AssetListProxy::onImportFinished)
+    )
+
+    void setOrigin(AssetList *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(importFinished()), this, _SLOT(onImportFinished()));
+        //connect(Editor::assets(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
+    }
+
+    void onImportFinished() {
+        m_origin->update();
+    }
+
+private:
+    AssetList *m_origin = nullptr;
+};
+
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
-        m_cellSzie(64, 64) {
+        m_cellSzie(64, 64),
+        m_assetListProxy(new AssetListProxy) {
 
-    connect(Editor::assets(), &AssetManager::importFinished, this, &AssetList::update);
-    connect(Editor::assets(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
+    m_assetListProxy->setOrigin(this);
 
     update();
 }
