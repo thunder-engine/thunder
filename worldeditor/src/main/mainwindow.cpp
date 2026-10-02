@@ -299,7 +299,6 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
 
     Editor::assets()->init();
 
-    Editor::project()->loadPlatforms();
     // Read settings early for converters
     Editor::settings()->loadSettings();
 

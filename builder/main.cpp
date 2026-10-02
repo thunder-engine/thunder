@@ -31,33 +31,7 @@
 
 #include "builder.h"
 
-#include <iostream>
-
 #include <log.h>
-
-static bool succeed = true;
-
-class ConsoleLog : public LogHandler {
-public:
-    void setRecord(Log::LogTypes type, const char *record) {
-        std::string level;
-        switch(type) {
-            case Log::CRT: level = "[ critical ]"; break;
-            case Log::ERR: level = "[ error ]"; break;
-            case Log::WRN: level = "[ warning ]"; break;
-            case Log::INF: level = "[ info ]"; break;
-            case Log::DBG: level = "[ debug ]"; break;
-
-            default: break;
-        }
-
-        std::cout << level << record << std::endl;
-        if(type <= Log::ERR) {
-            succeed = false;
-            QCoreApplication::exit(1);
-        }
-    }
-};
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
@@ -92,10 +66,7 @@ int main(int argc, char *argv[]) {
         parser.showHelp(1);
     }
 
-    Log::addHandler(new ConsoleLog());
     Log::setLogLevel(Log::DBG);
-
-    aInfo() << "Starting builder...";
 
     Engine::setOrganizationName(COMPANY_NAME);
     Engine::setApplicationName(BUILDER_NAME);
@@ -105,26 +76,21 @@ int main(int argc, char *argv[]) {
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
     Editor editor(argc, argv);
+    Builder *builder = new Builder();
+    Log::addHandler(builder);
+
+    aInfo() << "Starting builder...";
+
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
 
     Editor::plugins()->init(&engine);
     Editor::assets()->init();
-
-    Editor::project()->loadPlatforms();
 
     if(!Editor::plugins()->rescanProject(Editor::project()->pluginsPath())) {
         aWarning() << "Not all plugins were loaded.";
     }
     Editor::plugins()->initSystems();
 
-    Builder builder;
-
-    builder.setPlatform(parser.value(platformOption).toStdString());
-    if(!succeed) {
-        return 1;
-    }
-
-    int result = a.exec();
-
-    return result;
+    builder->setPlatform(parser.value(platformOption).toStdString());
+    return builder->run();
 }

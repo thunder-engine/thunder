@@ -611,6 +611,13 @@ bool AssetManager::finishImport() {
         return false;
     }
 
+    for(AssetConverter *converter : converters()) {
+        converter->finalizeBatch();
+    }
+    if(!m_importQueue.empty()) {
+        return false;
+    }
+
     for(auto &path : File::list(Editor::project()->importPath())) {
         TString fileName(Url(path).name());
         if(!File::isDir(path) && fileName != gIndex && uuidToPath(fileName).isEmpty()) {
@@ -671,6 +678,7 @@ void AssetManager::convert(AssetConverterSettings *settings) {
         settings->setSubItemsDirty();
         uint8_t result = converter->convertFile(settings);
         switch(result) {
+            case AssetConverter::Deferred: break;
             case AssetConverter::Success: {
                 aInfo() << "Converting:" << source;
                 settings->setCurrentVersion(settings->version());

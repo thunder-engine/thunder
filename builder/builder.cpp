@@ -28,14 +28,81 @@
 
 #include <compat/zip.h>
 
-#include <QCoreApplication>
+#include <chrono>
+#include <iostream>
+#include <thread>
 
-Builder::Builder() {
-    connect(Editor::assets(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
+Builder::Builder() :
+        m_importStarted(false),
+        m_waitingForNative(false),
+        m_nativeBuildRequested(false),
+        m_exitCode(0) {
+    Object::connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+}
+
+void Builder::pollImport() {
+    AssetManager *manager = Editor::assets();
+    while(m_importStarted && m_exitCode == 0) {
+        while(manager->pendingImportCount() > 0 && m_exitCode == 0) {
+            manager->importNext();
+        }
+        if(m_exitCode != 0) {
+            m_importStarted = false;
+            break;
+        }
+        if(manager->finishImport()) {
+            m_importStarted = false;
+            onImportFinished();
+            break;
+        }
+    }
+
+    processBuildResults();
+    if(m_exitCode != 0) {
+        return;
+    }
+
+}
+
+int Builder::run() {
+    while(m_importStarted || m_waitingForNative) {
+        pollImport();
+        if(m_exitCode != 0 && !m_waitingForNative) {
+            break;
+        }
+        if(m_importStarted || m_waitingForNative) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        }
+    }
+    return m_exitCode;
+}
+
+void Builder::abort() {
+    m_exitCode = 1;
+}
+
+void Builder::setRecord(Log::LogTypes type, const char *record) {
+    const char *level = "";
+    switch(type) {
+        case Log::CRT: level = "[ critical ]"; break;
+        case Log::ERR: level = "[ error ]"; break;
+        case Log::WRN: level = "[ warning ]"; break;
+        case Log::INF: level = "[ info ]"; break;
+        case Log::DBG: level = "[ debug ]"; break;
+        default: break;
+    }
+
+    std::cout << level << record << std::endl;
+    if(type <= Log::ERR) {
+        abort();
+    }
 }
 
 void Builder::setPlatform(const TString &platform) {
+    if(m_exitCode != 0) {
+        return;
+    }
+
     ProjectSettings *project = Editor::project();
     Editor::settings()->loadSettings();
     if(platform.isEmpty()) {
@@ -55,7 +122,9 @@ void Builder::setPlatform(const TString &platform) {
             builder->convertFile(nullptr);
         }
 
+        m_importStarted = true;
         Editor::assets()->rescan();
+        pollImport();
     }
 }
 
@@ -103,20 +172,68 @@ bool Builder::package(const TString &target) {
 }
 
 void Builder::onImportFinished() {
-    ProjectSettings *project = Editor::project();
+    if(m_exitCode != 0) {
+        return;
+    }
+    startNativeBuild();
+}
 
-    NativeCodeBuilder *builder = project->currentBuilder();
+void Builder::onBuildSuccessful(bool buildResult) {
+    if(!m_nativeBuildRequested) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(m_buildResultsMutex);
+    m_buildResults.push(buildResult);
+}
 
-    if(builder) {
-        if(builder->packagingMode() == NativeCodeBuilder::Before) {
-            package(project->cachePath() + "/" + project->currentPlatformName());
+void Builder::processBuildResults() {
+    while(true) {
+        bool result;
+        {
+            std::lock_guard<std::mutex> lock(m_buildResultsMutex);
+            if(m_buildResults.empty()) {
+                break;
+            }
+            result = m_buildResults.front();
+            m_buildResults.pop();
         }
-
-        builder->buildProject();
+        m_waitingForNative = false;
+            m_nativeBuildRequested = false;
+            if(m_exitCode == 0) {
+                handleNativeBuildSuccessful(result);
+            }
     }
 }
 
-void Builder::onBuildSuccessful() {
+void Builder::startNativeBuild() {
+    ProjectSettings *project = Editor::project();
+    NativeCodeBuilder *builder = project->currentBuilder();
+    if(!builder) {
+        m_exitCode = 1;
+        return;
+    }
+
+    if(builder->packagingMode() == NativeCodeBuilder::Before) {
+        package(project->cachePath() + "/" + project->currentPlatformName());
+    }
+    if(m_exitCode != 0) {
+        return;
+    }
+
+    m_nativeBuildRequested = true;
+    m_waitingForNative = builder->buildProject();
+    if(!m_waitingForNative) {
+        m_nativeBuildRequested = false;
+        m_exitCode = 1;
+    }
+}
+
+void Builder::handleNativeBuildSuccessful(bool buildResult) {
+    if(!buildResult) {
+        m_exitCode = 1;
+        return;
+    }
+
     ProjectSettings *project = Editor::project();
     TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
@@ -144,14 +261,20 @@ void Builder::onBuildSuccessful() {
             package(targetPath);
         }
 
+        if(m_exitCode != 0) {
+            return;
+        }
+
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
             m_platformsToBuild.pop();
+            m_importStarted = true;
             Editor::assets()->rescan();
+            pollImport();
 
             return;
         }
     }
 
-    QCoreApplication::exit(0);
+    m_exitCode = result ? 0 : 1;
 }

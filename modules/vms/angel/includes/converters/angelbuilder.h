@@ -18,8 +18,10 @@
 #ifndef ANGELBUILDER_H
 #define ANGELBUILDER_H
 
-#include <editor/codebuilder.h>
+#include <editor/assetconverter.h>
 #include <abstractitemmodel.h>
+
+#include <set>
 
 class asSMessageInfo;
 class asIScriptEngine;
@@ -28,30 +30,25 @@ class asIScriptFunction;
 
 class AngelSystem;
 
-class AngelScriptImportSettings : public BuilderSettings {
+class AngelScriptImportSettings : public AssetConverterSettings {
 public:
-    explicit AngelScriptImportSettings(CodeBuilder *builder);
-
+    bool isCode() const override { return true; }
     StringList typeNames() const override;
-
 };
 
-class AngelBuilder : public CodeBuilder {
+class AngelBuilder : public AssetConverter {
 public:
     AngelBuilder(AngelSystem *system);
     ~AngelBuilder() override;
 
+    StringList suffixes() const override { return {"as"}; }
+    ReturnCode convertFile(AssetConverterSettings *settings) override;
+    AssetConverterSettings *createSettings() override;
+    void finalizeBatch() override;
+    void onFileRemoved(const TString &source) override;
+
 protected:
     void init() override;
-
-    bool buildProject() override;
-
-    TString persistentName() const override;
-    TString persistentAsset() const override;
-
-    StringList suffixes() const override { return {"as"}; }
-
-    AssetConverterSettings *createSettings() override;
 
     TString templatePath() const override { return ":/templates/AngelBehaviour.as"; }
 
@@ -60,6 +57,8 @@ protected:
     AngelSystem *m_system;
 
     asIScriptEngine *m_scriptEngine;
+    bool m_rebuildPending;
+    std::set<AssetConverterSettings *> m_batchSettings;
 
 };
 
