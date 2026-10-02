@@ -18,11 +18,10 @@
 #ifndef BUILDER_H
 #define BUILDER_H
 
+#include <objectsystem.h>
 #include <object.h>
 #include <log.h>
-#include <atomic>
-#include <mutex>
-#include <queue>
+
 #include <stack>
 
 #include <astring.h>
@@ -45,20 +44,13 @@ public:
 
 private:
     void pollImport();
-    void onImportFinished();
     void onBuildSuccessful(bool result);
-    void processBuildResults();
-    void handleNativeBuildSuccessful(bool result);
     void startNativeBuild();
 
 private:
     std::stack<TString> m_platformsToBuild;
-    bool m_importStarted;
-    bool m_waitingForNative;
-    std::atomic_bool m_nativeBuildRequested;
-    std::atomic<int> m_exitCode;
-    std::queue<bool> m_buildResults;
-    std::mutex m_buildResultsMutex;
+    int m_exitCode;
+    bool m_finished;
 };
 
 #endif // BUILDER_H

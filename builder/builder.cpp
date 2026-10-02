@@ -33,46 +33,29 @@
 #include <thread>
 
 Builder::Builder() :
-        m_importStarted(false),
-        m_waitingForNative(false),
-        m_nativeBuildRequested(false),
-        m_exitCode(0) {
-    Object::connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+        m_exitCode(0),
+        m_finished(false) {
+
+    connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
 }
 
 void Builder::pollImport() {
     AssetManager *manager = Editor::assets();
-    while(m_importStarted && m_exitCode == 0) {
-        while(manager->pendingImportCount() > 0 && m_exitCode == 0) {
-            manager->importNext();
-        }
+    while(manager->pendingImportCount()) {
+        manager->importNext();
+    }
+    if(manager->finishImport()) {
         if(m_exitCode != 0) {
-            m_importStarted = false;
-            break;
+            return;
         }
-        if(manager->finishImport()) {
-            m_importStarted = false;
-            onImportFinished();
-            break;
-        }
+        startNativeBuild();
     }
-
-    processBuildResults();
-    if(m_exitCode != 0) {
-        return;
-    }
-
 }
 
 int Builder::run() {
-    while(m_importStarted || m_waitingForNative) {
+    while(m_exitCode == 0 && !m_finished) {
         pollImport();
-        if(m_exitCode != 0 && !m_waitingForNative) {
-            break;
-        }
-        if(m_importStarted || m_waitingForNative) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
     return m_exitCode;
 }
@@ -99,10 +82,6 @@ void Builder::setRecord(Log::LogTypes type, const char *record) {
 }
 
 void Builder::setPlatform(const TString &platform) {
-    if(m_exitCode != 0) {
-        return;
-    }
-
     ProjectSettings *project = Editor::project();
     Editor::settings()->loadSettings();
     if(platform.isEmpty()) {
@@ -122,7 +101,6 @@ void Builder::setPlatform(const TString &platform) {
             builder->convertFile(nullptr);
         }
 
-        m_importStarted = true;
         Editor::assets()->rescan();
         pollImport();
     }
@@ -171,64 +149,7 @@ bool Builder::package(const TString &target) {
     return true;
 }
 
-void Builder::onImportFinished() {
-    if(m_exitCode != 0) {
-        return;
-    }
-    startNativeBuild();
-}
-
 void Builder::onBuildSuccessful(bool buildResult) {
-    if(!m_nativeBuildRequested) {
-        return;
-    }
-    std::lock_guard<std::mutex> lock(m_buildResultsMutex);
-    m_buildResults.push(buildResult);
-}
-
-void Builder::processBuildResults() {
-    while(true) {
-        bool result;
-        {
-            std::lock_guard<std::mutex> lock(m_buildResultsMutex);
-            if(m_buildResults.empty()) {
-                break;
-            }
-            result = m_buildResults.front();
-            m_buildResults.pop();
-        }
-        m_waitingForNative = false;
-            m_nativeBuildRequested = false;
-            if(m_exitCode == 0) {
-                handleNativeBuildSuccessful(result);
-            }
-    }
-}
-
-void Builder::startNativeBuild() {
-    ProjectSettings *project = Editor::project();
-    NativeCodeBuilder *builder = project->currentBuilder();
-    if(!builder) {
-        m_exitCode = 1;
-        return;
-    }
-
-    if(builder->packagingMode() == NativeCodeBuilder::Before) {
-        package(project->cachePath() + "/" + project->currentPlatformName());
-    }
-    if(m_exitCode != 0) {
-        return;
-    }
-
-    m_nativeBuildRequested = true;
-    m_waitingForNative = builder->buildProject();
-    if(!m_waitingForNative) {
-        m_nativeBuildRequested = false;
-        m_exitCode = 1;
-    }
-}
-
-void Builder::handleNativeBuildSuccessful(bool buildResult) {
     if(!buildResult) {
         m_exitCode = 1;
         return;
@@ -268,7 +189,6 @@ void Builder::handleNativeBuildSuccessful(bool buildResult) {
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
             m_platformsToBuild.pop();
-            m_importStarted = true;
             Editor::assets()->rescan();
             pollImport();
 
@@ -276,5 +196,20 @@ void Builder::handleNativeBuildSuccessful(bool buildResult) {
         }
     }
 
+    m_finished = true;
     m_exitCode = result ? 0 : 1;
+}
+
+void Builder::startNativeBuild() {
+    ProjectSettings *project = Editor::project();
+    NativeCodeBuilder *builder = project->currentBuilder();
+    if(builder) {
+        if(builder->packagingMode() == NativeCodeBuilder::Before) {
+            package(project->cachePath() + "/" + project->currentPlatformName());
+        }
+        if(builder->buildProject()) {
+            return;
+        }
+    }
+    m_exitCode = 1;
 }
