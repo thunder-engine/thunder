@@ -299,7 +299,6 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
 
     Editor::assets()->init();
 
-    Editor::project()->loadPlatforms();
     // Read settings early for converters
     Editor::settings()->loadSettings();
 
@@ -308,6 +307,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     }
 
     Editor::assets()->rescan();
+    m_queue->startImport();
 
     for(const TString &it : Editor::project()->platforms()) {
         QString name = it.data();

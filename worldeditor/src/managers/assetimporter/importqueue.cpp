@@ -21,20 +21,22 @@
 #include <QKeyEvent>
 #include <QScreen>
 
+#include <algorithm>
+
 #include <editor/projectsettings.h>
 #include <editor/assetmanager.h>
 
-#include "iconrender.h"
-
 ImportQueue::ImportQueue(QWidget *parent) :
         QDialog(parent),
-        ui(new Ui::ImportQueue) {
+        ui(new Ui::ImportQueue),
+        m_started(false),
+        m_building(false),
+        m_totalImports(0),
+        m_processedImports(0) {
     ui->setupUi(this);
 
-    AssetManager *manager = Editor::assets();
-    connect(manager, &AssetManager::importStarted, this, &ImportQueue::onStarted);
-    connect(manager, &AssetManager::imported, this, &ImportQueue::onProcessed);
-    connect(manager, &AssetManager::importFinished, this, &ImportQueue::onImportFinished);
+    connect(&m_importTimer, &QTimer::timeout, this, &ImportQueue::pollImport);
+    m_importTimer.start(16);
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
 
@@ -46,20 +48,51 @@ ImportQueue::~ImportQueue() {
     delete ui;
 }
 
-void ImportQueue::onProcessed() {
-    ui->progressBar->setValue(ui->progressBar->value() + 1);
+void ImportQueue::pollImport() {
+    AssetManager *manager = Editor::assets();
+    if(!m_started) {
+        if(manager->pendingImportCount() == 0) {
+            return;
+        }
+        startImport();
+    }
+
+    if(m_building) {
+        m_building = manager->runBuilders();
+        if(!m_building) {
+            m_started = false;
+            hide();
+            emit importFinished();
+        }
+    } else if(manager->pendingImportCount() > 0) {
+        manager->importNext();
+        ++m_processedImports;
+        m_totalImports = std::max(m_totalImports, m_processedImports + manager->pendingImportCount());
+        ui->progressBar->setMaximum(m_totalImports);
+        ui->progressBar->setValue(m_processedImports);
+    } else if(manager->finishImport()) {
+        m_building = manager->runBuilders();
+        if(!m_building) {
+            m_started = false;
+            hide();
+            emit importFinished();
+        }
+    }
 }
 
-void ImportQueue::onStarted(int count, const TString &action) {
+void ImportQueue::startImport() {
+    if(m_started) {
+        return;
+    }
+
+    m_started = true;
+    m_building = false;
+    m_totalImports = Editor::assets()->pendingImportCount();
+    m_processedImports = 0;
     show();
     ui->progressBar->setValue(0);
-    ui->progressBar->setMaximum(count);
-    ui->label->setText(action.data());
-}
-
-void ImportQueue::onImportFinished() {
-    hide();
-    emit importFinished();
+    ui->progressBar->setMaximum(m_totalImports);
+    ui->label->setText(tr("Importing resources"));
 }
 
 void ImportQueue::keyPressEvent(QKeyEvent *e) {

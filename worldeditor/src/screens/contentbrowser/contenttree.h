@@ -24,6 +24,8 @@
 
 #include <astring.h>
 
+class ContentTreeProxy;
+
 class ContentTree : public BaseObjectModel {
     Q_OBJECT
 
@@ -67,6 +69,8 @@ protected:
     QObject *m_content;
 
     QObject *m_newAsset;
+
+    ContentTreeProxy *m_contentTreeProxy;
 
     QImage m_folder;
 };

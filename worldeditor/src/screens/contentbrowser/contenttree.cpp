@@ -29,10 +29,33 @@
 #include <editor/projectsettings.h>
 #include <editor/codebuilder.h>
 
+class ContentTreeProxy : public Object {
+    A_OBJECT(ContentTreeProxy, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(ContentTreeProxy::onDirectoryChanged)
+    )
+
+    void setOrigin(ContentTree *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(directoryChanged(TString)), this, _SLOT(onDirectoryChanged(TString)));
+        //connect(Editor::assets(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
+    }
+
+    void onDirectoryChanged(const TString &path) {
+        m_origin->update();
+    }
+
+private:
+    ContentTree *m_origin = nullptr;
+};
+
 ContentTree::ContentTree() :
         BaseObjectModel(nullptr),
         m_content(new QObject(m_rootItem)),
-        m_newAsset(new QObject) {
+        m_newAsset(new QObject),
+        m_contentTreeProxy(new ContentTreeProxy) {
 
     addItem(m_content);
     addItem(m_newAsset);
@@ -41,8 +64,7 @@ ContentTree::ContentTree() :
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
 
-    connect(Editor::assets(), &AssetManager::directoryChanged, this, &ContentTree::update);
-    connect(Editor::assets(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
+    m_contentTreeProxy->setOrigin(this);
 }
 
 int ContentTree::columnCount(const QModelIndex &) const {
@@ -166,7 +188,6 @@ bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = getObject(index);
     if(item) {
         Editor::assets()->pushToImport(item->objectName().toStdString());
-        Editor::assets()->reimport();
     }
     return true;
 }

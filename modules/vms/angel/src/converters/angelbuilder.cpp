@@ -20,15 +20,15 @@
 #include <log.h>
 #include <bson.h>
 #include <file.h>
-#include <invalid.h>
+#include <url.h>
 
 #include <angelscript.h>
 
 #include <QFile>
-#include <QImage>
+
+#include <set>
 
 #include "angelsystem.h"
-#include "components/angelbehaviour.h"
 #include "resources/angelscript.h"
 
 #include <editor/projectsettings.h>
@@ -67,18 +67,14 @@ protected:
 
 };
 
-AngelScriptImportSettings::AngelScriptImportSettings(CodeBuilder *builder) :
-    BuilderSettings(builder) {
-
-}
-
 StringList AngelScriptImportSettings::typeNames() const {
     return { "AngelScript" };
 }
 
 AngelBuilder::AngelBuilder(AngelSystem *system) :
         m_system(system),
-    m_scriptEngine(asCreateScriptEngine()) {
+        m_scriptEngine(asCreateScriptEngine()),
+        m_rebuildPending(false) {
 
     m_scriptEngine->SetMessageCallback(asFUNCTION(messageCallback), nullptr, asCALL_CDECL);
 }
@@ -91,100 +87,132 @@ void AngelBuilder::init() {
     m_system->registerClasses(m_scriptEngine);
     //m_classModel->update(m_scriptEngine);
 
+    ResourceSystem::ResourceInfo info;
+    info.uuid = AssetConverterSettings::fixUuid(Editor::project()->projectId(), "AngelScript", 0);
+    info.type = "AngelScript";
+    Editor::assets()->registerAsset(Editor::project()->contentPath() + g_assetPath, info);
+
     for(auto &it : suffixes()) {
         AssetConverterSettings::setDefaultIconPath(it, ":/Style/styles/dark/images/code.svg");
     }
 }
 
-bool AngelBuilder::buildProject() {
-    if(m_outdated) {
-        AssetManager *assetMgr = Editor::assets();
-        ProjectSettings *project = Editor::project();
-        TString persistentUUID = persistentAsset();
-
-        if(m_sources.empty()) {
-            File::remove(project->importPath() + "/" + persistentUUID);
-            assetMgr->unregisterAsset(project->contentPath() + g_assetPath);
-            assetMgr->dumpBundle();
-
-            m_system->unloadAll(false);
-
-            buildSuccessful(true);
-            m_outdated = false;
-            return true;
-        }
-
-        asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
-
-        QFile base(":/Behaviour.txt");
-        if(base.open(QFile::ReadOnly)) {
-            TString code(base.readAll());
-            mod->AddScriptSection("AngelData", code.data());
-            base.close();
-        }
-        for(auto &it : m_sources) {
-            File file(it);
-            if(file.open(File::Read)) {
-                TString code(file.readAll());
-                mod->AddScriptSection("AngelData", code.data());
-                file.close();
-            }
-        }
-
-        int code = mod->Build();
-        if(code >= 0) {
-            TString destination = project->importPath() + "/" + persistentUUID;
-
-            File dst(destination.data());
-            if(dst.open(File::Write)) {
-                AngelScript *serial = Engine::loadResource<AngelScript>(persistentUUID);
-                if(serial == nullptr) {
-                    serial = Engine::objectCreate<AngelScript>(persistentUUID);
-                }
-
-                serial->m_array.clear();
-                CBytecodeStream stream(serial->m_array);
-                mod->SaveByteCode(&stream);
-
-                dst.write(Bson::save( Engine::toVariant(serial) ));
-                dst.close();
-
-                ResourceSystem::ResourceInfo info;
-                info.uuid = persistentUUID;
-                info.type = "AngelScript";
-
-                assetMgr->registerAsset(project->contentPath() + g_assetPath, info);
-            }
-
-            //m_classModel->update(m_scriptEngine);
-
-            // Do the hot reload
-            if(m_system->init()) {
-                m_system->reload();
-            }
-        }
-
-        buildSuccessful(code >= 0);
-        m_outdated = false;
-
-        mod->Discard();
-    }
-    return true;
-}
-
-TString AngelBuilder::persistentName() const {
-    return Editor::project()->projectName();
-}
-
-TString AngelBuilder::persistentAsset() const {
-    return AssetConverterSettings::fixUuid(Editor::project()->projectId(), "AngelScript", 0);
+AssetConverter::ReturnCode AngelBuilder::convertFile(AssetConverterSettings *settings) {
+    m_rebuildPending = true;
+    m_batchSettings.insert(settings);
+    return Deferred;
 }
 
 AssetConverterSettings *AngelBuilder::createSettings() {
-    return new AngelScriptImportSettings(this);
+    return new AngelScriptImportSettings;
+}
+
+void AngelBuilder::onFileRemoved(const TString &) {
+    m_rebuildPending = true;
+}
+
+void AngelBuilder::finalizeBatch() {
+    if(!m_rebuildPending) {
+        return;
+    }
+    m_rebuildPending = false;
+
+    AssetManager *assetMgr = Editor::assets();
+    ProjectSettings *project = Editor::project();
+    TString persistentUUID = AssetConverterSettings::fixUuid(project->projectId(), "AngelScript", 0);
+
+    std::set<TString> sources;
+    for(const TString &path : File::list(project->contentPath())) {
+        if(Url(path).completeSuffix().toLower() == "as") {
+            sources.insert(path);
+        }
+    }
+
+    if(sources.empty()) {
+        File::remove(project->importPath() + "/" + persistentUUID);
+        assetMgr->unregisterAsset(project->contentPath() + g_assetPath);
+        m_system->unloadAll(false);
+        assetMgr->buildSuccessful(true);
+        m_batchSettings.clear();
+        return;
+    }
+
+    asIScriptModule *mod = m_scriptEngine->GetModule("AngelBuilder", asGM_CREATE_IF_NOT_EXISTS);
+
+    QFile base(":/Behaviour.txt");
+    if(base.open(QFile::ReadOnly)) {
+        TString code(base.readAll());
+        mod->AddScriptSection("AngelData", code.data());
+        base.close();
+    }
+    for(const TString &path : sources) {
+        File file(path);
+        if(file.open(File::Read)) {
+            TString code(file.readAll());
+            mod->AddScriptSection("AngelData", code.data());
+            file.close();
+        }
+    }
+
+    bool success = mod->Build() >= 0;
+    if(!success) {
+        aError() << "AngelScript module compilation failed.";
+    }
+    if(success) {
+        TString destination = project->importPath() + "/" + persistentUUID;
+
+        File dst(destination.data());
+        if(dst.open(File::Write)) {
+            AngelScript *serial = Engine::loadResource<AngelScript>(persistentUUID);
+            if(serial == nullptr) {
+                serial = Engine::objectCreate<AngelScript>(persistentUUID);
+            }
+
+            serial->m_array.clear();
+            CBytecodeStream stream(serial->m_array);
+            mod->SaveByteCode(&stream);
+
+            dst.write(Bson::save(Engine::toVariant(serial)));
+            dst.close();
+
+            ResourceSystem::ResourceInfo info;
+            info.uuid = persistentUUID;
+            info.type = "AngelScript";
+            assetMgr->registerAsset(project->contentPath() + g_assetPath, info);
+        } else {
+            aError() << "Unable to write compiled AngelScript module:" << destination;
+            success = false;
+        }
+
+        if(success) {
+            if(m_system->init()) {
+                m_system->reload();
+            } else {
+                aError() << "Unable to initialize AngelScript runtime.";
+                success = false;
+            }
+        }
+    }
+
+    mod->Discard();
+    if(success) {
+        for(AssetConverterSettings *settings : m_batchSettings) {
+            settings->setCurrentVersion(settings->version());
+            settings->saveSettings();
+        }
+    }
+    m_batchSettings.clear();
+    assetMgr->buildSuccessful(success);
 }
 
 void AngelBuilder::messageCallback(const asSMessageInfo *msg, void *param) {
     A_UNUSED(param);
-    Log(static_cast<Log::LogTypes>(msg->type)) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
+    Log::LogTypes type = Log::INF;
+    switch(msg->type) {
+        case asMSGTYPE_ERROR: type = Log::ERR; break;
+        case asMSGTYPE_WARNING: type = Log::WRN; break;
+        case asMSGTYPE_INFORMATION: type = Log::INF; break;
+        default: break;
+    }
+    Log(type) << msg->section << "(line:" << msg->row << "col:" << msg->col << "):" << msg->message;
 }

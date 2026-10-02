@@ -32,7 +32,8 @@ public:
         Success = 0,
         InternalError,
         Unsupported,
-        Skipped
+        Skipped,
+        Deferred
     };
 
     virtual void init();
@@ -40,6 +41,8 @@ public:
 
     virtual ReturnCode convertFile(AssetConverterSettings *settings) = 0;
     virtual AssetConverterSettings *createSettings() = 0;
+    virtual void finalizeBatch() {}
+    virtual void onFileRemoved(const TString &source) { A_UNUSED(source); }
 
     virtual void renameAsset(AssetConverterSettings *settings, const TString &oldName, const TString &newName);
 

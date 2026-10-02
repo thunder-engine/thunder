@@ -96,8 +96,6 @@ void BaseAssetProvider::init(bool force) {
 */
 void BaseAssetProvider::onFileChanged(const TString &path) {
     onFileChangedForce(path);
-
-    Editor::assets()->reimport();
 }
 /*!
     Handles a file change with an optional forced import.
@@ -189,6 +187,15 @@ void BaseAssetProvider::removeResource(const TString &source) {
     ProjectSettings *mgr = Editor::project();
     AssetManager *asset = Editor::assets();
 
+    StringList removedFiles = File::list(source);
+    removedFiles.push_back(source);
+    for(const TString &path : removedFiles) {
+        AssetConverter *converter = asset->getConverter(path);
+        if(converter) {
+            converter->onFileRemoved(path);
+        }
+    }
+
     Engine::unloadResource(asset->pathToLocal(source));
     TString uuid(asset->unregisterAsset(source));
     if(!uuid.isEmpty()) {
@@ -209,7 +216,11 @@ void BaseAssetProvider::removeResource(const TString &source) {
         }
     }
 
-    asset->dumpBundle();
+    if(asset->pendingImportCount() == 0) {
+        asset->finishImport();
+    } else {
+        asset->dumpBundle();
+    }
 }
 /*!
     Renames or moves an asset resource

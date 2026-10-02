@@ -105,6 +105,8 @@ public slots:
 
     void onApplySettings();
 
+    void onPrefabCreated(uint32_t clone);
+
 signals:
     void copied();
     void sceneUpdated(Object *object);
@@ -123,9 +125,6 @@ protected:
     void drawHandles() override;
 
     void select(Object &object) override;
-
-private slots:
-    void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:
     SelectTool::SelectList m_selected;

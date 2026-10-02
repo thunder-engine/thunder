@@ -24,10 +24,32 @@
 
 const char *gURI("uri");
 
-ComponentModel::ComponentModel() :
-        BaseObjectModel(nullptr) {
+class ComponentModelProxy : public Object {
+    A_OBJECT(ComponentModelProxy, Object, Editor)
 
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &ComponentModel::update);
+    A_METHODS(
+        A_SLOT(ComponentModelProxy::onBuildSuccessful)
+    )
+
+    void setOrigin(ComponentModel *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+    }
+
+    void onBuildSuccessful(bool flag) {
+        m_origin->update();
+    }
+
+private:
+    ComponentModel *m_origin = nullptr;
+};
+
+ComponentModel::ComponentModel() :
+        BaseObjectModel(nullptr),
+        m_componentModelProxy(new ComponentModelProxy) {
+
+    m_componentModelProxy->setOrigin(this);
 }
 
 ComponentModel *ComponentModel::instance() {
