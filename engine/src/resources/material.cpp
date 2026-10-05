@@ -6,6 +6,7 @@
 #include <cstring>
 
 namespace {
+    const char *gShaderData("Data");
     const char *gProperties("Properties");
     const char *gTextures("Textures");
     const char *gUniforms("Uniforms");
@@ -87,6 +88,7 @@ uint32_t MaterialInstance::instanceCount() const {
 }
 /*!
     Sets the \a number of GPU instances to be rendered.
+    Uniform buffer will be resized according to number of instances.
 */
 void MaterialInstance::setInstanceCount(uint32_t number) {
     m_instanceCount = number;
@@ -184,11 +186,16 @@ void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uin
     if(hash != m_transformHash) {
         Matrix4 m(transform);
         if(uuid > 0) {
-            Vector4 color(CommandBuffer::idToColor(uuid));
-            m[3] = color.x;
-            m[7] = color.y;
-            m[11] = color.z;
-            m[15] = color.w;
+            uint8_t rgb[4];
+            rgb[0] = uuid;
+            rgb[1] = uuid >> 8;
+            rgb[2] = uuid >> 16;
+            rgb[3] = uuid >> 24;
+
+            m[3] = (float)rgb[0] / 255.0f;
+            m[7] = (float)rgb[1] / 255.0f;
+            m[11] = (float)rgb[2] / 255.0f;
+            m[15] = (float)rgb[3] / 255.0f;
         }
 
         memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
@@ -385,90 +392,95 @@ void Material::setPriority(int priority) {
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
-    {
-        auto it = data.find(gProperties);
-        if(it != data.end()) {
-            VariantList list = (*it).second.value<VariantList>();
-            auto i = list.begin();
-            setMaterialType((*i).toInt());
-            i++;
-            setDoubleSided((*i).toBool());
-            i++;
-            setLightModel((*i).toInt());
-        }
+    auto it = data.find(gShaderData);
+    if(it != data.end()) {
+        m_shaderData = (*it).second.toMap();
+    } else {
+        m_shaderData.clear();
+    }
 
-        it = data.find(gBlendState);
-        if(it != data.end()) {
-            loadBlendState((*it).second.value<VariantList>());
-        }
-        it = data.find(gDepthState);
-        if(it != data.end()) {
-            loadDepthState((*it).second.value<VariantList>());
-        }
-        it = data.find(gStencilState);
-        if(it != data.end()) {
-            loadStencilState((*it).second.value<VariantList>());
-        }
+    m_layers = 0;
 
-        if(m_blendState.enabled) {
-            m_layers |= Material::Translucent;
-            m_priority = 3000;
-        } else {
-            m_layers |= Material::Opaque;
-            m_priority = 2000;
+    it = data.find(gProperties);
+    if(it != data.end()) {
+        VariantList list = (*it).second.value<VariantList>();
+        auto i = list.begin();
+        setMaterialType((*i).toInt());
+        i++;
+        setDoubleSided((*i).toBool());
+        i++;
+        setLightModel((*i).toInt());
+    }
+
+    it = data.find(gBlendState);
+    if(it != data.end()) {
+        loadBlendState((*it).second.value<VariantList>());
+    }
+    it = data.find(gDepthState);
+    if(it != data.end()) {
+        loadDepthState((*it).second.value<VariantList>());
+    }
+    it = data.find(gStencilState);
+    if(it != data.end()) {
+        loadStencilState((*it).second.value<VariantList>());
+    }
+
+    if(m_blendState.enabled) {
+        m_layers |= Material::Translucent;
+        m_priority = 3000;
+    } else {
+        m_layers |= Material::Opaque;
+        m_priority = 2000;
+    }
+
+    m_textures.clear();
+    it = data.find(gTextures);
+    if(it != data.end()) {
+        for(auto &t : (*it).second.toList()) {
+            VariantList list = t.toList();
+            auto f = list.begin();
+            TString path = (*f).toString();
+            TextureItem item;
+            item.texture = nullptr;
+            if(!path.isEmpty()) {
+                item.texture = Engine::loadResource<Texture>(path);
+            }
+            ++f;
+            item.name = (*f).toString();
+            ++f;
+            item.binding = (*f).toInt();
+            ++f;
+            item.flags = (*f).toInt();
+
+            m_textures.push_back(item);
         }
     }
-    {
-        m_textures.clear();
-        auto it = data.find(gTextures);
-        if(it != data.end()) {
-            for(auto &t : (*it).second.toList()) {
-                VariantList list = t.toList();
-                auto f = list.begin();
-                TString path = (*f).toString();
-                TextureItem item;
-                item.texture = nullptr;
-                if(!path.isEmpty()) {
-                    item.texture = Engine::loadResource<Texture>(path);
-                }
-                ++f;
-                item.name = (*f).toString();
-                ++f;
-                item.binding = (*f).toInt();
-                ++f;
-                item.flags = (*f).toInt();
 
-                m_textures.push_back(item);
-            }
+    m_uniformSize = sizeof(Matrix4);
+    m_uniforms.clear();
+    it = data.find(gUniforms);
+    if(it != data.end()) {
+        VariantList uniforms = (*it).second.toList();
+        m_uniforms.resize(uniforms.size());
+        int i = 0;
+        for(auto &u : uniforms) {
+            VariantList list = u.toList();
+            auto f = list.begin();
+
+            m_uniforms[i].defaultValue = (*f);
+            ++f;
+            m_uniforms[i].size = (*f).toInt();
+            ++f;
+            m_uniforms[i].name = (*f).toString();
+
+            m_uniforms[i].offset = m_uniformSize;
+            m_uniformSize += m_uniforms[i].size;
+
+            i++;
         }
-    }
-    {
-        size_t offset = sizeof(Matrix4);
-        m_uniforms.clear();
-        auto it = data.find(gUniforms);
-        if(it != data.end()) {
-            VariantList uniforms = (*it).second.toList();
-            m_uniforms.resize(uniforms.size());
-            int i = 0;
-            for(auto &u : uniforms) {
-                VariantList list = u.toList();
-                auto f = list.begin();
-
-                m_uniforms[i].defaultValue = (*f);
-                ++f;
-                m_uniforms[i].size = (*f).toInt();
-                ++f;
-                m_uniforms[i].name = (*f).toString();
-
-                m_uniforms[i].offset = offset;
-                offset += m_uniforms[i].size;
-
-                i++;
-            }
-        }
-        m_uniformSize = offset;
     }
 }
+
 /*!
     \internal
 */
@@ -532,6 +544,10 @@ VariantMap Material::saveUserData() const {
     stencilState.push_back(m_stencilState.reference);
     stencilState.push_back(m_stencilState.enabled);
     result[gStencilState] = stencilState;
+
+    if(!m_shaderData.empty()) {
+        result[gShaderData] = m_shaderData;
+    }
 
     return result;
 }

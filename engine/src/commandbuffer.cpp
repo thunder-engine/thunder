@@ -64,18 +64,6 @@ void CommandBuffer::setRenderTarget(RenderTarget *target, uint32_t level) {
     m_target = target;
 }
 /*!
-    Converts a 32-bit \a id to a Vector4 color.
-*/
-Vector4 CommandBuffer::idToColor(uint32_t id) {
-    uint8_t rgb[4];
-    rgb[0] = id;
-    rgb[1] = id >> 8;
-    rgb[2] = id >> 16;
-    rgb[3] = id >> 24;
-
-    return Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f);
-}
-/*!
     Returns true if the CommandBuffer is initialized; otherwise, false.
 */
 bool CommandBuffer::isInited() {

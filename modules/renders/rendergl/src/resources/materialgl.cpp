@@ -31,6 +31,13 @@ const uint32_t gMaxUBO = 65536;
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
+    auto rhiData = m_shaderData.find("RenderGL");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderGL shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
         {"Default", FragmentDefault},
@@ -40,9 +47,10 @@ void MaterialGL::loadUserData(const VariantMap &data) {
         {"Particle", VertexParticle}
     };
 
+    m_shaderSources.clear();
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             m_shaderSources[pair.second] = fields.front().toString(); // Shader data
@@ -57,31 +65,6 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     }
 
     switchState(ToBeUpdated);
-}
-/*!
-    \internal
-*/
-VariantMap MaterialGL::saveUserData() const {
-    VariantMap result(Material::saveUserData());
-
-    static const std::map<uint16_t, const char *> names = {
-        {FragmentVisibility, "Visibility"},
-        {FragmentDefault, "Default"},
-        {VertexStatic, "Static"},
-        {VertexSkinned, "Skinned"},
-        {VertexParticle, "Particle"}
-    };
-
-    for(const auto &source : m_shaderSources) {
-        auto it = names.find(source.first);
-        if(it != names.end()) {
-            VariantList fields;
-            fields.push_back(source.second);
-            result[it->second] = fields;
-        }
-    }
-
-    return result;
 }
 
 uint32_t MaterialGL::getProgram(uint32_t type, int32_t &global, int32_t &local) {

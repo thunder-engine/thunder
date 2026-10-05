@@ -28,11 +28,27 @@
 #include <log.h>
 
 void ComputeShaderGL::loadUserData(const VariantMap &data) {
-    ComputeShader::loadUserData(data);
+    VariantMap rhiDataStorage;
+    const VariantMap *rhiRoot = &data;
+    auto shaderBundle = data.find("Data");
+    if(shaderBundle != data.end()) {
+        rhiDataStorage = shaderBundle->second.toMap();
+        rhiRoot = &rhiDataStorage;
+    }
 
-    auto it = data.find("Shader");
-    if(it != data.end()) {
-        m_shaderSource = (*it).second.toString();
+    auto rhiData = rhiRoot->find("RenderGL");
+    if(rhiData == rhiRoot->end()) {
+        aError() << "Compute shader bundle does not contain RenderGL shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
+    ComputeShader::loadUserData(shaderData);
+
+    auto it = shaderData.find("Shader");
+    if(it != shaderData.end()) {
+        VariantList fields = it->second.toList();
+        m_shaderSource = fields.front().toString();
     }
 
     switchState(ToBeUpdated);

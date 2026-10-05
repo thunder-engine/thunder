@@ -28,6 +28,7 @@ public:
     ~ShaderGraph() override;
 
     VariantMap data(bool editor = false, ShaderRootNode *root = nullptr);
+    VariantMap dataForRhi(int32_t rhi, bool editor = false, ShaderRootNode *root = nullptr);
 
     bool buildGraph(GraphNode *node = nullptr);
 

@@ -241,6 +241,8 @@ protected:
 protected:
     friend class MaterialInstance;
 
+    VariantMap m_shaderData;
+
     Textures m_textures;
 
     Uniforms m_uniforms;
@@ -345,4 +347,3 @@ protected:
 };
 
 #endif // MATERIAL_H
-
