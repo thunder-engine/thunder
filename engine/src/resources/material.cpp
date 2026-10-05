@@ -6,6 +6,7 @@
 #include <cstring>
 
 namespace {
+    const char *gShaderData("Data");
     const char *gProperties("Properties");
     const char *gTextures("Textures");
     const char *gUniforms("Uniforms");
@@ -374,12 +375,6 @@ int Material::layers() const {
     return m_layers;
 }
 /*!
-    Sets compiled shader data for all supported RHIs.
-*/
-void Material::setRhiData(const VariantMap &data) {
-    m_rhiData = data;
-}
-/*!
     Returns rendering priority for the material.
     This parameter is used alpha rendering sorting
 */
@@ -397,98 +392,99 @@ void Material::setPriority(int priority) {
     \internal
 */
 void Material::loadUserData(const VariantMap &data) {
-    {
-        auto it = data.find(gProperties);
-        if(it != data.end()) {
-            VariantList list = (*it).second.value<VariantList>();
-            auto i = list.begin();
-            setMaterialType((*i).toInt());
-            i++;
-            setDoubleSided((*i).toBool());
-            i++;
-            setLightModel((*i).toInt());
-        }
+    auto it = data.find(gShaderData);
+    if(it != data.end()) {
+        m_shaderData = (*it).second.toMap();
+    } else {
+        m_shaderData.clear();
+    }
 
-        it = data.find(gBlendState);
-        if(it != data.end()) {
-            loadBlendState((*it).second.value<VariantList>());
-        }
-        it = data.find(gDepthState);
-        if(it != data.end()) {
-            loadDepthState((*it).second.value<VariantList>());
-        }
-        it = data.find(gStencilState);
-        if(it != data.end()) {
-            loadStencilState((*it).second.value<VariantList>());
-        }
+    m_layers = 0;
 
-        if(m_blendState.enabled) {
-            m_layers |= Material::Translucent;
-            m_priority = 3000;
-        } else {
-            m_layers |= Material::Opaque;
-            m_priority = 2000;
+    it = data.find(gProperties);
+    if(it != data.end()) {
+        VariantList list = (*it).second.value<VariantList>();
+        auto i = list.begin();
+        setMaterialType((*i).toInt());
+        i++;
+        setDoubleSided((*i).toBool());
+        i++;
+        setLightModel((*i).toInt());
+    }
+
+    it = data.find(gBlendState);
+    if(it != data.end()) {
+        loadBlendState((*it).second.value<VariantList>());
+    }
+    it = data.find(gDepthState);
+    if(it != data.end()) {
+        loadDepthState((*it).second.value<VariantList>());
+    }
+    it = data.find(gStencilState);
+    if(it != data.end()) {
+        loadStencilState((*it).second.value<VariantList>());
+    }
+
+    if(m_blendState.enabled) {
+        m_layers |= Material::Translucent;
+        m_priority = 3000;
+    } else {
+        m_layers |= Material::Opaque;
+        m_priority = 2000;
+    }
+
+    m_textures.clear();
+    it = data.find(gTextures);
+    if(it != data.end()) {
+        for(auto &t : (*it).second.toList()) {
+            VariantList list = t.toList();
+            auto f = list.begin();
+            TString path = (*f).toString();
+            TextureItem item;
+            item.texture = nullptr;
+            if(!path.isEmpty()) {
+                item.texture = Engine::loadResource<Texture>(path);
+            }
+            ++f;
+            item.name = (*f).toString();
+            ++f;
+            item.binding = (*f).toInt();
+            ++f;
+            item.flags = (*f).toInt();
+
+            m_textures.push_back(item);
         }
     }
-    {
-        m_textures.clear();
-        auto it = data.find(gTextures);
-        if(it != data.end()) {
-            for(auto &t : (*it).second.toList()) {
-                VariantList list = t.toList();
-                auto f = list.begin();
-                TString path = (*f).toString();
-                TextureItem item;
-                item.texture = nullptr;
-                if(!path.isEmpty()) {
-                    item.texture = Engine::loadResource<Texture>(path);
-                }
-                ++f;
-                item.name = (*f).toString();
-                ++f;
-                item.binding = (*f).toInt();
-                ++f;
-                item.flags = (*f).toInt();
 
-                m_textures.push_back(item);
-            }
+    m_uniformSize = sizeof(Matrix4);
+    m_uniforms.clear();
+    it = data.find(gUniforms);
+    if(it != data.end()) {
+        VariantList uniforms = (*it).second.toList();
+        m_uniforms.resize(uniforms.size());
+        int i = 0;
+        for(auto &u : uniforms) {
+            VariantList list = u.toList();
+            auto f = list.begin();
+
+            m_uniforms[i].defaultValue = (*f);
+            ++f;
+            m_uniforms[i].size = (*f).toInt();
+            ++f;
+            m_uniforms[i].name = (*f).toString();
+
+            m_uniforms[i].offset = m_uniformSize;
+            m_uniformSize += m_uniforms[i].size;
+
+            i++;
         }
-    }
-    {
-        size_t offset = sizeof(Matrix4);
-        m_uniforms.clear();
-        auto it = data.find(gUniforms);
-        if(it != data.end()) {
-            VariantList uniforms = (*it).second.toList();
-            m_uniforms.resize(uniforms.size());
-            int i = 0;
-            for(auto &u : uniforms) {
-                VariantList list = u.toList();
-                auto f = list.begin();
-
-                m_uniforms[i].defaultValue = (*f);
-                ++f;
-                m_uniforms[i].size = (*f).toInt();
-                ++f;
-                m_uniforms[i].name = (*f).toString();
-
-                m_uniforms[i].offset = offset;
-                offset += m_uniforms[i].size;
-
-                i++;
-            }
-        }
-        m_uniformSize = offset;
     }
 }
+
 /*!
     \internal
 */
 VariantMap Material::saveUserData() const {
-    if(!m_rhiData.empty()) {
-        return m_rhiData;
-    }
-
     VariantMap result;
 
     VariantList properties;
@@ -548,6 +544,10 @@ VariantMap Material::saveUserData() const {
     stencilState.push_back(m_stencilState.reference);
     stencilState.push_back(m_stencilState.enabled);
     result[gStencilState] = stencilState;
+
+    if(!m_shaderData.empty()) {
+        result[gShaderData] = m_shaderData;
+    }
 
     return result;
 }

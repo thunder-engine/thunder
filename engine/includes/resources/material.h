@@ -210,8 +210,6 @@ public:
 
     void initInstance(MaterialInstance *instance);
 
-    void setRhiData(const VariantMap &data);
-
 protected:
     void loadUserData(const VariantMap &data) override;
 
@@ -243,6 +241,8 @@ protected:
 protected:
     friend class MaterialInstance;
 
+    VariantMap m_shaderData;
+
     Textures m_textures;
 
     Uniforms m_uniforms;
@@ -254,8 +254,6 @@ protected:
     DepthState m_depthState;
 
     StencilState m_stencilState;
-
-    VariantMap m_rhiData;
 
     uint32_t m_uniformSize;
 

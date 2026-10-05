@@ -23,10 +23,11 @@
 
 #include <algorithm>
 #include <regex>
+#include <sstream>
 #include <pugixml.hpp>
 
-#define SHADER_FORMAT_VERSION 14
-#define ASSET_FORMAT_VERSION 15
+#define SHADER_FORMAT_VERSION 15
+#define ASSET_FORMAT_VERSION 16
 
 enum ShaderFlags {
     Compute = (1<<0),
@@ -49,6 +50,7 @@ namespace  {
 
     const char *gTwoSided("twoSided");
     const char *gLightModel("lightModel");
+    const char *gVertexVariants("vertexVariants");
 
     const char *gOperation("op");
     const char *gColorOperation("colorOp");
@@ -377,7 +379,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
     };
 
     Url info(builderSettings->source());
-    VariantMap dataByRhi;
+    VariantMap shaderDataByRhi;
+    VariantMap materialData;
+    bool hasMaterialData = false;
 
     ShaderGraph nodeGraph;
     if(info.suffix() == "mtl") {
@@ -395,13 +399,25 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         if(info.suffix() == "mtl") {
             data = nodeGraph.dataForRhi(static_cast<int32_t>(rhi.second));
         } else if(info.suffix() == "shader") {
-            parseShaderFormat(rhi.second, builderSettings->source(), data);
+            if(!parseShaderFormat(rhi.second, builderSettings->source(), data)) {
+                return InternalError;
+            }
         } else if(info.suffix() == "compute") {
-            parseShaderFormat(rhi.second, builderSettings->source(), data, Compute);
+            if(!parseShaderFormat(rhi.second, builderSettings->source(), data, Compute)) {
+                return InternalError;
+            }
         }
 
         if(data.empty()) {
             return InternalError;
+        }
+
+        if(!hasMaterialData) {
+            materialData = data;
+            for(const char *key : {FRAGMENT, VISIBILITY, STATIC, SKINNED, PARTICLE, GEOMETRY, "Shader"}) {
+                materialData.erase(key);
+            }
+            hasMaterialData = true;
         }
 
         if(!compileData(rhi.second, data)) {
@@ -409,7 +425,16 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
             return InternalError;
         }
         normalizeTextureReferences(data);
-        dataByRhi[rhi.first] = data;
+
+        VariantMap shaderData;
+        for(const char *key : {FRAGMENT, VISIBILITY, STATIC, SKINNED, PARTICLE, GEOMETRY, "Shader"}) {
+            auto shader = data.find(key);
+            if(shader != data.end()) {
+                shaderData[key] = shader->second;
+            }
+        }
+
+        shaderDataByRhi[rhi.first] = shaderData;
     }
 
     Material *material = Engine::loadResource<Material>(settings->destination());
@@ -430,22 +455,9 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         Engine::replaceUUID(material, uuid);
     }
 
-    auto activeRhi = std::find_if(rhis.begin(), rhis.end(), [](const auto &rhi) {
-        return rhi.second == currentRhi();
-    });
-    if(activeRhi == rhis.end()) {
-        return InternalError;
-    }
-
-    auto activeData = dataByRhi.find(activeRhi->first);
-    if(activeData == dataByRhi.end()) {
-        return InternalError;
-    }
-
-    VariantMap activeRhiData;
-    activeRhiData[activeRhi->first] = activeData->second;
-    ResourceSystem::loadResourceData(material, activeRhiData);
-    material->setRhiData(dataByRhi);
+    normalizeTextureReferences(materialData);
+    materialData["Data"] = shaderDataByRhi;
+    ResourceSystem::loadResourceData(material, materialData);
 
     return settings->saveBinary(material, settings->absoluteDestination());
 }
@@ -588,6 +600,7 @@ bool ShaderBuilder::parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TStr
 
             int materialType = Material::Surface;
             int lightingModel = Material::Unlit;
+            int vertexVariants = Static | Skinned | Particle;
 
             pugi::xml_node shader = doc.document_element();
 
@@ -605,7 +618,9 @@ bool ShaderBuilder::parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TStr
                         return false;
                     }
                 } else if(name == gPass) {
-                    parsePassProperties(element, user, materialType, lightingModel);
+                    if(!parsePassProperties(element, user, materialType, lightingModel, vertexVariants)) {
+                        return false;
+                    }
 
                     if(version == 0) {
                         parsePassV0(element, user);
@@ -667,11 +682,10 @@ bool ShaderBuilder::parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TStr
                     }
                     user[STATIC] = loadIncludes(file, define, pragmas);
 
-                    flags = materialType == Material::Surface ? (Skinned | Particle) : 0;
-                    if(flags & Skinned) {
+                    if(vertexVariants & Skinned) {
                         user[SKINNED] = loadIncludes("Skinned.vert", define, pragmas);
                     }
-                    if(flags & Particle) {
+                    if(vertexVariants & Particle) {
                         user[PARTICLE] = loadIncludes("Billboard.vert", define, pragmas);
                     }
                 }
@@ -799,6 +813,12 @@ bool ShaderBuilder::saveShaderFormat(const TString &path, const std::map<TString
     }
 
     pugi::xml_node pass = shader.append_child(gPass);
+
+    it = user.find(gVertexVariants);
+    if(it != user.end()) {
+        TString variants = it->second.toString();
+        pass.append_attribute(gVertexVariants) = variants.data();
+    }
 
     it = user.find(PROPERTIES);
     if(it != user.end()) {
@@ -960,11 +980,48 @@ bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &us
     return true;
 }
 
-void ShaderBuilder::parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel) {
+bool ShaderBuilder::parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel, int &vertexVariants) {
     materialType = toMaterialType(element.attribute("type").as_string());
     bool doubleSided = element.attribute(gTwoSided).as_bool(true);
     lightingModel = toLightModel(element.attribute(gLightModel).as_string());
     setMaterialProperties(user, materialType, doubleSided, lightingModel);
+
+    vertexVariants = Static;
+    pugi::xml_attribute variants = element.attribute(gVertexVariants);
+    if(variants) {
+        std::string value(variants.as_string());
+        std::replace(value.begin(), value.end(), ',', ' ');
+        std::istringstream stream(value);
+        std::string variant;
+        while(stream >> variant) {
+            if(variant == "Static") {
+                vertexVariants |= Static;
+            } else if(variant == "Skinned") {
+                vertexVariants |= Skinned;
+            } else if(variant == "Particle") {
+                vertexVariants |= Particle;
+            } else {
+                aError() << "Unknown vertex shader variant:" << variant.c_str();
+                return false;
+            }
+        }
+    } else if(materialType == Material::Surface) {
+        vertexVariants |= Skinned | Particle;
+    }
+
+    TString serializedVariants;
+    if(vertexVariants & Skinned) {
+        serializedVariants = "Skinned";
+    }
+    if(vertexVariants & Particle) {
+        if(!serializedVariants.isEmpty()) {
+            serializedVariants += ",";
+        }
+        serializedVariants += "Particle";
+    }
+    user[gVertexVariants] = serializedVariants;
+
+    return true;
 }
 
 void ShaderBuilder::parsePassV0(const pugi::xml_node &parent, VariantMap &user) {

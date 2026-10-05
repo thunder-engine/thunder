@@ -135,7 +135,7 @@ private:
 
     bool parseProperties(const pugi::xml_node &parent, VariantMap &user);
 
-    void parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel);
+    bool parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel, int &vertexVariants);
     void parsePassV0(const pugi::xml_node &parent, VariantMap &user);
     void parsePassV11(const pugi::xml_node &parent, VariantMap &user);
 

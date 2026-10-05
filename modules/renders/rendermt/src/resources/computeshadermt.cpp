@@ -32,8 +32,16 @@ ComputeShaderMt::ComputeShaderMt() :
 }
 
 void ComputeShaderMt::loadUserData(const VariantMap &data) {
-    auto rhiData = data.find("RenderMT");
-    if(rhiData == data.end()) {
+    VariantMap rhiDataStorage;
+    const VariantMap *rhiRoot = &data;
+    auto shaderBundle = data.find("Data");
+    if(shaderBundle != data.end()) {
+        rhiDataStorage = shaderBundle->second.toMap();
+        rhiRoot = &rhiDataStorage;
+    }
+
+    auto rhiData = rhiRoot->find("RenderMT");
+    if(rhiData == rhiRoot->end()) {
         aError() << "Compute shader bundle does not contain RenderMT shader data.";
         return;
     }
