@@ -97,8 +97,8 @@ Project {
         "modules/modules.qbs",
         "worldeditor/worldeditor.qbs",
         "builder/builder.qbs",
+        "resourcecompiler/resourcecompiler.qbs",
         "build/install.qbs",
         "tests/tests.qbs"
     ]
 }
-

@@ -35,7 +35,8 @@
 Builder::Builder() :
         m_exitCode(0),
         m_finished(false),
-        m_assetsOnly(false) {
+        m_assetsOnly(false),
+        m_packageAssets(true) {
 
     connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
 }
@@ -117,6 +118,10 @@ void Builder::setAssetsOnly(bool assetsOnly) {
     m_assetsOnly = assetsOnly;
 }
 
+void Builder::setPackageAssets(bool packageAssets) {
+    m_packageAssets = packageAssets;
+}
+
 void Builder::packageAssets() {
     ProjectSettings *project = Editor::project();
     TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
@@ -128,7 +133,7 @@ void Builder::packageAssets() {
         return;
     }
 
-    if(!package(targetPath)) {
+    if(m_packageAssets && !package(targetPath)) {
         m_finished = true;
         m_exitCode = 1;
         return;
@@ -216,7 +221,7 @@ void Builder::onBuildSuccessful(bool buildResult) {
 
         // Package after
         NativeCodeBuilder *builder = project->currentBuilder();
-        if(builder && builder->packagingMode() == NativeCodeBuilder::After) {
+        if(m_packageAssets && builder && builder->packagingMode() == NativeCodeBuilder::After) {
             // Package right to install dir
             package(targetPath);
         }
@@ -243,7 +248,7 @@ void Builder::startNativeBuild() {
     ProjectSettings *project = Editor::project();
     NativeCodeBuilder *builder = project->currentBuilder();
     if(builder) {
-        if(builder->packagingMode() == NativeCodeBuilder::Before) {
+        if(m_packageAssets && builder->packagingMode() == NativeCodeBuilder::Before) {
             package(project->cachePath() + "/" + project->currentPlatformName());
         }
         if(builder->buildProject()) {

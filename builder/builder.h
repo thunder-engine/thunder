@@ -37,6 +37,7 @@ public:
 
     void setPlatform(const TString &platform);
     void setAssetsOnly(bool assetsOnly);
+    void setPackageAssets(bool packageAssets);
     void abort();
     int run();
     void setRecord(Log::LogTypes type, const char *record) override;
@@ -54,6 +55,7 @@ private:
     int m_exitCode;
     bool m_finished;
     bool m_assetsOnly;
+    bool m_packageAssets;
 };
 
 #endif // BUILDER_H

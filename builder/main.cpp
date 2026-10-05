@@ -64,12 +64,15 @@ int main(int argc, char *argv[]) {
                 QCoreApplication::translate("main", "Import assets and package them without building native code"));
     parser.addOption(assetsOnlyOption);
 
+    QCommandLineOption noPackageOption(QStringList() << "no-package",
+                QCoreApplication::translate("main", "Skip packaging imported assets into a resource archive"));
+    parser.addOption(noPackageOption);
+
     parser.process(a);
 
     if(!parser.isSet(sourceFileOption) || !parser.isSet(targetDirectoryOption)) {
         parser.showHelp(1);
     }
-
     Log::setLogLevel(Log::DBG);
 
     Engine::setOrganizationName(COMPANY_NAME);
@@ -87,6 +90,7 @@ int main(int argc, char *argv[]) {
 
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
     builder->setAssetsOnly(parser.isSet(assetsOnlyOption));
+    builder->setPackageAssets(!parser.isSet(noPackageOption));
 
     Editor::plugins()->init(&engine);
     Editor::assets()->init();
