@@ -34,7 +34,8 @@
 
 Builder::Builder() :
         m_exitCode(0),
-        m_finished(false) {
+        m_finished(false),
+        m_assetsOnly(false) {
 
     connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
 }
@@ -48,7 +49,11 @@ void Builder::pollImport() {
         if(m_exitCode != 0) {
             return;
         }
-        startNativeBuild();
+        if(m_assetsOnly) {
+            packageAssets();
+        } else {
+            startNativeBuild();
+        }
     }
 }
 
@@ -96,14 +101,48 @@ void Builder::setPlatform(const TString &platform) {
         project->setCurrentPlatform(m_platformsToBuild.top());
         m_platformsToBuild.pop();
 
-        NativeCodeBuilder *builder = project->currentBuilder();
-        if(builder) {
-            builder->convertFile(nullptr);
+        if(!m_assetsOnly) {
+            NativeCodeBuilder *builder = project->currentBuilder();
+            if(builder) {
+                builder->convertFile(nullptr);
+            }
         }
 
         Editor::assets()->rescan();
         pollImport();
     }
+}
+
+void Builder::setAssetsOnly(bool assetsOnly) {
+    m_assetsOnly = assetsOnly;
+}
+
+void Builder::packageAssets() {
+    ProjectSettings *project = Editor::project();
+    TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
+
+    if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
+        aError() << "Unable to create build directory at:" << targetPath;
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
+
+    if(!package(targetPath)) {
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
+
+    if(!m_platformsToBuild.empty()) {
+        project->setCurrentPlatform(m_platformsToBuild.top());
+        m_platformsToBuild.pop();
+        Editor::assets()->rescan();
+        pollImport();
+        return;
+    }
+
+    m_finished = true;
 }
 
 bool Builder::package(const TString &target) {

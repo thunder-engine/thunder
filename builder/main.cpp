@@ -60,6 +60,10 @@ int main(int argc, char *argv[]) {
                 QCoreApplication::translate("main", "platform"));
     parser.addOption(platformOption);
 
+    QCommandLineOption assetsOnlyOption(QStringList() << "assets-only",
+                QCoreApplication::translate("main", "Import assets and package them without building native code"));
+    parser.addOption(assetsOnlyOption);
+
     parser.process(a);
 
     if(!parser.isSet(sourceFileOption) || !parser.isSet(targetDirectoryOption)) {
@@ -82,6 +86,7 @@ int main(int argc, char *argv[]) {
     aInfo() << "Starting builder...";
 
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
+    builder->setAssetsOnly(parser.isSet(assetsOnlyOption));
 
     Editor::plugins()->init(&engine);
     Editor::assets()->init();
