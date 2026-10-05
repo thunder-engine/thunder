@@ -210,6 +210,8 @@ public:
 
     void initInstance(MaterialInstance *instance);
 
+    void setRhiData(const VariantMap &data);
+
 protected:
     void loadUserData(const VariantMap &data) override;
 
@@ -252,6 +254,8 @@ protected:
     DepthState m_depthState;
 
     StencilState m_stencilState;
+
+    VariantMap m_rhiData;
 
     uint32_t m_uniformSize;
 
@@ -345,4 +349,3 @@ protected:
 };
 
 #endif // MATERIAL_H
-

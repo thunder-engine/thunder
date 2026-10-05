@@ -27,6 +27,8 @@
 #include "commandbuffervk.h"
 #include "wrappervk.h"
 
+#include <log.h>
+
 MaterialVk::MaterialVk() :
         m_pipelineLayout(VK_NULL_HANDLE),
         m_localDescSetLayout(VK_NULL_HANDLE) {
@@ -34,7 +36,14 @@ MaterialVk::MaterialVk() :
 }
 
 void MaterialVk::loadUserData(const VariantMap &data) {
-    Material::loadUserData(data);
+    auto rhiData = data.find("RenderVK");
+    if(rhiData == data.end()) {
+        aError() << "Material bundle does not contain RenderVK shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
+    Material::loadUserData(shaderData);
 
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
@@ -48,8 +57,8 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     m_attributes.clear();
 
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             auto field = fields.begin(); // Shader data
@@ -85,6 +94,9 @@ void MaterialVk::loadUserData(const VariantMap &data) {
 */
 VariantMap MaterialVk::saveUserData() const {
     VariantMap result(Material::saveUserData());
+    if(!m_rhiData.empty()) {
+        return result;
+    }
 
     static const std::map<uint16_t, const char *> names = {
         {FragmentVisibility, "Visibility"},
@@ -116,7 +128,9 @@ VariantMap MaterialVk::saveUserData() const {
         }
     }
 
-    return result;
+    VariantMap data;
+    data["RenderVK"] = result;
+    return data;
 }
 
 void MaterialVk::switchState(State state) {

@@ -87,6 +87,7 @@ uint32_t MaterialInstance::instanceCount() const {
 }
 /*!
     Sets the \a number of GPU instances to be rendered.
+    Uniform buffer will be resized according to number of instances.
 */
 void MaterialInstance::setInstanceCount(uint32_t number) {
     m_instanceCount = number;
@@ -184,11 +185,16 @@ void MaterialInstance::setTransform(const Matrix4 &transform, uint32_t uuid, uin
     if(hash != m_transformHash) {
         Matrix4 m(transform);
         if(uuid > 0) {
-            Vector4 color(CommandBuffer::idToColor(uuid));
-            m[3] = color.x;
-            m[7] = color.y;
-            m[11] = color.z;
-            m[15] = color.w;
+            uint8_t rgb[4];
+            rgb[0] = uuid;
+            rgb[1] = uuid >> 8;
+            rgb[2] = uuid >> 16;
+            rgb[3] = uuid >> 24;
+
+            m[3] = (float)rgb[0] / 255.0f;
+            m[7] = (float)rgb[1] / 255.0f;
+            m[11] = (float)rgb[2] / 255.0f;
+            m[15] = (float)rgb[3] / 255.0f;
         }
 
         memcpy(m_uniformBuffer.data(), &m, sizeof(Matrix4));
@@ -368,6 +374,12 @@ int Material::layers() const {
     return m_layers;
 }
 /*!
+    Sets compiled shader data for all supported RHIs.
+*/
+void Material::setRhiData(const VariantMap &data) {
+    m_rhiData = data;
+}
+/*!
     Returns rendering priority for the material.
     This parameter is used alpha rendering sorting
 */
@@ -473,6 +485,10 @@ void Material::loadUserData(const VariantMap &data) {
     \internal
 */
 VariantMap Material::saveUserData() const {
+    if(!m_rhiData.empty()) {
+        return m_rhiData;
+    }
+
     VariantMap result;
 
     VariantList properties;

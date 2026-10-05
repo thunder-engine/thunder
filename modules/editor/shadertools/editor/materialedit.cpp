@@ -221,13 +221,14 @@ void MaterialEdit::onGraphUpdated() {
         VariantMap data = m_graph->data(true);
         m_codeDlg.setData(data);
 
-        ShaderBuilder::compileData(data);
-        ResourceSystem::loadResourceData(m_material, data);
+        if(ShaderBuilder::compileData(ShaderBuilder::currentRhi(), data)) {
+            ResourceSystem::loadResourceData(m_material, data);
 
-        MeshRender *mesh = m_mesh->getComponent<MeshRender>();
-        if(mesh) {
-            MaterialInstance *instance = mesh->materialInstance(0);
-            m_material->initInstance(instance);
+            MeshRender *mesh = m_mesh->getComponent<MeshRender>();
+            if(mesh) {
+                MaterialInstance *instance = mesh->materialInstance(0);
+                m_material->initInstance(instance);
+            }
         }
     }
 

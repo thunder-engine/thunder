@@ -114,7 +114,14 @@ inline MTL::CompareFunction convertCompareFunction(int32_t function) {
 }
 
 void MaterialMt::loadUserData(const VariantMap &data) {
-    Material::loadUserData(data);
+    auto rhiData = data.find("RenderMT");
+    if(rhiData == data.end()) {
+        aError() << "Material bundle does not contain RenderMT shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
+    Material::loadUserData(shaderData);
 
     if(m_depthStencilState) {
         m_depthStencilState->release();
@@ -170,8 +177,8 @@ void MaterialMt::loadUserData(const VariantMap &data) {
     m_pipelines.clear();
 
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             Shader shader;
@@ -210,6 +217,9 @@ void MaterialMt::loadUserData(const VariantMap &data) {
 */
 VariantMap MaterialMt::saveUserData() const {
     VariantMap result(Material::saveUserData());
+    if(!m_rhiData.empty()) {
+        return result;
+    }
 
     static const std::map<uint16_t, const char *> names = {
         {FragmentVisibility, "Visibility"},
@@ -248,7 +258,9 @@ VariantMap MaterialMt::saveUserData() const {
         }
     }
 
-    return result;
+    VariantMap data;
+    data["RenderMT"] = result;
+    return data;
 }
 
 MTL::RenderPipelineState *MaterialMt::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target) {

@@ -29,7 +29,14 @@
 const uint32_t gMaxUBO = 65536;
 
 void MaterialGL::loadUserData(const VariantMap &data) {
-    Material::loadUserData(data);
+    auto rhiData = data.find("RenderGL");
+    if(rhiData == data.end()) {
+        aError() << "Material bundle does not contain RenderGL shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
+    Material::loadUserData(shaderData);
 
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
@@ -41,8 +48,8 @@ void MaterialGL::loadUserData(const VariantMap &data) {
     };
 
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             m_shaderSources[pair.second] = fields.front().toString(); // Shader data
@@ -63,6 +70,9 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 */
 VariantMap MaterialGL::saveUserData() const {
     VariantMap result(Material::saveUserData());
+    if(!m_rhiData.empty()) {
+        return result;
+    }
 
     static const std::map<uint16_t, const char *> names = {
         {FragmentVisibility, "Visibility"},
@@ -81,7 +91,9 @@ VariantMap MaterialGL::saveUserData() const {
         }
     }
 
-    return result;
+    VariantMap data;
+    data["RenderGL"] = result;
+    return data;
 }
 
 uint32_t MaterialGL::getProgram(uint32_t type, int32_t &global, int32_t &local) {

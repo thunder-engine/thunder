@@ -21,10 +21,12 @@
 
 #include <QFile>
 
+#include <algorithm>
 #include <regex>
 #include <pugixml.hpp>
 
-#define FORMAT_VERSION 14
+#define SHADER_FORMAT_VERSION 14
+#define ASSET_FORMAT_VERSION 15
 
 enum ShaderFlags {
     Compute = (1<<0),
@@ -81,30 +83,52 @@ namespace  {
 
     const char *gTexture2D("texture2d");
     const char *gTextureCubemap("samplercube");
+
+    void normalizeTextureReferences(VariantMap &data) {
+        auto it = data.find(TEXTURES);
+        if(it == data.end()) {
+            return;
+        }
+
+        VariantList textures = it->second.toList();
+        for(auto &texture : textures) {
+            VariantList fields = texture.toList();
+            if(fields.empty()) {
+                continue;
+            }
+
+            auto path = fields.begin();
+            TString texturePath = path->toString();
+            if(!texturePath.isEmpty()) {
+                Texture *resource = Engine::loadResource<Texture>(texturePath);
+                *path = resource ? Engine::reference(resource) : TString();
+                texture = fields;
+            }
+        }
+
+        it->second = textures;
+    }
+
+    bool hasCompiledShaderPayload(const Variant &shader) {
+        VariantList fields = shader.toList();
+        if(fields.size() < 3) {
+            return false;
+        }
+
+        Variant payload = fields.front();
+        if(payload.userType() == MetaType::BYTEARRAY) {
+            return !payload.toByteArray().empty();
+        }
+        return !payload.toString().isEmpty();
+    }
 };
 
 ShaderBuilderSettings::ShaderBuilderSettings() {
-    setVersion(FORMAT_VERSION);
-    setRhi(Rhi::OpenGL);
-}
-
-int ShaderBuilderSettings::rhi() const {
-    return m_rhi;
-}
-void ShaderBuilderSettings::setRhi(int rhi) {
-    m_rhi = rhi;
-
-    setModified();
+    setVersion(ASSET_FORMAT_VERSION);
 }
 
 StringList ShaderBuilderSettings::typeNames() const {
     return { MetaType::name<Material>() };
-}
-
-bool ShaderBuilderSettings::isOutdated() const {
-    bool result = AssetConverterSettings::isOutdated();
-    result |= (m_rhi != ShaderBuilder::currentRhi());
-    return result;
 }
 
 AssetConverterSettings *ShaderBuilder::createSettings() {
@@ -121,7 +145,6 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
         {"RenderGL", ShaderBuilderSettings::Rhi::OpenGL},
         {"RenderVK", ShaderBuilderSettings::Rhi::Vulkan},
         {"RenderMT", ShaderBuilderSettings::Rhi::Metal},
-        {"RenderDX", ShaderBuilderSettings::Rhi::DirectX},
     };
 
     static ShaderBuilderSettings::Rhi rhi = ShaderBuilderSettings::Rhi::Invalid;
@@ -277,6 +300,49 @@ void ShaderBuilder::buildInstanceData(const VariantMap &user, PragmaMap &pragmas
     pragmas["skinOffset"] = "const int skinOffset = " + std::to_string(offset) + ";\n";
 }
 
+TString ShaderBuilder::rhiDefines(ShaderBuilderSettings::Rhi rhi) {
+    TString result;
+    if(rhi == ShaderBuilderSettings::Rhi::Vulkan) {
+        result += "\n#define VULKAN";
+    } else if(rhi == ShaderBuilderSettings::Rhi::Metal) {
+        result += "\n#define METAL";
+    }
+    return result;
+}
+
+void ShaderBuilder::setMaterialProperties(VariantMap &data, int materialType, bool doubleSided, int lightingModel) {
+    VariantList properties;
+    properties.push_back(materialType);
+    properties.push_back(doubleSided);
+    properties.push_back(lightingModel);
+    data[PROPERTIES] = properties;
+}
+
+void ShaderBuilder::setMaterialBlendState(VariantMap &data, const Material::BlendState &state) {
+    data[BLENDSTATE] = toVariant(state);
+}
+
+void ShaderBuilder::setMaterialDepthState(VariantMap &data, const Material::DepthState &state) {
+    data[DEPTHSTATE] = toVariant(state);
+}
+
+void ShaderBuilder::setMaterialStencilState(VariantMap &data, const Material::StencilState &state) {
+    data[STENCILSTATE] = toVariant(state);
+}
+
+void ShaderBuilder::setMaterialResources(VariantMap &data, const VariantList &textures, const VariantList &uniforms) {
+    data[TEXTURES] = textures;
+    data[UNIFORMS] = uniforms;
+}
+
+VariantList ShaderBuilder::materialTexture(const TString &path, const TString &name, int32_t binding, int32_t flags) {
+    return {path, name, binding, flags};
+}
+
+VariantList ShaderBuilder::materialUniform(const Variant &value, uint32_t size, const TString &name) {
+    return {value, size, name};
+}
+
 Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const TString &guid) const {
     Actor *object = Engine::composeActor<MeshRender>("");
     MeshRender *mesh = object->getComponent<MeshRender>();
@@ -303,37 +369,55 @@ StringList ShaderBuilder::suffixes() const {
 }
 
 AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *settings) {
-    VariantMap data;
-
     ShaderBuilderSettings *builderSettings = static_cast<ShaderBuilderSettings *>(settings);
+    static const RhiMap rhis = {
+        {"RenderGL", ShaderBuilderSettings::Rhi::OpenGL},
+        {"RenderVK", ShaderBuilderSettings::Rhi::Vulkan},
+        {"RenderMT", ShaderBuilderSettings::Rhi::Metal},
+    };
 
     Url info(builderSettings->source());
+    VariantMap dataByRhi;
+
+    ShaderGraph nodeGraph;
     if(info.suffix() == "mtl") {
-        ShaderGraph nodeGraph;
         nodeGraph.load(builderSettings->source());
-        if(nodeGraph.buildGraph()) {
-            if(builderSettings->currentVersion() != builderSettings->version()) {
-                nodeGraph.save(builderSettings->source());
-            }
-            data = nodeGraph.data();
+        if(!nodeGraph.buildGraph()) {
+            return InternalError;
         }
-    } else if(info.suffix() == "shader") {
-        parseShaderFormat(builderSettings->source(), data);
-    } else if(info.suffix() == "compute") {
-        parseShaderFormat(builderSettings->source(), data, Compute);
+        if(builderSettings->currentVersion() != builderSettings->version()) {
+            nodeGraph.save(builderSettings->source());
+        }
     }
 
-    if(data.empty()) {
-        return InternalError;
+    for(const auto &rhi : rhis) {
+        VariantMap data;
+        if(info.suffix() == "mtl") {
+            data = nodeGraph.dataForRhi(static_cast<int32_t>(rhi.second));
+        } else if(info.suffix() == "shader") {
+            parseShaderFormat(rhi.second, builderSettings->source(), data);
+        } else if(info.suffix() == "compute") {
+            parseShaderFormat(rhi.second, builderSettings->source(), data, Compute);
+        }
+
+        if(data.empty()) {
+            return InternalError;
+        }
+
+        if(!compileData(rhi.second, data)) {
+            aError() << "Failed to compile shader variant for " << rhi.first << ".";
+            return InternalError;
+        }
+        normalizeTextureReferences(data);
+        dataByRhi[rhi.first] = data;
     }
-
-    compileData(data);
-
-    builderSettings->setRhi(currentRhi());
 
     Material *material = Engine::loadResource<Material>(settings->destination());
     if(material == nullptr) {
         material = Engine::objectCreate<Material>(settings->destination());
+    }
+    if(material == nullptr) {
+        return InternalError;
     }
 
     uint32_t uuid = settings->info().id;
@@ -346,14 +430,27 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
         Engine::replaceUUID(material, uuid);
     }
 
-    ResourceSystem::loadResourceData(material, data);
+    auto activeRhi = std::find_if(rhis.begin(), rhis.end(), [](const auto &rhi) {
+        return rhi.second == currentRhi();
+    });
+    if(activeRhi == rhis.end()) {
+        return InternalError;
+    }
+
+    auto activeData = dataByRhi.find(activeRhi->first);
+    if(activeData == dataByRhi.end()) {
+        return InternalError;
+    }
+
+    VariantMap activeRhiData;
+    activeRhiData[activeRhi->first] = activeData->second;
+    ResourceSystem::loadResourceData(material, activeRhiData);
+    material->setRhiData(dataByRhi);
 
     return settings->saveBinary(material, settings->absoluteDestination());
 }
 
-void ShaderBuilder::compileData(VariantMap &data) {
-    ShaderBuilderSettings::Rhi rhi = currentRhi();
-
+bool ShaderBuilder::compileData(ShaderBuilderSettings::Rhi rhi, VariantMap &data) {
     uint32_t version = 430;
     bool es = false;
 
@@ -364,30 +461,47 @@ void ShaderBuilder::compileData(VariantMap &data) {
     }
     SpirVConverter::setGlslVersion(version, es);
 
-    data[FRAGMENT] = compile(rhi, data[FRAGMENT].toString(), data, EShLangFragment);
+    auto shader = data.find("Shader");
+    if(shader != data.end()) {
+        shader->second = compile(rhi, shader->second.toString(), data, EShLangCompute);
+        return hasCompiledShaderPayload(shader->second);
+    }
+
+    auto compileStage = [rhi, &data](const TString &key, EShLanguage stage, bool required) {
+        auto it = data.find(key);
+        if(it == data.end()) {
+            return !required;
+        }
+
+        it->second = compile(rhi, it->second.toString(), data, stage);
+        return hasCompiledShaderPayload(it->second);
+    };
+
+    if(!compileStage(FRAGMENT, EShLangFragment, true)) {
+        return false;
+    }
     {
         auto it = data.find(VISIBILITY);
         if(it != data.end()) {
-            data[VISIBILITY] = compile(rhi, it->second.toString(), data, EShLangFragment);
+            if(!compileStage(VISIBILITY, EShLangFragment, false)) {
+                return false;
+            }
         }
     }
 
-    data[STATIC] = compile(rhi, data[STATIC].toString(), data, EShLangVertex);
-
-    auto it = data.find(PARTICLE);
-    if(it != data.end()) {
-        data[PARTICLE] = compile(rhi, it->second.toString(), data, EShLangVertex);
+    if(!compileStage(STATIC, EShLangVertex, true)) {
+        return false;
     }
 
-    it = data.find(SKINNED);
-    if(it != data.end()) {
-        data[SKINNED] = compile(rhi, it->second.toString(), data, EShLangVertex);
+    if(!compileStage(PARTICLE, EShLangVertex, false)) {
+        return false;
     }
 
-    it = data.find(GEOMETRY);
-    if(it != data.end()) {
-        data[GEOMETRY] = compile(rhi, it->second.toString(), data, EShLangGeometry);
+    if(!compileStage(SKINNED, EShLangVertex, false)) {
+        return false;
     }
+
+    return true;
 }
 
 Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage) {
@@ -399,7 +513,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &bu
         switch(rhi) {
             case ShaderBuilderSettings::Rhi::OpenGL: result.push_back(Variant(SpirVConverter::spvToGlsl(spv))); break;
             case ShaderBuilderSettings::Rhi::Metal: result.push_back(Variant(SpirVConverter::spvToMetal(spv, inputs, stage))); break;
-            case ShaderBuilderSettings::Rhi::DirectX: result.push_back(Variant(SpirVConverter::spvToHlsl(spv))); break;
+            //case ShaderBuilderSettings::Rhi::DirectX: result.push_back(Variant(SpirVConverter::spvToHlsl(spv))); break;
             default: {
                 ByteArray array;
                 array.resize(spv.size() * sizeof(uint32_t));
@@ -462,7 +576,7 @@ Variant ShaderBuilder::compile(ShaderBuilderSettings::Rhi rhi, const TString &bu
     return result;
 }
 
-bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int flags) {
+bool ShaderBuilder::parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TString &path, VariantMap &user, int flags) {
     File file(path.data());
     if(file.open(File::Read | File::Text)) {
         ByteArray data = file.readAll();
@@ -491,7 +605,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                         return false;
                     }
                 } else if(name == gPass) {
-                    user[PROPERTIES] = parsePassProperties(element, materialType, lightingModel);
+                    parsePassProperties(element, user, materialType, lightingModel);
 
                     if(version == 0) {
                         parsePassV0(element, user);
@@ -503,7 +617,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                 element = element.next_sibling();
             }
 
-            if(version != FORMAT_VERSION) {
+            if(version != SHADER_FORMAT_VERSION) {
                 saveShaderFormat(path, shaders, user);
             }
 
@@ -512,19 +626,13 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
             buildInstanceData(user, pragmas);
 
             if(flags & Compute) {
+                define += rhiDefines(rhi);
                 TString str = shaders[gCompute];
                 if(!str.isEmpty()) {
                     user["Shader"] = loadShader(str, define, pragmas);
                 }
             } else {
-                if(currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
-                    define += "\n#define VULKAN";
-                }
-
-                if(currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
-                    define += "\n#define METAL";
-                }
-
+                define += rhiDefines(rhi);
                 define += "\n#define USE_GBUFFER";
 
                 NativeCodeBuilder *builder = Editor::project()->currentBuilder();
@@ -536,8 +644,7 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                     define += "\n#define USE_TBN";
                 }
 
-                TString str;
-                str = shaders[gFragment];
+                TString str = shaders[gFragment];
                 if(!str.isEmpty()) {
                     user[FRAGMENT] = loadShader(str, define, pragmas);
                     if(materialType == Material::Surface) {
@@ -561,11 +668,9 @@ bool ShaderBuilder::parseShaderFormat(const TString &path, VariantMap &user, int
                     user[STATIC] = loadIncludes(file, define, pragmas);
 
                     flags = materialType == Material::Surface ? (Skinned | Particle) : 0;
-
                     if(flags & Skinned) {
                         user[SKINNED] = loadIncludes("Skinned.vert", define, pragmas);
                     }
-
                     if(flags & Particle) {
                         user[PARTICLE] = loadIncludes("Billboard.vert", define, pragmas);
                     }
@@ -637,7 +742,7 @@ bool ShaderBuilder::saveShaderFormat(const TString &path, const std::map<TString
     pugi::xml_document xml;
     pugi::xml_node shader = xml.append_child("shader");
 
-    shader.append_attribute("version") = FORMAT_VERSION;
+    shader.append_attribute("version") = SHADER_FORMAT_VERSION;
 
     pugi::xml_node properties = shader.append_child(gProperties);
 
@@ -816,16 +921,9 @@ bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &us
                 localBinding = UNIFORM_BIND + binding.toInt();
             }
 
-            VariantList texture;
-            texture.push_back((flags & ShaderRootNode::Target) ? "" : TString(property.attribute("path").as_string())); // path
-            texture.push_back(name); // name
-            texture.push_back(localBinding); // binding
-            texture.push_back(flags); // flags
-
-            textures.push_back(texture);
+            TString path((flags & ShaderRootNode::Target) ? "" : property.attribute("path").as_string());
+            textures.push_back(materialTexture(path, name, localBinding, flags));
         } else { // Uniform
-            VariantList data;
-
             uint32_t size = 0;
             uint32_t count = property.attribute("count").as_int(1);
             Variant value;
@@ -852,30 +950,21 @@ bool ShaderBuilder::parseProperties(const pugi::xml_node &parent, VariantMap &us
                 size = sizeof(Matrix4);
             }
 
-            data.push_back(value);
-            data.push_back(size * count);
-            data.push_back(name);
-
-            uniforms.push_back(data);
+            uniforms.push_back(materialUniform(value, size * count, name));
         }
         property = property.next_sibling();
     }
 
-    user[TEXTURES] = textures;
-    user[UNIFORMS] = uniforms;
+    setMaterialResources(user, textures, uniforms);
 
     return true;
 }
 
-VariantList ShaderBuilder::parsePassProperties(const pugi::xml_node &element, int &materialType, int &lightingModel) {
-    VariantList properties;
+void ShaderBuilder::parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel) {
     materialType = toMaterialType(element.attribute("type").as_string());
-    properties.push_back(materialType);
-    properties.push_back(element.attribute(gTwoSided).as_bool(true));
+    bool doubleSided = element.attribute(gTwoSided).as_bool(true);
     lightingModel = toLightModel(element.attribute(gLightModel).as_string());
-    properties.push_back(lightingModel);
-
-    return properties;
+    setMaterialProperties(user, materialType, doubleSided, lightingModel);
 }
 
 void ShaderBuilder::parsePassV0(const pugi::xml_node &parent, VariantMap &user) {
@@ -891,14 +980,14 @@ void ShaderBuilder::parsePassV0(const pugi::xml_node &parent, VariantMap &user) 
         mode = blendIt->second;
     }
     Material::BlendState blendState = fromBlendMode(mode);
-    user[BLENDSTATE] = toVariant(blendState);
+    setMaterialBlendState(user, blendState);
 
     Material::DepthState depthState;
 
     depthState.enabled = parent.attribute("depthTest").as_bool(true);
     depthState.writeEnabled = parent.attribute("depthWrite").as_bool(true);
 
-    user[DEPTHSTATE] = toVariant(depthState);
+    setMaterialDepthState(user, depthState);
 }
 
 void ShaderBuilder::parsePassV11(const pugi::xml_node &parent, VariantMap &user) {
@@ -906,11 +995,11 @@ void ShaderBuilder::parsePassV11(const pugi::xml_node &parent, VariantMap &user)
     while(element) {
         std::string name(element.name());
         if(name == "blend") {
-            user[BLENDSTATE] = toVariant(loadBlendState(element));
+            setMaterialBlendState(user, loadBlendState(element));
         } else if(name == "depth") {
-            user[DEPTHSTATE] = toVariant(loadDepthState(element));
+            setMaterialDepthState(user, loadDepthState(element));
         } else if(name == "stencil") {
-            user[STENCILSTATE] = toVariant(loadStencilState(element));
+            setMaterialStencilState(user, loadStencilState(element));
         }
 
         element = element.next_sibling();
@@ -918,7 +1007,7 @@ void ShaderBuilder::parsePassV11(const pugi::xml_node &parent, VariantMap &user)
 }
 
 uint32_t ShaderBuilder::version() {
-    return FORMAT_VERSION;
+    return SHADER_FORMAT_VERSION;
 }
 
 void ShaderBuilder::init() {

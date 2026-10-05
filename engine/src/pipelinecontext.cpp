@@ -207,12 +207,7 @@ void PipelineContext::analizeGraph() {
     Frustum frustum(camera->frustum());
     Matrix4 viewProjection(camera->projectionMatrix() * camera->viewMatrix());
     if(m_frustumCulling) {
-        m_culledRenderables.clear();
-        for(auto it : m_sceneRenderables) {
-            if(!it->isCulled(frustum, viewProjection)) {
-                m_culledRenderables.push_back(it);
-            }
-        }
+        Renderable::filterByFrustum(m_sceneRenderables, m_culledRenderables, frustum, viewProjection);
     }
 
     // Add lights

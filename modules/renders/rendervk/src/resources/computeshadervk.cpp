@@ -36,11 +36,19 @@ ComputeShaderVk::ComputeShaderVk() :
 }
 
 void ComputeShaderVk::loadUserData(const VariantMap &data) {
-    ComputeShader::loadUserData(data);
+    auto rhiData = data.find("RenderVK");
+    if(rhiData == data.end()) {
+        aError() << "Compute shader bundle does not contain RenderVK shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
 
-    auto it = data.find("Shader");
-    if(it != data.end()) {
-        m_shaderSource = (*it).second.toByteArray();
+    ComputeShader::loadUserData(shaderData);
+
+    auto it = shaderData.find("Shader");
+    if(it != shaderData.end()) {
+        VariantList fields = it->second.toList();
+        m_shaderSource = fields.front().toByteArray();
     }
 
     setState(ToBeUpdated);
