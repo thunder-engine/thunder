@@ -222,12 +222,14 @@ void MaterialEdit::onGraphUpdated() {
         m_codeDlg.setData(data);
 
         if(ShaderBuilder::compileData(ShaderBuilder::currentRhi(), data)) {
-            ResourceSystem::loadResourceData(m_material, data);
+            if(ShaderBuilder::packShaderData(data, ShaderBuilder::currentRhi())) {
+                ResourceSystem::loadResourceData(m_material, data);
 
-            MeshRender *mesh = m_mesh->getComponent<MeshRender>();
-            if(mesh) {
-                MaterialInstance *instance = mesh->materialInstance(0);
-                m_material->initInstance(instance);
+                MeshRender *mesh = m_mesh->getComponent<MeshRender>();
+                if(mesh) {
+                    MaterialInstance *instance = mesh->materialInstance(0);
+                    m_material->initInstance(instance);
+                }
             }
         }
     }

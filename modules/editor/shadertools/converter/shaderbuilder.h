@@ -70,6 +70,7 @@ public:
     static TString loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
+    static bool packShaderData(VariantMap &data, ShaderBuilderSettings::Rhi rhi);
 
     static void buildInstanceData(const VariantMap &user, PragmaMap &pragmas);
     static TString rhiDefines(ShaderBuilderSettings::Rhi rhi);

@@ -687,12 +687,14 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
                 if(buildGraph(it.first)) {
                     VariantMap data = ShaderGraph::data(true, &m_previewSettings);
                     if(ShaderBuilder::compileData(ShaderBuilder::currentRhi(), data)) {
-                        ResourceSystem::loadResourceData(it.second.material, data);
-                        if(it.second.instance) {
-                            delete it.second.instance;
+                        if(ShaderBuilder::packShaderData(data, ShaderBuilder::currentRhi())) {
+                            ResourceSystem::loadResourceData(it.second.material, data);
+                            if(it.second.instance) {
+                                delete it.second.instance;
+                            }
+                            it.second.instance = it.second.material->createInstance(Material::Static);
+                            it.second.isDirty = false;
                         }
-                        it.second.instance = it.second.material->createInstance(Material::Static);
-                        it.second.isDirty = false;
                     }
                 }
             }

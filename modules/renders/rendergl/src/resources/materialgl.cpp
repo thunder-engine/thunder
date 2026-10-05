@@ -31,17 +31,12 @@ const uint32_t gMaxUBO = 65536;
 void MaterialGL::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    VariantMap shaderDataStorage;
-    const VariantMap *shaderData = &data;
-    if(!m_shaderData.empty()) {
-        auto rhiData = m_shaderData.find("RenderGL");
-        if(rhiData == m_shaderData.end()) {
-            aError() << "Material bundle does not contain RenderGL shader data.";
-            return;
-        }
-        shaderDataStorage = rhiData->second.toMap();
-        shaderData = &shaderDataStorage;
+    auto rhiData = m_shaderData.find("RenderGL");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderGL shader data.";
+        return;
     }
+    VariantMap shaderData = rhiData->second.toMap();
 
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
@@ -54,8 +49,8 @@ void MaterialGL::loadUserData(const VariantMap &data) {
 
     m_shaderSources.clear();
     for(auto &pair : pairs) {
-        auto it = shaderData->find(pair.first);
-        if(it != shaderData->end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             m_shaderSources[pair.second] = fields.front().toString(); // Shader data

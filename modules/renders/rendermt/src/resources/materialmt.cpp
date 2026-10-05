@@ -116,17 +116,12 @@ inline MTL::CompareFunction convertCompareFunction(int32_t function) {
 void MaterialMt::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    VariantMap shaderDataStorage;
-    const VariantMap *shaderData = &data;
-    if(!m_shaderData.empty()) {
-        auto rhiData = m_shaderData.find("RenderMT");
-        if(rhiData == m_shaderData.end()) {
-            aError() << "Material bundle does not contain RenderMT shader data.";
-            return;
-        }
-        shaderDataStorage = rhiData->second.toMap();
-        shaderData = &shaderDataStorage;
+    auto rhiData = m_shaderData.find("RenderMT");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderMT shader data.";
+        return;
     }
+    VariantMap shaderData = rhiData->second.toMap();
 
     if(m_depthStencilState) {
         m_depthStencilState->release();
@@ -182,8 +177,8 @@ void MaterialMt::loadUserData(const VariantMap &data) {
     m_pipelines.clear();
 
     for(auto &pair : pairs) {
-        auto it = shaderData->find(pair.first);
-        if(it != shaderData->end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             Shader shader;

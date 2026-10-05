@@ -38,17 +38,12 @@ MaterialVk::MaterialVk() :
 void MaterialVk::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
-    VariantMap shaderDataStorage;
-    const VariantMap *shaderData = &data;
-    if(!m_shaderData.empty()) {
-        auto rhiData = m_shaderData.find("RenderVK");
-        if(rhiData == m_shaderData.end()) {
-            aError() << "Material bundle does not contain RenderVK shader data.";
-            return;
-        }
-        shaderDataStorage = rhiData->second.toMap();
-        shaderData = &shaderDataStorage;
+    auto rhiData = m_shaderData.find("RenderVK");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderVK shader data.";
+        return;
     }
+    VariantMap shaderData = rhiData->second.toMap();
 
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
@@ -63,8 +58,8 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     m_shaderSources.clear();
 
     for(auto &pair : pairs) {
-        auto it = shaderData->find(pair.first);
-        if(it != shaderData->end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             auto field = fields.begin(); // Shader data

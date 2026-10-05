@@ -161,6 +161,34 @@ ShaderBuilderSettings::Rhi ShaderBuilder::currentRhi() {
     return rhi;
 }
 
+bool ShaderBuilder::packShaderData(VariantMap &data, ShaderBuilderSettings::Rhi rhi) {
+    static const std::map<ShaderBuilderSettings::Rhi, std::string> rhiNames = {
+        {ShaderBuilderSettings::Rhi::OpenGL, "RenderGL"},
+        {ShaderBuilderSettings::Rhi::Vulkan, "RenderVK"},
+        {ShaderBuilderSettings::Rhi::Metal, "RenderMT"}
+    };
+    auto rhiName = rhiNames.find(rhi);
+    if(rhiName == rhiNames.end()) {
+        aError() << "Unsupported RHI while packaging shader data.";
+        return false;
+    }
+
+    VariantMap shaderData;
+    for(const char *key : {FRAGMENT, VISIBILITY, STATIC, SKINNED, PARTICLE, GEOMETRY, "Shader"}) {
+        auto shader = data.find(key);
+        if(shader != data.end()) {
+            shaderData[key] = shader->second;
+            data.erase(shader);
+        }
+    }
+
+    VariantMap rhiData;
+    rhiData[rhiName->second] = shaderData;
+    data["Data"] = rhiData;
+
+    return true;
+}
+
 TString uniformDataHelper(const Uniform &uniform, int &offset, int &sub) {
     static const char *compNames = "xyzw";
 
@@ -425,16 +453,12 @@ AssetConverter::ReturnCode ShaderBuilder::convertFile(AssetConverterSettings *se
             return InternalError;
         }
         normalizeTextureReferences(data);
-
-        VariantMap shaderData;
-        for(const char *key : {FRAGMENT, VISIBILITY, STATIC, SKINNED, PARTICLE, GEOMETRY, "Shader"}) {
-            auto shader = data.find(key);
-            if(shader != data.end()) {
-                shaderData[key] = shader->second;
-            }
+        if(!packShaderData(data, rhi.second)) {
+            return InternalError;
         }
-
-        shaderDataByRhi[rhi.first] = shaderData;
+        for(const auto &rhiData : data["Data"].toMap()) {
+            shaderDataByRhi[rhiData.first] = rhiData.second;
+        }
     }
 
     Material *material = Engine::loadResource<Material>(settings->destination());
