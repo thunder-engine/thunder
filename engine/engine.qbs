@@ -11,8 +11,7 @@ Project {
             "src/filters/*.cpp",
             "src/pipelinetasks/*.cpp",
             "src/utils/*.cpp",
-            "src/adapters/platform*.cpp",
-            "src/adapters/handlers/*.cpp",
+            "src/adapters/platform*.cpp"
         ]
 
         // Freetype
@@ -216,8 +215,7 @@ Project {
                 "components/*.h",
                 "components/gui/*.h",
                 "resources/*.h",
-                "pipelinetasks/*.h",
-                "adapters/handlers/*.h"
+                "pipelinetasks/*.h"
             ]
             qbs.install: true
             qbs.installDir: engine.INC_PATH + "/engine"
