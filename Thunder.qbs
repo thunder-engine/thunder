@@ -74,7 +74,6 @@ Project {
     property string LIB_PATH: ((qbs.targetOS[0] === "linux") ? PLATFORM_PATH + "/lib/" : BIN_PATH + bundle)
     property string STATIC_PATH: PLATFORM_PATH + "/static"
     property string INC_PATH: SDK_PATH + "/include"
-    property string TOOLS_PATH: SDK_PATH + "/tools"
     property string PLUGINS_PATH: BIN_PATH + bundle + "/plugins"
 
     property stringList defines: {

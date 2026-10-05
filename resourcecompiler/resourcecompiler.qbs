@@ -16,8 +16,9 @@ Project {
             name: "Install Resource Compiler"
             fileTagsFilter: product.type
             qbs.install: true
-            qbs.installDir: resourceCompiler.TOOLS_PATH
+            qbs.installDir: resourceCompiler.BIN_PATH
             qbs.installPrefix: resourceCompiler.PREFIX
+            qbs.installSourceBase: product.buildDirectory
         }
     }
 }
