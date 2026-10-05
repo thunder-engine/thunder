@@ -5,12 +5,8 @@ Project {
 
     CppApplication {
         name: "trc"
-        condition: qbs.targetOS.contains("windows") ||
-                   qbs.targetOS.contains("linux") ||
-                   qbs.targetOS.contains("darwin")
-
+        condition: condition: resourceCompiler.desktop
         files: ["main.cpp"]
-
         Depends { name: "pugixml" }
 
         cpp.includePaths: ["../thirdparty/pugixml/src"]
