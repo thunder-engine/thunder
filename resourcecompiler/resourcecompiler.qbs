@@ -5,7 +5,7 @@ Project {
 
     CppApplication {
         name: "trc"
-        condition: condition: resourceCompiler.desktop
+        condition: resourceCompiler.desktop
         files: ["main.cpp"]
         Depends { name: "pugixml" }
 
