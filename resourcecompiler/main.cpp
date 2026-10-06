@@ -404,12 +404,8 @@ int main(int argc, char *argv[]) {
         output << ", resource" << i << ", " << files[i].size << "},\n";
     }
     output << "};\n"
-              "struct EmbeddedResourcesRegistration {\n"
-              "    EmbeddedResourcesRegistration() {\n"
-              "        EmbeddedFileHandler::registerFiles(embeddedFiles, " << files.size() << ");\n"
-              "    }\n"
-              "};\n"
-              "static EmbeddedResourcesRegistration registration;\n"
+              "static EmbeddedFileRegistration registration(embeddedFiles, "
+           << files.size() << ");\n"
               "}\n";
     output.close();
     if(!output) {
