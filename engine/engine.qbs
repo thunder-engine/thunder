@@ -11,7 +11,7 @@ Project {
             "src/filters/*.cpp",
             "src/pipelinetasks/*.cpp",
             "src/utils/*.cpp",
-            "src/adapters/platform*.cpp",
+            "src/adapters/platform*.cpp"
         ]
 
         // Freetype

@@ -36,6 +36,8 @@ public:
     Builder();
 
     void setPlatform(const TString &platform);
+    void setAssetsOnly(bool assetsOnly);
+    void setPackageAssets(bool packageAssets);
     void abort();
     int run();
     void setRecord(Log::LogTypes type, const char *record) override;
@@ -46,11 +48,14 @@ private:
     void pollImport();
     void onBuildSuccessful(bool result);
     void startNativeBuild();
+    void packageAssets();
 
 private:
     std::stack<TString> m_platformsToBuild;
     int m_exitCode;
     bool m_finished;
+    bool m_assetsOnly;
+    bool m_packageAssets;
 };
 
 #endif // BUILDER_H
