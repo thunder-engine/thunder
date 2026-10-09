@@ -24,7 +24,6 @@
 
 #include <pugixml.hpp>
 
-class UiLoader;
 class WidgetController;
 
 class Widget;
@@ -96,8 +95,6 @@ private:
     Scene *m_scene;
 
     Canvas *m_canvas;
-
-    UiLoader *m_loader;
 
     WidgetController *m_controller;
 

@@ -33,7 +33,6 @@
 #include <viewport/cameracontroller.h>
 
 #include "components/canvas.h"
-#include "components/uiloader.h"
 #include "components/recttransform.h"
 #include "components/listview.h"
 #include "components/treeview.h"
@@ -114,7 +113,6 @@ UiEdit::UiEdit() :
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
         m_canvas(nullptr),
-        m_loader(nullptr),
         m_controller(new WidgetController(this)) {
 
     ui->setupUi(this);
@@ -122,10 +120,7 @@ UiEdit::UiEdit() :
     Actor *canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
     m_canvas = canvas->getComponent<Canvas>();
 
-    Actor *loader = Engine::composeActor<UiLoader>("Loader", canvas);
-    m_loader = loader->getComponent<UiLoader>();
-
-    m_controller->setRoot(m_loader);
+    m_controller->setRoot(m_canvas);
     m_controller->activateCamera(1, true);
     m_controller->setGridAxis(CameraController::Axis::Z);
     m_controller->setZoomLimits(Vector2(300, 1500));
@@ -138,7 +133,7 @@ UiEdit::UiEdit() :
     Camera *camera = m_controller->camera();
     if(camera) {
         camera->setScreenSpace(true);
-        Vector2 size = m_loader->rectTransform()->size();
+        Vector2 size = m_canvas->rectTransform()->size();
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }
 
@@ -273,10 +268,10 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
             return;
         }
 
-        m_loader->fromBuffer(loadFile.readAll());
+        m_canvas->fromBuffer(loadFile.readAll());
         loadFile.close();
 
-        Actor *actor = dynamic_cast<Actor *>(m_loader->actor()->find("ListView"));
+        Actor *actor = dynamic_cast<Actor *>(m_canvas->actor()->find("ListView"));
         if(actor) {
             ListView *list = actor->getComponent<ListView>();
             if(list) {
@@ -284,7 +279,7 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
             }
         }
 
-        actor = dynamic_cast<Actor *>(m_loader->actor()->find("TreeView"));
+        actor = dynamic_cast<Actor *>(m_canvas->actor()->find("TreeView"));
         if(actor) {
             TreeView *list = actor->getComponent<TreeView>();
             if(list) {
@@ -300,13 +295,13 @@ void UiEdit::saveAsset(const TString &path) {
         pugi::xml_document doc;
         pugi::xml_node root = doc.append_child(gUi);
 
-        TString style = m_loader->documentStyle();
+        TString style = m_canvas->documentStyle();
         if(!style.isEmpty()) {
             pugi::xml_node styleNode = root.append_child(gStyle);
             styleNode.text().set(style.data());
         }
 
-        saveElementHelper(root, m_loader);
+        saveElementHelper(root, m_canvas);
 
         std::stringstream ss;
         doc.save(ss);
