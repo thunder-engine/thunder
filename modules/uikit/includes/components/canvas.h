@@ -21,6 +21,10 @@
 #include <component.h>
 #include <uikit.h>
 
+#include <widget.h>
+#include <uidocument.h>
+#include <stylesheet.h>
+
 class CommandBuffer;
 class RectTransform;
 class RenderTarget;
@@ -28,11 +32,17 @@ class Texture;
 class Mesh;
 class MaterialInstance;
 
-class UIKIT_EXPORT Canvas : public Component {
-    A_OBJECT(Canvas, Component, Components/UI)
+class UIKIT_EXPORT Canvas : public Widget {
+    A_OBJECT(Canvas, Widget, Components/UI)
 
-    A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_PROPERTIES(
+        A_PROPERTYEX(UiDocument *, document, Canvas::document, Canvas::setDocument, "editor=Asset"),
+        A_PROPERTYEX(StyleSheet *, styleSheet, Canvas::styleSheet, Canvas::setStyleSheet, "editor=Asset")
+    )
+    A_METHODS(
+        A_METHOD(void, Canvas::fromBuffer),
+        A_SIGNAL(Canvas::documentLoaded)
+    )
     A_NOENUMS()
 
 public:
@@ -40,7 +50,7 @@ public:
 
     void markDirty();
 
-    void update(const Vector2 &position);
+    void update(const Vector2 &position) override;
 
     void draw(CommandBuffer *buffer);
 
@@ -56,24 +66,48 @@ public:
     void setClipRegion(const Vector4 &region);
     void disableClip();
 
+    Texture *texture() const;
+
+    void skipRenderResult(bool skip);
+
+    UiDocument *document() const;
+    void setDocument(UiDocument *document);
+
+    StyleSheet *styleSheet() const;
+    void setStyleSheet(StyleSheet *style);
+
+    TString documentStyle() const;
+    void fromBuffer(const TString &buffer);
+    void documentLoaded();
+
 private:
     void composeComponent() override;
 
+    void resolveStyleSheet(Widget *widget);
+    void cleanHierarchy(Widget *widget);
+
+    static void materialUpdated(int state, void *ptr);
+
 private:
+    Vector2 m_lastPosition;
+
+    TString m_documentStyle;
+
     RenderTarget *m_target;
 
     Texture *m_texture;
-
-    RectTransform *m_transform;
 
     CommandBuffer *m_buffer;
 
     MaterialInstance *m_finalMaterial;
 
+    UiDocument *m_document;
+
+    StyleSheet *m_styleSheet;
+
     bool m_dirty;
 
     bool m_lastPositionValid;
-    Vector2 m_lastPosition;
 
 };
 

@@ -18,10 +18,30 @@
 #include "pipelinetasks/guilayer.h"
 
 #include "components/world.h"
+#include "components/scene.h"
+#include "components/actor.h"
 #include "components/canvas.h"
 
 #include <commandbuffer.h>
 #include <input.h>
+
+void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position) {
+    Object::ObjectList children = object->getChildren();
+
+    Actor *actor = dynamic_cast<Actor *>(object);
+    if(actor) {
+        Canvas *canvas = actor->getComponent<Canvas>();
+        if(canvas && canvas->isEnabledInHierarchy()) {
+            canvas->setSize(width, height);
+            canvas->update(position);
+            canvases.push(canvas);
+        }
+    }
+
+    for(auto child : children) {
+        collectCanvases(child, canvases, width, height, position);
+    }
+}
 
 GuiLayer::GuiLayer() {
 
@@ -37,16 +57,13 @@ void GuiLayer::analyze(World *world) {
         pos = Input::touchPosition(0);
     }
 
-    m_canvas.clear();
-    static uint32_t canvasHash = Mathf::hashString("canvas");
+    while(!m_canvas.empty()) {
+        m_canvas.pop();
+    }
+
     for(auto scene : world->scenes()) {
-        for(auto it : scene->getObjectsInGroupByHash(canvasHash)) {
-            Canvas *canvas = static_cast<Canvas *>(it);
-            if(canvas->isEnabledInHierarchy()) {
-                canvas->setSize(m_width, m_height);
-                canvas->update(pos);
-                m_canvas.push_back(canvas);
-            }
+        for(auto object : scene->getChildren()) {
+            collectCanvases(object, m_canvas, m_width, m_height, pos);
         }
     }
 }
@@ -56,8 +73,9 @@ void GuiLayer::exec() {
 
     buffer->beginDebugMarker("GuiLayer");
 
-    for(auto it : m_canvas) {
-        it->draw(buffer);
+    while(!m_canvas.empty()) {
+        m_canvas.top()->draw(buffer);
+        m_canvas.pop();
     }
 
     buffer->endDebugMarker();

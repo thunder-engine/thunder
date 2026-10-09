@@ -41,7 +41,6 @@
 #include "components/tabbar.h"
 #include "components/tabwidget.h"
 #include "components/toolbutton.h"
-#include "components/uiloader.h"
 #include "components/widget.h"
 
 #include "pipelinetasks/guilayer.h"
@@ -56,9 +55,8 @@ UiSystem::UiSystem() :
 
     RectTransform::registerClassFactory(this);
 
-    Canvas::registerClassFactory(this);
-
     Widget::registerClassFactory(this);
+    Canvas::registerClassFactory(this);
     Image::registerClassFactory(this);
     Frame::registerClassFactory(this);
     Label::registerClassFactory(this);
@@ -93,8 +91,6 @@ UiSystem::UiSystem() :
     ItemViewDelegate::registerClassFactory(this);
 
     GuiLayer::registerClassFactory(this);
-
-    UiLoader::registerClassFactory(this);
 
     setName("UiSystem");
 }
@@ -140,8 +136,6 @@ UiSystem::~UiSystem() {
     ItemViewDelegate::unregisterClassFactory(this);
 
     GuiLayer::unregisterClassFactory(this);
-
-    UiLoader::unregisterClassFactory(this);
 
     StyleSheet::unregisterClassFactory(Engine::resourceSystem());
     UiDocument::unregisterClassFactory(Engine::resourceSystem());

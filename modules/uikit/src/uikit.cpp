@@ -69,8 +69,7 @@ static const char *meta = \
 "       \"TabBar\","
 "       \"TabWidget\","
 "       \"ToolButton\","
-"       \"UiLoader\","
-"       \"Widget\""
+"\"Widget\""
 "   ]"
 "}";
 

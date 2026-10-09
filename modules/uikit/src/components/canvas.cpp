@@ -20,6 +20,9 @@
 #include "components/recttransform.h"
 #include "components/widget.h"
 
+#include <components/actor.h>
+#include <stylesheet.h>
+
 #include <resources/texture.h>
 #include <resources/material.h>
 #include <resources/rendertarget.h>
@@ -27,6 +30,78 @@
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <input.h>
+#include <pugixml.hpp>
+
+namespace {
+    const char *gUi("ui");
+    const char *gName("name");
+    const char *gStyle("style");
+    const char *gClass("class");
+
+    void loadElementHelper(pugi::xml_node &node, Actor *actor, bool root = false) {
+        std::string type = node.name();
+        std::string name = node.attribute(gName).as_string();
+
+        Actor *element = dynamic_cast<Actor *>(actor->find(name));
+        if(element == nullptr) {
+            element = Engine::composeActor(type, name, actor);
+        }
+
+        Widget *widget = dynamic_cast<Widget *>(element->component(type));
+        if(widget) {
+            const MetaObject *meta = widget->metaObject();
+            for(auto it : node.attributes()) {
+                int32_t index = meta->indexOfProperty(it.name());
+                if(index > -1) {
+                    MetaProperty property = meta->property(index);
+                    Variant current = widget->property(property.name());
+
+                    TString annotation;
+                    const char *text = property.table()->annotation;
+                    if(text) {
+                        annotation = text;
+                    }
+
+                    switch(current.type()) {
+                        case MetaType::BOOLEAN: widget->setProperty(property.name(), it.as_bool()); break;
+                        case MetaType::INTEGER: widget->setProperty(property.name(), it.as_int()); break;
+                        case MetaType::FLOAT: widget->setProperty(property.name(), it.as_float()); break;
+                        case MetaType::STRING: widget->setProperty(property.name(), it.as_string()); break;
+                        default: {
+                            if(annotation == "editor=Asset") {
+                                Resource *resource = Engine::loadResource(it.as_string());
+                                if(resource) {
+                                    uint32_t type = MetaType::type(resource->typeName().data()) + 1;
+                                    widget->setProperty(property.name(), Variant(type, &resource));
+                                }
+                            }
+                        } break;
+                    }
+                }
+            }
+
+            TString classes = node.attribute(gClass).as_string();
+            if(!classes.isEmpty()) {
+                for(auto &it : classes.split(' ')) {
+                    widget->addClass(it);
+                }
+            }
+
+            TString style = node.attribute(gStyle).as_string();
+            if(!style.isEmpty()) {
+                StyleSheet::resolveInline(widget, style);
+            }
+        }
+
+        for(pugi::xml_node it : node.children()) {
+            loadElementHelper(it, element);
+        }
+
+        if(root) {
+            element->blockSerialization(true);
+        }
+    }
+}
 
 /*!
     \class Canvas
@@ -41,9 +116,10 @@
 Canvas::Canvas() :
         m_target(Engine::objectCreate<RenderTarget>("canvasTarget")),
         m_texture(Engine::objectCreate<Texture>("canvasTexture")),
-        m_transform(nullptr),
         m_buffer(nullptr),
         m_finalMaterial(nullptr),
+        m_document(nullptr),
+        m_styleSheet(nullptr),
         m_dirty(true),
         m_lastPositionValid(false) {
 
@@ -195,7 +271,7 @@ void Canvas::setSize(int width, int height) {
         m_dirty = true;
     }
 
-    RectTransform *rect = dynamic_cast<RectTransform *>(transform());
+    RectTransform *rect = rectTransform();
     if(rect) {
         rect->setSize(Vector2(width, height));
     }
@@ -206,20 +282,13 @@ void Canvas::setSize(int width, int height) {
     Lazy-initializes and caches the RectTransform reference.
 */
 RectTransform *Canvas::rectTransform() {
-    if(m_transform == nullptr) {
-        setRectTransform(dynamic_cast<RectTransform *>(transform()));
-    }
-    return m_transform;
+    return Widget::rectTransform();
 }
 /*!
-    Sets the rect \a transform reference.
-
-    Internal method for caching the RectTransform.
+    Sets the rect \a transform for this canvas.
 */
 void Canvas::setRectTransform(RectTransform *transform) {
-    if(m_transform != transform) {
-        m_transform = transform;
-    }
+    Widget::setRectTransform(transform);
 }
 /*!
     Sets the clip \a region (scissor rectangle).
@@ -239,6 +308,86 @@ void Canvas::disableClip() {
     m_buffer->disableScissor();
 }
 /*!
+    Returns the UI document associated with this canvas.
+*/
+UiDocument *Canvas::document() const {
+    return m_document;
+}
+/*!
+    Sets the UI document and reloads the canvas hierarchy.
+*/
+void Canvas::setDocument(UiDocument *document) {
+    if(m_document != document) {
+        m_document = document;
+
+        if(m_document) {
+            fromBuffer(m_document->data());
+        } else {
+            cleanHierarchy(this);
+        }
+    }
+}
+/*!
+    Returns the stylesheet assigned to this canvas.
+*/
+StyleSheet *Canvas::styleSheet() const {
+    return m_styleSheet;
+}
+/*!
+    Sets a stylesheet for the canvas hierarchy.
+*/
+void Canvas::setStyleSheet(StyleSheet *style) {
+    if(m_styleSheet != style) {
+        m_styleSheet = style;
+
+        if(m_styleSheet) {
+            m_styleSheet->addRawData(m_documentStyle);
+            resolveStyleSheet(this);
+        }
+
+        applyStyle();
+    }
+}
+/*!
+    Returns the raw style definition embedded in the UI document.
+*/
+TString Canvas::documentStyle() const {
+    return m_documentStyle;
+}
+/*!
+    Loads UI elements and style definitions from an XML buffer.
+*/
+void Canvas::fromBuffer(const TString &buffer) {
+    cleanHierarchy(this);
+
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_buffer(buffer.data(), buffer.size());
+
+    if(result) {
+        for(pugi::xml_node node : doc.child(gUi).children()) {
+            std::string type = node.name();
+            if(type == gStyle) {
+                m_documentStyle = node.text().as_string();
+
+                if(m_styleSheet) {
+                    m_styleSheet->addRawData(m_documentStyle);
+                }
+            } else {
+                loadElementHelper(node, actor(), true);
+            }
+        }
+
+        applyStyle();
+        documentLoaded();
+    }
+}
+/*!
+    Emits a signal when the UI document is loaded.
+*/
+void Canvas::documentLoaded() {
+    emitSignal(_SIGNAL(documentLoaded()));
+}
+/*!
     \internal
 */
 void Canvas::composeComponent() {
@@ -254,8 +403,32 @@ void Canvas::composeComponent() {
 
             rect = Engine::objectCreate<RectTransform>("RectTransform", object);
             object->setTransform(rect);
+        }
+        setRectTransform(rect);
+    }
+}
+/*!
+    \internal
+*/
+void Canvas::resolveStyleSheet(Widget *widget) {
+    for(auto it : widget->childWidgets()) {
+        if(!it->isSubWidget()) {
+            m_styleSheet->resolve(it);
+            if(widget != this) {
+                resolveStyleSheet(widget);
+            }
+        }
+    }
+}
+/*!
+    \internal
+*/
+void Canvas::cleanHierarchy(Widget *widget) {
+    std::list<Widget *> children = widget->childWidgets();
 
-            setRectTransform(rect);
+    for(auto it : children) {
+        if(!it->isSubWidget()) {
+            delete it->actor();
         }
     }
 }
