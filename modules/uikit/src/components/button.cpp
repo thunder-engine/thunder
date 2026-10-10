@@ -51,6 +51,7 @@ namespace {
 Button::Button() :
         m_textColor(Vector4(1.0f)),
         m_iconSize(16.0f),
+        m_textOffset(Vector2(0.0f)),
         m_icon(nullptr),
         m_font(nullptr),
         m_iconMesh(Engine::objectCreate<Mesh>()),
@@ -70,6 +71,7 @@ Button::Button() :
         m_fontMaterial = fontMaterial->createInstance();
         int sdf = 0;
         m_fontMaterial->setInteger(gUseSDF, &sdf);
+        fontMaterial->subscribe(&Button::materialUpdated, this);
     }
 
     Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
@@ -78,12 +80,22 @@ Button::Button() :
 
         Vector4 color(1.0f);
         m_iconMaterial->setVector4(gColor, &color);
+        spriteMaterial->subscribe(&Button::materialUpdated, this);
     }
 }
 
 Button::~Button() {
     if(m_font) {
         m_font->unsubscribe(this);
+    }
+    if(m_icon) {
+        m_icon->unsubscribe(this);
+    }
+    if(m_fontMaterial) {
+        m_fontMaterial->material()->unsubscribe(this);
+    }
+    if(m_iconMaterial) {
+        m_iconMaterial->material()->unsubscribe(this);
     }
 
     delete m_textMesh;
@@ -185,7 +197,15 @@ Sprite *Button::icon() const {
 */
 void Button::setIcon(Sprite *icon) {
     if(m_icon != icon) {
+        if(m_icon) {
+            m_icon->unsubscribe(this);
+        }
+
         m_icon = icon;
+        if(m_icon) {
+            m_icon->subscribe(&Button::iconUpdated, this);
+        }
+
         m_dirtyIcon = true;
         repaint();
     }
@@ -229,6 +249,15 @@ float Button::contentWidth() const {
 
     return result;
 }
+
+void Button::setTextOffset(const Vector2 &offset) {
+    if(m_textOffset != offset) {
+        m_textOffset = offset;
+        m_dirtyText = true;
+        repaint();
+    }
+}
+
 /*!
     \internal
 */
@@ -253,7 +282,8 @@ void Button::draw() {
     if(m_fontMaterial && !m_text.isEmpty()) {
         if(m_dirtyText && m_font) {
             m_textMesh->setName(actor()->name());
-            const Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
+            Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
+            settings.offset = m_textOffset;
             m_font->composeMesh(m_textMesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
             m_fontMaterial->setTexture(gOverride, m_font->page());
@@ -326,4 +356,48 @@ void Button::fontUpdated(int state, void *ptr) {
         p->m_dirtyText = true;
         p->repaint();
     }
+}
+
+void Button::iconUpdated(int state, void *ptr) {
+    Button *button = static_cast<Button *>(ptr);
+    if(!button) {
+        return;
+    }
+
+    if(state == Resource::Ready) {
+        button->m_dirtyIcon = true;
+        button->repaint();
+    } else if(state == Resource::ToBeDeleted) {
+        if(button->m_icon) {
+            button->m_icon->unsubscribe(button);
+        }
+        button->m_icon = nullptr;
+        button->m_dirtyIcon = true;
+        button->repaint();
+    }
+}
+
+void Button::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    Button *button = static_cast<Button *>(ptr);
+    if(!button) {
+        return;
+    }
+
+    if(button->m_fontMaterial) {
+        int sdf = 0;
+        button->m_fontMaterial->setInteger(gUseSDF, &sdf);
+        button->m_fontMaterial->setVector4(gColor, &button->m_textColor);
+    }
+    if(button->m_iconMaterial) {
+        Vector4 color(1.0f);
+        button->m_iconMaterial->setVector4(gColor, &color);
+    }
+
+    button->m_dirtyText = true;
+    button->m_dirtyIcon = true;
+    button->repaint();
 }

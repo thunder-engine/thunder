@@ -72,6 +72,8 @@ Frame::Frame() :
     if(spriteMaterial) {
         m_imageMaterial = spriteMaterial->createInstance();
         m_imageMaterial->setVector4(gColor, &m_backgroundColor);
+
+        spriteMaterial->subscribe(&Frame::materialUpdated, this);
     }
 
     Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
@@ -83,6 +85,8 @@ Frame::Frame() :
         m_frameMaterial->setVector4(gBorderRadius, &m_borderRadius);
         m_frameMaterial->setVector4(gBorderColor, &m_borderColor);
         m_frameMaterial->setVector4(gBackgroundColor, &m_backgroundColor);
+
+        frameMaterial->subscribe(&Frame::materialUpdated, this);
     }
 }
 
@@ -90,9 +94,15 @@ Frame::~Frame() {
     delete m_backgroundImage;
     delete m_backgroundMesh;
 
+    if(m_imageMaterial) {
+        m_imageMaterial->material()->unsubscribe(this);
+    }
     delete m_imageMaterial;
     m_imageMaterial = nullptr;
 
+    if(m_frameMaterial) {
+        m_frameMaterial->material()->unsubscribe(this);
+    }
     delete m_frameMaterial;
     m_frameMaterial = nullptr;
 }
@@ -276,5 +286,28 @@ void Frame::boundChanged(const Vector2 &size) {
         Vector4 normBorders(rectTransform()->border() / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderWidth, &normBorders);
         repaint();
+    }
+}
+/*!
+    \internal
+*/
+void Frame::materialUpdated(int state, void *ptr) {
+    if(state <= Material::Ready) {
+        Frame *frame = static_cast<Frame *>(ptr);
+        if(frame) {
+            if(frame->m_frameMaterial) {
+                frame->m_frameMaterial->setVector4(gBorderColor, &(frame->m_borderColor));
+                frame->m_frameMaterial->setVector4(gBackgroundColor, &(frame->m_backgroundColor));
+            }
+
+            if(frame->m_imageMaterial) {
+                frame->m_imageMaterial->setVector4(gBackgroundColor, &(frame->m_backgroundColor));
+            }
+
+            RectTransform *rect = frame->rectTransform();
+            frame->boundChanged(rect->size());
+            frame->m_dirtyBackground = true;
+            frame->repaint();
+        }
     }
 }

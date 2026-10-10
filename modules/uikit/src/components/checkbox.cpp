@@ -68,6 +68,7 @@ CheckBox::CheckBox() :
     if(spriteMaterial) {
         m_iconMaterial = spriteMaterial->createInstance();
         m_iconMaterial->setVector4(gColor, &m_knobColor);
+        spriteMaterial->subscribe(&CheckBox::materialUpdated, this);
     }
 
     Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
@@ -79,7 +80,23 @@ CheckBox::CheckBox() :
         m_frameMaterial->setVector4(gBorderRadius, &m_borderRadius);
         m_frameMaterial->setVector4(gBorderColor, &m_borderColor);
         m_frameMaterial->setVector4(gBackgroundColor, &m_knobColor);
+        frameMaterial->subscribe(&CheckBox::materialUpdated, this);
     }
+}
+CheckBox::~CheckBox() {
+    if(m_knobIcon) {
+        m_knobIcon->unsubscribe(this);
+    }
+    if(m_iconMaterial) {
+        m_iconMaterial->material()->unsubscribe(this);
+    }
+    if(m_frameMaterial) {
+        m_frameMaterial->material()->unsubscribe(this);
+    }
+
+    delete m_iconMesh;
+    delete m_iconMaterial;
+    delete m_frameMaterial;
 }
 /*!
     Returns indicator icon.
@@ -91,9 +108,16 @@ Sprite *CheckBox::indicator() const {
     Sets indicator \a icon.
 */
 void CheckBox::setIndicator(Sprite *icon) {
-    m_knobIcon = icon;
     if(m_knobIcon != icon) {
+        if(m_knobIcon) {
+            m_knobIcon->unsubscribe(this);
+        }
+
         m_knobIcon = icon;
+        if(m_knobIcon) {
+            m_knobIcon->subscribe(&CheckBox::iconUpdated, this);
+        }
+
         m_dirtyIcon = true;
         repaint();
     }
@@ -254,4 +278,48 @@ void CheckBox::boundChanged(const Vector2 &size) {
         m_iconOffset = (size.x - m_knobSize.x) *-0.5f;
         repaint();
     }
+}
+
+void CheckBox::iconUpdated(int state, void *ptr) {
+    CheckBox *checkBox = static_cast<CheckBox *>(ptr);
+    if(!checkBox) {
+        return;
+    }
+
+    if(state == Resource::Ready) {
+        checkBox->m_dirtyIcon = true;
+        checkBox->repaint();
+    } else if(state == Resource::ToBeDeleted) {
+        if(checkBox->m_knobIcon) {
+            checkBox->m_knobIcon->unsubscribe(checkBox);
+        }
+        checkBox->m_knobIcon = nullptr;
+        checkBox->m_dirtyIcon = true;
+        checkBox->repaint();
+    }
+}
+
+void CheckBox::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    CheckBox *checkBox = static_cast<CheckBox *>(ptr);
+    if(!checkBox) {
+        return;
+    }
+
+    if(checkBox->m_iconMaterial) {
+        checkBox->m_iconMaterial->setVector4(gColor, &checkBox->m_knobColor);
+    }
+    if(checkBox->m_frameMaterial) {
+        Vector4 width(0.0f);
+        checkBox->m_frameMaterial->setVector4(gBorderWidth, &width);
+        checkBox->m_frameMaterial->setVector4(gBorderRadius, &checkBox->m_borderRadius);
+        checkBox->m_frameMaterial->setVector4(gBorderColor, &checkBox->m_borderColor);
+        checkBox->m_frameMaterial->setVector4(gBackgroundColor, &checkBox->m_knobColor);
+    }
+
+    checkBox->m_dirtyIcon = true;
+    checkBox->repaint();
 }

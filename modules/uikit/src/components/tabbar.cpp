@@ -27,6 +27,7 @@
 
 namespace {
     const char *gCssTabCornerRadius("tab-corner-radius");
+    const float gCloseButtonTextSpacing(12.0f);
 };
 
 /*!
@@ -76,6 +77,7 @@ int TabBar::insertTab(int index, const TString &title) {
         if(m_showClose) {
             createCloseButton(buttonActor);
         }
+        button->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
 
         connect(button, _SIGNAL(clicked()), this, _SLOT(onTabClicked()));
 
@@ -214,6 +216,7 @@ void TabBar::setTabsClosable(bool closable) {
                 }
             }
         }
+        tab->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
     }
 
     updateTabPositions();
@@ -436,7 +439,7 @@ void TabBar::updateTabPositions() {
         width += it->contentWidth();
 
         if(m_showClose) {
-            width += m_tabPadding.w + 16;
+            width += 16.0f + m_tabPadding.w * 2.0f + gCloseButtonTextSpacing;
         }
 
         rect->setSize(Vector2(width, rect->size().y));

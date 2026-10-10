@@ -49,6 +49,8 @@ namespace  {
 
 Menu::Menu() :
         m_textMesh(Engine::objectCreate<Mesh>()),
+        m_textMaterial(nullptr),
+        m_selectionMaterial(nullptr),
         m_dirtyText(true) {
 
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
@@ -56,6 +58,7 @@ Menu::Menu() :
         m_textMaterial = material->createInstance();
         int sdf = 0;
         m_textMaterial->setInteger(gUseSDF, &sdf);
+        material->subscribe(&Menu::materialUpdated, this);
     }
 
     Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
@@ -67,6 +70,7 @@ Menu::Menu() :
         m_selectionMaterial->setVector4(gBorderRadius, &m_borderRadius);
         m_selectionMaterial->setVector4(gBorderColor, &m_borderColor);
         m_selectionMaterial->setVector4(gBackgroundColor, &m_selectionColor);
+        frameMaterial->subscribe(&Menu::materialUpdated, this);
     }
 
 }
@@ -75,8 +79,16 @@ Menu::~Menu() {
     if(m_font) {
         m_font->unsubscribe(this);
     }
+    if(m_textMaterial) {
+        m_textMaterial->material()->unsubscribe(this);
+    }
+    if(m_selectionMaterial) {
+        m_selectionMaterial->material()->unsubscribe(this);
+    }
 
     delete m_textMesh;
+    delete m_textMaterial;
+    delete m_selectionMaterial;
 }
 
 /*!
@@ -340,4 +352,30 @@ void Menu::fontUpdated(int state, void *ptr) {
         p->m_dirtyText = true;
         p->repaint();
     }
+}
+
+void Menu::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    Menu *menu = static_cast<Menu *>(ptr);
+    if(!menu) {
+        return;
+    }
+
+    if(menu->m_textMaterial) {
+        int sdf = 0;
+        menu->m_textMaterial->setInteger(gUseSDF, &sdf);
+    }
+    if(menu->m_selectionMaterial) {
+        Vector4 width(0.0f);
+        menu->m_selectionMaterial->setVector4(gBorderWidth, &width);
+        menu->m_selectionMaterial->setVector4(gBorderRadius, &menu->m_borderRadius);
+        menu->m_selectionMaterial->setVector4(gBorderColor, &menu->m_borderColor);
+        menu->m_selectionMaterial->setVector4(gBackgroundColor, &menu->m_selectionColor);
+    }
+
+    menu->m_dirtyText = true;
+    menu->repaint();
 }

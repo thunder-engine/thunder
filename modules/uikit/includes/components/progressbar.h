@@ -20,6 +20,8 @@
 
 #include "frame.h"
 
+class Material;
+
 class UIKIT_EXPORT ProgressBar : public Frame {
     A_OBJECT(ProgressBar, Frame, Components/UI)
 
@@ -60,6 +62,7 @@ private:
     void draw() override;
 
     void composeComponent() override;
+    static void materialUpdated(int state, void *ptr);
 
 private:
     Vector4 m_progressColor;
@@ -68,6 +71,8 @@ private:
 
     Mesh *m_progressMesh;
 
+    Material *m_spriteMaterial;
+    Material *m_defaultFrameMaterial;
     MaterialInstance *m_imageProgress;
     MaterialInstance *m_frameProgress;
 

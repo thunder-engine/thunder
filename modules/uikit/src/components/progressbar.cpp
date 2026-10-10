@@ -50,6 +50,8 @@ ProgressBar::ProgressBar() :
         m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
         m_progressImage(nullptr),
         m_progressMesh(nullptr),
+        m_spriteMaterial(nullptr),
+        m_defaultFrameMaterial(nullptr),
         m_imageProgress(nullptr),
         m_frameProgress(nullptr),
         m_orientation(Horizontal),
@@ -58,25 +60,34 @@ ProgressBar::ProgressBar() :
         m_value(0.0f),
         m_dirtyProgress(true) {
 
-    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
-    if(spriteMaterial) {
-        m_imageProgress = spriteMaterial->createInstance();
-        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+    m_spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(m_spriteMaterial) {
+        m_imageProgress = m_spriteMaterial->createInstance();
+        m_imageProgress->setVector4(gColor, &m_progressColor);
+        m_spriteMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 
-    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
-    if(frameMaterial) {
-        m_frameProgress = frameMaterial->createInstance();
+    m_defaultFrameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(m_defaultFrameMaterial) {
+        m_frameProgress = m_defaultFrameMaterial->createInstance();
 
         Vector4 width(0.0f);
         m_frameProgress->setVector4(gBorderWidth, &width);
         m_frameProgress->setVector4(gBorderRadius, &m_borderRadius);
         m_frameProgress->setVector4(gBorderColor, &m_borderColor);
-        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
+        m_frameProgress->setVector4(gBackgroundColor, &m_progressColor);
+        m_defaultFrameMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 }
 
 ProgressBar::~ProgressBar() {
+    if(m_spriteMaterial) {
+        m_spriteMaterial->unsubscribe(this);
+    }
+    if(m_defaultFrameMaterial) {
+        m_defaultFrameMaterial->unsubscribe(this);
+    }
+
     delete m_progressImage;
     delete m_progressMesh;
 
@@ -163,11 +174,11 @@ void ProgressBar::setProgressColor(const Vector4 color) {
     m_progressColor = color;
 
     if(m_frameProgress) {
-        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
+        m_frameProgress->setVector4(gBackgroundColor, &m_progressColor);
     }
 
     if(m_imageProgress) {
-        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+        m_imageProgress->setVector4(gColor, &m_progressColor);
     }
 
     repaint();
@@ -199,11 +210,12 @@ void ProgressBar::draw() {
     RectTransform *rect = rectTransform();
     if(m_dirtyProgress) {
         if(m_progressImage) {
+            delete m_progressMesh;
             m_progressMesh = Engine::objectCreate<Mesh>();
             m_progressMesh->makeDynamic();
 
             Vector2 size(rect->size());
-            m_backgroundImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
+            m_progressImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
 
             m_imageProgress->setTexture(gOverride, m_progressImage->texture());
         }
@@ -250,4 +262,36 @@ void ProgressBar::composeComponent() {
     setValue(0.5f);
 
     rectTransform()->setSize(Vector2(100.0f, 20.0f));
+}
+
+void ProgressBar::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    ProgressBar *progressBar = static_cast<ProgressBar *>(ptr);
+    if(!progressBar) {
+        return;
+    }
+
+    if(progressBar->m_frameProgress) {
+        RectTransform *rect = progressBar->rectTransform();
+        const float height = MAX(rect->size().y, 1.0f);
+        Vector4 borderRadius(progressBar->m_borderRadius / height);
+        Vector4 zeroWidth(0.0f);
+        progressBar->m_frameProgress->setVector4(gBorderWidth, &zeroWidth);
+        progressBar->m_frameProgress->setVector4(gBorderRadius, &borderRadius);
+        progressBar->m_frameProgress->setVector4(gBorderColor, &progressBar->m_borderColor);
+        progressBar->m_frameProgress->setVector4(gBackgroundColor, &progressBar->m_progressColor);
+    }
+
+    if(progressBar->m_imageProgress) {
+        progressBar->m_imageProgress->setVector4(gColor, &progressBar->m_progressColor);
+        if(progressBar->m_progressImage) {
+            progressBar->m_imageProgress->setTexture(gOverride, progressBar->m_progressImage->texture());
+        }
+    }
+
+    progressBar->m_dirtyProgress = true;
+    progressBar->repaint();
 }

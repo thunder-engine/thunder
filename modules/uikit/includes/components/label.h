@@ -92,6 +92,7 @@ private:
     void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 private:
     TString m_text;

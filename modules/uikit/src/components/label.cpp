@@ -43,6 +43,25 @@ namespace  {
     const char *gCssWhiteSpace("white-space");
 }
 
+void Label::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    Label *label = static_cast<Label *>(ptr);
+    if(!label) {
+        return;
+    }
+
+    if(label->m_material) {
+        int sdf = 0;
+        label->m_material->setInteger(gUseSDF, &sdf);
+    }
+
+    label->m_dirty = true;
+    label->repaint();
+}
+
 /*!
     \class Label
     \brief Draws a text for the UI.
@@ -71,6 +90,7 @@ Label::Label() :
         m_material = material->createInstance();
         int sdf = 0;
         m_material->setInteger(gUseSDF, &sdf);
+        material->subscribe(&Label::materialUpdated, this);
     }
 }
 
@@ -78,7 +98,12 @@ Label::~Label() {
     if(m_font) {
         m_font->unsubscribe(this);
     }
+    if(m_material) {
+        m_material->material()->unsubscribe(this);
+    }
     m_font = nullptr;
+    delete m_material;
+    delete m_mesh;
 }
 /*!
     \internal
@@ -390,7 +415,7 @@ void Label::composeComponent() {
     \internal
 */
 void Label::fontUpdated(int state, void *ptr) {
-    if(state == Resource::Ready) {
+    if(state <= Resource::Ready) {
         Label *p = static_cast<Label *>(ptr);
         p->m_dirty = true;
         p->repaint();

@@ -121,8 +121,17 @@ int Splitter::indexOf(Widget *widget) {
     Inserts a \a widget at the specified \a index.
 */
 void Splitter::insertWidget(int index, Widget *widget) {
+    if(!widget) {
+        return;
+    }
+
     RectTransform *widgetRect = widget->rectTransform();
+    Layout *layout = rectTransform()->layout();
     widgetRect->setParentTransform(rectTransform());
+    if(layout) {
+        layout->insertTransform(index, widgetRect);
+        setOrientation(m_orientation);
+    }
     repaint();
 }
 /*!

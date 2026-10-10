@@ -33,6 +33,7 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
 
 public:
     CheckBox();
+    ~CheckBox();
 
     Sprite *indicator() const;
     void setIndicator(Sprite *icon);
@@ -53,6 +54,9 @@ protected:
     void applyStyle() override;
 
     void boundChanged(const Vector2 &size) override;
+
+    static void iconUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 protected:
     Vector4 m_knobColor;

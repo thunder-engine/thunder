@@ -67,6 +67,7 @@ protected:
     void recalcCursor();
 
     static void fontUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
     float cursorAt(int position) const;
 
