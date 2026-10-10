@@ -45,6 +45,28 @@ namespace {
     const char *gDefaultSprite(".embedded/DefaultSprite.shader");
 }
 
+void LineEdit::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    LineEdit *lineEdit = static_cast<LineEdit *>(ptr);
+    if(!lineEdit) {
+        return;
+    }
+
+    if(lineEdit->m_fontMaterial) {
+        int sdf = 0;
+        lineEdit->m_fontMaterial->setInteger(gUseSDF, &sdf);
+    }
+    if(lineEdit->m_cursorMaterial) {
+        lineEdit->m_cursorMaterial->setTexture(gTexture, PipelineContext::whiteTexture());
+    }
+
+    lineEdit->m_textDirty = true;
+    lineEdit->repaint();
+}
+
 /*!
     \class LineEdit
     \brief The LineEdit class is a UI component that allows users to input text.
@@ -56,6 +78,8 @@ namespace {
 
 LineEdit::LineEdit() :
         m_textColor(1.0f, 1.0f, 1.0f, 1.0f),
+        m_cursorMaterial(nullptr),
+        m_fontMaterial(nullptr),
         m_font(nullptr),
         m_textMesh(Engine::objectCreate<Mesh>()),
         m_cursorPosition(0),
@@ -73,12 +97,14 @@ LineEdit::LineEdit() :
     Material *fontMaterial = Engine::loadResource<Material>(gDefaultFont);
     if(fontMaterial) {
         m_fontMaterial = fontMaterial->createInstance();
+        fontMaterial->subscribe(&LineEdit::materialUpdated, this);
     }
 
     Material *cursorMaterial = Engine::loadResource<Material>(gDefaultSprite);
     if(cursorMaterial) {
         m_cursorMaterial = cursorMaterial->createInstance();
         m_cursorMaterial->setTexture(gTexture, PipelineContext::whiteTexture());
+        cursorMaterial->subscribe(&LineEdit::materialUpdated, this);
     }
 
     m_cursorTransform.scale(Vector3(2.0f, 16.0f, 1.0f));
@@ -88,6 +114,16 @@ LineEdit::~LineEdit() {
     if(m_font) {
         m_font->unsubscribe(this);
     }
+    if(m_fontMaterial) {
+        m_fontMaterial->material()->unsubscribe(this);
+    }
+    if(m_cursorMaterial) {
+        m_cursorMaterial->material()->unsubscribe(this);
+    }
+
+    delete m_textMesh;
+    delete m_fontMaterial;
+    delete m_cursorMaterial;
 }
 /*!
     \internal

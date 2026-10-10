@@ -35,7 +35,9 @@ class UIKIT_EXPORT TabWidget : public Widget {
     A_METHODS(
         A_SLOT(TabWidget::removeTab),
         A_SLOT(TabWidget::setCurrentIndex),
-        A_SLOT(TabWidget::onObjectNameChanged)
+        A_SLOT(TabWidget::onObjectNameChanged),
+        A_SIGNAL(TabWidget::tabCloseRequested),
+        A_SLOT(TabWidget::onTabCloseRequested)
     )
     A_NOENUMS()
 
@@ -46,6 +48,7 @@ public:
     int addTab(const TString &title, Widget *content);
     int insertTab(int index, const TString &title, Widget *content);
     void removeTab(int index);
+    Widget *takeTab(int index);
 
     int count() const;
 
@@ -57,11 +60,15 @@ public:
 
     bool tabsClosable() const;
     void setTabsClosable(bool closeable);
+    void setCloseOnRequest(bool enabled);
 
     Widget *tabContent(int index) const;
 
     void setTabBar(TabBar *bar);
     void setContentArea(Frame *area);
+
+public: // signals
+    void tabCloseRequested();
 
 protected:
     void composeComponent() override;
@@ -75,6 +82,7 @@ protected:
 private:
     void updateContentVisibility();
     void onTabClicked(int index);
+    void onTabCloseRequested(int index);
     void updateTabStyles();
 
     std::list<RectTransform *> m_tabs;
@@ -85,6 +93,7 @@ private:
     int m_currentIndex;
 
     float m_tabBarHeight;
+    bool m_closeOnRequest;
 };
 
 #endif // TABWIDGET_H

@@ -47,6 +47,7 @@ class UIKIT_EXPORT Canvas : public Widget {
 
 public:
     Canvas();
+    ~Canvas();
 
     void markDirty();
 
@@ -59,9 +60,6 @@ public:
     void drawMesh(Mesh *mesh, MaterialInstance *material);
 
     void setSize(int width, int height);
-
-    RectTransform *rectTransform();
-    void setRectTransform(RectTransform *transform);
 
     void setClipRegion(const Vector4 &region);
     void disableClip();
@@ -106,6 +104,8 @@ private:
     StyleSheet *m_styleSheet;
 
     bool m_dirty;
+
+    bool m_skipRenderResult;
 
     bool m_lastPositionValid;
 

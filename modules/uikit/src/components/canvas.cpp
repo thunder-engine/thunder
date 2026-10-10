@@ -121,6 +121,7 @@ Canvas::Canvas() :
         m_document(nullptr),
         m_styleSheet(nullptr),
         m_dirty(true),
+        m_skipRenderResult(false),
         m_lastPositionValid(false) {
 
     m_texture->setFormat(Texture::RGBA8);
@@ -137,8 +138,18 @@ Canvas::Canvas() :
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_finalMaterial->setTexture("mainTexture", m_texture);
+
+        mtl->subscribe(&Canvas::materialUpdated, this);
     }
 }
+
+Canvas::~Canvas() {
+    if(m_finalMaterial) {
+        m_finalMaterial->material()->unsubscribe(this);
+        delete m_finalMaterial;
+    }
+}
+
 /*!
     Marks the canvas as dirty, forcing a re-render.
 
@@ -205,17 +216,18 @@ void Canvas::draw(CommandBuffer *buffer) {
     m_buffer = buffer;
 
     RenderTarget *target = m_buffer->renderTarget();
-    if(m_dirty) {
+    /*if(m_dirty)*/ {
         Matrix4 v;
         v[14] = -50.0f;
 
         m_buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
         m_buffer->setRenderTarget(m_target);
 
-        for(auto it : rectTransform()->children()) {
-            RectTransform *rect = dynamic_cast<RectTransform *>(it);
-            if(rect && rect->isEnabled()) {
-                Widget *widget = rect->widget();
+        RectTransform *rect = rectTransform();
+        for(auto it : rect->children()) {
+            RectTransform *childRect = dynamic_cast<RectTransform *>(it);
+            if(childRect && childRect->isEnabled()) {
+                Widget *widget = childRect->widget();
                 if(widget) {
                     widget->draw();
                 }
@@ -224,8 +236,10 @@ void Canvas::draw(CommandBuffer *buffer) {
         m_dirty = false;
     }
 
-    m_buffer->setRenderTarget(target);
-    m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
+    if(!m_skipRenderResult) {
+        m_buffer->setRenderTarget(target);
+        m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
+    }
 }
 /*!
     \brief Draws a rectangle with the given \a material and \a transform.
@@ -262,6 +276,11 @@ void Canvas::drawMesh(Mesh *mesh, MaterialInstance *material) {
 }
 
 void Canvas::setSize(int width, int height) {
+    RectTransform *rect = rectTransform();
+    if(rect) {
+        rect->setSize(Vector2(width, height));
+    }
+
     if(m_texture) {
         if(m_texture->width() == width && m_texture->height() == height) {
             return;
@@ -270,25 +289,6 @@ void Canvas::setSize(int width, int height) {
         m_texture->resize(width, height);
         m_dirty = true;
     }
-
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        rect->setSize(Vector2(width, height));
-    }
-}
-/*!
-    Returns the RectTransform component of the canvas.
-
-    Lazy-initializes and caches the RectTransform reference.
-*/
-RectTransform *Canvas::rectTransform() {
-    return Widget::rectTransform();
-}
-/*!
-    Sets the rect \a transform for this canvas.
-*/
-void Canvas::setRectTransform(RectTransform *transform) {
-    Widget::setRectTransform(transform);
 }
 /*!
     Sets the clip \a region (scissor rectangle).
@@ -306,6 +306,20 @@ void Canvas::setClipRegion(const Vector4 &region) {
 */
 void Canvas::disableClip() {
     m_buffer->disableScissor();
+}
+
+/*!
+    Returns Canvas texture.
+*/
+Texture *Canvas::texture() const {
+    return m_texture;
+}
+/*!
+    Allows to \a skip the rendering of the result.
+    This is useful if the UI is the only rendering task.
+*/
+void Canvas::skipRenderResult(bool skip) {
+    m_skipRenderResult = skip;
 }
 /*!
     Returns the UI document associated with this canvas.
@@ -429,6 +443,18 @@ void Canvas::cleanHierarchy(Widget *widget) {
     for(auto it : children) {
         if(!it->isSubWidget()) {
             delete it->actor();
+        }
+    }
+}
+/*!
+    \internal
+*/
+void Canvas::materialUpdated(int state, void *ptr) {
+    if(state <= Material::Ready) {
+        Canvas *canvas = static_cast<Canvas *>(ptr);
+        if(canvas->m_finalMaterial) {
+            canvas->m_finalMaterial->setTexture("mainTexture", canvas->m_texture);
+            canvas->markDirty();
         }
     }
 }

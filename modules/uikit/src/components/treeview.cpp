@@ -51,7 +51,11 @@ TreeView::~TreeView() {
         delete m_delegate;
     }
     if(m_arrowMaterial) {
+        m_arrowMaterial->material()->unsubscribe(this);
         delete m_arrowMaterial;
+    }
+    if(m_arrowSprite) {
+        m_arrowSprite->unsubscribe(this);
     }
 }
 
@@ -112,12 +116,14 @@ void TreeView::composeComponent() {
 
     m_arrowSprite = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
     if(m_arrowSprite) {
+        m_arrowSprite->subscribe(&TreeView::arrowUpdated, this);
         m_arrowMesh = m_arrowSprite->mesh();
 
         Material *defaultMaterial = Engine::loadResource<Material>(".embedded/DefaultUI.shader");
         if(defaultMaterial) {
             m_arrowMaterial = defaultMaterial->createInstance();
             m_arrowMaterial->setTexture("mainTexture", m_arrowSprite->texture());
+            defaultMaterial->subscribe(&TreeView::materialUpdated, this);
         }
     }
 }
@@ -209,6 +215,45 @@ float TreeView::getArrowHeight() const {
 
 float TreeView::getArrowOffset() const {
     return m_rowHeight * 0.5f;
+}
+
+void TreeView::arrowUpdated(int state, void *ptr) {
+    TreeView *treeView = static_cast<TreeView *>(ptr);
+    if(!treeView) {
+        return;
+    }
+
+    if(state == Resource::Ready && treeView->m_arrowSprite) {
+        treeView->m_arrowMesh = treeView->m_arrowSprite->mesh();
+        if(treeView->m_arrowMaterial) {
+            treeView->m_arrowMaterial->setTexture("mainTexture", treeView->m_arrowSprite->texture());
+        }
+        treeView->repaint();
+    } else if(state == Resource::ToBeDeleted) {
+        if(treeView->m_arrowSprite) {
+            treeView->m_arrowSprite->unsubscribe(treeView);
+        }
+        treeView->m_arrowSprite = nullptr;
+        treeView->m_arrowMesh = nullptr;
+        if(treeView->m_arrowMaterial) {
+            treeView->m_arrowMaterial->setTexture("mainTexture", nullptr);
+        }
+        treeView->repaint();
+    }
+}
+
+void TreeView::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    TreeView *treeView = static_cast<TreeView *>(ptr);
+    if(treeView && treeView->m_arrowMaterial) {
+        if(treeView->m_arrowSprite) {
+            treeView->m_arrowMaterial->setTexture("mainTexture", treeView->m_arrowSprite->texture());
+        }
+        treeView->repaint();
+    }
 }
 
 void TreeView::rebuildItems() {

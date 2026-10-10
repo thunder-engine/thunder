@@ -83,6 +83,7 @@ private:
     void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 private:
     std::vector<MenuItem> m_items;

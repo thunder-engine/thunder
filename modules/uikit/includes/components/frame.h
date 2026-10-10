@@ -60,6 +60,8 @@ protected:
 
     void applyStyle() override;
 
+    static void materialUpdated(int state, void *ptr);
+
 protected:
     Vector4 m_borderRadius;
     Vector4 m_backgroundColor;

@@ -105,6 +105,9 @@ private:
     float getArrowHeight() const;
     float getArrowOffset() const;
 
+    static void arrowUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
+
 private:
     std::vector<ItemData> m_itemsData;
     std::list<ModelIndex> m_expandedIndexes;

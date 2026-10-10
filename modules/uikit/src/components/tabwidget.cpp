@@ -37,8 +37,17 @@ TabWidget::TabWidget() :
         m_currentIndex(-1),
         m_tabBar(nullptr),
         m_contentArea(nullptr),
-        m_tabBarHeight(30.0f) {
+        m_tabBarHeight(30.0f),
+        m_closeOnRequest(true) {
 
+}
+
+void TabWidget::onTabCloseRequested(int index) {
+    if(m_closeOnRequest) {
+        removeTab(index);
+    } else {
+        emitSignal(_SIGNAL(tabCloseRequested(int)), index);
+    }
 }
 
 TabWidget::~TabWidget() {
@@ -62,8 +71,28 @@ int TabWidget::insertTab(int index, const TString &title, Widget *content) {
     Removes the tab at the specified \a index.
 */
 void TabWidget::removeTab(int index) {
+    Widget *content = takeTab(index);
+    if(content && content->actor()) {
+        content->actor()->deleteLater();
+    }
+}
+
+Widget *TabWidget::takeTab(int index) {
     if(index < 0 || index >= static_cast<int>(m_tabs.size())) {
-        return;
+        return nullptr;
+    }
+
+    const int oldCurrentIndex = m_currentIndex;
+    if(oldCurrentIndex >= 0) {
+        auto current = m_tabs.begin();
+        std::advance(current, oldCurrentIndex);
+        if(current != m_tabs.end() && *current) {
+            if(Widget *currentWidget = (*current)->widget()) {
+                if(currentWidget->actor()) {
+                    currentWidget->actor()->setEnabled(false);
+                }
+            }
+        }
     }
 
     // Remove tab button
@@ -79,13 +108,27 @@ void TabWidget::removeTab(int index) {
     m_tabs.erase(it);
 
     if(rect) {
-        rect->actor()->deleteLater();
+        m_contentArea->layout()->removeTransform(rect);
+        rect->setParentTransform(nullptr);
     }
 
-    if(index >= m_tabs.size()) {
-        m_currentIndex = m_tabs.size() - 1;
+    int nextIndex = -1;
+    if(!m_tabs.empty()) {
+        if(oldCurrentIndex < 0) {
+            nextIndex = 0;
+        } else if(index < oldCurrentIndex) {
+            nextIndex = oldCurrentIndex - 1;
+        } else if(index == oldCurrentIndex) {
+            nextIndex = index < static_cast<int>(m_tabs.size()) ?
+                        index : static_cast<int>(m_tabs.size()) - 1;
+        } else {
+            nextIndex = oldCurrentIndex;
+        }
     }
-    setCurrentIndex(m_currentIndex);
+    m_currentIndex = -1;
+    setCurrentIndex(nextIndex);
+
+    return rect ? rect->widget() : nullptr;
 }
 /*!
     Returns the number of tabs.
@@ -158,6 +201,10 @@ bool TabWidget::tabsClosable() const {
 void TabWidget::setTabsClosable(bool closeable) {
     m_tabBar->setTabsClosable(closeable);
 }
+
+void TabWidget::setCloseOnRequest(bool enabled) {
+    m_closeOnRequest = enabled;
+}
 /*!
     Returns the content widget of the tab at the specified \a index.
 */
@@ -183,7 +230,7 @@ void TabWidget::setTabBar(TabBar *bar) {
         rect->setVerticalPolicy(RectTransform::Fixed);
 
         connect(m_tabBar, _SIGNAL(currentChanged(int)), this, _SLOT(setCurrentIndex(int)));
-        connect(m_tabBar, _SIGNAL(tabCloseRequested(int)), this, _SLOT(removeTab(int)));
+        connect(m_tabBar, _SIGNAL(tabCloseRequested(int)), this, _SLOT(onTabCloseRequested(int)));
     }
 }
 /*!

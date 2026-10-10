@@ -78,6 +78,7 @@ protected:
     void makeDefaultMesh();
 
     static void spriteUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 protected:
     Vector4 m_color;

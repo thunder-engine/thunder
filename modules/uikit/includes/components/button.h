@@ -61,6 +61,7 @@ public:
     void setIconRotation(float angle);
 
     float contentWidth() const;
+    void setTextOffset(const Vector2 &offset);
 
     void draw() override;
 
@@ -70,12 +71,15 @@ protected:
     void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
+    static void iconUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 protected:
     TString m_text;
 
     Vector4 m_textColor;
     Vector2 m_iconSize;
+    Vector2 m_textOffset;
 
     Sprite *m_icon;
 

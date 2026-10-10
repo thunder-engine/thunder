@@ -58,6 +58,7 @@ Image::Image() :
     if(material) {
         m_material = material->createInstance();
         m_material->setVector4(gColor, &m_color);
+        material->subscribe(&Image::materialUpdated, this);
     }
 
     m_mesh->makeDynamic();
@@ -66,6 +67,10 @@ Image::Image() :
 Image::~Image() {
     if(m_sprite) {
         m_sprite->unsubscribe(this);
+    }
+
+    if(m_material) {
+        m_material->material()->unsubscribe(this);
     }
 
     delete m_material;
@@ -128,6 +133,7 @@ void Image::draw() {
             } else {
                 m_material->setTexture(gOverride, m_texture);
             }
+            m_dirtyMaterial = false;
         }
 
         Canvas *canvas = Image::canvas();
@@ -151,13 +157,16 @@ Material *Image::material() const {
 void Image::setMaterial(Material *material) {
     if(!m_material || m_material->material() != material) {
         if(m_material) {
+            m_material->material()->unsubscribe(this);
             delete m_material;
             m_material = nullptr;
         }
 
         if(material) {
             m_material = material->createInstance();
+            material->subscribe(&Image::materialUpdated, this);
         }
+        m_dirtyMaterial = true;
         repaint();
     }
 }
@@ -293,10 +302,25 @@ void Image::spriteUpdated(int state, void *ptr) {
             p->repaint();
         } break;
         case Resource::ToBeDeleted: {
+            if(p->m_sprite) {
+                p->m_sprite->unsubscribe(p);
+            }
             p->m_sprite = nullptr;
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
             p->repaint();
         } break;
         default: break;
+    }
+}
+
+void Image::materialUpdated(int state, void *ptr) {
+    if(state > Material::Ready) {
+        return;
+    }
+
+    Image *image = static_cast<Image *>(ptr);
+    if(image) {
+        image->m_dirtyMaterial = true;
+        image->repaint();
     }
 }
