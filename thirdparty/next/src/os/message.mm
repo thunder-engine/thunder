@@ -7,6 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+void Message::beep() {
+    NSBeep();
+}
+
 class MessagePrivate {
 public:
     MessagePrivate();

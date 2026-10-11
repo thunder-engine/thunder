@@ -77,6 +77,9 @@ public:
     Message(Message&&) noexcept;
     Message &operator=(Message&&) noexcept;
 
+    // Plays the platform's standard notification sound.
+    static void beep();
+
     void setWindowTitle(const TString &title);
     TString text() const;
     void setText(const TString &text);
