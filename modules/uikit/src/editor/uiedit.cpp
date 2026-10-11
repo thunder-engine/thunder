@@ -30,7 +30,7 @@
 
 #include <editor/undostack.h>
 #include <editor/assetconverter.h>
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "components/canvas.h"
 #include "components/recttransform.h"
@@ -122,7 +122,7 @@ UiEdit::UiEdit() :
 
     m_controller->setRoot(m_canvas);
     m_controller->activateCamera(1, true);
-    m_controller->setGridAxis(CameraController::Axis::Z);
+    m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->setZoomLimits(Vector2(300, 1500));
 
     ui->preview->setController(m_controller);
@@ -260,7 +260,7 @@ void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         File loadFile(settings->source());
         if(!loadFile.open(File::Read)) {

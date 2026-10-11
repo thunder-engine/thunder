@@ -1,7 +1,7 @@
 #ifndef SPRITECONTROLLER_H
 #define SPRITECONTROLLER_H
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "../converter/textureconverter.h"
 
@@ -9,7 +9,7 @@
 
 #include "spriteedit.h"
 
-class SpriteController : public CameraController {
+class SpriteController : public LegacyCameraController {
     Q_OBJECT
 
 public:

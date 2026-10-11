@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef PLUGINMANAGER_H
-#define PLUGINMANAGER_H
+#ifndef LEGACYPLUGINMANAGER_H
+#define LEGACYPLUGINMANAGER_H
 
 #include <QAbstractItemModel>
 
@@ -39,7 +39,7 @@ struct ComponentData {
 };
 typedef std::list<ComponentData> ComponentBackup;
 
-class EDITOR_EXPORT PluginManager : public QAbstractItemModel {
+class EDITOR_EXPORT LegacyPluginManager : public QAbstractItemModel {
     Q_OBJECT
 
 public:
@@ -56,8 +56,8 @@ public:
     };
 
 public:
-    PluginManager();
-    ~PluginManager();
+    LegacyPluginManager();
+    ~LegacyPluginManager();
 
     void init(Engine *engine);
 
@@ -167,4 +167,4 @@ private:
 
 };
 
-#endif // PLUGINMANAGER_H
+#endif // LEGACYPLUGINMANAGER_H

@@ -18,7 +18,7 @@
 #ifndef ACTIONS_H
 #define ACTIONS_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 #include <QMetaProperty>
 
@@ -30,7 +30,7 @@ namespace Ui {
     class Actions;
 }
 
-class Actions : public PropertyEdit {
+class Actions : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

@@ -1,7 +1,7 @@
 #ifndef CONDITIONEDIT_H
 #define CONDITIONEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class ConditionEdit;
@@ -9,7 +9,7 @@ namespace Ui {
 
 class AnimationControllerGraph;
 
-class ConditionEdit : public PropertyEdit {
+class ConditionEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

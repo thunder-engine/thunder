@@ -1,13 +1,13 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 namespace Ui {
     class TextEdit;
 }
 
-class TextEdit : public AssetEditor {
+class TextEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
@@ -40,7 +40,7 @@ private:
 
     bool isSingleInstance() const override { return false; }
 
-    AssetEditor *createInstance() override { return new TextEdit; }
+    LegacyAssetEditor *createInstance() override { return new TextEdit; }
 
     void changeEvent(QEvent *event) override;
 

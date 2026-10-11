@@ -32,7 +32,7 @@
 
 #include "gizmos.h"
 
-#include "../cameracontroller.h"
+#include "../legacycameracontroller.h"
 #include "../handles.h"
 
 #include <float.h>
@@ -80,7 +80,7 @@ public:
         m_spriteTarget->setFlags(RenderTarget::ClearDepth);
     }
 
-    void setController(CameraController *ctrl) {
+    void setController(LegacyCameraController *ctrl) {
         m_controller = ctrl;
     }
 
@@ -190,7 +190,7 @@ private:
 
         if(m_side != -1 && Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
 
-            m_controller->setGridAxis(CameraController::Axis::Y);
+            m_controller->setGridAxis(LegacyCameraController::Axis::Y);
 
             switch(m_side) {
                 case 0: m_controller->doRotation(Vector3( 45.0f,-45.0f, 0.0f)); break; // Front-Bottom-Left
@@ -202,18 +202,18 @@ private:
                 case 6: m_controller->doRotation(Vector3( 45.0f,-135.0f, 0.0f)); break; // Back-Bottom-Left
                 case 7: m_controller->doRotation(Vector3( 45.0f, 180.0f, 0.0f)); break; // Back-Bottom
                 case 8: m_controller->doRotation(Vector3( 45.0f, 0.0f, 0.0f)); break; // Front-Bottom
-                case 9: m_controller->doRotation(Vector3()); m_controller->setGridAxis(CameraController::Axis::Z); break; // Front
+                case 9: m_controller->doRotation(Vector3()); m_controller->setGridAxis(LegacyCameraController::Axis::Z); break; // Front
                 case 10: m_controller->doRotation(Vector3( 0.0f, 45.0f, 0.0f)); break; // Right-Front
                 case 11: m_controller->doRotation(Vector3(-45.0f, 180.0f, 0.0f)); break; // Back-Top
-                case 12: m_controller->doRotation(Vector3(0.0f, 180.0f, 0.0f)); m_controller->setGridAxis(CameraController::Axis::Z); break; // Back
+                case 12: m_controller->doRotation(Vector3(0.0f, 180.0f, 0.0f)); m_controller->setGridAxis(LegacyCameraController::Axis::Z); break; // Back
                 case 13: m_controller->doRotation(Vector3(-45.0f,-135.0f, 0.0f)); break; // Back-Top-Left
                 case 14: m_controller->doRotation(Vector3( 0.0f,-135.0f, 0.0f)); break; // Left-Back
                 case 15: m_controller->doRotation(Vector3(-45.0f, 135.0f, 0.0f)); break; // Back-Top-Right
                 case 16: m_controller->doRotation(Vector3( 0.0f, 135.0f, 0.0f)); break; // Right-Back
                 case 17: m_controller->doRotation(Vector3( 0.0f,-45.0f, 0.0f)); break; // Left-Front
-                case 18: m_controller->doRotation(Vector3(0.0f,-90.0f, 0.0f)); m_controller->setGridAxis(CameraController::Axis::X); break; // Left
+                case 18: m_controller->doRotation(Vector3(0.0f,-90.0f, 0.0f)); m_controller->setGridAxis(LegacyCameraController::Axis::X); break; // Left
                 case 19: m_controller->doRotation(Vector3( 45.0f,-90.0f, 0.0f)); break; // Left-Bottom
-                case 20: m_controller->doRotation(Vector3(0.0f, 90.0f, 0.0f)); m_controller->setGridAxis(CameraController::Axis::X); break; // Right
+                case 20: m_controller->doRotation(Vector3(0.0f, 90.0f, 0.0f)); m_controller->setGridAxis(LegacyCameraController::Axis::X); break; // Right
                 case 21: m_controller->doRotation(Vector3(-45.0f, 90.0f, 0.0f)); break; // Right-Top
                 case 22: m_controller->doRotation(Vector3(90.0f, 0.0f, 0.0f)); break; // Bottom
                 case 23: m_controller->doRotation(Vector3( 45.0f, 90.0f, 0.0f)); break; // Right-Bottom
@@ -225,7 +225,7 @@ private:
     }
 
 private:
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     RenderTarget *m_spriteTarget;
     RenderTarget *m_geometryTarget;

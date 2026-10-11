@@ -18,7 +18,7 @@
 #include "arrayelement.h"
 #include "ui_arrayelement.h"
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 #include "../../custom/objectselect/objectselect.h"
 
@@ -51,10 +51,10 @@ void ArrayElement::setData(int index, const Variant &data, const TString &editor
     } else {
         delete m_editor;
 
-        m_editor = PropertyEdit::constructEditor(data.userType(), this, editor);
+        m_editor = LegacyPropertyEdit::constructEditor(data.userType(), this, editor);
         if(m_editor) {
-            connect(m_editor, &PropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
-            connect(m_editor, &PropertyEdit::editFinished, this, &ArrayElement::editFinished);
+            connect(m_editor, &LegacyPropertyEdit::dataChanged, this, &ArrayElement::dataChanged);
+            connect(m_editor, &LegacyPropertyEdit::editFinished, this, &ArrayElement::editFinished);
             connect(ui->toolButton, &QToolButton::clicked, this, &ArrayElement::deleteElement);
 
             ObjectSelect *edit = dynamic_cast<ObjectSelect *>(m_editor);

@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef CAMERACONTROLLER_H
-#define CAMERACONTROLLER_H
+#ifndef LEGACYCAMERACONTROLLER_H
+#define LEGACYCAMERACONTROLLER_H
 
 #include <QObject>
 
@@ -27,9 +27,9 @@
 
 class Actor;
 class Camera;
-class Viewport;
+class LegacyViewport;
 
-class EDITOR_EXPORT CameraController : public QObject {
+class EDITOR_EXPORT LegacyCameraController : public QObject {
     Q_OBJECT
 
 public:
@@ -52,9 +52,9 @@ public:
     };
 
 public:
-    CameraController();
+    LegacyCameraController();
 
-    virtual void init(Viewport *view) {};
+    virtual void init(LegacyViewport *view) {};
 
     virtual void drawHandles();
 
@@ -144,4 +144,4 @@ protected:
 
 };
 
-#endif // CAMERACONTROLLER_H
+#endif // LEGACYCAMERACONTROLLER_H

@@ -40,10 +40,10 @@
 #include "custom/vector4/vector4edit.h"
 
 #include "screens/contentbrowser/contentbrowser.h"
-#include "editor/asseteditor.h"
-#include "editor/pluginmanager.h"
+#include "editor/legacyasseteditor.h"
+#include "editor/legacypluginmanager.h"
 
-PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
+LegacyPropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
     switch(userType) {
         case MetaType::BOOLEAN: return new BooleanEdit(parent);
         case MetaType::INTEGER: return new IntegerEdit(parent);
@@ -58,7 +58,7 @@ PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString 
     return nullptr;
 }
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &editor) {
+LegacyPropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &editor) {
     if(userType == MetaType::VARIANTLIST) return new ArrayEdit(parent);
 
     if(editor == "Enum") return new NextEnumEdit(parent);
@@ -72,7 +72,7 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
 
     for(auto &it : Editor::plugins()->extensions("property")) {
         if(it == editor) {
-            PropertyEdit *edit = reinterpret_cast<PropertyEdit *>(Editor::plugins()->getPluginObject(it));
+            LegacyPropertyEdit *edit = reinterpret_cast<LegacyPropertyEdit *>(Editor::plugins()->getPluginObject(it));
             if(edit) {
                 edit->setParent(parent);
                 return edit;
@@ -84,7 +84,7 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
 }
 
 PropertyEditor::PropertyEditor(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
         m_editor(nullptr),
@@ -98,8 +98,8 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
-    PropertyEdit::registerEditorFactory(createCustomEditor);
-    PropertyEdit::registerEditorFactory(createStandardEditor);
+    LegacyPropertyEdit::registerEditorFactory(createCustomEditor);
+    LegacyPropertyEdit::registerEditorFactory(createStandardEditor);
 
     connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
 
@@ -240,19 +240,19 @@ void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const T
 
 }
 
-AssetEditor *PropertyEditor::currentEditor() const {
+LegacyAssetEditor *PropertyEditor::currentEditor() const {
     return m_editor;
 }
 
-void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
+void PropertyEditor::setCurrentEditor(LegacyAssetEditor *editor) {
     if(m_editor != editor) {
         if(m_editor) {
-            disconnect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+            disconnect(m_nextModel, &NextModel::propertyChanged, m_editor, &LegacyAssetEditor::onObjectsChanged);
         }
 
         m_editor = editor;
 
-        connect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+        connect(m_nextModel, &NextModel::propertyChanged, m_editor, &LegacyAssetEditor::onObjectsChanged);
     }
 }
 

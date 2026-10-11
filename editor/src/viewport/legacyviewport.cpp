@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "viewport/viewport.h"
-#include "viewport/cameracontroller.h"
+#include "viewport/legacyviewport.h"
+#include "viewport/legacycameracontroller.h"
 #include "viewport/handles.h"
 
 #include "editor/editorplatform.h"
@@ -45,7 +45,7 @@
 #include <pipelinecontext.h>
 #include <timer.h>
 
-Viewport::Viewport(QWidget *parent) :
+LegacyViewport::LegacyViewport(QWidget *parent) :
         QWidget(parent),
         m_controller(nullptr),
         m_world(nullptr),
@@ -78,7 +78,7 @@ Viewport::Viewport(QWidget *parent) :
 #endif
 }
 
-void Viewport::init() {
+void LegacyViewport::init() {
     m_pipelineContext = Engine::objectCreate<PipelineContext>("PipelineContext");
     m_pipelineContext->setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
     m_rhiWindow = Engine::renderSystem()->createRhiWindow(this);
@@ -133,20 +133,20 @@ void Viewport::init() {
             }
 
             m_pipelineContext->insertRenderTask(m_debugRender, m_guiLayer);
-            m_pipelineContext->subscribePost(Viewport::readPixels, this);
+            m_pipelineContext->subscribePost(LegacyViewport::readPixels, this);
         }
     }
 }
 
-CameraController *Viewport::controller() {
+LegacyCameraController *LegacyViewport::controller() {
     return m_controller;
 }
 
-void Viewport::setController(CameraController *ctrl) {
+void LegacyViewport::setController(LegacyCameraController *ctrl) {
     m_controller = ctrl;
 }
 
-void Viewport::setWorld(World *world) {
+void LegacyViewport::setWorld(World *world) {
     if(m_world != world) {
         m_world = world;
 
@@ -156,23 +156,23 @@ void Viewport::setWorld(World *world) {
     }
 }
 
-void Viewport::setCamera(Camera *camera) {
+void LegacyViewport::setCamera(Camera *camera) {
     m_camera = camera;
 }
 
-void Viewport::onCursorSet(const QCursor &cursor) {
+void LegacyViewport::onCursorSet(const QCursor &cursor) {
     if(m_rhiWindow) {
         m_rhiWindow->setCursor(cursor);
     }
 }
 
-void Viewport::onCursorUnset() {
+void LegacyViewport::onCursorUnset() {
     if(m_rhiWindow) {
         m_rhiWindow->unsetCursor();
     }
 }
 
-void Viewport::onDraw() {
+void LegacyViewport::onDraw() {
     if(m_frameInProgress) {
         return;
     }
@@ -250,14 +250,14 @@ void Viewport::onDraw() {
     m_frameInProgress = false;
 }
 
-void Viewport::createMenu(QMenu *menu) {
+void LegacyViewport::createMenu(QMenu *menu) {
     QMenu *tasksMenu = menu->addMenu(tr("Render Tasks"));
     for(auto &it : m_pipelineContext->renderTasks()) {
         if(!it->name().isEmpty()) {
             QAction *action = addAction(tasksMenu, it->name());
             action->setChecked(it->isEnabled());
 
-            QObject::connect(action, &QAction::triggered, this, &Viewport::onPostEffectChanged);
+            QObject::connect(action, &QAction::triggered, this, &LegacyViewport::onPostEffectChanged);
         }
     }
 
@@ -268,96 +268,96 @@ void Viewport::createMenu(QMenu *menu) {
                 QAction *action = addAction(bufferMenu, it);
                 action->setChecked(m_debugRender->isBufferVisible(it.data()));
 
-                QObject::connect(action, &QAction::triggered, this, &Viewport::onBufferChanged);
+                QObject::connect(action, &QAction::triggered, this, &LegacyViewport::onBufferChanged);
             }
         }
     }
 }
 
-PipelineContext *Viewport::pipelineContext() const {
+PipelineContext *LegacyViewport::pipelineContext() const {
     return m_pipelineContext;
 }
 
-void Viewport::grabScreen() {
+void LegacyViewport::grabScreen() {
     m_screenInProgress = true;
 }
 
-int Viewport::gridCell() {
+int LegacyViewport::gridCell() {
     return m_gridRender->scale();
 }
 
-bool Viewport::isGamePaused() const {
+bool LegacyViewport::isGamePaused() const {
     return m_gamePaused;
 }
 
-void Viewport::setGamePaused(bool pause) {
+void LegacyViewport::setGamePaused(bool pause) {
     m_gamePaused = pause;
     if(m_gamePaused) {
         m_rhiWindow->setCursor(Qt::ArrowCursor);
     }
 }
 
-bool Viewport::isLiveUpdate() const {
+bool LegacyViewport::isLiveUpdate() const {
     return m_liveUpdate;
 }
 
-void Viewport::setLiveUpdate(bool update) {
+void LegacyViewport::setLiveUpdate(bool update) {
     m_liveUpdate = update;
 }
 
-void Viewport::setGameView(bool enabled) {
+void LegacyViewport::setGameView(bool enabled) {
     m_gameView = enabled;
 }
 
-void Viewport::setGridEnabled(bool enabled) {
+void LegacyViewport::setGridEnabled(bool enabled) {
     if(m_gridRender) {
         m_gridRender->setEnabled(enabled);
     }
 }
-void Viewport::setGizmoEnabled(bool enabled) {
+void LegacyViewport::setGizmoEnabled(bool enabled) {
     if(m_gizmoRender) {
         m_gizmoRender->setEnabled(enabled);
     }
 }
-void Viewport::setOutlineEnabled(bool enabled) {
+void LegacyViewport::setOutlineEnabled(bool enabled) {
     if(m_outlinePass) {
         m_outlinePass->setEnabled(enabled);
     }
 }
-void Viewport::setGuiEnabled(bool enabled) {
+void LegacyViewport::setGuiEnabled(bool enabled) {
     if(m_guiLayer) {
         m_guiLayer->setEnabled(enabled);
     }
 }
 
-void Viewport::showCube(bool enabled) {
+void LegacyViewport::showCube(bool enabled) {
     if(m_gizmoRender) {
         m_gizmoRender->showCube(enabled);
     }
 }
 
-void Viewport::showGizmos(bool enabled) {
+void LegacyViewport::showGizmos(bool enabled) {
     if(m_gizmoRender) {
         m_gizmoRender->showGizmos(enabled);
     }
 }
 
-void Viewport::onInProgressFlag(bool flag) {
+void LegacyViewport::onInProgressFlag(bool flag) {
     m_frameInProgress = flag;
 }
 
-void Viewport::addRenderTask(PipelineTask *task) {
+void LegacyViewport::addRenderTask(PipelineTask *task) {
     m_pipelineContext->insertRenderTask(task, m_pipelineContext->renderTasks().empty() ? nullptr : m_pipelineContext->renderTasks().front());
 }
 
-void Viewport::readPixels(void *object) {
-    Viewport *ptr = reinterpret_cast<Viewport *>(object);
+void LegacyViewport::readPixels(void *object) {
+    LegacyViewport *ptr = reinterpret_cast<LegacyViewport *>(object);
     if(ptr && ptr->m_screenInProgress && ptr->m_color) {
         ptr->m_color->readPixels(0, 0, ptr->m_color->width(), ptr->m_color->height());
     }
 }
 
-bool Viewport::isFocused() {
+bool LegacyViewport::isFocused() {
     bool focus = false;
 #ifdef Q_OS_MACOS
     focus = rect().contains(mapFromGlobal(QCursor::pos()));
@@ -372,7 +372,7 @@ bool Viewport::isFocused() {
     return focus;
 }
 
-QAction *Viewport::addAction(QMenu *menu, const TString &name) {
+QAction *LegacyViewport::addAction(QMenu *menu, const TString &name) {
     static const QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
     static const QRegularExpression regExp2 {"([a-z0-9])([A-Z])"};
 
@@ -388,14 +388,14 @@ QAction *Viewport::addAction(QMenu *menu, const TString &name) {
     return action;
 }
 
-void Viewport::onBufferChanged(bool checked) {
+void LegacyViewport::onBufferChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
         m_debugRender->trackBuffer(action->data().toString().toStdString(), checked);
     }
 }
 
-void Viewport::onPostEffectChanged(bool checked) {
+void LegacyViewport::onPostEffectChanged(bool checked) {
     QAction *action = qobject_cast<QAction *>(QObject::sender());
     if(action) {
         for(auto &it : m_pipelineContext->renderTasks()) {
@@ -406,7 +406,7 @@ void Viewport::onPostEffectChanged(bool checked) {
     }
 }
 
-bool Viewport::event(QEvent *event) {
+bool LegacyViewport::event(QEvent *event) {
     if(processEvent(event)) {
         return true;
     }
@@ -414,7 +414,7 @@ bool Viewport::event(QEvent *event) {
     return QWidget::event(event);
 }
 
-bool Viewport::eventFilter(QObject *object, QEvent *event) {
+bool LegacyViewport::eventFilter(QObject *object, QEvent *event) {
     bool filter = isFocused();
     if(event->type() == QEvent::DragEnter) {
         m_rhiWindow->requestActivate();
@@ -428,7 +428,7 @@ bool Viewport::eventFilter(QObject *object, QEvent *event) {
     return QObject::eventFilter(object, event);
 }
 
-bool Viewport::processEvent(QEvent *event) {
+bool LegacyViewport::processEvent(QEvent *event) {
     switch(event->type()) {
         case QEvent::DragEnter: {
             QDragEnterEvent *ev = static_cast<QDragEnterEvent *>(event);

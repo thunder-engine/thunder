@@ -6,7 +6,7 @@
 static const QRegularExpression reg("\\.?0+$");
 
 ConditionEdit::ConditionEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::ConditionEdit) {
 
     ui->setupUi(this);
@@ -18,7 +18,7 @@ ConditionEdit::~ConditionEdit() {
 }
 
 void ConditionEdit::setObject(Object *object, const TString &property) {
-    PropertyEdit::setObject(object, property);
+    LegacyPropertyEdit::setObject(object, property);
 
     StateLink *link = dynamic_cast<StateLink *>(m_object);
     if(link) {

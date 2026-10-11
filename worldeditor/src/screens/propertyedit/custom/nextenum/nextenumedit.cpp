@@ -22,7 +22,7 @@
 #include <metaproperty.h>
 
 NextEnumEdit::NextEnumEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::NextEnumEdit),
         m_metaEnum(MetaEnum(nullptr)) {
 

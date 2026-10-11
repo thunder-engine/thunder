@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "viewport/cameracontroller.h"
+#include "viewport/legacycameracontroller.h"
 #include "viewport/handles.h"
 #include "viewport/handletools.h"
 
@@ -45,7 +45,7 @@ namespace {
     const char *gGridAxis("gridAxis");
 }
 
-CameraController::CameraController() :
+LegacyCameraController::LegacyCameraController() :
         m_activeCamera(nullptr),
         m_activeRootObject(nullptr),
         m_gridAxis(Axis::X),
@@ -69,7 +69,7 @@ CameraController::CameraController() :
     resetCamera();
 }
 
-void CameraController::drawHandles() {
+void LegacyCameraController::drawHandles() {
     if(m_activeRootObject) {
         drawHelpers(m_activeRootObject, false);
 
@@ -79,19 +79,19 @@ void CameraController::drawHandles() {
     }
 }
 
-void CameraController::resize(int32_t width, int32_t height) {
+void LegacyCameraController::resize(int32_t width, int32_t height) {
     m_screenSize = Vector2(width, height);
 }
 
-Object::ObjectList CameraController::selected() {
+Object::ObjectList LegacyCameraController::selected() {
     return Object::ObjectList();
 }
 
-void CameraController::select(Object &object) {
+void LegacyCameraController::select(Object &object) {
     A_UNUSED(object);
 }
 
-void CameraController::update() {
+void LegacyCameraController::update() {
     if(!m_blockMove) {
         if(Input::isKey(Input::KEY_W) || Input::isKey(Input::KEY_UP)) {
             if(!m_activeCamera->orthographic()) {
@@ -173,7 +173,7 @@ void CameraController::update() {
     }
 }
 
-void CameraController::move() {
+void LegacyCameraController::move() {
     // Linear movements
     if(m_activeCamera) {
         Transform *t = m_activeCamera->transform();
@@ -221,11 +221,11 @@ void CameraController::move() {
     }
 }
 
-void CameraController::onOrthographic(bool flag) {
+void LegacyCameraController::onOrthographic(bool flag) {
     m_activeCamera->setOrthographic(flag);
 }
 
-void CameraController::doRotation(const Vector3 &rotation) {
+void LegacyCameraController::doRotation(const Vector3 &rotation) {
     CameraData &data = m_cameras[m_currentCamera];
     data.rotation = rotation;
     data.focalDistance = m_activeCamera->focalDistance();
@@ -235,7 +235,7 @@ void CameraController::doRotation(const Vector3 &rotation) {
     m_transferProgress = 0.0f;
 }
 
-void CameraController::activateCamera(int index, bool force) {
+void LegacyCameraController::activateCamera(int index, bool force) {
     if(index < m_cameras.size()) {
         if(m_currentCamera >= 0 && !force) {
             CameraData &data = m_cameras[m_currentCamera];
@@ -265,7 +265,7 @@ void CameraController::activateCamera(int index, bool force) {
     }
 }
 
-void CameraController::resetCamera() {
+void LegacyCameraController::resetCamera() {
     float dist = 10.0f;
 
     Vector3 rotation(-30.0f,-45.0f, 0.0f);
@@ -288,7 +288,7 @@ void CameraController::resetCamera() {
     m_activeCamera->setOrthographic(m_cameras[m_currentCamera].ortho);
 }
 
-void CameraController::setFocusOn(Actor *actor, float &bottom) {
+void LegacyCameraController::setFocusOn(Actor *actor, float &bottom) {
     bottom = 0.0f;
     if(actor) {
         AABBox bb(Vector3(FLT_MAX), Vector3(-FLT_MAX));
@@ -328,7 +328,7 @@ void CameraController::setFocusOn(Actor *actor, float &bottom) {
     }
 }
 
-void CameraController::cameraZoom(float delta) {
+void LegacyCameraController::cameraZoom(float delta) {
     if(m_activeCamera) {
         if(m_activeCamera->orthographic()) {
             float size = m_cameras[m_currentCamera].orthoSize;
@@ -352,7 +352,7 @@ void CameraController::cameraZoom(float delta) {
     }
 }
 
-void CameraController::cameraRotate(const Vector3 &delta) {
+void LegacyCameraController::cameraRotate(const Vector3 &delta) {
     Transform *t = m_activeCamera->transform();
     Vector3 euler = t->rotation() - delta;
 
@@ -366,12 +366,12 @@ void CameraController::cameraRotate(const Vector3 &delta) {
     t->setRotation(euler);
 }
 
-void CameraController::cameraMove(const Vector3 &delta) {
+void LegacyCameraController::cameraMove(const Vector3 &delta) {
     Transform *t = m_activeCamera->transform();
     t->setPosition(t->position() - delta * ((m_activeCamera->orthographic()) ? m_activeCamera->orthoSize() : m_activeCamera->focalDistance()));
 }
 
-void CameraController::restoreState(const VariantMap &state) {
+void LegacyCameraController::restoreState(const VariantMap &state) {
     if(m_activeCamera) {
         int currentCamera = 0;
 
@@ -440,7 +440,7 @@ void CameraController::restoreState(const VariantMap &state) {
     }
 }
 
-VariantMap CameraController::saveState() {
+VariantMap LegacyCameraController::saveState() {
     VariantMap result;
     if(m_activeCamera) {
         result[gGridAxis] = static_cast<int>(m_gridAxis);
@@ -472,15 +472,15 @@ VariantMap CameraController::saveState() {
     return result;
 }
 
-void CameraController::setActiveRootObject(Object *object) {
+void LegacyCameraController::setActiveRootObject(Object *object) {
     m_activeRootObject = object;
 }
 
-void CameraController::setZoomLimits(const Vector2 &limit) {
+void LegacyCameraController::setZoomLimits(const Vector2 &limit) {
     m_zoomLimit = limit;
 }
 
-void CameraController::drawHelpers(Object *object, bool selected) {
+void LegacyCameraController::drawHelpers(Object *object, bool selected) {
     if(object == nullptr) {
         return;
     }

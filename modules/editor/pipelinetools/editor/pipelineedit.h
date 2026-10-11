@@ -1,11 +1,11 @@
 #ifndef PIPELINEEDIT_H
 #define PIPELINEEDIT_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 class PipelineConverter;
 class PipelineTaskGraph;
-class CameraController;
+class LegacyCameraController;
 
 class UndoCommand;
 class PipelineProxy;
@@ -14,7 +14,7 @@ namespace Ui {
     class PipelineEdit;
 }
 
-class PipelineEdit : public AssetEditor {
+class PipelineEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:
@@ -55,7 +55,7 @@ private:
     PipelineTaskGraph *m_graph;
     PipelineConverter *m_builder;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     PipelineProxy *m_proxy;
 

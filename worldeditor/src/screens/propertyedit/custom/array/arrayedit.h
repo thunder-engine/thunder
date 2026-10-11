@@ -18,7 +18,7 @@
 #ifndef ARRAYEDIT_H
 #define ARRAYEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class ArrayEdit;
@@ -26,7 +26,7 @@ namespace Ui {
 
 class ArrayElement;
 
-class ArrayEdit : public PropertyEdit {
+class ArrayEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

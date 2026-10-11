@@ -26,7 +26,7 @@
 #define SCALE 100
 
 FloatEdit::FloatEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::FloatEdit) {
     ui->setupUi(this);
 

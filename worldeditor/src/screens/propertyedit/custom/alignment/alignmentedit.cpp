@@ -19,7 +19,7 @@
 #include "ui_alignmentedit.h"
 
 AlignmentEdit::AlignmentEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::AlignmentEdit) {
     ui->setupUi(this);
 

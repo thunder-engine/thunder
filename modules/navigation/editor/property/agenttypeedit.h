@@ -18,13 +18,13 @@
 #ifndef AGENTTYPEEDIT_H
 #define AGENTTYPEEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class AgentTypeEdit;
 }
 
-class AgentTypeEdit : public PropertyEdit {
+class AgentTypeEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

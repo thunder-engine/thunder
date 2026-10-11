@@ -34,7 +34,7 @@ public:
     void update(World *world) override;
 
 #ifdef SHARED_DEFINE
-    QWindow *createRhiWindow(Viewport *viewport) override;
+    QWindow *createRhiWindow(LegacyViewport *viewport) override;
 #endif
 
 private:

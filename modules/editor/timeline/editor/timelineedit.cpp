@@ -16,7 +16,7 @@
 #include "keyframeeditor.h"
 
 TimelineEdit::TimelineEdit(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::TimelineEdit),
         m_model(new TimelineController(this)) {
 

@@ -153,7 +153,7 @@ void RenderSystem::setPipelineContext(PipelineContext *context) {
 }
 
 #if defined(SHARED_DEFINE)
-QWindow *RenderSystem::createRhiWindow(Viewport *viewport) {
+QWindow *RenderSystem::createRhiWindow(LegacyViewport *viewport) {
     return nullptr;
 }
 #endif

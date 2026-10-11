@@ -32,7 +32,7 @@
 #include "editor/nativecodebuilder.h"
 #include "editor/baseassetprovider.h"
 #include "editor/projectsettings.h"
-#include "editor/pluginmanager.h"
+#include "editor/legacypluginmanager.h"
 
 #include "components/actor.h"
 

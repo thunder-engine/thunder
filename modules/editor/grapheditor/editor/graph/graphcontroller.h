@@ -1,7 +1,7 @@
 #ifndef GRAPHCONTROLLER_H
 #define GRAPHCONTROLLER_H
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
 
 #include <graph/abstractnodegraph.h>
@@ -11,7 +11,7 @@ class PortWidget;
 
 class GraphView;
 
-class GraphController : public CameraController {
+class GraphController : public LegacyCameraController {
     Q_OBJECT
 
 public:

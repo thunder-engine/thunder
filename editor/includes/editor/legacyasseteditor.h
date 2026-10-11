@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef ASSETEDITOR_H
-#define ASSETEDITOR_H
+#ifndef LEGACYASSETEDITOR_H
+#define LEGACYASSETEDITOR_H
 
 #include <QWidget>
 
@@ -27,12 +27,12 @@ class QMenu;
 
 class UndoStack;
 
-class EDITOR_EXPORT AssetEditor : public QWidget {
+class EDITOR_EXPORT LegacyAssetEditor : public QWidget {
     Q_OBJECT
 
 public:
-    AssetEditor();
-    ~AssetEditor();
+    LegacyAssetEditor();
+    ~LegacyAssetEditor();
 
     std::list<AssetConverterSettings *> &openedDocuments();
 
@@ -45,7 +45,7 @@ public:
     virtual bool isCopyActionAvailable() const;
     virtual bool isPasteActionAvailable() const;
 
-    virtual AssetEditor *createInstance();
+    virtual LegacyAssetEditor *createInstance();
 
     virtual StringList suffixes() const = 0;
 
@@ -131,4 +131,4 @@ protected:
     UndoStack *m_undoRedo;
 };
 
-#endif // ASSETEDITOR_H
+#endif // LEGACYASSETEDITOR_H

@@ -18,13 +18,13 @@
 #ifndef ALIGNMENTEDIT_H
 #define ALIGNMENTEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class AlignmentEdit;
 }
 
-class AlignmentEdit : public PropertyEdit {
+class AlignmentEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

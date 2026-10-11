@@ -29,7 +29,7 @@
 #include "editor/assetmanager.h"
 #include "editor/nativecodebuilder.h"
 #include "editor/editorplatform.h"
-#include "editor/pluginmanager.h"
+#include "editor/legacypluginmanager.h"
 
 namespace {
     const char *gProjects("projects");

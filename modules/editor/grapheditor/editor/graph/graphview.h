@@ -1,8 +1,8 @@
 #ifndef GRAPHVIEW_H
 #define GRAPHVIEW_H
 
-#include <viewport/viewport.h>
-#include <editor/asseteditor.h>
+#include <viewport/legacyviewport.h>
+#include <editor/legacyasseteditor.h>
 
 #include <graph/abstractnodegraph.h>
 
@@ -15,13 +15,13 @@ class LinksRender;
 class Frame;
 class Scene;
 
-class NODEGRAPH_EXPORT GraphView : public Viewport {
+class NODEGRAPH_EXPORT GraphView : public LegacyViewport {
     Q_OBJECT
 
 public:
     explicit GraphView(QWidget *editor = nullptr);
 
-    void setEditor(AssetEditor *editor);
+    void setEditor(LegacyAssetEditor *editor);
     void setWorld(World *scene) override;
 
     AbstractNodeGraph *graph() const;
@@ -90,7 +90,7 @@ protected:
 
     Frame *m_rubberBand;
 
-    AssetEditor *m_editor;
+    LegacyAssetEditor *m_editor;
 
     bool m_updateLinks;
 

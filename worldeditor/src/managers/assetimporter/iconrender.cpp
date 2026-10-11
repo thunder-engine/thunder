@@ -32,7 +32,7 @@
 
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
-#include <editor/pluginmanager.h>
+#include <editor/legacypluginmanager.h>
 
 #include <systems/rendersystem.h>
 

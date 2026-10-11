@@ -24,7 +24,7 @@
 #include <QLocale>
 
 LocaleEdit::LocaleEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::LocaleEdit) {
 
     ui->setupUi(this);

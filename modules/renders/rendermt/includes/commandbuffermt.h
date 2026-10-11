@@ -53,7 +53,7 @@ public:
     void flipResult() override;
 
 protected:
-    MTL::Viewport m_viewport;
+    MTL::LegacyViewport m_viewport;
 
     MTL::CommandBuffer *m_commandBuffer;
 

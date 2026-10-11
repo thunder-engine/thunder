@@ -25,7 +25,7 @@
 #include <float.h>
 
 Vector4Edit::Vector4Edit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::Vector4Edit),
         m_type(0) {
 

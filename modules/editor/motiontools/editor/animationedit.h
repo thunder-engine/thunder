@@ -3,7 +3,7 @@
 
 #include <QMenu>
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 class AnimationControllerGraph;
 class AnimationStateMachine;
@@ -19,7 +19,7 @@ namespace Ui {
     class AnimationEdit;
 }
 
-class AnimationEdit : public AssetEditor {
+class AnimationEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:

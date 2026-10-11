@@ -20,7 +20,7 @@
 
 #include <QDialog>
 
-class PluginManager;
+class LegacyPluginManager;
 class QSortFilterProxyModel;
 
 namespace Ui {

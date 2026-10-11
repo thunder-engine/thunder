@@ -21,7 +21,7 @@
 #include <navigationsystem.h>
 
 AgentTypeEdit::AgentTypeEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::AgentTypeEdit) {
     ui->setupUi(this);
 

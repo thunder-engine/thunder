@@ -197,7 +197,7 @@ bool AnimationEdit::isPasteActionAvailable() const {
 
 void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         m_stateMachine = Engine::loadResource<AnimationStateMachine>(settings->destination());
 

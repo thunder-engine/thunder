@@ -19,7 +19,7 @@
 #define WIDGETCONTROLLER_H
 
 #include <editor/undostack.h>
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "tools/widgettool.h"
 
@@ -28,7 +28,7 @@
 class Widget;
 class UiSystem;
 
-class WidgetController : public CameraController {
+class WidgetController : public LegacyCameraController {
     Q_OBJECT
 
 public:
