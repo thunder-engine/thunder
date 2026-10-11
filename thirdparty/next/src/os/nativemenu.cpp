@@ -94,7 +94,7 @@ void NativeMenu::triggerAction(size_t index) {
     }
 }
 
-void NativeMenu::setMenuBar(MenuBar *bar) {
+void NativeMenu::setMenuBar(NativeMenuBar *bar) {
     m_menuBar = bar;
     for(const auto &menu : m_menus) {
         menu->setMenuBar(bar);

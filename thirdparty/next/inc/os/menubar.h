@@ -16,8 +16,8 @@
     limitations under the License.
 */
 
-#ifndef MENUBAR_H
-#define MENUBAR_H
+#ifndef NATIVEMENUBAR_H
+#define NATIVEMENUBAR_H
 
 #include <os/nativemenu.h>
 
@@ -27,16 +27,16 @@
 #include <map>
 #include <vector>
 
-class NEXT_LIBRARY_EXPORT MenuBar {
+class NEXT_LIBRARY_EXPORT NativeMenuBar {
 public:
     using ChangeSubscription = uint64_t;
     using ChangedHandler = std::function<void()>;
 
-    MenuBar();
-    ~MenuBar();
+    NativeMenuBar();
+    ~NativeMenuBar();
 
-    MenuBar(const MenuBar &) = delete;
-    MenuBar &operator=(const MenuBar &) = delete;
+    NativeMenuBar(const NativeMenuBar &) = delete;
+    NativeMenuBar &operator=(const NativeMenuBar &) = delete;
 
     NativeMenu *addMenu(const TString &title);
     const std::vector<std::unique_ptr<NativeMenu>> &menus() const;
@@ -63,4 +63,4 @@ private:
     std::vector<std::unique_ptr<NativeMenu>> m_menus;
 };
 
-#endif // MENUBAR_H
+#endif // NATIVEMENUBAR_H

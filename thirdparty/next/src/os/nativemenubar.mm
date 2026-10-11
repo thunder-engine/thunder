@@ -78,7 +78,7 @@ namespace {
         }
     }
 
-    NSMenu *createNativeMenuBar(MenuBar *menuBar) {
+    NSMenu *createNativeMenuBar(NativeMenuBar *menuBar) {
         NSMenu *result = [[NSMenu alloc] initWithTitle:@""];
         for(const auto &menu : menuBar->menus()) {
             NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:toNSString(menu->title())
@@ -98,7 +98,7 @@ bool menuBarNativeSupported() {
     return true;
 }
 
-bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeAttach(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     (void)nativeWindow;
     @autoreleasepool {
         NSMenu *menu = createNativeMenuBar(menuBar);
@@ -108,7 +108,7 @@ bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu
     }
 }
 
-bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeRefresh(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     (void)nativeWindow;
     @autoreleasepool {
         NSMenu *oldMenu = reinterpret_cast<NSMenu *>(*nativeMenu);
