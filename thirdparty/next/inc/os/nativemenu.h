@@ -25,7 +25,7 @@
 #include <deque>
 #include <functional>
 
-class MenuBar;
+class NativeMenuBar;
 
 class NEXT_LIBRARY_EXPORT NativeMenu {
 public:
@@ -56,13 +56,13 @@ public:
     void triggerAction(size_t index);
 
 private:
-    friend class MenuBar;
+    friend class NativeMenuBar;
 
-    void setMenuBar(MenuBar *bar);
+    void setMenuBar(NativeMenuBar *bar);
     void notifyChanged();
 
     TString m_title;
-    MenuBar *m_menuBar;
+    NativeMenuBar *m_menuBar;
     std::deque<Item> m_items;
     std::vector<NativeMenu *> m_menus;
 };

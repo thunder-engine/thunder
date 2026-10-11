@@ -73,6 +73,7 @@ Menu::Menu() :
         frameMaterial->subscribe(&Menu::materialUpdated, this);
     }
 
+    setEnabled(false);
 }
 
 Menu::~Menu() {
@@ -96,14 +97,56 @@ Menu::~Menu() {
     Creates a clickable menu item that triggers an action when selected.
 */
 void Menu::addAction(const TString &text, Sprite *icon) {
+    Actor *actionActor = Engine::composeActor<Action>(text, actor());
+    Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
+    if(!action) {
+        return;
+    }
+    action->setText(text);
+    addAction(action, icon);
+}
+
+Action *Menu::addAction(Action *action, Sprite *icon) {
+    if(!action) {
+        return nullptr;
+    }
+    if(action->actor() && action->actor()->parent() != actor()) {
+        action->actor()->setParent(actor());
+    }
+    setSubWidget(action);
+
     MenuItem item;
     item.type = MenuItem::Action;
-    item.text = text;
+    item.action = action;
+    item.text = action->text();
     item.icon = icon;
+    item.enabled = action->isEnabled();
+    item.checkable = action->isCheckable();
+    item.checked = action->isChecked();
+    item.shortcut = action->shortcutText();
     m_items.push_back(item);
 
+    connect(action, _SIGNAL(changed()), this, _SLOT(onActionChanged()));
     m_dirtyText = true;
     updateSize();
+    return action;
+}
+void Menu::setItemState(int index, bool enabled, bool checkable, bool checked) {
+    if(index < 0 || index >= static_cast<int>(m_items.size()) ||
+        m_items[index].type != MenuItem::Action) {
+        return;
+    }
+    MenuItem &item = m_items[index];
+    if(item.enabled != enabled || item.checkable != checkable || item.checked != checked) {
+        item.action->setEnabled(enabled);
+        item.action->setCheckable(checkable);
+        item.action->setChecked(checked);
+        item.enabled = item.action->isEnabled();
+        item.checkable = item.action->isCheckable();
+        item.checked = item.action->isChecked();
+        m_dirtyText = true;
+        repaint();
+    }
 }
 /*!
     Adds a separator line to the menu.
@@ -114,6 +157,7 @@ void Menu::addSeparator() {
     item.type = MenuItem::Separator;
     m_items.push_back(item);
 
+    m_dirtyText = true;
     updateSize();
 }
 /*!
@@ -127,9 +171,42 @@ void Menu::addSubmenu(const TString &text, Menu *submenu, Sprite *icon) {
     item.submenu = submenu;
     item.icon = icon;
     m_items.push_back(item);
+    if(submenu) {
+        setSubWidget(submenu);
+    }
 
     m_dirtyText = true;
     updateSize();
+}
+void Menu::setItemShortcut(int index, const TString &shortcut) {
+    if(index < 0 || index >= static_cast<int>(m_items.size()) ||
+        m_items[index].type != MenuItem::Action) {
+        return;
+    }
+    if(m_items[index].shortcut != shortcut) {
+        m_items[index].shortcut = shortcut;
+        m_dirtyText = true;
+        updateSize();
+    }
+}
+
+void Menu::onActionChanged() {
+    Action *action = dynamic_cast<Action *>(sender());
+    if(!action) {
+        return;
+    }
+    for(MenuItem &item : m_items) {
+        if(item.action == action) {
+            item.text = action->text();
+            item.enabled = action->isEnabled();
+            item.checkable = action->isCheckable();
+            item.checked = action->isChecked();
+            item.shortcut = action->shortcutText();
+            updateSize();
+            m_dirtyText = true;
+            repaint();
+        }
+    }
 }
 /*!
     Displays the menu at the specified \a position.
@@ -144,8 +221,14 @@ void Menu::show(const Vector2 &position) {
     Hides the menu.
 */
 void Menu::hide() {
-    if(isEnabled()) {
+    if(isEnabled() && !m_hiding) {
+        m_hiding = true;
         aboutToHide();
+        m_hiding = false;
+    }
+    if(m_openSubmenu) {
+        m_openSubmenu->hide();
+        m_openSubmenu = nullptr;
     }
     setEnabled(false);
     repaint();
@@ -165,6 +248,9 @@ TString Menu::itemText(int index) {
 void Menu::setItemText(int index, const TString &text) {
     if(index > -1 && index < m_items.size()) {
         m_items[index].text = text;
+        if(m_items[index].action) {
+            m_items[index].action->setText(text);
+        }
         m_dirtyText = true;
         repaint();
     }
@@ -248,7 +334,18 @@ void Menu::draw() {
         settings.offset.y = -settings.boundaries.y - m_rowHeight;
         for(size_t i = 0; i < m_items.size(); ++i) {
             if(m_items[i].type != MenuItem::Separator) {
-                m_font->composeMesh(m_textMesh, m_items[i].text, settings);
+                TString label;
+                if(m_items[i].checkable) {
+                    label = m_items[i].checked ? "[x] " : "[ ] ";
+                }
+                label += m_items[i].text;
+                if(m_items[i].type == MenuItem::Submenu) {
+                    label += " >";
+                } else if(!m_items[i].shortcut.isEmpty()) {
+                    label += TString("    ") + m_items[i].shortcut;
+                }
+                settings.color = m_items[i].enabled ? m_textColor : m_textColor * 0.45f;
+                m_font->composeMesh(m_textMesh, label, settings);
                 settings.offset.y += m_rowHeight;
             } else {
                 settings.offset.y -= m_separatorHeight;
@@ -268,7 +365,11 @@ void Menu::draw() {
         s[0] = size.x;
         s[5] = m_rowHeight;
         s[12] = size.x * 0.5f;
-        s[13] = size.y - s[5] * 0.5f - m_hoveredIndex * m_rowHeight;
+        float rowHeight = 0.0f;
+        for(int i = 0; i < m_hoveredIndex; ++i) {
+            rowHeight += m_items[i].type == MenuItem::Separator ? m_separatorHeight : m_rowHeight;
+        }
+        s[13] = size.y - rowHeight - s[5] * 0.5f;
         Mathf::hashCombine(hash, s[13]);
 
         m_selectionMaterial->setTransform(transform * s, 0, hash);
@@ -290,28 +391,70 @@ void Menu::update(const Vector2 &pos) {
     int newHoveredIndex = -1;
     if(localPos.x >= 0 && localPos.x <= rect->size().x &&
         localPos.y >= 0 && localPos.y <= rect->size().y) {
-
-        newHoveredIndex = static_cast<int>((rect->size().y - localPos.y) / m_rowHeight);
+        float rowTop = rect->size().y;
+        for(size_t i = 0; i < m_items.size(); ++i) {
+            const float height = m_items[i].type == MenuItem::Separator ? m_separatorHeight : m_rowHeight;
+            if(localPos.y <= rowTop && localPos.y >= rowTop - height) {
+                if(m_items[i].type != MenuItem::Separator) {
+                    newHoveredIndex = static_cast<int>(i);
+                }
+                break;
+            }
+            rowTop -= height;
+        }
     }
 
-    if(newHoveredIndex != m_hoveredIndex && newHoveredIndex < m_items.size()) {
+    if(newHoveredIndex != m_hoveredIndex) {
         m_hoveredIndex = newHoveredIndex;
         repaint();
     }
 
-    if(Input::isMouseButtonDown(0)) {
-        if(newHoveredIndex > -1) {
-            auto &item = m_items[m_hoveredIndex];
+    Menu *hoveredSubmenu = nullptr;
+    if(newHoveredIndex >= 0 && m_items[newHoveredIndex].type == MenuItem::Submenu) {
+        hoveredSubmenu = m_items[newHoveredIndex].submenu;
+    } else if(m_openSubmenu && m_openSubmenu->containsMenuAt(pos)) {
+        hoveredSubmenu = m_openSubmenu;
+    }
+    if(m_openSubmenu && m_openSubmenu != hoveredSubmenu) {
+        m_openSubmenu->hide();
+        m_openSubmenu = nullptr;
+    }
+    if(hoveredSubmenu && m_openSubmenu != hoveredSubmenu) {
+        RectTransform *submenuRect = hoveredSubmenu->rectTransform();
+        submenuRect->setAnchors(Vector2(0.0f), Vector2(0.0f));
+        submenuRect->setPivot(Vector2(0.0f, 0.0f));
+        float rowTop = rect->size().y;
+        for(int i = 0; i < newHoveredIndex; ++i) {
+            rowTop -= m_items[i].type == MenuItem::Separator ? m_separatorHeight : m_rowHeight;
+        }
+        const float rowBottom = rowTop - m_rowHeight;
+        hoveredSubmenu->show(Vector2(rect->size().x, rowBottom));
+        m_openSubmenu = hoveredSubmenu;
+    }
 
-            if(item.type == MenuItem::Action) {
-                triggered(newHoveredIndex);
+    if(Input::isMouseButtonDown(0)) {
+        if(newHoveredIndex > -1 && m_items[newHoveredIndex].type == MenuItem::Action &&
+            m_items[newHoveredIndex].enabled) {
+            auto &item = m_items[m_hoveredIndex];
+            if(item.action) {
+                item.action->trigger();
             }
+            triggered(newHoveredIndex);
         }
 
-        if(!isHovered(pos)) {
+        if(!containsMenuAt(pos)) {
             hide();
         }
     }
+}
+/*!
+    \internal
+*/
+bool Menu::containsMenuAt(const Vector2 &position) {
+    if(isHovered(position)) {
+        return true;
+    }
+    return m_openSubmenu && m_openSubmenu->containsMenuAt(position);
 }
 /*!
     \internal
@@ -325,7 +468,18 @@ void Menu::updateSize() {
             height += m_separatorHeight;
         } else {
             if(m_font && !item.text.isEmpty()) {
-                float textWidth = m_font->textWidth(item.text, m_fontSize, 0);
+                TString label;
+                if(item.checkable) {
+                    label = "[ ] ";
+                }
+                label += item.text;
+                if(item.type == MenuItem::Submenu) {
+                    label += " >";
+                }
+                if(!item.shortcut.isEmpty()) {
+                    label += TString("    ") + item.shortcut;
+                }
+                float textWidth = m_font->textWidth(label, m_fontSize, 0);
                 width = std::max(width, textWidth + 40.0f);
             }
             height += m_rowHeight;

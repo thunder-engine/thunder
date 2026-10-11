@@ -24,9 +24,9 @@
 
 // Forward declaration
 bool menuBarNativeSupported();
-bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu);
+bool menuBarNativeAttach(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu);
 void menuBarNativeDetach(void *nativeWindow, void *nativeMenu);
-bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMenu);
+bool menuBarNativeRefresh(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu);
 
 #ifdef _WIN32
 #include <windows.h>
@@ -115,7 +115,7 @@ bool triggerMenuShortcut(NativeMenu *menu, int key, int modifiers) {
         return true;
     }
 
-    bool appendTopLevelMenus(HMENU nativeMenu, MenuBar *menuBar, WindowMenu &state) {
+    bool appendTopLevelMenus(HMENU nativeMenu, NativeMenuBar *menuBar, WindowMenu &state) {
         for(const auto &menu : menuBar->menus()) {
             HMENU popup = CreatePopupMenu();
             if(!popup || !appendMenuItems(popup, menu.get(), state)) {
@@ -164,17 +164,17 @@ bool triggerMenuShortcut(NativeMenu *menu, int key, int modifiers) {
     }
 #endif
 
-MenuBar::MenuBar() :
+NativeMenuBar::NativeMenuBar() :
         m_nativeWindow(nullptr),
         m_nativeMenu(nullptr),
         m_nextSubscription(1) {
 }
 
-MenuBar::~MenuBar() {
+NativeMenuBar::~NativeMenuBar() {
     detach();
 }
 
-NativeMenu *MenuBar::addMenu(const TString &title) {
+NativeMenu *NativeMenuBar::addMenu(const TString &title) {
     std::unique_ptr<NativeMenu> menu(new NativeMenu(title));
     menu->setMenuBar(this);
     NativeMenu *result = menu.get();
@@ -183,11 +183,11 @@ NativeMenu *MenuBar::addMenu(const TString &title) {
     return result;
 }
 
-const std::vector<std::unique_ptr<NativeMenu>> &MenuBar::menus() const {
+const std::vector<std::unique_ptr<NativeMenu>> &NativeMenuBar::menus() const {
     return m_menus;
 }
 
-bool MenuBar::attach(void *nativeWindow) {
+bool NativeMenuBar::attach(void *nativeWindow) {
     detach();
     if(!nativeWindow) {
         return false;
@@ -201,7 +201,7 @@ bool MenuBar::attach(void *nativeWindow) {
     return true;
 }
 
-void MenuBar::detach() {
+void NativeMenuBar::detach() {
     if(m_nativeWindow) {
         menuBarNativeDetach(m_nativeWindow, m_nativeMenu);
         m_nativeWindow = nullptr;
@@ -209,19 +209,19 @@ void MenuBar::detach() {
     }
 }
 
-bool MenuBar::isAttached() const {
+bool NativeMenuBar::isAttached() const {
     return m_nativeWindow != nullptr;
 }
 
-bool MenuBar::isAttachedTo(void *nativeWindow) const {
+bool NativeMenuBar::isAttachedTo(void *nativeWindow) const {
     return nativeWindow && m_nativeWindow == nativeWindow;
 }
 
-bool MenuBar::isNativeSupported() {
+bool NativeMenuBar::isNativeSupported() {
     return menuBarNativeSupported();
 }
 
-bool MenuBar::triggerShortcut(int key, int modifiers) {
+bool NativeMenuBar::triggerShortcut(int key, int modifiers) {
     for(const auto &menu : m_menus) {
         if(triggerMenuShortcut(menu.get(), key, modifiers)) {
             return true;
@@ -230,7 +230,7 @@ bool MenuBar::triggerShortcut(int key, int modifiers) {
     return false;
 }
 
-MenuBar::ChangeSubscription MenuBar::subscribeChanged(const ChangedHandler &handler) {
+NativeMenuBar::ChangeSubscription NativeMenuBar::subscribeChanged(const ChangedHandler &handler) {
     if(!handler) {
         return 0;
     }
@@ -239,13 +239,13 @@ MenuBar::ChangeSubscription MenuBar::subscribeChanged(const ChangedHandler &hand
     return subscription;
 }
 
-void MenuBar::unsubscribeChanged(ChangeSubscription subscription) {
+void NativeMenuBar::unsubscribeChanged(ChangeSubscription subscription) {
     if(subscription != 0) {
         m_changedHandlers.erase(subscription);
     }
 }
 
-void MenuBar::rebuild() {
+void NativeMenuBar::rebuild() {
     if(m_nativeWindow && !menuBarNativeRefresh(this, m_nativeWindow, &m_nativeMenu)) {
         aWarning() << "Failed to refresh the native menu bar; detaching it.";
         detach();
@@ -265,7 +265,7 @@ bool menuBarNativeSupported() {
     return true;
 }
 
-bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeAttach(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     HWND hwnd = static_cast<HWND>(nativeWindow);
     if(!hwnd || g_windowMenus.find(hwnd) != g_windowMenus.end()) {
         return false;
@@ -297,7 +297,7 @@ bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu
     return true;
 }
 
-bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeRefresh(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     HWND hwnd = static_cast<HWND>(nativeWindow);
     auto oldState = g_windowMenus.find(hwnd);
     if(oldState == g_windowMenus.end()) {
@@ -342,14 +342,14 @@ bool menuBarNativeSupported() {
     return false;
 }
 
-bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeAttach(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     (void)menuBar;
     (void)nativeWindow;
     (void)nativeMenu;
     return false;
 }
 
-bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
+bool menuBarNativeRefresh(NativeMenuBar *menuBar, void *nativeWindow, void **nativeMenu) {
     (void)menuBar;
     (void)nativeWindow;
     (void)nativeMenu;

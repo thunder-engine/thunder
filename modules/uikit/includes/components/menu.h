@@ -19,6 +19,7 @@
 #define MENU_H
 
 #include "frame.h"
+#include "action.h"
 
 class Font;
 
@@ -29,6 +30,7 @@ class UIKIT_EXPORT Menu : public Frame {
         A_PROPERTYEX(Font *, font, Menu::font, Menu::setFont, "editor=Asset")
     )
     A_METHODS(
+        A_SLOT(Menu::onActionChanged),
         A_SIGNAL(Menu::aboutToHide),
         A_SIGNAL(Menu::aboutToShow),
         A_SIGNAL(Menu::triggered)
@@ -40,13 +42,17 @@ class UIKIT_EXPORT Menu : public Frame {
 
         Type type = Action;
         TString text;
+        TString shortcut;
 
+        ::Action *action = nullptr;
         Sprite *icon = nullptr;
 
         Menu *submenu = nullptr;
 
         bool enabled = true;
         bool hovered = false;
+        bool checkable = false;
+        bool checked = false;
     };
 
 public:
@@ -54,8 +60,11 @@ public:
     ~Menu();
 
     void addAction(const TString &text, Sprite *icon = nullptr);
+    Action *addAction(Action *action, Sprite *icon = nullptr);
     void addSeparator();
     void addSubmenu(const TString &text, Menu *submenu, Sprite *icon = nullptr);
+    void setItemState(int index, bool enabled, bool checkable, bool checked);
+    void setItemShortcut(int index, const TString &shortcut);
 
     void show(const Vector2 &position);
     void hide();
@@ -79,6 +88,8 @@ private:
     void update(const Vector2 &pos) override;
 
     void updateSize();
+    bool containsMenuAt(const Vector2 &position);
+    void onActionChanged();
 
     void composeComponent() override;
 
@@ -103,11 +114,13 @@ private:
 
     int m_hoveredIndex = -1;
     int m_selectedIndex = -1;
+    Menu *m_openSubmenu = nullptr;
 
     float m_separatorHeight = 5.0f;
     float m_rowHeight = 20.0f;
     float m_minWidth = 100.0f;
 
+    bool m_hiding = false;
     bool m_dirtyText;
 };
 
