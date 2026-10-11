@@ -159,7 +159,7 @@ private:
     StringList m_initialWhiteList;
     StringList m_whiteList;
 
-    static PluginManager *m_instance;
+    static LegacyPluginManager *m_instance;
 
     Engine *m_engine;
 

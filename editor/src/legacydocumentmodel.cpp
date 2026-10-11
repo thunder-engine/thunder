@@ -59,15 +59,15 @@ LegacyDocumentModel::~LegacyDocumentModel() {
     m_editors.clear();
 }
 
-void DocumentModel::addEditor(LegacyAssetEditor *editor) {
+void LegacyDocumentModel::addEditor(LegacyAssetEditor *editor) {
     for(auto &it : editor->suffixes()) {
         m_editors[it] = editor;
     }
     editor->installEventFilter(this);
-    connect(editor, &AssetEditor::selectionChanged, this, &DocumentModel::selectionChanaged);
-    connect(editor, &AssetEditor::updated, this, &DocumentModel::updated);
+    connect(editor, &LegacyAssetEditor::selectionChanged, this, &LegacyDocumentModel::selectionChanaged);
+    connect(editor, &LegacyAssetEditor::updated, this, &LegacyDocumentModel::updated);
 
-    connect(editor, &AssetEditor::dropAsset, this, &DocumentModel::onLoadAsset);
+    connect(editor, &LegacyAssetEditor::dropAsset, this, &LegacyDocumentModel::onLoadAsset);
 }
 
 LegacyAssetEditor *LegacyDocumentModel::openFile(const TString &path) {

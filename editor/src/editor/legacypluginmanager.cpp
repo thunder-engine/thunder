@@ -40,7 +40,7 @@ namespace {
     const char *gLabel("[PluginManager]");
 }
 
-PluginManager *PluginManager::m_instance = nullptr;
+LegacyPluginManager *LegacyPluginManager::m_instance = nullptr;
 
 typedef Module *(*ModuleHandler) (Engine *engine);
 
