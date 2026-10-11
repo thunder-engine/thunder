@@ -149,6 +149,10 @@ std::vector<TString> MessagePrivate::standardButtonTexts() const {
 #include <windows.h>
 #pragma comment(lib, "User32.lib")
 
+void Message::beep() {
+    MessageBeep(MB_OK);
+}
+
 bool MessagePrivate::execWindows() {
     // Build message text
     TString message = m_text;
@@ -250,6 +254,16 @@ bool MessagePrivate::execWindows() {
 
 #ifdef __linux__
 #include <gtk/gtk.h>
+
+void Message::beep() {
+    GdkDisplay *display = gdk_display_get_default();
+    if(!display && gtk_init_check(nullptr, nullptr)) {
+        display = gdk_display_get_default();
+    }
+    if(display) {
+        gdk_display_beep(display);
+    }
+}
 
 bool MessagePrivate::execLinux() {
     static bool gtkInitialized = false;
