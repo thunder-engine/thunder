@@ -15,35 +15,45 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef EDITORGADGET_H
-#define EDITORGADGET_H
+#ifndef LEGACYDOCUMENTMODEL_H
+#define LEGACYDOCUMENTMODEL_H
 
-#include <QWidget>
+#include <QObject>
 
 #include <editor.h>
 
-class AssetEditor;
-
-class EDITOR_EXPORT EditorGadget : public QWidget {
+class EDITOR_EXPORT LegacyDocumentModel : public QObject {
     Q_OBJECT
 
 public:
-    explicit EditorGadget(QWidget *parent = nullptr);
+    LegacyDocumentModel();
+    ~LegacyDocumentModel();
 
-    virtual void setCurrentEditor(AssetEditor *editor) {};
+    void addEditor(LegacyAssetEditor *editor);
+
+    LegacyAssetEditor *openFile(const TString &path);
+
+    std::list<LegacyAssetEditor *> documents();
 
 signals:
     void updated();
 
-    void objectsSelected(const Object::ObjectList &objects, bool force);
-    void objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value);
+    void selectionChanaged();
 
 public slots:
-    virtual void onUpdated() = 0;
+    void closeFile(LegacyAssetEditor *editor);
 
-    virtual void onSelectionChanged() = 0;
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) = 0;
+private:
+    bool eventFilter(QObject *object, QEvent *event) override;
+
+private slots:
+    void onLoadAsset(QString path);
+
+protected:
+    std::list<LegacyAssetEditor *> m_documents;
+
+    std::map<TString, LegacyAssetEditor *> m_editors;
 
 };
 
-#endif // EDITORGADGET_H
+#endif // LEGACYDOCUMENTMODEL_H

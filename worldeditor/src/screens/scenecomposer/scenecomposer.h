@@ -18,7 +18,7 @@
 #ifndef SCENECOMPOSER_H
 #define SCENECOMPOSER_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <QMenu>
 
@@ -35,7 +35,7 @@ namespace Ui {
     class SceneComposer;
 }
 
-class SceneComposer : public AssetEditor {
+class SceneComposer : public LegacyAssetEditor {
     Q_OBJECT
 
 public:

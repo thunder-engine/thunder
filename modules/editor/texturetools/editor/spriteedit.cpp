@@ -37,7 +37,7 @@ SpriteEdit::SpriteEdit() :
     m_proxy->setEditor(this);
 
     m_controller->activateCamera(1, true);
-    m_controller->setGridAxis(CameraController::Axis::Z);
+    m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->blockRotations(true);
 
     ui->viewport->setController(m_controller);
@@ -96,7 +96,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     if(!m_settings.empty()) {
         Object::disconnect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
     }
-    AssetEditor::loadAsset(settings);
+    LegacyAssetEditor::loadAsset(settings);
 
     if(m_resource) {
         m_resource->unsubscribe(this);

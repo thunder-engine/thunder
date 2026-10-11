@@ -20,7 +20,7 @@
 #include <system.h>
 #include <invalid.h>
 #include <editor/assetconverter.h>
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 #include "custom/component/actions.h"
 #include "custom/objectselect/objectselect.h"
@@ -151,7 +151,7 @@ TString Property::name() const {
     return objectName().toStdString();
 }
 
-PropertyEdit *Property::editor() const {
+LegacyPropertyEdit *Property::editor() const {
     return m_editor;
 }
 
@@ -173,7 +173,7 @@ QWidget *Property::getEditor(QWidget *parent) const {
     return createEditor(parent);
 }
 
-PropertyEdit *Property::createEditor(QWidget *parent) const {
+LegacyPropertyEdit *Property::createEditor(QWidget *parent) const {
     int32_t type = 0;
 
     if(m_nextObject) {
@@ -185,7 +185,7 @@ PropertyEdit *Property::createEditor(QWidget *parent) const {
 
     TString editorTag = editorName(m_hints, m_typeNameTrimmed);
 
-    PropertyEdit *editor = PropertyEdit::constructEditor(type, parent, editorTag);
+    LegacyPropertyEdit *editor = LegacyPropertyEdit::constructEditor(type, parent, editorTag);
     if(editor == nullptr && m_root) {
         editor = new Actions(parent);
     }
@@ -216,8 +216,8 @@ PropertyEdit *Property::createEditor(QWidget *parent) const {
         editor->setDisabled(isReadOnly());
         editor->setEditorHint(m_hints);
 
-        connect(editor, &PropertyEdit::editFinished, this, &Property::onDataChanged);
-        connect(editor, &PropertyEdit::dataChanged, this, &Property::onDataChanged);
+        connect(editor, &LegacyPropertyEdit::editFinished, this, &Property::onDataChanged);
+        connect(editor, &LegacyPropertyEdit::dataChanged, this, &Property::onDataChanged);
         connect(editor, &Actions::destroyed, this, &Property::onEditorDestoyed);
 
         m_editor = editor;
@@ -231,7 +231,7 @@ QSize Property::sizeHint(const QSize &size) const {
 }
 
 void Property::updateEditor() {
-    PropertyEdit *e = dynamic_cast<PropertyEdit *>(m_editor);
+    LegacyPropertyEdit *e = dynamic_cast<LegacyPropertyEdit *>(m_editor);
     if(e) {
         e->blockSignals(true);
         Variant current = value();
@@ -273,7 +273,7 @@ void Property::setChecked(bool value) {
 }
 
 void Property::onDataChanged() {
-    PropertyEdit *e = dynamic_cast<PropertyEdit *>(m_editor);
+    LegacyPropertyEdit *e = dynamic_cast<LegacyPropertyEdit *>(m_editor);
     if(e) {
         e->setMixedValue(false);
         setValue(e->data());

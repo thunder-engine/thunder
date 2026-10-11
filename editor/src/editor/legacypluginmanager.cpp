@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "pluginmanager.h"
+#include "legacypluginmanager.h"
 
 #include <engine.h>
 #include <module.h>
@@ -40,28 +40,28 @@ namespace {
     const char *gLabel("[PluginManager]");
 }
 
-PluginManager *PluginManager::m_instance = nullptr;
+LegacyPluginManager *LegacyPluginManager::m_instance = nullptr;
 
 typedef Module *(*ModuleHandler) (Engine *engine);
 
 /*!
-    \class PluginManager
+    \class LegacyPluginManager
     \brief Discovers, loads, and manages editor and engine plugins.
     \inmodule Editor
 
-    PluginManager resolves plugin dependencies and provides access to plugin
+    LegacyPluginManager resolves plugin dependencies and provides access to plugin
     modules, systems, components, and editor extensions.
 
-    \fn void PluginManager::pluginReloaded()
+    \fn void LegacyPluginManager::pluginReloaded()
 
     Emitted after a plugin has been reloaded.
 
-    \fn void PluginManager::listChanged()
+    \fn void LegacyPluginManager::listChanged()
 
     Emitted when the plugin list or plugin state changes.
 */
 
-PluginManager::PluginManager() :
+LegacyPluginManager::LegacyPluginManager() :
         QAbstractItemModel(),
         m_engine(nullptr),
         m_renderFactory(nullptr) {
@@ -98,7 +98,7 @@ PluginManager::PluginManager() :
     m_whiteList = m_initialWhiteList;
 }
 
-PluginManager::~PluginManager() {
+LegacyPluginManager::~LegacyPluginManager() {
     m_systems.clear();
 
     for(auto &it : m_plugins) {
@@ -108,15 +108,15 @@ PluginManager::~PluginManager() {
     m_plugins.clear();
 }
 
-int PluginManager::columnCount(const QModelIndex &) const {
+int LegacyPluginManager::columnCount(const QModelIndex &) const {
     return 1;
 }
 
-QVariant PluginManager::headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant LegacyPluginManager::headerData(int section, Qt::Orientation orientation, int role) const {
     return QVariant();
 }
 
-QVariant PluginManager::data(const QModelIndex &index, int role) const {
+QVariant LegacyPluginManager::data(const QModelIndex &index, int role) const {
     if(!index.isValid()) {
         return QVariant();
     }
@@ -141,7 +141,7 @@ QVariant PluginManager::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int role) {
+bool LegacyPluginManager::setData(const QModelIndex &index, const QVariant &value, int role) {
     if(!index.isValid()) {
         return QAbstractItemModel::setData(index, value, role);
     }
@@ -166,17 +166,17 @@ bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int
     return false;
 }
 
-int PluginManager::rowCount(const QModelIndex &parent) const {
+int LegacyPluginManager::rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
     return m_plugins.size();
 }
 
-QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent) const {
+QModelIndex LegacyPluginManager::index(int row, int column, const QModelIndex &parent) const {
     Q_UNUSED(parent);
     return createIndex(row, column);
 }
 
-QModelIndex PluginManager::parent(const QModelIndex &child) const {
+QModelIndex LegacyPluginManager::parent(const QModelIndex &child) const {
     Q_UNUSED(child);
     return QModelIndex();
 }
@@ -184,7 +184,7 @@ QModelIndex PluginManager::parent(const QModelIndex &child) const {
 /*!
     Initializes the manager and loads the built-in editor plugins.
 */
-void PluginManager::init(Engine *engine) {
+void LegacyPluginManager::init(Engine *engine) {
     m_engine = engine;
 
     syncWhiteList();
@@ -196,7 +196,7 @@ void PluginManager::init(Engine *engine) {
 /*!
     Sets the project plugin directory and rescans it for plugins.
 */
-bool PluginManager::rescanProject(const TString &path) {
+bool LegacyPluginManager::rescanProject(const TString &path) {
     m_pluginPath = path;
 
     return rescanPath(m_pluginPath);
@@ -206,7 +206,7 @@ bool PluginManager::rescanProject(const TString &path) {
     Loads the plugin at \a path. If \a reload is true, preserves its components
     while replacing the loaded plugin.
 */
-bool PluginManager::loadPlugin(const TString &path, bool reload) {
+bool LegacyPluginManager::loadPlugin(const TString &path, bool reload) {
     Library *lib = new Library(path);
     if(lib->load()) {
         ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
@@ -306,7 +306,7 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
 /*!
     Replaces the installed project plugin with the plugin at \a path.
 */
-void PluginManager::reloadPlugin(const TString &path) {
+void LegacyPluginManager::reloadPlugin(const TString &path) {
     Url info(path);
 
     TString dest(m_pluginPath + "/" + info.name());
@@ -372,7 +372,7 @@ void PluginManager::reloadPlugin(const TString &path) {
 /*!
     Scans \a path and loads all shared-library plugins found there.
 */
-bool PluginManager::rescanPath(const TString &path) {
+bool LegacyPluginManager::rescanPath(const TString &path) {
     bool result = true;
     for(auto &it : File::list(path)) {
         Url url(it);
@@ -383,7 +383,7 @@ bool PluginManager::rescanPath(const TString &path) {
     return result;
 }
 
-bool PluginManager::registerSystem(Module *plugin, const char *name) {
+bool LegacyPluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
         m_systems[system->name()] = system;
@@ -397,13 +397,13 @@ bool PluginManager::registerSystem(Module *plugin, const char *name) {
 /*!
     Initializes all systems provided by enabled plugins.
 */
-void PluginManager::initSystems() {
+void LegacyPluginManager::initSystems() {
     for(auto &it : m_systems) {
         it.second->init();
     }
 }
 
-void PluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
+void LegacyPluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
         for(auto it : m_engine->getAllObjectsByType(type)) {
             Object *parent = it->parent();
@@ -420,7 +420,7 @@ void PluginManager::serializeComponents(const StringList &list, ComponentBackup 
     }
 }
 
-void PluginManager::deserializeComponents(const ComponentBackup &backup) {
+void LegacyPluginManager::deserializeComponents(const ComponentBackup &backup) {
     for(auto &it : backup) {
         Variant v = Bson::load(it.data);
         Object *object = Engine::toObject(v, it.parent);
@@ -434,7 +434,7 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
 /*!
     Synchronizes the enabled plugin whitelist with project settings.
 */
-void PluginManager::syncWhiteList() {
+void LegacyPluginManager::syncWhiteList() {
     StringList toRemove;
 
     auto &plugins = Editor::project()->plugins();
@@ -465,7 +465,7 @@ void PluginManager::syncWhiteList() {
 /*!
     Returns paths of all plugins known to the manager.
 */
-StringList PluginManager::plugins() const {
+StringList LegacyPluginManager::plugins() const {
     StringList result;
 
     for(auto &it : m_plugins) {
@@ -478,7 +478,7 @@ StringList PluginManager::plugins() const {
 /*!
     Returns dependencies of the specified \a type for the requested modules.
 */
-StringList PluginManager::dependencies(const TString &type, const StringList &modules) const {
+StringList LegacyPluginManager::dependencies(const TString &type, const StringList &modules) const {
     StringList result;
 
     for(auto &plugin : m_plugins) {
@@ -497,7 +497,7 @@ StringList PluginManager::dependencies(const TString &type, const StringList &mo
 /*!
     Returns plugin extensions registered for the specified \a type.
 */
-StringList PluginManager::extensions(const TString &type) const {
+StringList LegacyPluginManager::extensions(const TString &type) const {
     StringList result;
 
     for(auto &it : m_plugins) {
@@ -516,7 +516,7 @@ StringList PluginManager::extensions(const TString &type) const {
 /*!
     Creates and returns the plugin object registered under \a name.
 */
-void *PluginManager::getPluginObject(const TString &name) {
+void *LegacyPluginManager::getPluginObject(const TString &name) {
     for(auto &it : m_plugins) {
         if(it.enabled) {
             for(auto &object : it.objects) {
@@ -533,7 +533,7 @@ void *PluginManager::getPluginObject(const TString &name) {
 /*!
     Returns the plugin module that provides the specified component \a type.
 */
-TString PluginManager::getModuleName(const TString &type) const {
+TString LegacyPluginManager::getModuleName(const TString &type) const {
     for(auto &it : m_plugins) {
         if(std::find(it.components.begin(), it.components.end(), type) != it.components.end()) {
             return it.name;

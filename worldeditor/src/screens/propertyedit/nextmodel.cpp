@@ -23,7 +23,7 @@
 #include <QRegularExpression>
 
 #include "property.h"
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 QString fromCamelCase(const TString &s) {
     static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};

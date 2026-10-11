@@ -94,7 +94,7 @@ private:
 };
 
 GraphView::GraphView(QWidget *editor) :
-        Viewport(editor),
+        LegacyViewport(editor),
         m_scene(nullptr),
         m_view(nullptr),
         m_createMenu(new QMenu(this)),
@@ -106,7 +106,7 @@ GraphView::GraphView(QWidget *editor) :
 
     m_controller = new GraphController(this);
     m_controller->activateCamera(1, true);
-    m_controller->setGridAxis(CameraController::Axis::Z);
+    m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->blockRotations(true);
 
     static bool firtCall = true;
@@ -125,12 +125,12 @@ GraphView::GraphView(QWidget *editor) :
     setLiveUpdate(true);
 }
 
-void GraphView::setEditor(AssetEditor *editor) {
+void GraphView::setEditor(LegacyAssetEditor *editor) {
     m_editor = editor;
 }
 
 void GraphView::setWorld(World *scene) {
-    Viewport::setWorld(scene);
+    LegacyViewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
     m_canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
@@ -383,7 +383,7 @@ void GraphView::onGraphLoaded() {
 }
 
 void GraphView::onDraw() {
-    Viewport::onDraw();
+    LegacyViewport::onDraw();
 
     if(m_updateLinks) {
         m_updateLinks = false;
@@ -392,7 +392,7 @@ void GraphView::onDraw() {
 }
 
 void GraphView::resizeEvent(QResizeEvent *event) {
-    Viewport::resizeEvent(event);
+    LegacyViewport::resizeEvent(event);
 
     m_updateLinks = true;
 }

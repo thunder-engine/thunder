@@ -10,7 +10,7 @@
 #include <input.h>
 
 SpriteController::SpriteController(SpriteEdit *editor) :
-        CameraController(),
+        LegacyCameraController(),
         m_settings(nullptr),
         m_spriteTool(new SpriteTool(this)),
         m_editor(editor),
@@ -57,7 +57,7 @@ Vector3 SpriteController::world() const {
 }
 
 void SpriteController::drawHandles() {
-    CameraController::drawHandles();
+    LegacyCameraController::drawHandles();
 
     Vector4 pos(Input::mousePosition());
     Handles::s_Mouse = Vector2(pos.z, pos.w);

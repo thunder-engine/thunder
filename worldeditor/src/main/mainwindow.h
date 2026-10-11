@@ -30,8 +30,8 @@
 class ImportQueue;
 
 class Preview;
-class AssetEditor;
-class EditorGadget;
+class LegacyAssetEditor;
+class LegacyEditorGadget;
 
 class EditorSettingsBrowser;
 class ProjectSettingsBrowser;
@@ -63,7 +63,7 @@ private:
 
     void timerEvent(QTimerEvent *) override;
 
-    AssetEditor *openEditor(const TString &path);
+    LegacyAssetEditor *openEditor(const TString &path);
 
     void resetGeometry();
 

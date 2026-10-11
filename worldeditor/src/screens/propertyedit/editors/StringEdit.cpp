@@ -21,7 +21,7 @@
 #include <QTimer>
 
 StringEdit::StringEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::StringEdit) {
 
     ui->setupUi(this);

@@ -30,7 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="Viewport" name="viewport" native="true"/>
+    <widget class="LegacyViewport" name="viewport" native="true"/>
    </item>
   </layout>
   <action name="actionSave">
@@ -44,9 +44,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Viewport</class>
+   <class>LegacyViewport</class>
    <extends>QWidget</extends>
-   <header>viewport/viewport.h</header>
+   <header>viewport/legacyviewport.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -20,7 +20,7 @@
 
 #include <QLineEdit>
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 #include <editor/assetmanager.h>
 
 #include <components/actor.h>
@@ -49,7 +49,7 @@ protected:
     void dropEvent(QDropEvent *e) override { emit drop(e); }
 };
 
-class ObjectSelect : public PropertyEdit {
+class ObjectSelect : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

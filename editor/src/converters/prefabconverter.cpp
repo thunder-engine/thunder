@@ -24,7 +24,7 @@
 #include <json.h>
 #include <file.h>
 
-#include <editor/pluginmanager.h>
+#include <editor/legacypluginmanager.h>
 #include <editor/projectsettings.h>
 
 #define FORMAT_VERSION 5

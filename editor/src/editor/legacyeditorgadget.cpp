@@ -15,42 +15,42 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "editor/editorgadget.h"
+#include "editor/legacyeditorgadget.h"
 
 /*!
-    \class EditorGadget
+    \class LegacyEditorGadget
     \brief Provides the base interface for dockable editor gadgets.
     \inmodule Editor
 
-    EditorGadget receives editor updates and selection changes and can publish
+    LegacyEditorGadget receives editor updates and selection changes and can publish
     object selection and property change notifications.
 
-    \fn void EditorGadget::setCurrentEditor(AssetEditor *editor)
+    \fn void LegacyEditorGadget::setCurrentEditor(LegacyAssetEditor *editor)
 
     Assigns the current asset editor to the gadget.
 
-    \fn void EditorGadget::updated()
+    \fn void LegacyEditorGadget::updated()
 
     Emitted when the gadget's displayed data has been updated.
 
-    \fn void EditorGadget::objectsSelected(const Object::ObjectList &objects, bool force)
+    \fn void LegacyEditorGadget::objectsSelected(const Object::ObjectList &objects, bool force)
 
     Emitted when the gadget selects \a objects. If \a force is true, the selection
     is applied even when it matches the current selection.
 
-    \fn void EditorGadget::objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+    \fn void LegacyEditorGadget::objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
 
     Emitted when \a property changes it's \a value on the supplied \a objects.
 
-    \fn void EditorGadget::onUpdated()
+    \fn void LegacyEditorGadget::onUpdated()
 
     Handles an update notification from the editor.
 
-    \fn void EditorGadget::onSelectionChanged()
+    \fn void LegacyEditorGadget::onSelectionChanged()
 
     Handles a change to the editor selection.
 
-    \fn void EditorGadget::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+    \fn void LegacyEditorGadget::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
 
     Handles changes of \a value to \a property on the supplied \a objects.
 */
@@ -58,7 +58,7 @@
 /*!
     Constructs an editor gadget with the specified Qt \a parent.
 */
-EditorGadget::EditorGadget(QWidget *parent) :
+LegacyEditorGadget::LegacyEditorGadget(QWidget *parent) :
     QWidget(parent) {
 
 }

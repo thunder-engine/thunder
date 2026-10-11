@@ -23,7 +23,7 @@
 #include "coloredit.h"
 
 ColorEdit::ColorEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         m_brush(QBrush(QPixmap(":/Images/Cell.png").scaled(16, 16))) {
 
     setMaximumHeight(20);
@@ -40,7 +40,7 @@ void ColorEdit::setData(const Variant &data) {
 }
 
 void ColorEdit::setMixedValue(bool mixed) {
-    PropertyEdit::setMixedValue(mixed);
+    LegacyPropertyEdit::setMixedValue(mixed);
     m_mixed = mixed;
     if(mixed) {
         update();

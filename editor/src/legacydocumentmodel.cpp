@@ -15,35 +15,35 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "documentmodel.h"
+#include "legacydocumentmodel.h"
 
 #include <QEvent>
 
 #include <editor/assetmanager.h>
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 #include <editor/assetconverter.h>
 #include <editor/projectsettings.h>
-#include <editor/pluginmanager.h>
+#include <editor/legacypluginmanager.h>
 
 #include <url.h>
 #include <aprocess.h>
 
 /*!
-    \class DocumentModel
+    \class LegacyDocumentModel
     \brief Manages the asset documents opened in the editor.
     \inmodule Editor
 
-    DocumentModel tracks open asset editors and emits notifications when the
+    LegacyDocumentModel tracks open asset editors and emits notifications when the
     document set or selection changes.
 */
 
-DocumentModel::DocumentModel() {
+LegacyDocumentModel::LegacyDocumentModel() {
     for(auto &it : Editor::plugins()->extensions("editor")) {
-        addEditor(reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject(it)));
+        addEditor(reinterpret_cast<LegacyAssetEditor *>(Editor::plugins()->getPluginObject(it)));
     }
 }
 
-DocumentModel::~DocumentModel() {
+LegacyDocumentModel::~LegacyDocumentModel() {
     auto it = m_documents.begin();
     while(it != m_documents.end()) {
         if(!(*it)->isSingleInstance()) {
@@ -59,21 +59,21 @@ DocumentModel::~DocumentModel() {
     m_editors.clear();
 }
 
-void DocumentModel::addEditor(AssetEditor *editor) {
+void LegacyDocumentModel::addEditor(LegacyAssetEditor *editor) {
     for(auto &it : editor->suffixes()) {
         m_editors[it] = editor;
     }
     editor->installEventFilter(this);
-    connect(editor, &AssetEditor::selectionChanged, this, &DocumentModel::selectionChanaged);
-    connect(editor, &AssetEditor::updated, this, &DocumentModel::updated);
+    connect(editor, &LegacyAssetEditor::selectionChanged, this, &LegacyDocumentModel::selectionChanaged);
+    connect(editor, &LegacyAssetEditor::updated, this, &LegacyDocumentModel::updated);
 
-    connect(editor, &AssetEditor::dropAsset, this, &DocumentModel::onLoadAsset);
+    connect(editor, &LegacyAssetEditor::dropAsset, this, &LegacyDocumentModel::onLoadAsset);
 }
 
-AssetEditor *DocumentModel::openFile(const TString &path) {
+LegacyAssetEditor *LegacyDocumentModel::openFile(const TString &path) {
     AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
 
-    AssetEditor *editor = nullptr;
+    LegacyAssetEditor *editor = nullptr;
 
     // Check if document already opened
     for(auto &it : m_documents) {
@@ -92,7 +92,7 @@ AssetEditor *DocumentModel::openFile(const TString &path) {
     if(e != m_editors.end()) {
         editor = e->second;
         if(!editor->isSingleInstance()) {
-            AssetEditor *instance = editor->createInstance();
+            LegacyAssetEditor *instance = editor->createInstance();
             instance->installEventFilter(this);
             editor = instance;
         } else { // Single instance! Need to close previous document
@@ -116,7 +116,7 @@ AssetEditor *DocumentModel::openFile(const TString &path) {
     return editor;
 }
 
-void DocumentModel::closeFile(AssetEditor *editor) {
+void LegacyDocumentModel::closeFile(LegacyAssetEditor *editor) {
     for(auto it = m_documents.begin(); it != m_documents.end();) {
         if(*it == editor) {
             if(!editor->isSingleInstance()) {
@@ -129,17 +129,17 @@ void DocumentModel::closeFile(AssetEditor *editor) {
     }
 }
 
-void DocumentModel::onLoadAsset(QString path) {
+void LegacyDocumentModel::onLoadAsset(QString path) {
     openFile(path.toStdString());
 }
 
-std::list<AssetEditor *> DocumentModel::documents() {
+std::list<LegacyAssetEditor *> LegacyDocumentModel::documents() {
     return m_documents;
 }
 
-bool DocumentModel::eventFilter(QObject *obj, QEvent *event) {
+bool LegacyDocumentModel::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::Close) {
-        AssetEditor *editor = static_cast<AssetEditor *>(obj);
+        LegacyAssetEditor *editor = static_cast<LegacyAssetEditor *>(obj);
         if(!editor->checkSave()) {
             event->ignore();
         } else {

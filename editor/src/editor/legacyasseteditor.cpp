@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "editor/asseteditor.h"
+#include "editor/legacyasseteditor.h"
 
 #include <url.h>
 #include <filedialog.h>
@@ -27,27 +27,27 @@
 #include "editor/undostack.h"
 
 /*!
-    \class AssetEditor
+    \class LegacyAssetEditor
     \brief Provides the base interface for editors of engine assets.
     \inmodule Editor
 
-    AssetEditor manages asset loading, saving, selection, editing actions, and
+    LegacyAssetEditor manages asset loading, saving, selection, editing actions, and
     undo and redo operations for a particular asset type.
 */
 
-AssetEditor::AssetEditor() :
+LegacyAssetEditor::LegacyAssetEditor() :
         m_undoRedo(new UndoStack) {
 
 }
 
-AssetEditor::~AssetEditor() {
+LegacyAssetEditor::~LegacyAssetEditor() {
 
 }
 
 /*!
     Opens a new asset in the editor and clears the current edit history.
 */
-void AssetEditor::onNewAsset() {
+void LegacyAssetEditor::onNewAsset() {
     m_settings.clear();
     m_undoRedo->clear();
 }
@@ -55,7 +55,7 @@ void AssetEditor::onNewAsset() {
 /*!
     Opens a file dialog and loads an asset selected by the user.
 */
-void AssetEditor::onOpenAsset() {
+void LegacyAssetEditor::onOpenAsset() {
     FileDialog dialog;
 
     dialog.setMode(FileDialog::OpenFile);
@@ -80,7 +80,7 @@ void AssetEditor::onOpenAsset() {
 /*!
     Loads the asset described by \a settings.
 */
-void AssetEditor::loadAsset(AssetConverterSettings *settings) {
+void LegacyAssetEditor::loadAsset(AssetConverterSettings *settings) {
     m_settings = { settings };
     m_undoRedo->clear();
 }
@@ -88,7 +88,7 @@ void AssetEditor::loadAsset(AssetConverterSettings *settings) {
 /*!
     Loads editor state from \a data for an asset with the given \a suffix.
 */
-void AssetEditor::loadData(const Variant &data, const TString &suffix) {
+void LegacyAssetEditor::loadData(const Variant &data, const TString &suffix) {
     Q_UNUSED(data)
     Q_UNUSED(suffix)
 }
@@ -96,25 +96,25 @@ void AssetEditor::loadData(const Variant &data, const TString &suffix) {
 /*!
     Returns true if the editor can save an asset under a new name.
 */
-bool AssetEditor::allowSaveAs() const {
+bool LegacyAssetEditor::allowSaveAs() const {
     return true;
 }
 
 /*!
     Stores a temporary backup of the current editor state.
 */
-void AssetEditor::backup() {
+void LegacyAssetEditor::backup() {
 
 }
 
 /*!
     Restores the editor state from the most recent backup.
 */
-void AssetEditor::restore() {
+void LegacyAssetEditor::restore() {
 
 }
 
-void AssetEditor::saveAsset(const TString &path) {
+void LegacyAssetEditor::saveAsset(const TString &path) {
     Q_UNUSED(path)
 
     cleanModified();
@@ -123,95 +123,95 @@ void AssetEditor::saveAsset(const TString &path) {
 /*!
     Returns true when this editor accepts only one instance of its asset type.
 */
-bool AssetEditor::isSingleInstance() const {
+bool LegacyAssetEditor::isSingleInstance() const {
     return true;
 }
 
 /*!
     Returns whether the copy action is available for the current selection.
 */
-bool AssetEditor::isCopyActionAvailable() const {
+bool LegacyAssetEditor::isCopyActionAvailable() const {
     return false;
 }
 
 /*!
     Returns whether the paste action is available for the current selection.
 */
-bool AssetEditor::isPasteActionAvailable() const {
+bool LegacyAssetEditor::isPasteActionAvailable() const {
     return false;
 }
 
 /*!
     Creates another instance of this asset editor.
 */
-AssetEditor *AssetEditor::createInstance() {
+LegacyAssetEditor *LegacyAssetEditor::createInstance() {
     return nullptr;
 }
 
 /*!
     Returns the asset suffixes supported by this editor.
 */
-StringList AssetEditor::suffixes() const {
+StringList LegacyAssetEditor::suffixes() const {
     return StringList();
 }
 
 /*!
     Returns the asset type handled by this editor.
 
-    \fn TString AssetEditor::assetType() const
+    \fn TString LegacyAssetEditor::assetType() const
 */
 
 /*!
     Returns the documents currently opened by this editor.
 */
-std::list<AssetConverterSettings *> &AssetEditor::openedDocuments() {
+std::list<AssetConverterSettings *> &LegacyAssetEditor::openedDocuments() {
     return m_settings;
 }
 
 /*!
     Returns the component groups supported by this editor.
 */
-StringList AssetEditor::componentGroups() const {
+StringList LegacyAssetEditor::componentGroups() const {
     return StringList();
 }
 
-void AssetEditor::cleanModified() const {
+void LegacyAssetEditor::cleanModified() const {
     m_undoRedo->setClean();
 }
 
-bool AssetEditor::isModified() const {
+bool LegacyAssetEditor::isModified() const {
     return !m_undoRedo->isClean();
 }
 
 /*!
     Activates the editor and updates its active state.
 */
-void AssetEditor::onActivated() {
+void LegacyAssetEditor::onActivated() {
 
 }
 
 /*!
     Handles the cut action for the current selection.
 */
-void AssetEditor::onCutAction() {
+void LegacyAssetEditor::onCutAction() {
 
 }
 
 /*!
     Handles the copy action for the current selection.
 */
-void AssetEditor::onCopyAction() {
+void LegacyAssetEditor::onCopyAction() {
 
 }
 
 /*!
     Handles the paste action for the current selection.
 */
-void AssetEditor::onPasteAction() {
+void LegacyAssetEditor::onPasteAction() {
 
 }
 
-int AssetEditor::closeAssetDialog() {
+int LegacyAssetEditor::closeAssetDialog() {
     Message msgBox;
     msgBox.setIcon(Message::Question);
     msgBox.setText(tr("The asset has been modified.").toStdString());
@@ -225,7 +225,7 @@ int AssetEditor::closeAssetDialog() {
 /*!
     Returns true if it is safe to close the editor, prompting to save changes.
 */
-bool AssetEditor::checkSave() {
+bool LegacyAssetEditor::checkSave() {
     if(isModified()) {
         int result = closeAssetDialog();
         if(result == Message::Cancel) {
@@ -242,7 +242,7 @@ bool AssetEditor::checkSave() {
 /*!
     Saves the current asset.
 */
-void AssetEditor::onSave() {
+void LegacyAssetEditor::onSave() {
     if(!m_settings.empty()) {
         if(!m_settings.front()->source().isEmpty()) {
             saveAsset(m_settings.front()->source());
@@ -255,7 +255,7 @@ void AssetEditor::onSave() {
 /*!
     Saves the current asset under a new path selected by the user.
 */
-void AssetEditor::onSaveAs() {
+void LegacyAssetEditor::onSaveAs() {
     if(m_settings.empty()) {
         return;
     }
@@ -278,7 +278,7 @@ void AssetEditor::onSaveAs() {
         TString path(dialog.getSelectedFile());
         Url info(path);
         if(info.suffix().isEmpty()) {
-            path += TString(".") + AssetEditor::suffixes().front();
+            path += TString(".") + LegacyAssetEditor::suffixes().front();
         }
         saveAsset(path);
     }
@@ -287,14 +287,14 @@ void AssetEditor::onSaveAs() {
 /*!
     Handles creation of an object of the specified type.
 */
-void AssetEditor::onObjectCreate(const TString &type) {
+void LegacyAssetEditor::onObjectCreate(const TString &type) {
     A_UNUSED(type);
 }
 
 /*!
     Updates the editor selection with the supplied objects.
 */
-void AssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
+void LegacyAssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
     A_UNUSED(objects);
     A_UNUSED(force);
 }
@@ -302,55 +302,55 @@ void AssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
 /*!
     Removes the currently selected objects from the editor.
 */
-void AssetEditor::onSelectionDeleted() {
+void LegacyAssetEditor::onSelectionDeleted() {
 
 }
 
 /*!
     Refreshes the editor after an external update.
 */
-void AssetEditor::onUpdated() {
+void LegacyAssetEditor::onUpdated() {
 
 }
 
 /*!
     Handles an asset dropped onto the editor.
 */
-void AssetEditor::onDrop(QDropEvent *event) {
+void LegacyAssetEditor::onDrop(QDropEvent *event) {
     A_UNUSED(event);
 }
 
 /*!
     Handles entry of a drag operation over the editor.
 */
-void AssetEditor::onDragEnter(QDragEnterEvent *event) {
+void LegacyAssetEditor::onDragEnter(QDragEnterEvent *event) {
     A_UNUSED(event);
 }
 
 /*!
     Handles movement of a drag operation over the editor.
 */
-void AssetEditor::onDragMove(QDragMoveEvent *event) {
+void LegacyAssetEditor::onDragMove(QDragMoveEvent *event) {
     A_UNUSED(event);
 }
 
 /*!
     Handles leaving a drag operation from the editor.
 */
-void AssetEditor::onDragLeave(QDragLeaveEvent *event) {
+void LegacyAssetEditor::onDragLeave(QDragLeaveEvent *event) {
     A_UNUSED(event);
 }
 
 /*!
     Notifies the editor that properties changed on the supplied objects.
 */
-void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
+void LegacyAssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     A_UNUSED(objects);
     A_UNUSED(property);
     A_UNUSED(value);
 }
 
-QMenu *AssetEditor::hierarchyContextMenu(Object *object) {
+QMenu *LegacyAssetEditor::hierarchyContextMenu(Object *object) {
     A_UNUSED(object);
 
     return nullptr;
@@ -359,7 +359,7 @@ QMenu *AssetEditor::hierarchyContextMenu(Object *object) {
 /*!
     Changes the parent of the supplied objects.
 */
-void AssetEditor::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
+void LegacyAssetEditor::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     A_UNUSED(objects);
     A_UNUSED(parent);
     A_UNUSED(position);
@@ -368,14 +368,14 @@ void AssetEditor::changeParent(const Object::ObjectList &objects, Object *parent
 /*!
     Returns the widget used to edit the selected object's properties.
 */
-QWidget *AssetEditor::propertiesWidget() {
+QWidget *LegacyAssetEditor::propertiesWidget() {
     return nullptr;
 }
 
 /*!
     Returns additional property action widgets for the selected object.
 */
-std::list<QWidget *> AssetEditor::propertiesActionWidgets(Object *object, QWidget *parent) const {
+std::list<QWidget *> LegacyAssetEditor::propertiesActionWidgets(Object *object, QWidget *parent) const {
     A_UNUSED(object);
     A_UNUSED(parent);
 
@@ -385,7 +385,7 @@ std::list<QWidget *> AssetEditor::propertiesActionWidgets(Object *object, QWidge
 /*!
     Returns a context menu for an object property.
 */
-QMenu *AssetEditor::propertyContextMenu(Object *object, const TString &property) {
+QMenu *LegacyAssetEditor::propertyContextMenu(Object *object, const TString &property) {
     A_UNUSED(object);
     A_UNUSED(property);
 
@@ -395,27 +395,27 @@ QMenu *AssetEditor::propertyContextMenu(Object *object, const TString &property)
 /*!
     Returns the undo and redo stack used by this editor.
 */
-UndoStack *AssetEditor::undoRedo() const {
+UndoStack *LegacyAssetEditor::undoRedo() const {
     return m_undoRedo;
 }
 
 /*!
     Returns the current editor state for serialization.
 */
-VariantMap AssetEditor::saveState() {
+VariantMap LegacyAssetEditor::saveState() {
     return VariantMap();
 }
 
 /*!
     Restores the editor state from serialized data.
 */
-void AssetEditor::restoreState(const VariantMap &data) {
+void LegacyAssetEditor::restoreState(const VariantMap &data) {
     A_UNUSED(data);
 }
 
 /*!
     Returns the objects currently selected in the editor.
 */
-Object::ObjectList AssetEditor::selected() const {
+Object::ObjectList LegacyAssetEditor::selected() const {
     return Object::ObjectList();
 }

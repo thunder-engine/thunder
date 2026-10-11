@@ -18,7 +18,7 @@
 #ifndef PROPERTYEDITOR_H
 #define PROPERTYEDITOR_H
 
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 
 class QAbstractItemModel;
 class PropertyFilter;
@@ -31,7 +31,7 @@ namespace Ui {
     class PropertyEditor;
 }
 
-class PropertyEditor : public EditorGadget {
+class PropertyEditor : public LegacyEditorGadget {
     Q_OBJECT
 
 public:
@@ -47,8 +47,8 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    AssetEditor *currentEditor() const;
-    void setCurrentEditor(AssetEditor *editor) override;
+    LegacyAssetEditor *currentEditor() const;
+    void setCurrentEditor(LegacyAssetEditor *editor) override;
 
 public slots:
     void onObjectSelected(Object *object);
@@ -75,7 +75,7 @@ private:
 
     PropertyFilter *m_filter;
 
-    AssetEditor *m_editor;
+    LegacyAssetEditor *m_editor;
 
     QWidget *m_topWidget;
 

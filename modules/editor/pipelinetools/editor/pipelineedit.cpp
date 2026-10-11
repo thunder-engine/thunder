@@ -19,7 +19,7 @@
 
 #include <resources/mesh.h>
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
 
 #include <global.h>
@@ -56,7 +56,7 @@ PipelineEdit::PipelineEdit() :
         ui(new Ui::PipelineEdit),
         m_graph(new PipelineTaskGraph),
         m_builder(new PipelineConverter()),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_proxy(new PipelineProxy()) {
 
     ui->setupUi(this);
@@ -136,7 +136,7 @@ bool PipelineEdit::isPasteActionAvailable() const {
 
 void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         m_graph->load(m_settings.front()->source());
     }

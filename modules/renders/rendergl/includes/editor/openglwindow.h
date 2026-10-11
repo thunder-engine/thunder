@@ -20,13 +20,13 @@
 
 #include <QOpenGLWindow>
 
-#include <viewport/viewport.h>
+#include <viewport/legacyviewport.h>
 
 class OpenGLWindow : public QOpenGLWindow {
     Q_OBJECT
 
 public:
-    OpenGLWindow(Viewport *viewport) :
+    OpenGLWindow(LegacyViewport *viewport) :
             m_viewport(viewport) {
         connect(this, SIGNAL(frameSwapped()), this, SLOT(update()));
     }
@@ -39,7 +39,7 @@ protected:
     }
 
 private:
-    Viewport *m_viewport;
+    LegacyViewport *m_viewport;
 
 };
 

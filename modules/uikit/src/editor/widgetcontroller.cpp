@@ -32,7 +32,7 @@
 #include "actions/deletewiget.h"
 
 WidgetController::WidgetController(UiEdit *editor) :
-        CameraController(),
+        LegacyCameraController(),
         m_rootObject(nullptr),
         m_widgetTool(new WidgetTool(this)),
         m_editor(editor),
@@ -72,7 +72,7 @@ void WidgetController::select(Object &object) {
 
 void WidgetController::resize(int32_t width, int32_t height) {
     if(m_screenSize != Vector2(width, height)) {
-        CameraController::resize(width, height);
+        LegacyCameraController::resize(width, height);
 
         cameraZoom(0.0f);
     }
@@ -142,7 +142,7 @@ Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {
 void WidgetController::update() {
     Vector4 mouse = Input::mousePosition();
 
-    CameraController::update();
+    LegacyCameraController::update();
 
     Widget *focusWidget = widgetHoverHelper(m_rootObject, Vector2(mouse.x, mouse.y));
 

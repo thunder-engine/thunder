@@ -2,14 +2,14 @@
 #define PARTICLEEDIT_H
 
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 class Actor;
 class EffectRender;
 
 class EffectBuilder;
 
-class CameraController;
+class LegacyCameraController;
 
 class UndoCommand;
 
@@ -21,7 +21,7 @@ namespace Ui {
     class ParticleEdit;
 }
 
-class ParticleEdit : public AssetEditor {
+class ParticleEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
@@ -70,7 +70,7 @@ private:
 
     EffectBuilder *m_builder;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     Actor *m_light;
 

@@ -18,7 +18,7 @@
 #ifndef NAVIGATIONPANEL_H
 #define NAVIGATIONPANEL_H
 
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <navigationsystem.h>
 
@@ -26,7 +26,7 @@ namespace Ui {
     class NavigationPanel;
 }
 
-class NavigationPanel : public EditorGadget {
+class NavigationPanel : public LegacyEditorGadget {
     Q_OBJECT
 
 public:

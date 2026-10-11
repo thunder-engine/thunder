@@ -32,7 +32,7 @@
 #include <filedialog.h>
 #include <message.h>
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 // Misc
 #include "managers/assetimporter/importqueue.h"
@@ -41,9 +41,9 @@
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 #include <editor/undostack.h>
-#include <editor/pluginmanager.h>
+#include <editor/legacypluginmanager.h>
 #include <editor/editorsettings.h>
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 #include <editor/nativecodebuilder.h>
 
 // System
@@ -138,8 +138,8 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-AssetEditor *MainWindow::openEditor(const TString &path) {
-    AssetEditor *editor = Editor::openFile(path);
+LegacyAssetEditor *MainWindow::openEditor(const TString &path) {
+    LegacyAssetEditor *editor = Editor::openFile(path);
     if(editor) {
         if(ui->toolWidget->areaFor(editor) == nullptr) {
             ui->toolWidget->removeToolWindow(editor);
@@ -198,7 +198,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::currentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onNewAsset();
@@ -206,7 +206,7 @@ void MainWindow::on_actionNew_triggered() {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::currentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onOpenAsset();
@@ -223,7 +223,7 @@ void MainWindow::on_actionSave_triggered() {
 
 void MainWindow::on_actionSave_As_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::currentEditor();
         if(editor && editor->allowSaveAs()) {
             editor->onSaveAs();
         }
@@ -232,7 +232,7 @@ void MainWindow::on_actionSave_As_triggered() {
 
 void MainWindow::on_actionUndo_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::currentEditor();
         if(editor) {
             editor->undoRedo()->undo();
         }
@@ -241,7 +241,7 @@ void MainWindow::on_actionUndo_triggered() {
 
 void MainWindow::on_actionRedo_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::currentEditor();
         if(editor) {
             editor->undoRedo()->redo();
         }
@@ -382,10 +382,10 @@ void MainWindow::onImportFinished() {
             for(auto &it : editors) {
                 VariantList params = it.toList();
                 if(params.size() == 2) {
-                    AssetEditor *editor = nullptr;
+                    LegacyAssetEditor *editor = nullptr;
                     // Documents
                     for(auto &document : params.front().toList()) {
-                        AssetEditor *e = openEditor(document.toList().front().toString());
+                        LegacyAssetEditor *e = openEditor(document.toList().front().toString());
                         if(e) {
                             editor = e;
                         }
@@ -407,7 +407,7 @@ void MainWindow::onImportFinished() {
         if(mapSettings) {
             openEditor(firstMap);
         } else {
-            static_cast<AssetEditor *>(composer)->onNewAsset();
+            static_cast<LegacyAssetEditor *>(composer)->onNewAsset();
         }
     }
 
@@ -531,19 +531,19 @@ void MainWindow::onBuildProject() {
 }
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
-    AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow);
+    LegacyAssetEditor *editor = dynamic_cast<LegacyAssetEditor *>(toolWindow);
     if(editor == Editor::currentEditor()) {
         return;
     }
 
     if(editor) {
-        AssetEditor *currentEditor = Editor::currentEditor();
+        LegacyAssetEditor *currentEditor = Editor::currentEditor();
         if(currentEditor) {
-            disconnect(ui->actionCut, &QAction::triggered, currentEditor, &AssetEditor::onCutAction);
-            disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &AssetEditor::onCopyAction);
-            disconnect(ui->actionPaste, &QAction::triggered, currentEditor, &AssetEditor::onPasteAction);
+            disconnect(ui->actionCut, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCutAction);
+            disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCopyAction);
+            disconnect(ui->actionPaste, &QAction::triggered, currentEditor, &LegacyAssetEditor::onPasteAction);
 
-            disconnect(currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+            disconnect(currentEditor, &LegacyAssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
 
         Editor::setCurrentEditor(editor);
@@ -554,11 +554,11 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
             ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
             ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
 
-            connect(ui->actionCut, &QAction::triggered, editor, &AssetEditor::onCutAction);
-            connect(ui->actionCopy, &QAction::triggered, editor, &AssetEditor::onCopyAction);
-            connect(ui->actionPaste, &QAction::triggered, editor, &AssetEditor::onPasteAction);
+            connect(ui->actionCut, &QAction::triggered, editor, &LegacyAssetEditor::onCutAction);
+            connect(ui->actionCopy, &QAction::triggered, editor, &LegacyAssetEditor::onCopyAction);
+            connect(ui->actionPaste, &QAction::triggered, editor, &LegacyAssetEditor::onPasteAction);
 
-            connect(editor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+            connect(editor, &LegacyAssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
     } else {
         Preview *preview = dynamic_cast<Preview *>(toolWindow);
@@ -569,7 +569,7 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 }
 
 void MainWindow::onCopyPasteChanged() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::currentEditor();
     ui->actionCut->setEnabled(editor->isCopyActionAvailable());
     ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
     ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
@@ -578,7 +578,7 @@ void MainWindow::onCopyPasteChanged() {
 void MainWindow::on_menuFile_aboutToShow() {
     TString name;
     TString type;
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::currentEditor();
     if(editor) {
         type = TString(" %1").arg(editor->assetType());
         if(!editor->openedDocuments().empty()) {

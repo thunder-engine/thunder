@@ -17,7 +17,7 @@
 
 #include <resources/mesh.h>
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
 
 #include <global.h>
@@ -76,7 +76,7 @@ MaterialEdit::MaterialEdit() :
         m_material(nullptr),
         m_graph(new ShaderGraph),
         m_builder(new ShaderBuilder),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_proxy(new MaterialProxy) {
 
     ui->setupUi(this);
@@ -195,7 +195,7 @@ void MaterialEdit::onObjectsChanged(const Object::ObjectList &objects, const TSt
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         m_graph->load(m_settings.front()->source());
 

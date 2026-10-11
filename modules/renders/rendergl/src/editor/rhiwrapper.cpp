@@ -22,7 +22,7 @@
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
 
-QWindow *createWindow(Viewport *viewport) {
+QWindow *createWindow(LegacyViewport *viewport) {
     return new OpenGLWindow(viewport);
 }
 

@@ -42,7 +42,7 @@ public:
     void createMetalWindow();
 
 #ifdef SHARED_DEFINE
-    QWindow *createRhiWindow(Viewport *viewport) override;
+    QWindow *createRhiWindow(LegacyViewport *viewport) override;
 #endif
 
 private:

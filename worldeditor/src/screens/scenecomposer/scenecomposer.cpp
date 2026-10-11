@@ -46,7 +46,7 @@
 
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
-#include <editor/pluginmanager.h>
+#include <editor/legacypluginmanager.h>
 #include <editor/projectsettings.h>
 
 #include "actions/createobject.h"
@@ -149,11 +149,11 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
 
-    connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
-    connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
-    connect(ui->viewport, &Viewport::dragMove, this, &SceneComposer::onDragMove);
-    connect(ui->viewport, &Viewport::dragLeave, this, &SceneComposer::onDragLeave);
-    connect(ui->viewport, &Viewport::screenshot, this, &SceneComposer::onScreenshot);
+    connect(ui->viewport, &LegacyViewport::drop, this, &SceneComposer::onDrop);
+    connect(ui->viewport, &LegacyViewport::dragEnter, this, &SceneComposer::onDragEnter);
+    connect(ui->viewport, &LegacyViewport::dragMove, this, &SceneComposer::onDragMove);
+    connect(ui->viewport, &LegacyViewport::dragLeave, this, &SceneComposer::onDragLeave);
+    connect(ui->viewport, &LegacyViewport::screenshot, this, &SceneComposer::onScreenshot);
 
     ui->viewport->setController(m_controller);
     ui->viewport->setWorld(Engine::world());
@@ -234,7 +234,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->camera2DButton, &QPushButton::toggled, this, &SceneComposer::onCamera2D);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
-    connect(Editor::plugins(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
+    connect(Editor::plugins(), &LegacyPluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 
@@ -601,7 +601,7 @@ void SceneComposer::onDiscardChanges() {
 }
 
 void SceneComposer::onNewAsset() {
-    AssetEditor::onNewAsset();
+    LegacyAssetEditor::onNewAsset();
 
     quitFromIsolation();
 
@@ -647,10 +647,10 @@ void SceneComposer::onLocal(bool flag) {
 
 void SceneComposer::onCamera2D(bool flag) {
     if(flag) {
-        m_controller->setGridAxis(CameraController::Axis::Z);
+        m_controller->setGridAxis(LegacyCameraController::Axis::Z);
         m_controller->activateCamera(1);
     } else {
-        m_controller->setGridAxis(CameraController::Axis::Y);
+        m_controller->setGridAxis(LegacyCameraController::Axis::Y);
         m_controller->activateCamera(0);
     }
 

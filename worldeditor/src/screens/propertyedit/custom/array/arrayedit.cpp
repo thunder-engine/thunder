@@ -24,7 +24,7 @@
 #include "../../property.h"
 
 ArrayEdit::ArrayEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::ArrayEdit),
         m_height(0),
         m_metaType(0),
@@ -88,7 +88,7 @@ void ArrayEdit::setData(const Variant &data) {
 }
 
 void ArrayEdit::setObject(Object *object, const TString &name) {
-    PropertyEdit::setObject(object, name);
+    LegacyPropertyEdit::setObject(object, name);
 
     m_propertyName = name;
 

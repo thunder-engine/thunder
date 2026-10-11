@@ -132,7 +132,7 @@ void RenderMtSystem::setCurrentView(MTK::View *view) {
 #include <QWindow>
 #include <QVariant>
 
-QWindow *RenderMtSystem::createRhiWindow(Viewport *viewport) {
+QWindow *RenderMtSystem::createRhiWindow(LegacyViewport *viewport) {
     CGRect frame = { {0.0, 0.0}, {100.0, 100.0} };
 
     MTL::Device *device = WrapperMt::device();

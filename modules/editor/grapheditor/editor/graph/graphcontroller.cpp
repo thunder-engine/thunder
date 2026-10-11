@@ -335,7 +335,7 @@ void GraphController::update() {
         m_view->showMenu();
     }
 
-    CameraController::update();
+    LegacyCameraController::update();
 
     Vector4 mousePosition(Input::mousePosition());
 
@@ -490,7 +490,7 @@ int GraphController::hoveredLink(const Vector2 &pos) {
 }
 
 void GraphController::cameraMove(const Vector3 &delta) {
-    CameraController::cameraMove(delta);
+    LegacyCameraController::cameraMove(delta);
 
     Transform *t = m_view->view().transform();
     t->setPosition(t->position() + Vector3(m_mouseDelta, 0.0f));
@@ -515,7 +515,7 @@ void GraphController::cameraZoom(float delta) {
 }
 
 void GraphController::resize(int32_t width, int32_t height) {
-    CameraController::resize(width, height);
+    LegacyCameraController::resize(width, height);
 
     float scale = 1.1f - ((float)m_zoom / 10.0f);
 

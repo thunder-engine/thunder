@@ -22,7 +22,7 @@
 
 #include <engine.h>
 
-class PropertyEdit;
+class LegacyPropertyEdit;
 
 class Property : public QObject {
     Q_OBJECT
@@ -39,7 +39,7 @@ public:
     void setEditorHints(const TString &hints);
 
     QWidget *getEditor(QWidget *parent) const;
-    PropertyEdit *editor() const;
+    LegacyPropertyEdit *editor() const;
 
     bool isRoot() const;
     bool isReadOnly() const;
@@ -70,7 +70,7 @@ protected slots:
     void onEditorDestoyed();
 
 protected:
-    PropertyEdit *createEditor(QWidget *parent) const;
+    LegacyPropertyEdit *createEditor(QWidget *parent) const;
 
 protected:
     Object *m_nextObject;
@@ -81,7 +81,7 @@ protected:
 
     mutable TString m_typeNameTrimmed;
 
-    mutable PropertyEdit *m_editor;
+    mutable LegacyPropertyEdit *m_editor;
 
     bool m_root;
     bool m_checkable;

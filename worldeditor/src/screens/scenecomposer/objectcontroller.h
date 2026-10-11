@@ -22,7 +22,7 @@
 
 #include <object.h>
 #include <editor/undostack.h>
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "tools/selecttool.h"
 
@@ -35,16 +35,16 @@ class Prefab;
 
 class ViewportRaycast;
 
-class Viewport;
+class LegacyViewport;
 
-class ObjectController : public CameraController {
+class ObjectController : public LegacyCameraController {
     Q_OBJECT
 
 public:
     ObjectController(SceneComposer *editor);
     ~ObjectController();
 
-    void init(Viewport *viewport) override;
+    void init(LegacyViewport *viewport) override;
 
     void clear(bool signal = true);
 

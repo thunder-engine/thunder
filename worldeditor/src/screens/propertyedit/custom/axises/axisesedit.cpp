@@ -19,7 +19,7 @@
 #include "ui_axisesedit.h"
 
 AxisesEdit::AxisesEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::AxisesEdit) {
     ui->setupUi(this);
 

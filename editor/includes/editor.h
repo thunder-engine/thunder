@@ -33,12 +33,12 @@
 class ProjectSettings;
 class EditorSettings;
 class AssetManager;
-class PluginManager;
+class LegacyPluginManager;
 
-class AssetEditor;
-class EditorGadget;
+class LegacyAssetEditor;
+class LegacyEditorGadget;
 
-class DocumentModel;
+class LegacyDocumentModel;
 
 class EDITOR_EXPORT Editor : public Object {
 public:
@@ -50,40 +50,40 @@ public:
     static void backup();
     static void restore();
 
-    static void addEditor(AssetEditor *editor);
-    static void closeEditor(AssetEditor *editor);
+    static void addEditor(LegacyAssetEditor *editor);
+    static void closeEditor(LegacyAssetEditor *editor);
 
-    static AssetEditor *openFile(const TString &path);
+    static LegacyAssetEditor *openFile(const TString &path);
 
-    static AssetEditor *currentEditor();
-    static void setCurrentEditor(AssetEditor *editor);
+    static LegacyAssetEditor *currentEditor();
+    static void setCurrentEditor(LegacyAssetEditor *editor);
 
-    static std::list<AssetEditor *> documents();
+    static std::list<LegacyAssetEditor *> documents();
 
-    static void addGadget(EditorGadget *gadget);
-    static std::list<EditorGadget *> gadgets();
+    static void addGadget(LegacyEditorGadget *gadget);
+    static std::list<LegacyEditorGadget *> gadgets();
 
     static EditorSettings *settings();
     static ProjectSettings *project();
     static AssetManager *assets();
-    static PluginManager *plugins();
+    static LegacyPluginManager *plugins();
 
     static TString applicationDirPath();
 
 protected:
     static TString m_binPath;
 
-    static std::list<EditorGadget *> s_gadgets;
+    static std::list<LegacyEditorGadget *> s_gadgets;
 
-    static AssetEditor *s_currentEditor;
+    static LegacyAssetEditor *s_currentEditor;
 
     static EditorSettings *s_editorSettings;
     static ProjectSettings *s_projectSettings;
 
     static AssetManager *s_assetManager;
-    static PluginManager *s_pluginManager;
+    static LegacyPluginManager *s_pluginManager;
 
-    static DocumentModel *s_documentModel;
+    static LegacyDocumentModel *s_documentModel;
 
 };
 

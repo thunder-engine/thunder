@@ -132,7 +132,7 @@ int32_t RenderVkSystem::swapChainImageCount() {
 }
 
 #if defined(SHARED_DEFINE)
-QWindow *RenderVkSystem::createRhiWindow(Viewport *viewport) {
+QWindow *RenderVkSystem::createRhiWindow(LegacyViewport *viewport) {
     ThunderVulkanWindow *window = new ThunderVulkanWindow(viewport, this);
 
     if(!s_QInstance.isValid()) {

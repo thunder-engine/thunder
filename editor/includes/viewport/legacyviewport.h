@@ -15,14 +15,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef VIEWPORT_H
-#define VIEWPORT_H
+#ifndef LEGACYVIEWPORT_H
+#define LEGACYVIEWPORT_H
 
 #include <QWidget>
 
 #include <editor.h>
 
-class CameraController;
+class LegacyCameraController;
 
 class PipelineContext;
 class PipelineTask;
@@ -38,16 +38,16 @@ class DebugRender;
 
 class QMenu;
 
-class EDITOR_EXPORT Viewport : public QWidget {
+class EDITOR_EXPORT LegacyViewport : public QWidget {
     Q_OBJECT
 public:
-    Viewport(QWidget *parent = 0);
+    LegacyViewport(QWidget *parent = 0);
 
     void init();
     virtual void onDraw();
 
-    CameraController *controller();
-    void setController(CameraController *ctrl);
+    LegacyCameraController *controller();
+    void setController(LegacyCameraController *ctrl);
     virtual void setWorld(World *world);
 
     void setCamera(Camera *camera);
@@ -114,7 +114,7 @@ protected slots:
 protected:
     QPoint m_savedMousePos;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     World *m_world;
     Camera *m_camera;
@@ -140,4 +140,4 @@ protected:
 
 };
 
-#endif // VIEWPORT_H
+#endif // LEGACYVIEWPORT_H

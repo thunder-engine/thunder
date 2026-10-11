@@ -105,7 +105,7 @@ public:
 };
 
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::HierarchyBrowser),
         m_currentEditor(nullptr),
         m_components(new ComponentBrowser(this)),
@@ -163,9 +163,9 @@ HierarchyBrowser::~HierarchyBrowser() {
     delete ui;
 }
 
-void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
+void HierarchyBrowser::setCurrentEditor(LegacyAssetEditor *editor) {
     if(m_currentEditor) {
-        disconnect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged);
+        disconnect(m_currentEditor, &LegacyAssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged);
     }
 
     m_currentEditor = editor;
@@ -175,7 +175,7 @@ void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
 
     onObjectsHierarchyChanged(nullptr);
 
-    connect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
+    connect(m_currentEditor, &LegacyAssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
 }
 
 void HierarchyBrowser::onObjectsHierarchyChanged(Object *object) {

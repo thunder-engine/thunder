@@ -6,8 +6,8 @@
 
 #include <object.h>
 
-#include <editor/editorgadget.h>
-#include <editor/asseteditor.h>
+#include <editor/legacyeditorgadget.h>
+#include <editor/legacyasseteditor.h>
 
 #include <animationcurve.h>
 
@@ -22,14 +22,14 @@ namespace Ui {
     class TimelineEdit;
 }
 
-class TimelineEdit : public EditorGadget {
+class TimelineEdit : public LegacyEditorGadget {
     Q_OBJECT
 
 public:
     explicit TimelineEdit(QWidget *parent = nullptr);
     ~TimelineEdit();
 
-    void setCurrentEditor(AssetEditor *editor) override {
+    void setCurrentEditor(LegacyAssetEditor *editor) override {
         m_editor = editor;
     }
 
@@ -104,7 +104,7 @@ private:
 
     TimelineController *m_model = nullptr;
 
-    AssetEditor *m_editor = nullptr;
+    LegacyAssetEditor *m_editor = nullptr;
 
     int32_t m_timerId = 0;
 

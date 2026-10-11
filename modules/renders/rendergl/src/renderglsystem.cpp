@@ -141,7 +141,7 @@ void RenderGLSystem::update(World *world) {
 #if defined(SHARED_DEFINE)
 #include "editor/rhiwrapper.h"
 
-QWindow *RenderGLSystem::createRhiWindow(Viewport *viewport) {
+QWindow *RenderGLSystem::createRhiWindow(LegacyViewport *viewport) {
     return createWindow(viewport);
 }
 #endif

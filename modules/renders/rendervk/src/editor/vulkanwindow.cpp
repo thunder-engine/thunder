@@ -17,14 +17,14 @@
 */
 #include "editor/vulkanwindow.h"
 
-#include <viewport/viewport.h>
+#include <viewport/legacyviewport.h>
 
 #include <vulkan/vulkan.h>
 
 #include <QVulkanInstance>
 #include <QPlatformSurfaceEvent>
 
-ThunderVulkanWindow::ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *system) :
+ThunderVulkanWindow::ThunderVulkanWindow(LegacyViewport *viewport, RenderVkSystem *system) :
         m_viewport(viewport),
         m_system(system),
         m_status(StatusUninitialized) {

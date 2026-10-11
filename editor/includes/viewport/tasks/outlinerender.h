@@ -28,7 +28,7 @@
 
 #include "editor/editorsettings.h"
 
-#include "../cameracontroller.h"
+#include "../legacycameracontroller.h"
 
 namespace {
     const char *gOutlineWidth("Viewport/Outline/Width");
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    void setController(CameraController *controller) {
+    void setController(LegacyCameraController *controller) {
         m_controller = controller;
     }
 
@@ -152,7 +152,7 @@ protected:
 
     MaterialInstance *m_combineMaterial;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     float m_width;
 

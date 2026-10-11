@@ -15,22 +15,22 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef PROPERTYEDIT_H
-#define PROPERTYEDIT_H
+#ifndef LEGACYPROPERTYEDIT_H
+#define LEGACYPROPERTYEDIT_H
 
 #include <QWidget>
 
 #include <editor.h>
 
-class EDITOR_EXPORT PropertyEdit : public QWidget {
+class EDITOR_EXPORT LegacyPropertyEdit : public QWidget {
     Q_OBJECT
 
 public:
-    typedef PropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const TString &editor);
+    typedef LegacyPropertyEdit*(*UserTypeCallback)(int userType, QWidget *parent, const TString &editor);
 
 public:
-    explicit PropertyEdit(QWidget *parent = nullptr);
-    ~PropertyEdit();
+    explicit LegacyPropertyEdit(QWidget *parent = nullptr);
+    ~LegacyPropertyEdit();
 
     virtual Variant data() const;
     virtual void setData(const Variant &data);
@@ -46,7 +46,7 @@ public:
 
     static void unregisterEditorFactory(UserTypeCallback callback);
 
-    static PropertyEdit *constructEditor(int userType, QWidget *parent, const TString &editor);
+    static LegacyPropertyEdit *constructEditor(int userType, QWidget *parent, const TString &editor);
 
 signals:
     void dataChanged();
@@ -60,4 +60,4 @@ protected:
 
 };
 
-#endif // PROPERTYEDIT_H
+#endif // LEGACYPROPERTYEDIT_H

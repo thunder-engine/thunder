@@ -38,7 +38,7 @@ void TextEdit::cleanModified() const {
 
 void TextEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         ui->editor->openFile(settings->source().data());
         setWindowTitle(Url(settings->source()).name().data());

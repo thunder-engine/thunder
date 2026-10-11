@@ -20,7 +20,7 @@
 
 #include <QMenu>
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <pugixml.hpp>
 
@@ -34,7 +34,7 @@ namespace Ui {
     class UiEdit;
 }
 
-class UiEdit : public AssetEditor {
+class UiEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:

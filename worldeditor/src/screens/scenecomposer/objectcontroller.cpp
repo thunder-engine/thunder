@@ -32,7 +32,7 @@
 #include <resources/texture.h>
 #include <resources/rendertarget.h>
 
-#include <viewport/viewport.h>
+#include <viewport/legacyviewport.h>
 #include <viewport/handles.h>
 
 #include <pipelinetask.h>
@@ -200,7 +200,7 @@ private:
 };
 
 ObjectController::ObjectController(SceneComposer *editor) :
-        CameraController(),
+        LegacyCameraController(),
         m_isolatedPrefab(nullptr),
         m_dragActor(nullptr),
         m_activeTool(nullptr),
@@ -232,7 +232,7 @@ ObjectController::~ObjectController() {
     }
 }
 
-void ObjectController::init(Viewport *viewport) {
+void ObjectController::init(LegacyViewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
@@ -243,7 +243,7 @@ void ObjectController::init(Viewport *viewport) {
 }
 
 void ObjectController::update() {
-    CameraController::update();
+    LegacyCameraController::update();
 
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
         if(m_drag) {
@@ -331,7 +331,7 @@ void ObjectController::drawHandles() {
         setActiveRootObject(Engine::world());
     }
 
-    CameraController::drawHandles();
+    LegacyCameraController::drawHandles();
 
     if(!m_selected.empty()) {
         if(m_activeTool) {

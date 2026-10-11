@@ -7,7 +7,7 @@
 
 #include <global.h>
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include <components/world.h>
 #include <components/scene.h>
@@ -65,7 +65,7 @@ protected:
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_light(nullptr),
         m_render(nullptr),
         m_moduleButton(nullptr),
@@ -252,7 +252,7 @@ QWidget *ParticleEdit::propertiesWidget() {
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         VisualEffect *effect = Engine::loadResource<VisualEffect>(settings->destination());
         m_render->setEffect(effect);

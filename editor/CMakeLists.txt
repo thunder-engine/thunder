@@ -55,14 +55,14 @@ if(desktop)
     )
 
     QT_WRAP_CPP(MOC_SRCS
-        "includes/editor/asseteditor.h"
+        "includes/editor/legacyasseteditor.h"
         "includes/editor/assetmanager.h"
         "includes/editor/baseassetprovider.h"
-        "includes/editor/editorgadget.h"
+        "includes/editor/legacyeditorgadget.h"
         "includes/editor/editorplatform.h"
-        "includes/editor/pluginmanager.h"
-        "includes/editor/propertyedit.h"
-        "src/documentmodel.h"
+        "includes/editor/legacypluginmanager.h"
+        "includes/editor/legacypropertyedit.h"
+        "src/legacydocumentmodel.h"
         ${MOC_HEADERS}
     )
 

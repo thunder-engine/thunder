@@ -24,7 +24,7 @@
 #include <QSignalBlocker>
 
 NavigationPanel::NavigationPanel(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::NavigationPanel) {
     ui->setupUi(this);
 

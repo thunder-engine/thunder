@@ -22,10 +22,10 @@
 #include <timer.h>
 
 #if defined(SHARED_DEFINE)
-#include <viewport/viewport.h>
+#include <viewport/legacyviewport.h>
 #endif
 
-ViewDelegate::ViewDelegate(RenderMtSystem *system, Viewport *viewport) :
+ViewDelegate::ViewDelegate(RenderMtSystem *system, LegacyViewport *viewport) :
         m_render(system),
         m_viewport(viewport) {
 
