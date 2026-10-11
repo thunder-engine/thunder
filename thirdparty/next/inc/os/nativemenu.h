@@ -24,7 +24,6 @@
 #include <cstddef>
 #include <deque>
 #include <functional>
-#include <memory>
 
 class MenuBar;
 
@@ -65,7 +64,7 @@ private:
     TString m_title;
     MenuBar *m_menuBar;
     std::deque<Item> m_items;
-    std::vector<std::unique_ptr<NativeMenu>> m_menus;
+    std::vector<NativeMenu *> m_menus;
 };
 
 #endif // NATIVEMENU_H

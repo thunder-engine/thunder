@@ -49,16 +49,15 @@ NativeMenu::Item *NativeMenu::addAction(const TString &text, const std::function
 }
 
 NativeMenu *NativeMenu::addMenu(const TString &title) {
-    std::unique_ptr<NativeMenu> menu(new NativeMenu(title));
+    NativeMenu *menu = new NativeMenu(title);
     menu->setMenuBar(m_menuBar);
-    NativeMenu *result = menu.get();
     Item item;
     item.text = title;
-    item.submenu = result;
+    item.submenu = menu;
     m_items.push_back(std::move(item));
-    m_menus.push_back(std::move(menu));
+    m_menus.push_back(menu);
     notifyChanged();
-    return result;
+    return menu;
 }
 
 void NativeMenu::addSeparator() {

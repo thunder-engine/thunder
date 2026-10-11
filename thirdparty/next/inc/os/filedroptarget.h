@@ -23,9 +23,6 @@
 
 #include <functional>
 
-namespace Next {
-namespace OS {
-
 class NEXT_LIBRARY_EXPORT FileDropTarget {
 public:
     using DropHandler = std::function<void(const StringList &)>;
@@ -40,8 +37,5 @@ public:
 private:
     DropHandler m_handler;
 };
-
-} // namespace OS
-} // namespace Next
 
 #endif // FILEDROPTARGET_H

@@ -22,12 +22,11 @@
 
 #include <utility>
 
-#ifdef __APPLE__
+// Forward declaration
 bool menuBarNativeSupported();
 bool menuBarNativeAttach(MenuBar *menuBar, void *nativeWindow, void **nativeMenu);
 void menuBarNativeDetach(void *nativeWindow, void *nativeMenu);
 bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMenu);
-#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,22 +35,21 @@ bool menuBarNativeRefresh(MenuBar *menuBar, void *nativeWindow, void **nativeMen
 #include <unordered_map>
 #endif
 
-namespace {
-    bool triggerMenuShortcut(NativeMenu *menu, int key, int modifiers) {
-        const auto &items = menu->items();
-        for(size_t index = 0; index < items.size(); ++index) {
-            const NativeMenu::Item &item = items[index];
-            if(item.enabled && key != 0 &&
-                item.shortcut == key && item.shortcutModifiers == modifiers) {
-                menu->triggerAction(index);
-                return true;
-            }
-            if(item.submenu && triggerMenuShortcut(item.submenu, key, modifiers)) {
-                return true;
-            }
+bool triggerMenuShortcut(NativeMenu *menu, int key, int modifiers) {
+    const auto &items = menu->items();
+    for(size_t index = 0; index < items.size(); ++index) {
+        const NativeMenu::Item &item = items[index];
+        if(item.enabled && key != 0 &&
+            item.shortcut == key && item.shortcutModifiers == modifiers) {
+            menu->triggerAction(index);
+            return true;
         }
-        return false;
+        if(item.submenu && triggerMenuShortcut(item.submenu, key, modifiers)) {
+            return true;
+        }
     }
+    return false;
+}
 
 #ifdef _WIN32
     struct WindowMenu {
@@ -165,7 +163,6 @@ namespace {
         return DefWindowProcW(hwnd, message, wParam, lParam);
     }
 #endif
-}
 
 MenuBar::MenuBar() :
         m_nativeWindow(nullptr),

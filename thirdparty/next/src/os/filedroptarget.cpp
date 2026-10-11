@@ -18,9 +18,6 @@
 
 #include "os/filedroptarget.h"
 
-namespace Next {
-namespace OS {
-
 void FileDropTarget::setDropHandler(const DropHandler &handler) {
     m_handler = handler;
 }
@@ -33,9 +30,6 @@ bool FileDropTarget::deliverFiles(const StringList &files) const {
     if(files.empty() || !m_handler) {
         return false;
     }
-
-    } // namespace OS
-    } // namespace Next
 
     m_handler(files);
     return true;
