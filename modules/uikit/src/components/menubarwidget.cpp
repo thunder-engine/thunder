@@ -141,7 +141,15 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
         if(item.separator) {
             view->addSeparator();
             actions.emplace_back(nullptr, itemIndex);
-        } else if(!item.submenu) {
+        } else if(item.submenu) {
+            Menu *submenu = buildMenu(item.submenu, menuActor, TString(item.submenu->title()));
+            if(!submenu) {
+                actions.emplace_back(nullptr, itemIndex);
+                continue;
+            }
+            view->addSubmenu(item.text, submenu);
+            actions.emplace_back(nullptr, itemIndex);
+        } else {
             Actor *actionActor = Engine::composeActor<Action>(item.text, menuActor);
             Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
             if(!action) {
@@ -156,14 +164,6 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
             action->setShortcutModifiers(item.shortcutModifiers);
             view->addAction(action);
             actions.emplace_back(model, itemIndex);
-        } else if(item.submenu) {
-            Menu *submenu = buildMenu(item.submenu, menuActor, TString(item.submenu->title()));
-            if(!submenu) {
-                actions.emplace_back(nullptr, itemIndex);
-                continue;
-            }
-            view->addSubmenu(item.text, submenu);
-            actions.emplace_back(nullptr, itemIndex);
         }
     }
     connect(view, _SIGNAL(triggered(int)), this, _SLOT(onMenuTriggered(int)));
