@@ -38,10 +38,6 @@ void Action::setText(const TString &text) {
     }
 }
 
-bool Action::isEnabled() const {
-    return Widget::isEnabled();
-}
-
 void Action::setEnabled(bool enabled) {
     if(isEnabled() != enabled) {
         Widget::setEnabled(enabled);
