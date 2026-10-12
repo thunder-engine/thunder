@@ -27,7 +27,6 @@ class UIKIT_EXPORT Action : public Widget {
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Action::text, Action::setText),
-        A_PROPERTY(bool, enabled, Action::isEnabled, Action::setEnabled),
         A_PROPERTY(bool, checkable, Action::isCheckable, Action::setCheckable),
         A_PROPERTY(bool, checked, Action::isChecked, Action::setChecked),
         A_PROPERTY(int, shortcut, Action::shortcut, Action::setShortcut),
@@ -54,8 +53,7 @@ public:
 
     TString text() const;
     void setText(const TString &text);
-    bool isEnabled() const;
-    void setEnabled(bool enabled);
+    void setEnabled(bool enabled) override;
 
     bool isCheckable() const;
     void setCheckable(bool checkable);

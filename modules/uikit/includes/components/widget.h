@@ -97,13 +97,13 @@ public:
 
     void setEnabled(bool enable) override;
 
-    virtual bool onMouseDown(int x, int y) { return false; }
-    virtual bool onMouseUp(int x, int y) { return false; }
-    virtual bool onMouseMove(int x, int y) { return false; }
-    virtual bool onMouseDoubleClick(int x, int y) { return false; }
-    virtual bool onMouseWheel(int delta, bool horizontal) { return false; }
-    virtual bool onKeyPress(KeyEvent *event) { return false; }
-    virtual bool onKeyRelease(KeyEvent *event) { return false; }
+    virtual bool onMouseDown(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
+    virtual bool onMouseUp(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
+    virtual bool onMouseMove(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
+    virtual bool onMouseDoubleClick(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
+    virtual bool onMouseWheel(int delta, bool horizontal) { A_UNUSED(delta); A_UNUSED(horizontal); return false; }
+    virtual bool onKeyPress(KeyEvent *event) { A_UNUSED(event); return false; }
+    virtual bool onKeyRelease(KeyEvent *event) { A_UNUSED(event); return false; }
 
     Widget *subWidget(const TString &name) const;
     void setSubWidget(Widget *widget);
