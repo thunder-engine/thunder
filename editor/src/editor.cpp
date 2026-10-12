@@ -19,7 +19,7 @@
 
 #include "projectsettings.h"
 #include "editorsettings.h"
-#include "legacypluginmanager.h"
+#include "pluginmanager.h"
 
 #include "legacydocumentmodel.h"
 
@@ -53,7 +53,7 @@ LegacyAssetEditor *Editor::s_currentEditor = nullptr;
 EditorSettings *Editor::s_editorSettings = nullptr;
 ProjectSettings *Editor::s_projectSettings = nullptr;
 AssetManager *Editor::s_assetManager = nullptr;
-LegacyPluginManager *Editor::s_pluginManager = nullptr;
+PluginManager *Editor::s_pluginManager = nullptr;
 
 LegacyDocumentModel *Editor::s_documentModel = nullptr;
 
@@ -180,9 +180,9 @@ AssetManager *Editor::assets() {
     return s_assetManager;
 }
 
-LegacyPluginManager *Editor::plugins() {
+PluginManager *Editor::plugins() {
     if(s_pluginManager == nullptr) {
-        s_pluginManager = new LegacyPluginManager;
+        s_pluginManager = new PluginManager;
     }
     return s_pluginManager;
 }

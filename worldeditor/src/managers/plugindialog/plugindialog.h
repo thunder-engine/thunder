@@ -20,7 +20,7 @@
 
 #include <QDialog>
 
-class LegacyPluginManager;
+class PluginModel;
 class QSortFilterProxyModel;
 
 namespace Ui {
@@ -49,6 +49,8 @@ private:
 
 protected:
     Ui::PluginDialog *ui;
+
+    PluginModel *m_model;
 
     QSortFilterProxyModel *m_filter;
 

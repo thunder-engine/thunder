@@ -41,7 +41,7 @@
 
 #include "screens/contentbrowser/contentbrowser.h"
 #include "editor/legacyasseteditor.h"
-#include "editor/legacypluginmanager.h"
+#include "editor/pluginmanager.h"
 
 LegacyPropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
     switch(userType) {

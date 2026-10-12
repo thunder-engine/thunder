@@ -28,8 +28,10 @@
 #include <aprocess.h>
 #include <processenvironment.h>
 
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
+
+#include "pluginmodel.h"
 
 #define ROW_HEIGHT 24
 #define ICON_SIZE 16
@@ -68,16 +70,17 @@ private:
         bool expanded = m_expandes.value(index, false);
         if(expanded) {
             rect.moveTop(rect.y() + ROW_HEIGHT);
-            QString text = m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_DESCRIPTION)).toString();
+            int sourceRow = filter->mapToSource(index).row();
+            QString text = m->data(m->index(sourceRow, PluginModel::PLUGIN_DESCRIPTION)).toString();
             painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, tr("Description: ") + text);
             rect.moveTop(rect.y() + ROW_HEIGHT);
-            text = m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_PATH)).toString();
+            text = m->data(m->index(sourceRow, PluginModel::PLUGIN_PATH)).toString();
             painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, tr("File: ") + text);
             rect.moveTop(rect.y() + ROW_HEIGHT);
-            text = m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_AUTHOR)).toString();
+            text = m->data(m->index(sourceRow, PluginModel::PLUGIN_AUTHOR)).toString();
             painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, tr("Author: ") + text);
             rect.moveTop(rect.y() + ROW_HEIGHT);
-            text = m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_VERSION)).toString();
+            text = m->data(m->index(sourceRow, PluginModel::PLUGIN_VERSION)).toString();
             painter->drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter, tr("Version: ") + text);
         }
 
@@ -96,7 +99,8 @@ private:
         painter->setBrush(checkBrush);
         painter->drawRoundedRect(icon, 3, 3);
 
-        if(m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_ENABLED)).toBool()) {
+        int sourceRow = filter->mapToSource(index).row();
+        if(m->data(m->index(sourceRow, PluginModel::PLUGIN_ENABLED)).toBool()) {
             static QImage check(":/Style/styles/dark/icons/check.png");
             painter->drawImage(icon, check);
         }
@@ -107,7 +111,7 @@ private:
 
         icon.moveLeft(ICON_SIZE * 4 + metrics.boundingRect(opt.text).width());
 
-        for(auto &it : m->data(m->index(index.row(), LegacyPluginManager::PLUGIN_TAGS)).toStringList()) {
+        for(auto &it : m->data(m->index(sourceRow, PluginModel::PLUGIN_TAGS)).toStringList()) {
             icon.setWidth(metrics.boundingRect(it).width() + ICON_SIZE * 2);
 
             painter->setPen(Qt::NoPen);
@@ -126,7 +130,7 @@ private:
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-        size.setHeight(m_expandes.value(index, false) ? (LegacyPluginManager::PLUGIN_LAST * ROW_HEIGHT) : ROW_HEIGHT);
+        size.setHeight(m_expandes.value(index, false) ? (PluginModel::PLUGIN_LAST * ROW_HEIGHT) : ROW_HEIGHT);
         return size;
     }
 
@@ -146,11 +150,8 @@ private:
                 const QSortFilterProxyModel *filter = static_cast<const QSortFilterProxyModel *>(index.model());
                 QAbstractItemModel *m = filter->sourceModel();
 
-                QModelIndex origin = m->index(filter->mapToSource(index).row(), LegacyPluginManager::PLUGIN_ENABLED);
+                QModelIndex origin = m->index(filter->mapToSource(index).row(), PluginModel::PLUGIN_ENABLED);
                 m->setData(origin, !m->data(origin).toBool());
-
-                emit model->layoutAboutToBeChanged();
-                emit model->layoutChanged();
             }
         }
 
@@ -165,13 +166,14 @@ private:
 PluginDialog::PluginDialog(QWidget *parent) :
         QDialog(parent),
         ui(new Ui::PluginDialog),
-        m_filter(new QSortFilterProxyModel) {
+        m_model(new PluginModel(this)),
+        m_filter(new QSortFilterProxyModel(this)) {
 
     ui->setupUi(this);
 
     setWindowFlags(windowFlags() ^ Qt::WindowContextHelpButtonHint);
 
-    m_filter->setSourceModel(Editor::plugins());
+    m_filter->setSourceModel(m_model);
 
     ui->listView->setModel(m_filter);
     ui->listView->setItemDelegate(new PluginDelegate());
@@ -179,7 +181,7 @@ PluginDialog::PluginDialog(QWidget *parent) :
     ui->notification->setProperty("notification", true);
     ui->notification->setVisible(false);
 
-    connect(Editor::plugins(), &LegacyPluginManager::listChanged, ui->notification, &QWidget::show);
+    connect(m_model, &PluginModel::listChanged, ui->notification, &QWidget::show);
 }
 
 PluginDialog::~PluginDialog() {
@@ -219,4 +221,3 @@ void PluginDialog::on_restartButton_clicked() {
 void PluginDialog::on_lineEdit_textChanged(const QString &arg1) {
     m_filter->setFilterFixedString(arg1);
 }
-

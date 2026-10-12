@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "legacypluginmanager.h"
+#include "pluginmanager.h"
 
 #include <engine.h>
 #include <module.h>
@@ -33,6 +33,8 @@
 
 #include "config.h"
 
+#include <cstdlib>
+
 namespace {
     const char *gComponents("components");
     const char *gDependencies("dependencies");
@@ -45,36 +47,34 @@ LegacyPluginManager *LegacyPluginManager::m_instance = nullptr;
 typedef Module *(*ModuleHandler) (Engine *engine);
 
 /*!
-    \class LegacyPluginManager
+    \class PluginManager
     \brief Discovers, loads, and manages editor and engine plugins.
     \inmodule Editor
 
-    LegacyPluginManager resolves plugin dependencies and provides access to plugin
+    PluginManager resolves plugin dependencies and provides access to plugin
     modules, systems, components, and editor extensions.
-
-    \fn void LegacyPluginManager::pluginReloaded()
-
-    Emitted after a plugin has been reloaded.
-
-    \fn void LegacyPluginManager::listChanged()
-
-    Emitted when the plugin list or plugin state changes.
 */
 
-LegacyPluginManager::LegacyPluginManager() :
-        QAbstractItemModel(),
-        m_engine(nullptr),
-        m_renderFactory(nullptr) {
-#ifdef Q_OS_MACOS
+PluginManager::PluginManager() :
+        m_engine(nullptr) {
+#ifdef PLATFORM_MAC
     m_renderName = TString("RenderMT"); // Default
 #else
     m_renderName = TString("RenderGL"); // Default
 #endif
 
-    if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-        m_renderName = qEnvironmentVariable(qPrintable(gRhi)).toStdString();
+    const char *renderName = std::getenv(gRhi);
+    if(renderName) {
+        m_renderName = renderName;
     } else {
-        qputenv(qPrintable(gRhi), m_renderName.data());
+#if defined(PLATFORM_WINDOWS)
+        int result = ::_putenv_s(gRhi, m_renderName.data());
+#else
+        int result = ::setenv(gRhi, m_renderName.data(), 1);
+#endif
+        if(result != 0) {
+            aError() << gLabel << "Can't set environment variable:" << gRhi;
+        }
     }
 
     m_initialWhiteList.push_back("RenderGL");
@@ -98,7 +98,7 @@ LegacyPluginManager::LegacyPluginManager() :
     m_whiteList = m_initialWhiteList;
 }
 
-LegacyPluginManager::~LegacyPluginManager() {
+PluginManager::~PluginManager() {
     m_systems.clear();
 
     for(auto &it : m_plugins) {
@@ -108,83 +108,47 @@ LegacyPluginManager::~LegacyPluginManager() {
     m_plugins.clear();
 }
 
-int LegacyPluginManager::columnCount(const QModelIndex &) const {
-    return 1;
+int PluginManager::pluginCount() const {
+    return static_cast<int>(m_plugins.size());
 }
 
-QVariant LegacyPluginManager::headerData(int section, Qt::Orientation orientation, int role) const {
-    return QVariant();
-}
-
-QVariant LegacyPluginManager::data(const QModelIndex &index, int role) const {
-    if(!index.isValid()) {
-        return QVariant();
+bool PluginManager::pluginInfo(int row, PluginInfo &info) const {
+    if(row < 0 || row >= pluginCount()) {
+        return false;
     }
 
-    switch(role) {
-        case Qt::DisplayRole: {
-            Plugin plugin = *std::next(m_plugins.begin(), index.row());
-            switch(index.column()) {
-            case PLUGIN_NAME:        return plugin.name.data();
-            case PLUGIN_DESCRIPTION: return plugin.description.data();
-            case PLUGIN_PATH:        return plugin.path.data();
-            case PLUGIN_VERSION:     return plugin.version.data();
-            case PLUGIN_AUTHOR:      return plugin.author.data();
-            case PLUGIN_ENABLED:     return plugin.enabled;
-            case PLUGIN_TAGS:        return plugin.tags;
-            default: break;
-            }
-        } break;
-        default: break;
+    const Plugin &plugin = *std::next(m_plugins.begin(), row);
+    info.name = plugin.name;
+    info.description = plugin.description;
+    info.version = plugin.version;
+    info.author = plugin.author;
+    info.path = plugin.path;
+    info.tags = plugin.tags;
+    info.enabled = plugin.enabled;
+    info.beta = plugin.beta;
+    return true;
+}
+
+bool PluginManager::setPluginEnabled(int row, bool enabled) {
+    if(row < 0 || row >= pluginCount()) {
+        return false;
     }
 
-    return QVariant();
-}
+    auto &plugin = *std::next(m_plugins.begin(), row);
+    plugin.enabled = enabled;
 
-bool LegacyPluginManager::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if(!index.isValid()) {
-        return QAbstractItemModel::setData(index, value, role);
-    }
+    auto &plugins = Editor::project()->plugins();
+    plugins[plugin.name] = plugin.enabled;
 
-    switch(index.column()) {
-        case PLUGIN_ENABLED: {
-            auto &plugin = *std::next(m_plugins.begin(), index.row());
-            plugin.enabled = value.toBool();
-
-            auto &plugins = Editor::project()->plugins();
-            plugins[plugin.name] = plugin.enabled;
-
-            syncWhiteList();
-
-            emit listChanged();
-
-            return true;
-        }
-        default: break;
-    }
-
-    return false;
-}
-
-int LegacyPluginManager::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return m_plugins.size();
-}
-
-QModelIndex LegacyPluginManager::index(int row, int column, const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return createIndex(row, column);
-}
-
-QModelIndex LegacyPluginManager::parent(const QModelIndex &child) const {
-    Q_UNUSED(child);
-    return QModelIndex();
+    syncWhiteList();
+    listChanged();
+    return true;
 }
 
 /*!
     Initializes the manager and loads the built-in editor plugins.
 */
-void LegacyPluginManager::init(Engine *engine) {
+void PluginManager::init(Engine *engine) {
     m_engine = engine;
 
     syncWhiteList();
@@ -196,7 +160,7 @@ void LegacyPluginManager::init(Engine *engine) {
 /*!
     Sets the project plugin directory and rescans it for plugins.
 */
-bool LegacyPluginManager::rescanProject(const TString &path) {
+bool PluginManager::rescanProject(const TString &path) {
     m_pluginPath = path;
 
     return rescanPath(m_pluginPath);
@@ -206,7 +170,7 @@ bool LegacyPluginManager::rescanProject(const TString &path) {
     Loads the plugin at \a path. If \a reload is true, preserves its components
     while replacing the loaded plugin.
 */
-bool LegacyPluginManager::loadPlugin(const TString &path, bool reload) {
+bool PluginManager::loadPlugin(const TString &path, bool reload) {
     Library *lib = new Library(path);
     if(lib->load()) {
         ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
@@ -245,7 +209,6 @@ bool LegacyPluginManager::loadPlugin(const TString &path, bool reload) {
                             }
                         } else if(it.second == "render") {
                             if(it.first == m_renderName) {
-                                m_renderFactory = plugin;
                                 Engine::addModule(plugin);
                             } else {
                                 fault = true;
@@ -281,14 +244,12 @@ bool LegacyPluginManager::loadPlugin(const TString &path, bool reload) {
 
                 auto it = std::find(m_plugins.begin(), m_plugins.end(), plug);
                 if(it == m_plugins.end()) {
-                    int start = rowCount();
-                    beginInsertRows(QModelIndex(), start, start);
-                        m_plugins.push_back(plug);
-                    endInsertRows();
+                    m_plugins.push_back(plug);
                 } else {
                     int index = std::distance(m_plugins.begin(), it);
                     *std::next(m_plugins.begin(), index) = plug;
                 }
+                listChanged();
                 return true;
             } else {
                 aError() << gLabel << "Can't create plugin:" << lib->fileName();
@@ -306,7 +267,7 @@ bool LegacyPluginManager::loadPlugin(const TString &path, bool reload) {
 /*!
     Replaces the installed project plugin with the plugin at \a path.
 */
-void LegacyPluginManager::reloadPlugin(const TString &path) {
+void PluginManager::reloadPlugin(const TString &path) {
     Url info(path);
 
     TString dest(m_pluginPath + "/" + info.name());
@@ -372,7 +333,7 @@ void LegacyPluginManager::reloadPlugin(const TString &path) {
 /*!
     Scans \a path and loads all shared-library plugins found there.
 */
-bool LegacyPluginManager::rescanPath(const TString &path) {
+bool PluginManager::rescanPath(const TString &path) {
     bool result = true;
     for(auto &it : File::list(path)) {
         Url url(it);
@@ -383,7 +344,7 @@ bool LegacyPluginManager::rescanPath(const TString &path) {
     return result;
 }
 
-bool LegacyPluginManager::registerSystem(Module *plugin, const char *name) {
+bool PluginManager::registerSystem(Module *plugin, const char *name) {
     System *system = reinterpret_cast<System *>(plugin->getObject(name));
     if(system) {
         m_systems[system->name()] = system;
@@ -397,13 +358,13 @@ bool LegacyPluginManager::registerSystem(Module *plugin, const char *name) {
 /*!
     Initializes all systems provided by enabled plugins.
 */
-void LegacyPluginManager::initSystems() {
+void PluginManager::initSystems() {
     for(auto &it : m_systems) {
         it.second->init();
     }
 }
 
-void LegacyPluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
+void PluginManager::serializeComponents(const StringList &list, ComponentBackup &backup) {
     for(auto &type : list) {
         for(auto it : m_engine->getAllObjectsByType(type)) {
             Object *parent = it->parent();
@@ -420,7 +381,7 @@ void LegacyPluginManager::serializeComponents(const StringList &list, ComponentB
     }
 }
 
-void LegacyPluginManager::deserializeComponents(const ComponentBackup &backup) {
+void PluginManager::deserializeComponents(const ComponentBackup &backup) {
     for(auto &it : backup) {
         Variant v = Bson::load(it.data);
         Object *object = Engine::toObject(v, it.parent);
@@ -428,13 +389,21 @@ void LegacyPluginManager::deserializeComponents(const ComponentBackup &backup) {
             object->setParent(it.parent, it.position);
         }
     }
-    emit pluginReloaded();
+    pluginReloaded();
+}
+
+void PluginManager::pluginReloaded() {
+    emitSignal(_SIGNAL(pluginReloaded()));
+}
+
+void PluginManager::listChanged() {
+    emitSignal(_SIGNAL(listChanged()));
 }
 
 /*!
     Synchronizes the enabled plugin whitelist with project settings.
 */
-void LegacyPluginManager::syncWhiteList() {
+void PluginManager::syncWhiteList() {
     StringList toRemove;
 
     auto &plugins = Editor::project()->plugins();
@@ -465,7 +434,7 @@ void LegacyPluginManager::syncWhiteList() {
 /*!
     Returns paths of all plugins known to the manager.
 */
-StringList LegacyPluginManager::plugins() const {
+StringList PluginManager::plugins() const {
     StringList result;
 
     for(auto &it : m_plugins) {
@@ -478,7 +447,7 @@ StringList LegacyPluginManager::plugins() const {
 /*!
     Returns dependencies of the specified \a type for the requested modules.
 */
-StringList LegacyPluginManager::dependencies(const TString &type, const StringList &modules) const {
+StringList PluginManager::dependencies(const TString &type, const StringList &modules) const {
     StringList result;
 
     for(auto &plugin : m_plugins) {
@@ -497,7 +466,7 @@ StringList LegacyPluginManager::dependencies(const TString &type, const StringLi
 /*!
     Returns plugin extensions registered for the specified \a type.
 */
-StringList LegacyPluginManager::extensions(const TString &type) const {
+StringList PluginManager::extensions(const TString &type) const {
     StringList result;
 
     for(auto &it : m_plugins) {
@@ -516,7 +485,7 @@ StringList LegacyPluginManager::extensions(const TString &type) const {
 /*!
     Creates and returns the plugin object registered under \a name.
 */
-void *LegacyPluginManager::getPluginObject(const TString &name) {
+void *PluginManager::getPluginObject(const TString &name) {
     for(auto &it : m_plugins) {
         if(it.enabled) {
             for(auto &object : it.objects) {
@@ -533,7 +502,7 @@ void *LegacyPluginManager::getPluginObject(const TString &name) {
 /*!
     Returns the plugin module that provides the specified component \a type.
 */
-TString LegacyPluginManager::getModuleName(const TString &type) const {
+TString PluginManager::getModuleName(const TString &type) const {
     for(auto &it : m_plugins) {
         if(std::find(it.components.begin(), it.components.end(), type) != it.components.end()) {
             return it.name;

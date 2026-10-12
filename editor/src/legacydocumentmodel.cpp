@@ -23,7 +23,7 @@
 #include <editor/legacyasseteditor.h>
 #include <editor/assetconverter.h>
 #include <editor/projectsettings.h>
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 
 #include <url.h>
 #include <aprocess.h>

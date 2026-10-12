@@ -41,7 +41,7 @@
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 #include <editor/undostack.h>
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
 #include <editor/legacyeditorgadget.h>
 #include <editor/nativecodebuilder.h>

@@ -46,7 +46,7 @@
 
 #include <editor/assetconverter.h>
 #include <editor/assetmanager.h>
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
 
 #include "actions/createobject.h"
@@ -77,7 +77,8 @@ class SceneComposerProxy : public Object {
     A_METHODS(
         A_SLOT(SceneComposerProxy::onSceneUpdated),
         A_SLOT(SceneComposerProxy::onBuildSuccessful),
-        A_SLOT(SceneComposerProxy::onPrefabCreated)
+        A_SLOT(SceneComposerProxy::onPrefabCreated),
+        A_SLOT(SceneComposerProxy::onPluginReloaded)
     )
 
 public:
@@ -90,6 +91,7 @@ public:
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
 
+        connect(Editor::plugins(), _SIGNAL(pluginReloaded()), this, _SLOT(onPluginReloaded()));
         connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
         connect(Editor::assets(), _SIGNAL(prefabCreated(uint32)), this, _SLOT(onPrefabCreated(uint32)));
 
@@ -118,6 +120,10 @@ private:
 
     void onPrefabCreated(uint32_t clone) {
         m_sceneComposer->m_controller->onPrefabCreated(clone);
+    }
+
+    void onPluginReloaded() {
+        m_sceneComposer->m_controller->onUpdateSelected();
     }
 
 private:
@@ -233,8 +239,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(ui->camera2DButton, &QPushButton::toggled, this, &SceneComposer::onCamera2D);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
-
-    connect(Editor::plugins(), &LegacyPluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
 
     ui->camera2DButton->setProperty("checkgreen", true);
 

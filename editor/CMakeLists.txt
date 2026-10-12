@@ -60,7 +60,6 @@ if(desktop)
         "includes/editor/baseassetprovider.h"
         "includes/editor/legacyeditorgadget.h"
         "includes/editor/editorplatform.h"
-        "includes/editor/legacypluginmanager.h"
         "includes/editor/legacypropertyedit.h"
         "src/legacydocumentmodel.h"
         ${MOC_HEADERS}

@@ -29,7 +29,7 @@
 #include "editor/assetmanager.h"
 #include "editor/nativecodebuilder.h"
 #include "editor/editorplatform.h"
-#include "editor/legacypluginmanager.h"
+#include "editor/pluginmanager.h"
 
 namespace {
     const char *gProjects("projects");
@@ -181,7 +181,7 @@ void ProjectSettings::saveSettings() {
         TString name = property.name();
         Variant value = property.read(this);
 
-        if(value.type() == QMetaType::QVariantList) {
+        if(value.type() == MetaType::VARIANTLIST) {
             // Just skip the list type for now
         } else {
             TString str = value.toString();

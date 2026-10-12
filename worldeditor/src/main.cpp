@@ -25,9 +25,6 @@
 
 #include "screens/projectbrowser/projectbrowser.h"
 
-#include <editor/assetmanager.h>
-#include <editor/legacypluginmanager.h>
-#include <editor/editorsettings.h>
 #include <editor/editorplatform.h>
 
 #include <engine.h>

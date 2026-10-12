@@ -33,7 +33,7 @@
 class ProjectSettings;
 class EditorSettings;
 class AssetManager;
-class LegacyPluginManager;
+class PluginManager;
 
 class LegacyAssetEditor;
 class LegacyEditorGadget;
@@ -66,7 +66,7 @@ public:
     static EditorSettings *settings();
     static ProjectSettings *project();
     static AssetManager *assets();
-    static LegacyPluginManager *plugins();
+    static PluginManager *plugins();
 
     static TString applicationDirPath();
 
@@ -81,7 +81,7 @@ protected:
     static ProjectSettings *s_projectSettings;
 
     static AssetManager *s_assetManager;
-    static LegacyPluginManager *s_pluginManager;
+    static PluginManager *s_pluginManager;
 
     static LegacyDocumentModel *s_documentModel;
 

@@ -16,7 +16,7 @@
 #include <QTextBlock>
 
 #include <editor/editorsettings.h>
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 #include <editor/codebuilder.h>
 
 #include <url.h>
