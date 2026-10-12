@@ -21,7 +21,7 @@
 #include <log.h>
 
 #include "editor/projectsettings.h"
-#include "editor/legacypluginmanager.h"
+#include "editor/pluginmanager.h"
 
 #include <QFile>
 #include <QRegularExpression>

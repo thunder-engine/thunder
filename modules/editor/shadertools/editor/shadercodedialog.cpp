@@ -3,7 +3,7 @@
 
 #include <QPlainTextEdit>
 
-#include <editor/legacypluginmanager.h>
+#include <editor/pluginmanager.h>
 #include <editor/legacyasseteditor.h>
 
 #include "../converter/shaderbuilder.h"

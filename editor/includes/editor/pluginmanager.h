@@ -15,14 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef LEGACYPLUGINMANAGER_H
-#define LEGACYPLUGINMANAGER_H
-
-#include <QAbstractItemModel>
+#ifndef PLUGINMANAGER_H
+#define PLUGINMANAGER_H
 
 #include <stdint.h>
 
 #include <editor.h>
+#include <object.h>
 
 class Library;
 
@@ -39,25 +38,28 @@ struct ComponentData {
 };
 typedef std::list<ComponentData> ComponentBackup;
 
-class EDITOR_EXPORT LegacyPluginManager : public QAbstractItemModel {
-    Q_OBJECT
+struct PluginInfo {
+    TString name;
+    TString description;
+    TString version;
+    TString author;
+    TString path;
+    StringList tags;
+    bool enabled;
+    bool beta;
+};
+
+class EDITOR_EXPORT PluginManager : public Object {
+    A_OBJECT(PluginManager, Object, General)
+
+    A_METHODS(
+        A_SIGNAL(PluginManager::pluginReloaded),
+        A_SIGNAL(PluginManager::listChanged)
+    )
 
 public:
-    enum {
-        PLUGIN_NAME,
-        PLUGIN_DESCRIPTION,
-        PLUGIN_VERSION,
-        PLUGIN_AUTHOR,
-        PLUGIN_PATH,
-        PLUGIN_LAST,
-        PLUGIN_ENABLED,
-        PLUGIN_TAGS,
-        PLUGIN_BETA
-    };
-
-public:
-    LegacyPluginManager();
-    ~LegacyPluginManager();
+    PluginManager();
+    ~PluginManager();
 
     void init(Engine *engine);
 
@@ -71,6 +73,12 @@ public:
 
     StringList plugins() const;
 
+    int pluginCount() const;
+
+    bool pluginInfo(int row, PluginInfo &info) const;
+
+    bool setPluginEnabled(int row, bool enabled);
+
     StringList dependencies(const TString &type, const StringList &modules = StringList()) const;
 
     StringList extensions(const TString &type) const;
@@ -81,27 +89,11 @@ public:
 
     void syncWhiteList();
 
-signals:
     void pluginReloaded();
+
     void listChanged();
 
-public slots:
     void reloadPlugin(const TString &path);
-
-private:
-    int columnCount(const QModelIndex &) const override;
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    QVariant data(const QModelIndex &index, int role) const override;
-
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-
-    QModelIndex parent(const QModelIndex &child) const override;
 
 protected:
     bool registerSystem(Module *plugin, const char *name);
@@ -132,7 +124,7 @@ private:
 
         StringList components;
 
-        QStringList tags;
+        StringList tags;
 
         std::map<TString, TString> dependencies;
 
@@ -159,12 +151,8 @@ private:
     StringList m_initialWhiteList;
     StringList m_whiteList;
 
-    static LegacyPluginManager *m_instance;
-
     Engine *m_engine;
-
-    Module *m_renderFactory;
 
 };
 
-#endif // LEGACYPLUGINMANAGER_H
+#endif // PLUGINMANAGER_H
