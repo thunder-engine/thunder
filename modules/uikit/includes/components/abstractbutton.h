@@ -18,7 +18,7 @@
 #ifndef ABSTRACTBUTTON_H
 #define ABSTRACTBUTTON_H
 
-#include "frame.h"
+#include <frame.h>
 
 class MaterialInstance;
 

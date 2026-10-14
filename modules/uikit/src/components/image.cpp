@@ -15,17 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/image.h"
+#include "image.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/material.h>
 #include <resources/sprite.h>
-
-#include <commandbuffer.h>
-#include <pipelinecontext.h>
 
 #include <cstring>
 
@@ -112,7 +108,7 @@ void Image::draw() {
     }
 
     if(m_material) {
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         Matrix4 mat(rect->worldTransform());
 
         const Vector3Vector &verts(m_mesh->vertices());
@@ -180,7 +176,7 @@ Sprite *Image::sprite() const {
     Replaces the current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
-    if(rectTransform() == nullptr) {
+    if(this == nullptr) {
         return;
     }
 

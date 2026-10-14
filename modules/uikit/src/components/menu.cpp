@@ -15,10 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/menu.h"
+#include "menu.h"
+#include "button.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include "resources/font.h"
 #include "resources/material.h"
@@ -72,8 +72,6 @@ Menu::Menu() :
         m_selectionMaterial->setVector4(gBackgroundColor, &m_selectionColor);
         frameMaterial->subscribe(&Menu::materialUpdated, this);
     }
-
-    setEnabled(false);
 }
 
 Menu::~Menu() {
@@ -97,8 +95,8 @@ Menu::~Menu() {
     Creates a clickable menu item that triggers an action when selected.
 */
 void Menu::addAction(const TString &text, Sprite *icon) {
-    Actor *actionActor = Engine::composeActor<Action>(text, actor());
-    Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
+    Widget *actionActor = Widget::createWidget<Action>(text, this);
+    Action *action = actionActor ? dynamic_cast<Action *>(actionActor) : nullptr;
     if(!action) {
         return;
     }
@@ -110,8 +108,8 @@ Action *Menu::addAction(Action *action, Sprite *icon) {
     if(!action) {
         return nullptr;
     }
-    if(action->actor() && action->actor()->parent() != actor()) {
-        action->actor()->setParent(actor());
+    if(action->parentWidget() != this) {
+        action->setParent(this);
     }
     setSubWidget(action);
 
@@ -212,26 +210,39 @@ void Menu::onActionChanged() {
     Displays the menu at the specified \a position.
 */
 void Menu::show(const Vector2 &position) {
-    aboutToShow();
+    if(!m_visible) {
+        m_visible = true;
+        aboutToShow();
+    }
     setEnabled(true);
-    rectTransform()->setPosition(Vector3(position, 0.0f));
+    if(dynamic_cast<Button *>(parentWidget())) {
+        this->setAnchors(Vector2(0.0f), Vector2(0.0f));
+        this->setPivot(Vector2(0.0f, 1.0f));
+    }
+    this->setPosition(Vector3(position, 0.0f));
+    raise();
     repaint();
 }
 /*!
     Hides the menu.
 */
 void Menu::hide() {
-    if(isEnabled() && !m_hiding) {
+    if(m_visible && !m_hiding) {
         m_hiding = true;
         aboutToHide();
         m_hiding = false;
+        m_visible = false;
+        m_hoveredIndex = -1;
     }
     if(m_openSubmenu) {
         m_openSubmenu->hide();
         m_openSubmenu = nullptr;
     }
-    setEnabled(false);
     repaint();
+}
+
+bool Menu::isVisible() const {
+    return m_visible;
 }
 /*!
     Returns the text of the item at the specified \a index.
@@ -320,9 +331,19 @@ void Menu::triggered(int index) {
     Internal method called to draw menu.
 */
 void Menu::draw() {
+    if(!m_visible) {
+        return;
+    }
+
+    Canvas *canvas = Menu::canvas();
+    if(canvas && !canvas->m_drawingPopups) {
+        canvas->m_popupMenus.push_back(this);
+        return;
+    }
+
     Frame::draw();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     Vector2 size(rect->size());
     Matrix4 transform(rect->worldTransform());
 
@@ -331,7 +352,7 @@ void Menu::draw() {
         Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, Font::Additive, m_textColor};
         settings.boundaries = Vector2(size.x - 40.0f, m_rowHeight);
         settings.offset.x = 20.0f;
-        settings.offset.y = -settings.boundaries.y - m_rowHeight;
+        settings.offset.y = m_rowHeight - size.y;
         for(size_t i = 0; i < m_items.size(); ++i) {
             if(m_items[i].type != MenuItem::Separator) {
                 TString label;
@@ -348,14 +369,12 @@ void Menu::draw() {
                 m_font->composeMesh(m_textMesh, label, settings);
                 settings.offset.y += m_rowHeight;
             } else {
-                settings.offset.y -= m_separatorHeight;
+                settings.offset.y += m_separatorHeight;
             }
         }
         m_textMaterial->setTexture(gTexture, m_font->page());
         m_dirtyText = false;
     }
-
-    Canvas *canvas = Menu::canvas();
 
     uint32_t hash = rect->hash();
     if(m_textMaterial) {
@@ -387,9 +406,13 @@ void Menu::draw() {
     Updates the menu. Handles input and triggers actions based on user interactions.
 */
 void Menu::update(const Vector2 &pos) {
+    if(!m_visible) {
+        return;
+    }
+
     Widget::update(pos);
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     Vector2 localPos = rect->mapFromGlobal(pos.x, pos.y);
 
     int newHoveredIndex = -1;
@@ -424,7 +447,7 @@ void Menu::update(const Vector2 &pos) {
         m_openSubmenu = nullptr;
     }
     if(hoveredSubmenu && m_openSubmenu != hoveredSubmenu) {
-        RectTransform *submenuRect = hoveredSubmenu->rectTransform();
+        Widget *submenuRect = hoveredSubmenu;
         submenuRect->setAnchors(Vector2(0.0f), Vector2(0.0f));
         submenuRect->setPivot(Vector2(0.0f, 0.0f));
         float rowTop = rect->size().y;
@@ -436,18 +459,21 @@ void Menu::update(const Vector2 &pos) {
         m_openSubmenu = hoveredSubmenu;
     }
 
-    if(Input::isMouseButtonDown(0)) {
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(newHoveredIndex > -1 && m_items[newHoveredIndex].type == MenuItem::Action &&
             m_items[newHoveredIndex].enabled) {
-            auto &item = m_items[m_hoveredIndex];
+            auto &item = m_items[newHoveredIndex];
             if(item.action) {
                 item.action->trigger();
             }
             triggered(newHoveredIndex);
         }
 
-        if(!containsMenuAt(pos)) {
-            hide();
+        hide();
+        Widget *parent = parentWidget();
+        while(Menu *parentMenu = dynamic_cast<Menu *>(parent)) {
+            parentMenu->hide();
+            parent = parentMenu->parentWidget();
         }
     }
 }
@@ -490,7 +516,7 @@ void Menu::updateSize() {
         }
     }
 
-    rectTransform()->setSize(Vector2(width, height));
+    this->setSize(Vector2(width, height));
     repaint();
 }
 /*!

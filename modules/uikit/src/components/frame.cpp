@@ -15,18 +15,15 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/frame.h"
+#include "frame.h"
 
-#include "components/canvas.h"
-#include "components/recttransform.h"
+#include "canvas.h"
 
-#include <components/actor.h>
-#include <components/spriterender.h>
+#include "stylesheet.h"
 
 #include <resources/sprite.h>
 #include <resources/mesh.h>
 #include <resources/material.h>
-#include <resources/stylesheet.h>
 
 #include <commandbuffer.h>
 #include <gizmos.h>
@@ -110,7 +107,7 @@ Frame::~Frame() {
     \internal
 */
 void Frame::draw() {
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     if(m_dirtyBackground) {
         if(m_backgroundImage && m_imageMaterial) {
             m_backgroundMesh = Engine::objectCreate<Mesh>();
@@ -192,7 +189,7 @@ Vector4 Frame::corners() const {
 void Frame::setCorners(const Vector4 &corners) {
     m_borderRadius = corners;
     if(m_frameMaterial) {
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         if(rect) {
             Vector4 normCorners(m_borderRadius / rect->size().y);
             m_frameMaterial->setVector4(gBorderRadius, &normCorners);
@@ -283,7 +280,7 @@ void Frame::boundChanged(const Vector2 &size) {
         Vector4 normCorners(m_borderRadius / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderRadius, &normCorners);
 
-        Vector4 normBorders(rectTransform()->border() / MAX(size.y, 1.0f));
+        Vector4 normBorders(this->border() / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderWidth, &normBorders);
         repaint();
     }
@@ -307,7 +304,7 @@ void Frame::materialUpdated(int state, void *ptr) {
             frame->m_imageMaterial = nullptr;
         }
     } else {
-        RectTransform *rect = frame->rectTransform();
+        Widget *rect = frame;
         frame->boundChanged(rect->size());
     }
 

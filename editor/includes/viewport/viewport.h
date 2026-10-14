@@ -43,7 +43,9 @@ class EDITOR_EXPORT Viewport : public Canvas {
     A_OBJECT(Viewport, Canvas, Components/UI)
 
     A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_METHODS(
+        A_SIGNAL(Viewport::screenshot)
+    )
     A_NOENUMS()
 
 public:
@@ -51,6 +53,7 @@ public:
     ~Viewport() override;
 
     void init();
+    void grabScreen();
     void draw(CommandBuffer *buffer) override;
     void update(const Vector2 &position) override;
     void setSize(int width, int height) override;
@@ -85,6 +88,8 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
+    void screenshot(const ByteArray &pixels, int width, int height);
+
 protected:
     Menu *createSubmenu(Menu *parent, const TString &title);
     Action *addAction(Menu *menu, const TString &name, bool checked, const std::function<void(bool)> &handler);
@@ -111,6 +116,7 @@ protected:
     bool m_frameInProgress;
     bool m_rendering;
     bool m_initialized;
+    bool m_screenInProgress;
 };
 
 #endif // VIEWPORT_H

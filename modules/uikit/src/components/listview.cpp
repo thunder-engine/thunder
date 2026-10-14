@@ -15,11 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/listview.h"
+#include "listview.h"
 
-#include "components/recttransform.h"
-#include "components/scrollbar.h"
-#include "components/itemviewdelegate.h"
+#include "scrollbar.h"
+#include "itemviewdelegate.h"
 
 #include <abstractitemmodel.h>
 #include <algorithm>
@@ -45,7 +44,31 @@ ListView::~ListView() {
 
 void ListView::setModel(AbstractItemModel *model) {
     AbstractItemView::setModel(model);
+    setRootIndex(ModelIndex());
+}
+
+void ListView::setRootIndex(const ModelIndex &index) {
+    AbstractItemView::setRootIndex(index);
+    clearSelection();
+    m_firstVisibleIndex = 0;
+    if(m_content && m_content) {
+        m_content->setPosition(Vector3(0.0f, 0.0f, 0.0f));
+    }
+    if(m_vScroll) {
+        m_vScroll->setValue(m_vScroll->minimum());
+    }
+    if(m_hScroll) {
+        m_hScroll->setValue(m_hScroll->minimum());
+    }
     m_dirtyItems = true;
+}
+
+void ListView::refresh() {
+    m_dirtyItems = true;
+    if(m_content) {
+        rebuildItems();
+        m_dirtyItems = false;
+    }
 }
 
 int ListView::viewMode() const {
@@ -108,24 +131,26 @@ void ListView::setDelegate(ItemViewDelegate *delegate) {
 void ListView::composeComponent() {
     AbstractItemView::composeComponent();
 
-    Actor *widgetActor = Engine::composeActor<Widget>("content", actor());
-    setContent(widgetActor->getComponent<Widget>());
+    Widget *widgetActor = Widget::createWidget<Widget>("content", this);
+    setContent(dynamic_cast<Widget *>(widgetActor));
 
-    Actor *delegateActor = Engine::composeActor<ItemViewDelegate>("delegate");
-    setDelegate(delegateActor->getComponent<ItemViewDelegate>());
+    Widget *delegateActor = Widget::createWidget<ItemViewDelegate>("delegate", this);
+    setDelegate(dynamic_cast<ItemViewDelegate *>(delegateActor));
+    m_delegate->setEnabled(false);
 
     setRowHeight(m_rowHeight);
 }
 
 bool ListView::onMouseDown(int x, int y) {
-    if(!m_model || m_model->rowCount() == 0) {
+    if(!m_model || m_model->rowCount(m_rootIndex) == 0) {
         return false;
     }
 
     int index = indexAtPosition(Vector2(x, y));
-    if(index >= 0 && index < m_model->rowCount()) {
+    if(index >= 0 && index < m_model->rowCount(m_rootIndex)) {
         m_isPressed = true;
         handleItemClick(index);
+        prepareDrag(m_model->index(index, 0, m_rootIndex));
         return true;
     }
 
@@ -140,25 +165,28 @@ bool ListView::onMouseDown(int x, int y) {
 
 bool ListView::onMouseUp(int x, int y) {
     if(!m_isPressed) {
+        Widget::cancelDragCandidate(this);
         return false;
     }
 
     m_isPressed = false;
 
     int index = indexAtPosition(Vector2(x, y));
-    if(index >= 0 && index < m_model->rowCount()) {
-        ModelIndex idx = m_model->index(index, 0);
+    if(index >= 0 && index < m_model->rowCount(m_rootIndex)) {
+        ModelIndex idx = m_model->index(index, 0, m_rootIndex);
         if(idx.isValid()) {
             clicked(idx);
+            Widget::cancelDragCandidate(this);
             return true;
         }
     }
 
+    Widget::cancelDragCandidate(this);
     return false;
 }
 
 bool ListView::onMouseMove(int x, int y) {
-    if(!m_model || m_model->rowCount() == 0) {
+    if(!m_model || m_model->rowCount(m_rootIndex) == 0) {
         return false;
     }
 
@@ -175,12 +203,12 @@ bool ListView::onMouseMove(int x, int y) {
 }
 
 bool ListView::onMouseDoubleClick(int x, int y) {
-    if(!m_model || m_model->rowCount() == 0) {
+    if(!m_model || m_model->rowCount(m_rootIndex) == 0) {
         return false;
     }
 
     int index = indexAtPosition(Vector2(x, y));
-    if(index >= 0 && index < m_model->rowCount()) {
+    if(index >= 0 && index < m_model->rowCount(m_rootIndex)) {
         handleItemDoubleClick(index);
         return true;
     }
@@ -211,11 +239,11 @@ bool ListView::onMouseWheel(int delta, bool horizontal) {
 }
 
 bool ListView::onKeyPress(KeyEvent *event) {
-    if(!m_model || m_model->rowCount() == 0) {
+    if(!m_model || m_model->rowCount(m_rootIndex) == 0) {
         return false;
     }
 
-    int totalItems = m_model->rowCount();
+    int totalItems = m_model->rowCount(m_rootIndex);
     int columns = (m_viewMode == IconMode) ? m_cachedColumns : 1;
     int current = m_currentIndex.isValid() ? m_currentIndex.row() : -1;
     if (current < 0 && totalItems > 0) {
@@ -298,7 +326,7 @@ bool ListView::onKeyPress(KeyEvent *event) {
     }
 
     if(newIndex >= 0 && newIndex < totalItems) {
-        ModelIndex idx = m_model->index(newIndex, 0);
+        ModelIndex idx = m_model->index(newIndex, 0, m_rootIndex);
         if(idx.isValid()) {
             if(event->isShiftPressed() && m_currentIndex.isValid()) {
                 selectRange(m_currentIndex, idx);
@@ -344,7 +372,7 @@ void ListView::update(const Vector2 &pos) {
 }
 
 Vector2 ListView::viewportSize() {
-    return rectTransform()->size();
+    return this->size();
 }
 
 void ListView::calculateGridParams() {
@@ -358,7 +386,7 @@ void ListView::calculateGridParams() {
         return;
     }
 
-    int totalItems = m_model->rowCount();
+    int totalItems = m_model->rowCount(m_rootIndex);
     if(totalItems <= 0) {
         m_cachedColumns = 1;
         m_cachedRows = 1;
@@ -380,7 +408,7 @@ void ListView::boundChanged(const Vector2 &size) {
 void ListView::onVScrollChanged(int value) {
     AbstractItemView::onVScrollChanged(value);
 
-    RectTransform *rect = m_content->rectTransform();
+    Widget *rect = m_content;
     if(rect) {
         Vector3 pos(rect->position());
         int visibleIndex = m_firstVisibleIndex;
@@ -451,15 +479,15 @@ void ListView::rebuildItems() {
         }
 
         float maxWidth = 0;
-        int rowCount = MIN(m_model->rowCount(), m_firstVisibleIndex + totalItemCount);
+        int rowCount = MIN(m_model->rowCount(m_rootIndex), m_firstVisibleIndex + totalItemCount);
         auto it = m_items.begin();
         for(int i = m_firstVisibleIndex; i < rowCount; ++i) {
             ItemViewDelegate *delegate = *it;
             if(delegate == nullptr && m_delegate) {
-                Actor *itemActor = static_cast<Actor *>(m_delegate->actor()->clone(m_content->actor()));
+                Widget *itemActor = static_cast<Widget *>(m_delegate->clone(m_content));
                 itemActor->setName(itemActor->name() + TString::number(i));
-                delegate = itemActor->getComponent<ItemViewDelegate>();
-                RectTransform *rect = delegate->rectTransform();
+                delegate = dynamic_cast<ItemViewDelegate *>(itemActor);
+                Widget *rect = delegate;
                 rect->setPivot(Vector2(0.0f, 1.0f));
                 if(m_viewMode == ListMode) {
                     rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
@@ -468,7 +496,7 @@ void ListView::rebuildItems() {
                     rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
                     rect->setSize(m_gridSize);
                 }
-                rect->setParentTransform(m_content->rectTransform(), true); // required to update child widgets
+                rect->setParent(m_content);
 
                 *it = delegate;
                 m_content->setSubWidget(delegate);
@@ -476,11 +504,11 @@ void ListView::rebuildItems() {
 
             if(delegate) {
                 delegate->setEnabled(true);
-                ModelIndex idx = m_model->index(i, 0);
+                ModelIndex idx = m_model->index(i, 0, m_rootIndex);
                 delegate->bind(this, idx);
                 delegate->setSelected(isIndexSelected(idx));
 
-                RectTransform *rect = delegate->rectTransform();
+                Widget *rect = delegate;
                 rect->setPosition(Vector3(positionAtIndex(i), 0.0f));
 
                 maxWidth = MAX(maxWidth, rect->size().x);
@@ -489,11 +517,11 @@ void ListView::rebuildItems() {
             ++it;
         }
 
-        RectTransform *contentRect = m_content->rectTransform();
+        Widget *contentRect = m_content;
         if(contentRect) {
             float totalHeight;
             if(m_viewMode == ListMode) {
-                totalHeight = m_model->rowCount() * m_rowHeight;
+                totalHeight = m_model->rowCount(m_rootIndex) * m_rowHeight;
             } else {
                 calculateGridParams();
                 totalHeight = m_cachedRows * m_gridSize.y;
@@ -508,18 +536,18 @@ void ListView::rebuildItems() {
 void ListView::updateDelegatesStates() {
     for(auto delegate : m_items) {
         if(delegate && delegate->isEnabled()) {
-            ModelIndex idx = m_model->index(delegate->index(), 0);
+            ModelIndex idx = m_model->index(delegate->index(), 0, m_rootIndex);
             delegate->setSelected(isIndexSelected(idx));
         }
     }
 }
 
 void ListView::handleItemDoubleClick(int index) {
-    if(index < 0 || index >= m_model->rowCount()) {
+    if(index < 0 || index >= m_model->rowCount(m_rootIndex)) {
         return;
     }
 
-    ModelIndex idx = m_model->index(index, 0);
+    ModelIndex idx = m_model->index(index, 0, m_rootIndex);
     if(!idx.isValid()) {
         return;
     }
@@ -529,11 +557,11 @@ void ListView::handleItemDoubleClick(int index) {
 }
 
 void ListView::handleItemClick(int index) {
-    if(index < 0 || index >= m_model->rowCount()) {
+    if(index < 0 || index >= m_model->rowCount(m_rootIndex)) {
         return;
     }
 
-    ModelIndex idx = m_model->index(index, 0);
+    ModelIndex idx = m_model->index(index, 0, m_rootIndex);
     if(!idx.isValid()) {
         return;
     }
@@ -545,14 +573,24 @@ void ListView::handleItemClick(int index) {
     pressed(idx);
 }
 
+ModelIndex ListView::modelIndexAtPosition(const Vector2 &position) {
+    int row = indexAtPosition(position);
+    return (m_model && row >= 0) ? m_model->index(row, 0, m_rootIndex) : ModelIndex();
+}
+
+void ListView::onDragFinished(bool dropped) {
+    AbstractItemView::onDragFinished(dropped);
+    m_isPressed = false;
+}
+
 int ListView::indexAtPosition(const Vector2 &pos) {
-    if(!m_model || m_model->rowCount() == 0) {
+    if(!m_model || m_model->rowCount(m_rootIndex) == 0) {
         return -1;
     }
 
     Vector2 localPos(pos);
     if(m_content) {
-        RectTransform *contentRect = m_content->rectTransform();
+        Widget *contentRect = m_content;
         localPos += contentRect->position();
     }
 
@@ -574,7 +612,7 @@ int ListView::indexAtPosition(const Vector2 &pos) {
         }
     }
 
-    if(index >= m_firstVisibleIndex && index < m_model->rowCount()) {
+    if(index >= m_firstVisibleIndex && index < m_model->rowCount(m_rootIndex)) {
         return index;
     }
 
@@ -595,7 +633,7 @@ Vector2 ListView::positionAtIndex(int index) {
 }
 
 void ListView::scrollToItem(int index) {
-    if(index < 0 || index >= m_model->rowCount()) {
+    if(index < 0 || index >= m_model->rowCount(m_rootIndex)) {
         return;
     }
 
@@ -611,7 +649,7 @@ void ListView::scrollToItem(int index) {
     float itemHeight = (m_viewMode == ListMode) ? m_rowHeight : m_gridSize.y;
     float scrollPos = targetY - viewportHeight / 2 + itemHeight / 2;
 
-    RectTransform *contentRect = m_content->rectTransform();
+    Widget *contentRect = m_content;
     if (contentRect) {
         float maxScroll = contentRect->size().y - viewportHeight;
         scrollPos = std::max(0.0f, std::min(scrollPos, maxScroll));

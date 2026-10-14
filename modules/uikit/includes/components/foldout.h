@@ -18,14 +18,14 @@
 #ifndef FOLDOUT_H
 #define FOLDOUT_H
 
-#include "widget.h"
+#include <widget.h>
 
 class CheckBox;
 class Frame;
 class Label;
 
 class UIKIT_EXPORT Foldout : public Widget {
-    A_OBJECT(Foldout, Widget, Components/UI)
+    A_OBJECT(Foldout, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Foldout::text, Foldout::setText),
@@ -60,14 +60,14 @@ public:
     void onExpand();
 
 protected:
-    void insertRect(int index, RectTransform *content);
+    void insertRect(int index, Widget *content);
 
     void composeComponent() override;
 
-    void childAdded(RectTransform *rect) override;
+    void childAdded(Widget *rect) override;
 
 private:
-    RectTransform *m_contentArea;
+    Widget *m_contentArea;
 
     CheckBox *m_indicator;
 };

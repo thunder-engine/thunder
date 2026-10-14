@@ -15,13 +15,12 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/tabbar.h"
+#include "tabbar.h"
 
-#include "components/recttransform.h"
-#include "components/button.h"
-#include "components/canvas.h"
+#include "button.h"
+#include "canvas.h"
 
-#include "resources/stylesheet.h"
+#include "stylesheet.h"
 
 #define NAVI_SIZE 32
 
@@ -65,8 +64,7 @@ int TabBar::addTab(const TString &title) {
     Inserts a new tab at the specified \a index with the given \a title.
 */
 int TabBar::insertTab(int index, const TString &title) {
-    Actor *buttonActor = Engine::composeActor<Button>(title, actor());
-    Button *button = buttonActor->getComponent<Button>();
+    Button *button = Widget::createWidget<Button>(title, this);
     if(button) {
         setSubWidget(button);
 
@@ -75,7 +73,7 @@ int TabBar::insertTab(int index, const TString &title) {
         button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
 
         if(m_showClose) {
-            createCloseButton(buttonActor);
+            createCloseButton(button);
         }
         button->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
 
@@ -91,7 +89,7 @@ int TabBar::insertTab(int index, const TString &title) {
             index = m_tabs.size() - 1;
         }
 
-        RectTransform *rect = button->rectTransform();
+        Widget *rect = button;
         rect->setPivot(Vector2(0.0f, 1.0f));
         rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
 
@@ -122,9 +120,8 @@ void TabBar::removeTab(int index) {
     m_tabs.erase(it);
 
     if(btn) {
-        Actor *actor = btn->actor();
-        actor->setEnabled(false);
-        actor->deleteLater();
+        btn->setEnabled(false);
+        btn->deleteLater();
     }
 
     updateTabPositions();
@@ -205,7 +202,7 @@ void TabBar::setTabsClosable(bool closable) {
     m_showClose = closable;
 
     for(auto tab : m_tabs) {
-        Actor *actor = tab->actor();
+        Widget *actor = tab;
         if(m_showClose) {
             createCloseButton(actor);
         } else {
@@ -299,7 +296,7 @@ Vector4 TabBar::tabCornerRadius() const {
     \internal
 */
 bool TabBar::isHovered(const Vector2 &pos) {
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
@@ -316,7 +313,7 @@ void TabBar::update(const Vector2 &pos) {
     if(isHovered(pos)) {
         for(auto it : m_childWidgets) {
             // To protect from multiple close of tabs
-            if(!m_blockUpdates && it->isEnabled() && it->actor()->isEnabled()) {
+            if(!m_blockUpdates && it->isEnabled() && it->isEnabled()) {
                 it->update(pos);
             }
         }
@@ -337,7 +334,7 @@ void TabBar::update(const Vector2 &pos) {
     \internal
 */
 void TabBar::draw() {
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     Vector4 area(rect->clipRegion());
 
     if(m_backButton->isEnabled()) {
@@ -353,7 +350,7 @@ void TabBar::draw() {
     canvas->setClipRegion(area);
 
     for(auto it : m_childWidgets) {
-        if(it->isSubWidget() && it->actor()->isEnabled() && it->isEnabled()) {
+        if(it->isSubWidget() && it->isEnabled() && it->isEnabled()) {
             if(it != m_frontButton && it != m_backButton) {
                 it->draw();
             }
@@ -368,8 +365,7 @@ void TabBar::draw() {
 void TabBar::composeComponent() {
     Widget::composeComponent();
 
-    Actor *frontActor = Engine::composeActor<Button>("front", actor());
-    m_frontButton = frontActor->getComponent<Button>();
+    m_frontButton = Widget::createWidget<Button>("front", this);
     if(m_frontButton) {
         setSubWidget(m_frontButton);
         m_frontButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
@@ -377,7 +373,7 @@ void TabBar::composeComponent() {
         m_frontButton->setIconRotation(90.0f);
         m_frontButton->setEnabled(false);
 
-        RectTransform *rect = m_frontButton->rectTransform();
+        Widget *rect = m_frontButton;
         rect->setSize(Vector2(16));
         rect->setPivot(Vector2(1.0f, 1.0f));
         rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
@@ -385,8 +381,7 @@ void TabBar::composeComponent() {
         connect(m_frontButton, _SIGNAL(clicked()), this, _SLOT(onFrontClicked()));
     }
 
-    Actor *backActor = Engine::composeActor<Button>("back", actor());
-    m_backButton = backActor->getComponent<Button>();
+    m_backButton = Widget::createWidget<Button>("back", this);
     if(m_backButton) {
         setSubWidget(m_backButton);
         m_backButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
@@ -394,7 +389,7 @@ void TabBar::composeComponent() {
         m_backButton->setIconRotation(-90.0f);
         m_backButton->setEnabled(false);
 
-        RectTransform *rect = m_backButton->rectTransform();
+        Widget *rect = m_backButton;
         rect->setSize(Vector2(16));
         rect->setPivot(Vector2(1.0f, 1.0f));
         rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
@@ -433,7 +428,7 @@ void TabBar::updateTabPositions() {
     float position = -m_positionOffset;
     float totalWidth = 0.0f;
     for(auto it : m_tabs) {
-        RectTransform *rect = it->rectTransform();
+        Widget *rect = it;
         float width = m_tabPadding.y + m_tabPadding.w;
 
         width += it->contentWidth();
@@ -448,7 +443,7 @@ void TabBar::updateTabPositions() {
         totalWidth += width;
     }
 
-    bool showBackFront = (totalWidth > 0.0f) && (totalWidth > rectTransform()->size().x);
+    bool showBackFront = (totalWidth > 0.0f) && (totalWidth > this->size().x);
     if(m_backButton) {
         bool enabled = m_backButton->isEnabled();
         m_backButton->setEnabled(showBackFront);
@@ -465,11 +460,10 @@ void TabBar::updateTabPositions() {
 /*!
     \internal
 */
-void TabBar::createCloseButton(Actor *parent) {
-    Actor *closeActor = Engine::composeActor<Button>("close", parent);
-    Button *closeBtn = closeActor->getComponent<Button>();
+void TabBar::createCloseButton(Widget *parent) {
+    Button *closeBtn = Widget::createWidget<Button>("close", parent);
     if(closeBtn) {
-        RectTransform *closeRect = closeBtn->rectTransform();
+        Widget *closeRect = closeBtn;
         if(closeRect) {
             closeRect->blockSignals(true);
             closeRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
@@ -487,11 +481,11 @@ void TabBar::createCloseButton(Actor *parent) {
     \internal
 */
 void TabBar::recalcOffset() {
-    float barWidth = rectTransform()->size().x - NAVI_SIZE;
+    float barWidth = this->size().x - NAVI_SIZE;
     float current = 0.0f;
     int idx = 0;
     for(auto it : m_tabs) {
-        RectTransform *rect = it->rectTransform();
+        Widget *rect = it;
         current += rect->size().x;
         if(idx == m_visualIndex) {
             m_positionOffset = (current > barWidth) ? (current - barWidth) : 0.0f;
@@ -533,9 +527,9 @@ void TabBar::onTabClicked() {
 void TabBar::onCloseButtonClicked() {
     Button *closeButton = dynamic_cast<Button *>(sender());
     if(closeButton) {
-        Actor *parentActor = dynamic_cast<Actor *>(closeButton->actor()->parent());
+        Widget *parentActor = closeButton->parentWidget();
         if(parentActor) {
-            Button *tab = parentActor->getComponent<Button>();
+            Button *tab = dynamic_cast<Button *>(parentActor);
             if(tab) {
                 int index = indexOf(tab);
                 if(index > -1) {

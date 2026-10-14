@@ -25,7 +25,7 @@ class Frame;
 class ItemViewDelegate;
 
 class UIKIT_EXPORT ListView : public AbstractItemView {
-    A_OBJECT(ListView, AbstractItemView, Components/UI)
+    A_OBJECT(ListView, AbstractItemView, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(int, viewMode, ListView::viewMode, ListView::setViewMode, "enum=ViewMode"),
@@ -51,6 +51,8 @@ public:
     ~ListView();
 
     void setModel(AbstractItemModel *model) override;
+    void setRootIndex(const ModelIndex &index);
+    void refresh();
 
     int viewMode() const;
     void setViewMode(int mode);
@@ -79,6 +81,8 @@ protected:
     void activateCurrentItem() override;
 
     void onVScrollChanged(int value) override;
+    ModelIndex modelIndexAtPosition(const Vector2 &position) override;
+    void onDragFinished(bool dropped) override;
 
     Vector2 cellSize() const override;
 

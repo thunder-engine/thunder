@@ -17,10 +17,9 @@
 */
 #include "components/canvas.h"
 
-#include "components/recttransform.h"
 #include "components/widget.h"
+#include "components/menu.h"
 
-#include <components/actor.h>
 #include <stylesheet.h>
 
 #include <resources/texture.h>
@@ -38,16 +37,16 @@ namespace {
     const char *gStyle("style");
     const char *gClass("class");
 
-    void loadElementHelper(pugi::xml_node &node, Actor *actor, bool root = false) {
+    void loadElementHelper(pugi::xml_node &node, Widget *parent, bool root = false) {
         std::string type = node.name();
         std::string name = node.attribute(gName).as_string();
 
-        Actor *element = dynamic_cast<Actor *>(actor->find(name));
+        Widget *element = dynamic_cast<Widget *>(parent->find(name));
         if(element == nullptr) {
-            element = Engine::composeActor(type, name, actor);
+            element = Widget::createWidget(type, name, parent);
         }
 
-        Widget *widget = dynamic_cast<Widget *>(element->component(type));
+        Widget *widget = element;
         if(widget) {
             const MetaObject *meta = widget->metaObject();
             for(auto it : node.attributes()) {
@@ -93,12 +92,14 @@ namespace {
             }
         }
 
-        for(pugi::xml_node it : node.children()) {
-            loadElementHelper(it, element);
-        }
+        if(element) {
+            for(pugi::xml_node it : node.children()) {
+                loadElementHelper(it, element);
+            }
 
-        if(root) {
-            element->blockSerialization(true);
+            if(root) {
+                element->blockSerialization(true);
+            }
         }
     }
 }
@@ -131,9 +132,6 @@ Canvas::Canvas() :
     m_target->setClearColor(0.0f);
     m_target->setFlags(RenderTarget::ClearColor);
 
-    static uint32_t hash = Mathf::hashString("canvas");
-    addTagByHash(hash);
-
     Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
@@ -164,49 +162,47 @@ void Canvas::markDirty() {
     Propagates the update call to all child widgets, setting their canvas reference before updating.
 */
 void Canvas::update(const Vector2 &position) {
-    for(auto it : rectTransform()->children()) {
-        RectTransform *rect = dynamic_cast<RectTransform *>(it);
-        if(rect) {
-            Widget *widget = rect->widget();
-            if(widget) {
-                widget->m_canvas = this;
+    if(parentWidget()) {
+        Widget::update(position);
+        return;
+    }
 
-                Vector2 globalPos(position);
-                if(!m_lastPositionValid || globalPos != m_lastPosition) {
-                    widget->dispatchMouseEvent(globalPos, Event::MouseMove, 0);
-                    m_lastPosition = globalPos;
-                    m_lastPositionValid = true;
-                }
+    Vector2 globalPos(position);
+    if(!m_lastPositionValid || globalPos != m_lastPosition) {
+        dispatchMouseEvent(globalPos, Event::MouseMove, 0);
+        m_lastPosition = globalPos;
+        m_lastPositionValid = true;
+    }
 
-                float wheelDelta = Input::mouseScrollDelta();
-                if(wheelDelta != 0.0f) {
-                    int delta = static_cast<int>(wheelDelta);
-                    if(delta == 0) {
-                        delta = wheelDelta > 0.0f ? 1 : -1;
-                    }
-                    widget->dispatchMouseWheelEvent(globalPos, delta, false);
-                }
-
-                for(int key = Input::KEY_SPACE; key <= Input::KEY_MENU; ++key) {
-                    if(Input::isKeyDown((Input::KeyCode)key) || Input::isKeyUp((Input::KeyCode)key)) {
-                        KeyEvent event(key, Input::isKeyDown((Input::KeyCode)key));
-                        widget->dispatchKeyEvent(&event);
-                    }
-                }
-
-                if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-                    widget->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
-                }
-                if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-                    widget->dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
-                }
-                if(Input::isMouseButtonDoubleClick(Input::MOUSE_LEFT)) {
-                    widget->dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
-                }
-
-                widget->update(position);
-            }
+    float wheelDelta = Input::mouseScrollDelta();
+    if(wheelDelta != 0.0f) {
+        int delta = static_cast<int>(wheelDelta);
+        if(delta == 0) {
+            delta = wheelDelta > 0.0f ? 1 : -1;
         }
+        dispatchMouseWheelEvent(globalPos, delta, false);
+    }
+
+    for(int key = Input::KEY_SPACE; key <= Input::KEY_MENU; ++key) {
+        if(Input::isKeyDown((Input::KeyCode)key) || Input::isKeyUp((Input::KeyCode)key)) {
+            KeyEvent event(key, Input::isKeyDown((Input::KeyCode)key));
+            dispatchKeyEvent(&event);
+        }
+    }
+
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
+    }
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
+    }
+    if(Input::isMouseButtonDoubleClick(Input::MOUSE_LEFT)) {
+        dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
+    }
+
+    Widget::update(position);
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        Widget::finishDrag(false);
     }
 }
 /*!
@@ -215,30 +211,36 @@ void Canvas::update(const Vector2 &position) {
 void Canvas::draw(CommandBuffer *buffer) {
     m_buffer = buffer;
 
+    Vector2 canvasSize(size());
+    if(canvasSize.x > 0.0f && canvasSize.y > 0.0f) {
+        resizeTexture(static_cast<int>(canvasSize.x), static_cast<int>(canvasSize.y));
+    }
+
     RenderTarget *target = m_buffer->renderTarget();
     Vector4 viewport = m_buffer->viewport();
-    RectTransform *rect = rectTransform();
     Matrix4 view;
     view[14] = -50.0f;
     Matrix4 projection = Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f);
 
     /*if(m_dirty)*/ {
-        m_buffer->setViewProjection(view * rect->worldTransform().inverse(), projection);
+        m_buffer->setViewProjection(view * worldTransform().inverse(), projection);
         RenderTarget *canvasTarget = renderTarget();
         if(m_buffer->renderTarget() != canvasTarget) {
             m_buffer->setRenderTarget(canvasTarget);
         }
         m_buffer->setViewport(0, 0, m_texture->width(), m_texture->height());
 
-        for(auto it : rect->children()) {
-            RectTransform *childRect = dynamic_cast<RectTransform *>(it);
-            if(childRect && childRect->isEnabled()) {
-                Widget *widget = childRect->widget();
-                if(widget) {
-                    widget->draw();
-                }
+        Widget::draw();
+
+        m_drawingPopups = true;
+        for(size_t i = 0; i < m_popupMenus.size(); ++i) {
+            Menu *menu = m_popupMenus[i];
+            if(menu && menu->isVisible() && menu->isEnabled()) {
+                menu->draw();
             }
         }
+        m_drawingPopups = false;
+        m_popupMenus.clear();
         m_dirty = false;
     }
 
@@ -249,6 +251,17 @@ void Canvas::draw(CommandBuffer *buffer) {
         m_buffer->setRenderTarget(target);
     }
     if(!m_skipRenderResult && m_finalMaterial) {
+        Matrix4 transform;
+        transform[0] = canvasSize.x;
+        transform[5] = canvasSize.y;
+        transform[12] = canvasSize.x * 0.5f;
+        transform[13] = canvasSize.y * 0.5f;
+        uint32_t hash = this->hash();
+        Mathf::hashCombine(hash, transform[0]);
+        Mathf::hashCombine(hash, transform[5]);
+        Mathf::hashCombine(hash, transform[12]);
+        Mathf::hashCombine(hash, transform[13]);
+        m_finalMaterial->setTransform(worldTransform() * transform, 0, hash);
         m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
     }
     if(viewport.z > 0.0f && viewport.w > 0.0f) {
@@ -263,7 +276,7 @@ void Canvas::draw(CommandBuffer *buffer) {
     it with the world transform, and draws the default plane mesh.
     The hash is computed from the transform and size for batching purposes.
 */
-void Canvas::drawRect(MaterialInstance *material, RectTransform *transform) {
+void Canvas::drawRect(MaterialInstance *material, Widget *transform) {
     if(transform) {
         Vector2 size(transform->size());
         Matrix4 s;
@@ -291,17 +304,8 @@ void Canvas::drawMesh(Mesh *mesh, MaterialInstance *material) {
 }
 
 void Canvas::setSize(int width, int height) {
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        rect->setSize(Vector2(width, height));
-    }
-
+    Widget::setSize(Vector2(width, height));
     resizeTexture(width, height);
-}
-
-void Canvas::boundChanged(const Vector2 &size) {
-    Widget::boundChanged(size);
-    resizeTexture(static_cast<int>(size.x), static_cast<int>(size.y));
 }
 
 void Canvas::resizeTexture(int width, int height) {
@@ -343,6 +347,9 @@ RenderTarget *Canvas::renderTarget() const {
     return m_target;
 }
 
+Canvas *Canvas::canvas() {
+    return this;
+}
 /*!
     Allows to \a skip the rendering of the result.
     This is useful if the UI is the only rendering task.
@@ -416,7 +423,7 @@ void Canvas::fromBuffer(const TString &buffer) {
                     m_styleSheet->addRawData(m_documentStyle);
                 }
             } else {
-                loadElementHelper(node, actor(), true);
+                loadElementHelper(node, this, true);
             }
         }
 
@@ -430,45 +437,21 @@ void Canvas::fromBuffer(const TString &buffer) {
 void Canvas::documentLoaded() {
     emitSignal(_SIGNAL(documentLoaded()));
 }
-/*!
-    \internal
-*/
-void Canvas::composeComponent() {
-    Actor *object = Canvas::actor();
-    if(object) {
-        Transform *transform = object->transform();
 
-        RectTransform *rect = dynamic_cast<RectTransform *>(transform);
-        if(rect == nullptr) {
-            if(transform) {
-                delete transform;
-            }
-
-            rect = Engine::objectCreate<RectTransform>("RectTransform", object);
-            object->setTransform(rect);
-        }
-        setRectTransform(rect);
-    }
-}
 /*!
     \internal
     Draws content of this canvas as widget.
 */
 void Canvas::draw() {
-    Canvas *canvas = Canvas::canvas();
-    if(canvas) {
-        RectTransform *rect = rectTransform();
-        CommandBuffer *buffer = canvas->m_buffer;
-        Vector4 viewport(buffer->viewport());
-        Vector4 clip(rect->clipRegion());
-        if(clip.z > 0.0f && clip.w > 0.0f) {
-            buffer->setViewport(clip.x, clip.y, clip.z, clip.w);
-            if(m_finalMaterial) {
-                canvas->drawRect(m_finalMaterial, rect);
-            }
-            if(viewport.z > 0.0f && viewport.w > 0.0f) {
-                buffer->setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
-            }
+    Vector4 viewport(m_buffer->viewport());
+    Vector4 clip(clipRegion());
+    if(clip.z > 0.0f && clip.w > 0.0f) {
+        m_buffer->setViewport(clip.x, clip.y, clip.z, clip.w);
+        if(m_finalMaterial) {
+            drawRect(m_finalMaterial, this);
+        }
+        if(viewport.z > 0.0f && viewport.w > 0.0f) {
+            m_buffer->setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
         }
     }
 }
@@ -479,9 +462,7 @@ void Canvas::resolveStyleSheet(Widget *widget) {
     for(auto it : widget->childWidgets()) {
         if(!it->isSubWidget()) {
             m_styleSheet->resolve(it);
-            if(widget != this) {
-                resolveStyleSheet(widget);
-            }
+            resolveStyleSheet(it);
         }
     }
 }
@@ -493,7 +474,7 @@ void Canvas::cleanHierarchy(Widget *widget) {
 
     for(auto it : children) {
         if(!it->isSubWidget()) {
-            delete it->actor();
+            delete it;
         }
     }
 }

@@ -15,15 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/abstractbutton.h"
+#include "abstractbutton.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "stylesheet.h"
 
-#include <resources/stylesheet.h>
+#include <resources/material.h>
 
 #include <input.h>
 #include <timer.h>
@@ -202,13 +200,10 @@ void AbstractButton::update(const Vector2 &pos) {
 */
 void AbstractButton::checkStateSet() {
     if(m_exclusive && m_checked) {
-        for(auto it : actor()->getChildren()) {
-            Actor *actor = dynamic_cast<Actor *>(it);
-            if(actor) {
-                AbstractButton *btn = actor->getComponent<AbstractButton>();
-                if(btn && btn != this) {
-                    btn->setChecked(false);
-                }
+        for(Widget *child : childWidgets()) {
+            AbstractButton *btn = dynamic_cast<AbstractButton *>(child);
+            if(btn && btn != this) {
+                btn->setChecked(false);
             }
         }
     }

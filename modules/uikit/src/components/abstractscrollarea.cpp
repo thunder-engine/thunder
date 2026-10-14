@@ -15,12 +15,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/abstractscrollarea.h"
+#include "abstractscrollarea.h"
 
-#include <components/frame.h>
-#include <components/scrollbar.h>
-#include <components/recttransform.h>
-#include <components/canvas.h>
+#include "frame.h"
+#include "scrollbar.h"
+#include "canvas.h"
 
 AbstractScrollArea::AbstractScrollArea() :
         m_content(nullptr),
@@ -44,7 +43,7 @@ void AbstractScrollArea::setContent(Widget *content) {
         if(m_content) {
             setSubWidget(m_content);
 
-            RectTransform *contentRect = m_content->rectTransform();
+            Widget *contentRect = m_content;
             if(contentRect) {
                 contentRect->setAnchors(Vector2(0, 1), Vector2(0, 1));
                 contentRect->setPivot(Vector2(0, 1));
@@ -63,7 +62,7 @@ void AbstractScrollArea::setVerticalScrollBar(ScrollBar *bar) {
         if(m_vScroll) {
             m_vScroll->setOrientation(Widget::Vertical);
 
-            RectTransform *rect = m_vScroll->rectTransform();
+            Widget *rect = m_vScroll;
             rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
             rect->setPivot(Vector2(1.0f, 0.5f));
             rect->setSize(Vector2(16.0f, 0.0f));
@@ -86,7 +85,7 @@ void AbstractScrollArea::setHorizontalScrollBar(ScrollBar *bar) {
         if(m_hScroll) {
             m_hScroll->setOrientation(Widget::Horizontal);
 
-            RectTransform *rect = m_hScroll->rectTransform();
+            Widget *rect = m_hScroll;
             rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f));
             rect->setPivot(Vector2(0.5f, 0.0f));
             rect->setSize(Vector2(0.0f, 16.0f));
@@ -103,12 +102,12 @@ void AbstractScrollArea::composeComponent() {
     Frame::composeComponent();
 
     // Create vertical scrollbar
-    Actor *vActor = Engine::composeActor<ScrollBar>("vScroll", actor());
-    setVerticalScrollBar(vActor->getComponent<ScrollBar>());
+    Widget *vActor = Widget::createWidget<ScrollBar>("vScroll", this);
+    setVerticalScrollBar(dynamic_cast<ScrollBar *>(vActor));
 
     // Create horizontal scrollbar
-    Actor *hActor = Engine::composeActor<ScrollBar>("hScroll", actor());
-    setHorizontalScrollBar(hActor->getComponent<ScrollBar>());
+    Widget *hActor = Widget::createWidget<ScrollBar>("hScroll", this);
+    setHorizontalScrollBar(dynamic_cast<ScrollBar *>(hActor));
 }
 
 void AbstractScrollArea::boundChanged(const Vector2 &size) {
@@ -126,7 +125,7 @@ void AbstractScrollArea::drawSub() {
     if(m_hScroll && m_hScroll->isEnabled()) {
         m_hScroll->draw();
     }
-    canvas->setClipRegion(rectTransform()->clipRegion());
+    canvas->setClipRegion(this->clipRegion());
     if(m_content && m_content->isEnabled()) {
         m_content->draw();
     }
@@ -135,7 +134,7 @@ void AbstractScrollArea::drawSub() {
 
 void AbstractScrollArea::onVScrollChanged(int value) {
     if(m_content) {
-        RectTransform *rect = m_content->rectTransform();
+        Widget *rect = m_content;
         Vector3 v(rect->position());
         rect->setPosition(Vector3(v.x, static_cast<float>(value), v.z));
         repaint();
@@ -144,7 +143,7 @@ void AbstractScrollArea::onVScrollChanged(int value) {
 
 void AbstractScrollArea::onHScrollChanged(int value) {
     if(m_content) {
-        RectTransform *rect = m_content->rectTransform();
+        Widget *rect = m_content;
         Vector3 v(rect->position());
         rect->setPosition(Vector3(static_cast<float>(-value), v.y, v.z));
         repaint();
@@ -153,15 +152,15 @@ void AbstractScrollArea::onHScrollChanged(int value) {
 
 void AbstractScrollArea::updateScrollRange() {
     if(m_content) {
-        RectTransform *crect = m_content->rectTransform();
+        Widget *crect = m_content;
         Vector2 contentSize(crect->sizeHint());
 
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         Vector2 size(rect->size());
         Vector4 padding(rect->padding());
 
-        float vScrollWidth = m_vScroll ? m_vScroll->rectTransform()->size().x : 0.0f;
-        float hScrollHeight = m_hScroll ? m_hScroll->rectTransform()->size().y : 0.0f;
+        float vScrollWidth = m_vScroll ? m_vScroll->size().x : 0.0f;
+        float hScrollHeight = m_hScroll ? m_hScroll->size().y : 0.0f;
 
         bool needVScroll = false;
         bool needHScroll = false;

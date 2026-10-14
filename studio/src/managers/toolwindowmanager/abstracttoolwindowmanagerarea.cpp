@@ -19,10 +19,9 @@
 
 #include "toolwindowmanager.h"
 
-#include <components/layout.h>
-#include <components/tabbar.h>
-#include <components/tabwidget.h>
-#include <components/recttransform.h>
+#include <layout.h>
+#include <tabbar.h>
+#include <tabwidget.h>
 #include <engine.h>
 #include <log.h>
 
@@ -52,19 +51,19 @@ void AbstractToolWindowManagerArea::setTabsClosable(bool enabled) {
 void AbstractToolWindowManagerArea::composeComponent() {
     Widget::composeComponent();
 
-    Layout *layout = rectTransform()->layout();
+    Layout *layout = this->layout();
     if(!layout) {
         layout = new Layout;
         layout->setOrientation(Widget::Vertical);
-        rectTransform()->setLayout(layout);
+        this->setLayout(layout);
     }
 
-    Actor *tabActor = Engine::composeActor<TabWidget>("tabs", actor());
+    Widget *tabActor = Widget::createWidget<TabWidget>("tabs", this);
     if(!tabActor) {
         aError() << "Unable to create tool window tab widget";
         return;
     }
-    m_tabWidget = tabActor->getComponent<TabWidget>();
+    m_tabWidget = dynamic_cast<TabWidget *>(tabActor);
     if(!m_tabWidget) {
         aError() << "Tool window tab widget component is missing";
         return;
@@ -72,10 +71,10 @@ void AbstractToolWindowManagerArea::composeComponent() {
 
     setSubWidget(m_tabWidget);
     m_tabWidget->setCloseOnRequest(false);
-    RectTransform *tabTransform = m_tabWidget->rectTransform();
-    tabTransform->setHorizontalPolicy(RectTransform::Expanding);
-    tabTransform->setVerticalPolicy(RectTransform::Expanding);
-    layout->addTransform(tabTransform);
+    Widget *tabTransform = m_tabWidget;
+    tabTransform->setHorizontalPolicy(Widget::Expanding);
+    tabTransform->setVerticalPolicy(Widget::Expanding);
+    layout->addWidget(tabTransform);
     m_tabWidget->setTabsClosable(m_manager ? m_manager->tabsClosable() : true);
 
     m_tabBar = dynamic_cast<TabBar *>(m_tabWidget->subWidget("tabBar"));
@@ -141,8 +140,8 @@ void AbstractToolWindowManagerArea::addToolWindows(const std::vector<Widget *> &
     }
     const int previousIndex = m_tabWidget->currentIndex();
     for(Widget *toolWindow : toolWindows) {
-        if(toolWindow && toolWindow->actor()) {
-            m_tabWidget->addTab(toolWindow->actor()->name(), toolWindow);
+        if(toolWindow && toolWindow) {
+            m_tabWidget->addTab(toolWindow->name(), toolWindow);
         }
     }
     if(previousIndex != m_tabWidget->currentIndex()) {

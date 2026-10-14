@@ -20,7 +20,6 @@
 #include "image.h"
 #include "label.h"
 #include "listview.h"
-#include "recttransform.h"
 
 #include <abstractitemmodel.h>
 #include <algorithm>
@@ -81,7 +80,7 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
 
     bool showIcon = false;
     if(m_icon == nullptr) {
-        m_icon = actor()->findChild<Image *>();
+        m_icon = findChild<Image *>();
     }
 
     Vector2 cellSize;
@@ -100,7 +99,7 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
                 m_icon->setSprite(icon);
                 m_icon->setEnabled(showIcon);
 
-                RectTransform *rect = m_icon->rectTransform();
+                Widget *rect = m_icon;
                 if(rect) {
                     if(iconMode) {
                         rect->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
@@ -122,7 +121,7 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
     }
 
     if(m_label == nullptr) {
-        m_label = actor()->findChild<Label *>();
+        m_label = findChild<Label *>();
         onHierarchyUpdated();
     }
     if(m_label) {
@@ -132,7 +131,7 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
         float contentOffset = showIcon ? iconSize.x + 4.0f : 2.0f;
         float totalWidth = std::max(contentOffset + textWidth + 2.0f, std::max(cellSize.x, 1.0f));
 
-        RectTransform *rect = m_label->rectTransform();
+        Widget *rect = m_label;
         if(rect) {
             if(iconMode) {
                 rect->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
@@ -147,7 +146,7 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
             }
         }
 
-        RectTransform *delegateRect = rectTransform();
+        Widget *delegateRect = this;
         if(delegateRect) {
             if(iconMode) {
                 delegateRect->setSize(Vector2(std::max(cellSize.x, 1.0f), std::max(cellSize.y, 1.0f)));
@@ -161,10 +160,10 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
 void ItemViewDelegate::composeComponent() {
     Widget::composeComponent();
 
-    Actor *iconActor = Engine::composeActor<Image>("icon", actor());
-    m_icon = iconActor->getComponent<Image>();
+    Widget *iconActor = Widget::createWidget<Image>("icon", this);
+    m_icon = dynamic_cast<Image *>(iconActor);
     if(m_icon) {
-        RectTransform *rect = m_icon->rectTransform();
+        Widget *rect = m_icon;
         if(rect) {
             rect->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
             rect->setPivot(Vector2(0, 0.5f));
@@ -172,10 +171,10 @@ void ItemViewDelegate::composeComponent() {
         }
     }
 
-    Actor *labelActor = Engine::composeActor<Label>("label", actor());
-    m_label = labelActor->getComponent<Label>();
+    Widget *labelActor = Widget::createWidget<Label>("label", this);
+    m_label = dynamic_cast<Label *>(labelActor);
     if(m_label) {
-        RectTransform *rect = m_label->rectTransform();
+        Widget *rect = m_label;
         if(rect) {
             rect->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
             rect->setPivot(Vector2(0, 0.5f));

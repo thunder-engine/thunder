@@ -56,7 +56,6 @@ static const char *meta = \
 "       \"Menu\","
 "       \"MenuBar\","
 "       \"ProgressBar\","
-"       \"RectTransform\","
 "       \"ScrollBar\","
 "       \"Slider\","
 "       \"Splitter\","

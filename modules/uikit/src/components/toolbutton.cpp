@@ -15,13 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/toolbutton.h"
+#include "toolbutton.h"
 
-#include "components/recttransform.h"
-#include <components/image.h>
-#include <components/menu.h>
-
-#include <components/actor.h>
+#include "image.h"
+#include "menu.h"
 
 #include <resources/sprite.h>
 
@@ -67,7 +64,7 @@ void ToolButton::setMenu(Menu *menu) {
     if(menu) {
         connect(menu, _SIGNAL(aboutToHide()), this, _SLOT(hideMenu()));
         connect(menu, _SIGNAL(triggered(int)), this, _SLOT(onTriggered(int)));
-        RectTransform *r = menu->rectTransform();
+        Widget *r = menu;
         if(r) {
             r->setAnchors(Vector2(0.0f), Vector2(0.0f));
         }
@@ -82,9 +79,9 @@ void ToolButton::showMenu() {
     if(menu) {
         setCorners(Vector4(0, 0, gCorner, gCorner));
 
-        RectTransform *rect = menu->rectTransform();
+        Widget *rect = menu;
         if(rect) {
-            rect->setSize(Vector2(rectTransform()->size().x, rect->size().y));
+            rect->setSize(Vector2(this->size().x, rect->size().y));
         }
         menu->show(Vector2());
         Vector4 corners = menu->corners();
@@ -111,19 +108,19 @@ void ToolButton::composeComponent() {
     Button::composeComponent();
 
     // Add icon
-    Actor *icon = Engine::composeActor<Image>(gIcon, actor());
-    Image *image = icon->getComponent<Image>();
+    Widget *icon = Widget::createWidget<Image>(gIcon, this);
+    Image *image = dynamic_cast<Image *>(icon);
     image->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
 
-    RectTransform *t = image->rectTransform();
+    Widget *t = image;
     if(t) {
         t->setSize(Vector2(16.0f, 8.0f));
         t->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
         t->setPivot(Vector2(1.0f, 0.5f));
     }
 
-    Actor *actor = Engine::composeActor<Menu>(gMenuFrame, ToolButton::actor());
-    Menu *menu = actor->getComponent<Menu>();
+    Widget *actor = Widget::createWidget<Menu>(gMenuFrame, this);
+    Menu *menu = dynamic_cast<Menu *>(actor);
 
     setMenu(menu);
 

@@ -18,7 +18,7 @@
 #ifndef ABSTRACTSLIDER_H
 #define ABSTRACTSLIDER_H
 
-#include "widget.h"
+#include <widget.h>
 
 class UIKIT_EXPORT AbstractSlider : public Widget {
     A_OBJECT(AbstractSlider, Widget, General)

@@ -24,12 +24,11 @@
 #include "viewport/tasks/gridrender.h"
 #include "viewport/tasks/outlinerender.h"
 
-#include <components/action.h>
-#include <components/actor.h>
-#include <components/camera.h>
-#include <components/menu.h>
-#include <components/world.h>
-#include <components/recttransform.h>
+#include <action.h>
+#include <actor.h>
+#include <camera.h>
+#include <menu.h>
+#include <world.h>
 
 #include <resources/pipeline.h>
 #include <resources/texture.h>
@@ -79,7 +78,8 @@ Viewport::Viewport() :
         m_liveUpdate(false),
         m_frameInProgress(false),
         m_rendering(false),
-        m_initialized(false) {
+        m_initialized(false),
+        m_screenInProgress(false) {
 
     Texture *output = Canvas::texture();
     RenderTarget *target = renderTarget();
@@ -97,11 +97,6 @@ Viewport::~Viewport() {
 
 void Viewport::init() {
     if(m_initialized) {
-        return;
-    }
-
-    if(!actor()) {
-        aError() << "Viewport must be attached to an actor before initialization.";
         return;
     }
 
@@ -163,26 +158,7 @@ void Viewport::init() {
 }
 
 void Viewport::composeComponent() {
-    Actor *object = actor();
-    if(!object) {
-        return;
-    }
-
-    Transform *transform = object->transform();
-    RectTransform *rect = dynamic_cast<RectTransform *>(transform);
-    if(!rect) {
-        rect = Engine::objectCreate<RectTransform>("RectTransform", object);
-        if(!rect) {
-            aError() << "Unable to create the Viewport RectTransform.";
-            return;
-        }
-        if(transform) {
-            delete transform;
-        }
-        object->setTransform(rect);
-    }
-    setRectTransform(rect);
-
+    Widget::composeComponent();
     init();
 }
 
@@ -194,7 +170,7 @@ void Viewport::draw(CommandBuffer *buffer) {
     m_frameInProgress = true;
 
     if(m_world && m_pipelineContext && !m_rendering) {
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         Vector2 size = rect->size();
         if(size.x > 0.0f && size.y > 0.0f) {
             Camera *previousCamera = Camera::current();
@@ -231,17 +207,34 @@ void Viewport::draw(CommandBuffer *buffer) {
     }
 
     Canvas::draw(buffer);
+    if(m_screenInProgress) {
+        Texture *output = texture();
+        if(output && output->width() > 0 && output->height() > 0) {
+            output->readPixels(0, 0, output->width(), output->height());
+            screenshot(output->getPixels(0), output->width(), output->height());
+        }
+        m_screenInProgress = false;
+    }
     m_frameInProgress = false;
+}
+
+void Viewport::grabScreen() {
+    m_screenInProgress = true;
+}
+
+void Viewport::screenshot(const ByteArray &pixels, int width, int height) {
+    //emitSignal(_SIGNAL(screenshot(ByteArray,int,int)), pixels, width, height);
 }
 
 void Viewport::update(const Vector2 &position) {
     Canvas::update(position);
 
-    if(m_controller && !m_gameView) {
-        Vector2 size = rectTransform()->size();
+    Widget *root = this;
+    if(m_controller && !m_gameView && root) {
+        Vector2 size = root->size();
         if(size.x > 0.0f && size.y > 0.0f) {
             m_controller->resize(static_cast<int32_t>(size.x), static_cast<int32_t>(size.y));
-            if(isHovered(position)) {
+            if(root->isHovered(position)) {
                 m_controller->update();
             }
         }
@@ -299,7 +292,7 @@ void Viewport::setCamera(Camera *camera) {
 }
 
 void Viewport::createMenu(Menu *menu) {
-    if(!menu || !menu->actor() || !m_pipelineContext) {
+    if(!menu || !m_pipelineContext) {
         return;
     }
 
@@ -404,11 +397,10 @@ void Viewport::addRenderTask(PipelineTask *task) {
 }
 
 Menu *Viewport::createSubmenu(Menu *parent, const TString &title) {
-    if(!parent || !parent->actor()) {
+    if(!parent) {
         return nullptr;
     }
-    Actor *submenuActor = Engine::composeActor<Menu>(title, parent->actor());
-    Menu *submenu = submenuActor ? submenuActor->getComponent<Menu>() : nullptr;
+    Menu *submenu = Widget::createWidget<Menu>(title, parent);
     if(!submenu) {
         aError() << "Unable to create the Viewport menu submenu.";
         return nullptr;
@@ -418,11 +410,10 @@ Menu *Viewport::createSubmenu(Menu *parent, const TString &title) {
 }
 
 Action *Viewport::addAction(Menu *menu, const TString &name, bool checked, const std::function<void(bool)> &handler) {
-    if(!menu || !menu->actor()) {
+    if(!menu) {
         return nullptr;
     }
-    Actor *actionActor = Engine::composeActor<Action>(name, menu->actor());
-    Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
+    Action *action = Widget::createWidget<Action>(name, menu);
     if(!action) {
         aError() << "Unable to create the Viewport menu action.";
         return nullptr;

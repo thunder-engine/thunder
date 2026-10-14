@@ -15,15 +15,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/button.h"
+#include "button.h"
+
+#include "canvas.h"
+
+#include "stylesheet.h"
 
 #include <resources/material.h>
 #include <resources/font.h>
-
-#include "components/canvas.h"
-#include "components/recttransform.h"
-
-#include "stylesheet.h"
 
 namespace {
     const char *gOverride("mainTexture");
@@ -264,7 +263,7 @@ void Button::setTextOffset(const Vector2 &offset) {
 void Button::draw() {
     AbstractButton::draw();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     Vector2 size(rect->size());
 
     Matrix4 mat(rect->worldTransform());
@@ -281,7 +280,7 @@ void Button::draw() {
     Canvas *canvas = Button::canvas();
     if(m_fontMaterial && !m_text.isEmpty()) {
         if(m_dirtyText && m_font) {
-            m_textMesh->setName(actor()->name());
+            m_textMesh->setName(name());
             Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
             settings.offset = m_textOffset;
             m_font->composeMesh(m_textMesh, m_translated ? Engine::translate(m_text) : m_text, settings);
@@ -342,7 +341,7 @@ void Button::applyStyle() {
 void Button::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     rect->blockSignals(true);
     rect->setSize(Vector2(100.0f, 30.0f));
     rect->blockSignals(false);

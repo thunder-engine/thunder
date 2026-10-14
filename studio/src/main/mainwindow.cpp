@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "viewport/viewport.h"
-#include "viewport/cameracontroller.h"
+#include "scenecomposer/scenecomposer.h"
+#include "scenecomposer/tools/spline/splinepanel.h"
 
+#include <components/menubar.h>
 #include <engine.h>
 #include <pipelinecontext.h>
 #include <pipelinetask.h>
@@ -11,10 +13,9 @@
 
 #include <canvas.h>
 #include <frame.h>
-#include <recttransform.h>
-#include <transform.h>
 
 #include <editor.h>
+#include <editor/asseteditor.h>
 #include <editor/projectsettings.h>
 #include <editor/pluginmanager.h>
 #include <editor/assetmanager.h>
@@ -27,19 +28,34 @@
 #include "managers/toolwindowmanager/abstracttoolwindowmanagerarea.h"
 #include "managers/toolwindowmanager/toolwindowmanager.h"
 #include "managers/toolwindowmanager/private/toolwindowmanagerarea_p.h"
+#include "screens/objecthierarchy/hierarchybrowser.h"
+#include "screens/contentbrowser/contentbrowser.h"
 
 namespace {
-const float kStatusBarHeight = 24.0f;
+    const float kStatusBarHeight = 24.0f;
+    const float kMenuBarHeight = 28.0f;
 }
 
 MainWindow::MainWindow() :
         m_scene(nullptr),
         m_canvas(nullptr),
         m_toolWindowManager(nullptr),
+        m_menuBarWidget(nullptr),
+        m_windowMenu(nullptr),
+        m_hierarchyBrowser(nullptr),
+        m_currentAssetEditor(nullptr),
         m_queue(nullptr) {
 
     m_world = dynamic_cast<World *>(Engine::objectCreate("World", "MainWorld"));
     m_scene = dynamic_cast<Scene *>(Engine::objectCreate("Scene", "MainScene", m_world));
+}
+
+MainWindow::~MainWindow() {
+    setFileDropTarget(nullptr);
+    if(m_menuBarWidget) {
+        m_menuBarWidget->detachFromWindow();
+    }
+    setMenuBar(nullptr);
 }
 
 bool MainWindow::create() {
@@ -52,6 +68,10 @@ bool MainWindow::create() {
     ToolWindowManager::registerClassFactory(&Engine::instance());
     ImportQueue::registerClassFactory(&Engine::instance());
     Viewport::registerClassFactory(&Engine::instance());
+    SceneComposer::registerClassFactory(&Engine::instance());
+    HierarchyBrowser::registerClassFactory(&Engine::instance());
+    ContentBrowser::registerClassFactory(&Engine::instance());
+    SplinePanel::registerClassFactory(&Engine::instance());
 
     m_context = Engine::objectCreate<PipelineContext>("PipelineContext");
 
@@ -79,22 +99,40 @@ void MainWindow::onOpenProject(const TString &path) {
 
     initUI();
 
-    Scene *scene = dynamic_cast<Scene *>(Engine::objectCreate("Scene", "MainScene", Engine::world()));
-    if(!scene) {
-        aError() << "Unable to create Studio test scene";
-        return;
+    SceneComposer *composer = Widget::createWidget<SceneComposer>("SceneComposer", m_toolWindowManager);
+    if(composer && Engine::world()->scenes().empty()) {
+        composer->onNewAsset();
     }
-
-    Actor *viewportActor = Engine::composeActor<Viewport>("Viewport", m_toolWindowManager->actor());
-    Viewport *viewport = viewportActor ? viewportActor->getComponent<Viewport>() : nullptr;
-    if(!viewport) {
-        aError() << "Unable to create Studio test viewport";
-        return;
+    m_toolWindowManager->addToolWindow(composer, ToolWindowManager::EmptySpaceArea);
+    m_hierarchyBrowser = Widget::createWidget<HierarchyBrowser>("HierarchyBrowser", m_toolWindowManager);
+    if(m_hierarchyBrowser && composer) {
+        AbstractToolWindowManagerArea *composerArea = m_toolWindowManager->areaFor(composer);
+        if(composerArea) {
+            m_toolWindowManager->addToolWindow(m_hierarchyBrowser, ToolWindowManager::ReferenceLeftOf, composerArea);
+            connect(m_toolWindowManager, _SIGNAL(currentToolWindowChanged(Widget*)),
+                    this, _SLOT(onCurrentToolWindowChanged(Widget*)));
+            onCurrentToolWindowChanged(composer);
+        } else {
+            aError() << "Unable to add HierarchyBrowser beside SceneComposer.";
+        }
+    } else {
+        aError() << "Unable to create the HierarchyBrowser.";
     }
-    viewport->showCube(true);
-    viewport->setWorld(Engine::world());
-    viewport->setController(new CameraController);
-    m_toolWindowManager->addToolWindow(viewport, ToolWindowManager::EmptySpaceArea);
+    ContentBrowser *contentBrowser = Widget::createWidget<ContentBrowser>("ContentBrowser", m_toolWindowManager);
+    AbstractToolWindowManagerArea *contentArea = m_toolWindowManager->areaFor(composer);
+    if(contentBrowser && contentArea) {
+        m_toolWindowManager->addToolWindow(contentBrowser, ToolWindowManager::ReferenceBottomOf, contentArea);
+        connect(contentBrowser, _SIGNAL(openEditor(TString)), this, _SLOT(onContentBrowserOpen(TString)));
+        m_fileDropTarget.setDropHandler([contentBrowser](const StringList &files) {
+            contentBrowser->importDroppedFiles(files);
+        });
+        setFileDropTarget(&m_fileDropTarget);
+    } else {
+        m_fileDropTarget.setDropHandler(FileDropTarget::DropHandler());
+        setFileDropTarget(nullptr);
+        aError() << "Unable to create the ContentBrowser.";
+    }
+    createMenus(composer);
 
     for(const TString &it : Editor::project()->platforms()) {
         TString name(it);
@@ -221,29 +259,41 @@ void MainWindow::onImportFinished() {
 }
 
 void MainWindow::initUI() {
-    m_canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
+    m_canvas = Engine::objectCreate<Canvas>("Canvas", m_scene);
+    if(!m_canvas) {
+        aError() << "Unable to create the main UI canvas.";
+        return;
+    }
 
-    Actor *managerActor = Engine::composeActor<ToolWindowManager>("ToolWindowManager", m_canvas);
-    m_toolWindowManager = managerActor->getComponent<ToolWindowManager>();
-    RectTransform *toolWindowManagerRect = m_toolWindowManager->rectTransform();
+    Canvas *canvas = m_canvas;
+    m_menuBarWidget = Widget::createWidget<MenuBar>("MenuBar", canvas);
+    if(m_menuBarWidget) {
+        if(!canvas || !m_menuBarWidget->attachToCanvas(canvas, this)) {
+            aError() << "Unable to attach the UiKit menu bar to the main canvas.";
+        }
+    }
+
+    m_toolWindowManager = Widget::createWidget<ToolWindowManager>(
+                "ToolWindowManager", canvas);
+    Widget *toolWindowManagerRect = m_toolWindowManager;
     toolWindowManagerRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    toolWindowManagerRect->setMargin(Vector4(0.0f, 0.0f, kStatusBarHeight, 0.0f));
+    toolWindowManagerRect->setMargin(Vector4(m_menuBarWidget && !m_menuBarWidget->isUsingNativeMenuBar() ?
+                                             kMenuBarHeight : 0.0f,
+                                             0.0f, kStatusBarHeight, 0.0f));
 
-    Actor *statusBarActor = Engine::composeActor<Frame>("StatusBar", m_canvas);
-    Frame *statusBar = statusBarActor->getComponent<Frame>();
-    RectTransform *statusBarRect = statusBar->rectTransform();
+    Frame *statusBar = Widget::createWidget<Frame>("StatusBar", canvas);
+    Widget *statusBarRect = statusBar;
     statusBarRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f));
     statusBarRect->setPivot(Vector2(0.0f, 0.0f));
     statusBarRect->setSize(Vector2(0.0f, kStatusBarHeight));
     statusBar->setBackgroundColor(Vector4(0.12f, 0.12f, 0.12f, 1.0f));
 
-    Actor *progressActor = Engine::composeActor<ImportQueue>("ImportQueue", statusBarActor);
-    m_queue = progressActor->getComponent<ImportQueue>();
-    RectTransform *progressRect = m_queue->rectTransform();
+    m_queue = Widget::createWidget<ImportQueue>("ImportQueue", statusBar);
+    Widget *progressRect = m_queue;
     progressRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
     progressRect->setMargin(Vector4(4.0f));
     m_queue->setProgressColor(Vector4(0.25f, 0.65f, 0.95f, 1.0f));
-    m_queue->actor()->setEnabled(false);
+    m_queue->setEnabled(false);
     connect(m_queue, _SIGNAL(importFinished()), this, _SLOT(onImportFinished()));
 
     RenderSystem *render = Engine::renderSystem();
@@ -251,15 +301,144 @@ void MainWindow::initUI() {
         if(m_context) {
             PipelineTask *task = dynamic_cast<PipelineTask *>(Engine::objectCreate("GuiLayer"));
             if(task) {
-                Canvas *canvas = m_canvas->getComponent<Canvas>();
-                if(canvas) {
-                    canvas->skipRenderResult(true);
-                    task->setInput(0, canvas->texture());
-                }
+                m_canvas->skipRenderResult(true);
+                task->setInput(0, m_canvas->texture());
                 m_context->insertRenderTask(task);
             }
         }
+
         render->init();
+    }
+}
+
+void MainWindow::createMenus(SceneComposer *composer) {
+    if(!composer) {
+        aError() << "Unable to create the main menu without a SceneComposer.";
+        return;
+    }
+
+    if(!m_menuBarWidget) {
+        aError() << "Unable to create main menus without a UiKit MenuBar.";
+        return;
+    }
+
+    MenuBar::MenuModel *fileMenu = m_menuBarWidget->addMenu("File");
+    if(!fileMenu) {
+        aError() << "Unable to create the File menu.";
+        return;
+    }
+    fileMenu->addAction("New Scene", [composer]() { composer->onNewAsset(); });
+    fileMenu->addAction("Open Scene", [composer]() { composer->onOpenAsset(); });
+    fileMenu->addAction("Save", [composer]() { composer->onSave(); });
+    fileMenu->addAction("Save As", [composer]() { composer->onSaveAs(); });
+
+    MenuBar::MenuModel *editMenu = m_menuBarWidget->addMenu("Edit");
+    if(!editMenu) {
+        aError() << "Unable to create the Edit menu.";
+        return;
+    }
+    editMenu->addAction("Undo", [composer]() { composer->onUndoAction(); });
+    editMenu->addAction("Redo", [composer]() { composer->onRedoAction(); });
+    editMenu->addSeparator();
+    editMenu->addAction("Cut", [composer]() { composer->onCutAction(); });
+    editMenu->addAction("Copy", [composer]() { composer->onCopyAction(); });
+    editMenu->addAction("Paste", [composer]() { composer->onPasteAction(); });
+    editMenu->addAction("Delete", [composer]() { composer->onSelectionDeleted(); });
+
+    m_windowMenu = m_menuBarWidget->addMenu("Window");
+    if(!m_windowMenu) {
+        aError() << "Unable to create the Window menu.";
+        return;
+    }
+    m_windowMenuItems.clear();
+    connect(m_toolWindowManager, _SIGNAL(toolWindowVisibilityChanged(Widget*)),
+            this, _SLOT(onToolWindowVisibilityChanged(Widget*)));
+    for(Widget *toolWindow : m_toolWindowManager->toolWindows()) {
+        if(!toolWindow) {
+            continue;
+        }
+        TString title = toolWindow->name();
+        if(title == "SceneComposer") {
+            title = "Scene Composer";
+        } else if(title == "HierarchyBrowser") {
+            title = "Hierarchy";
+        } else if(title == "ContentBrowser") {
+            title = "Content Browser";
+        }
+        const bool visible = m_toolWindowManager->areaFor(toolWindow) != nullptr;
+        const size_t index = m_windowMenu->addCheckableAction(title, [this, toolWindow]() {
+            onWindowMenuAction(toolWindow);
+        }, visible);
+        m_windowMenuItems.emplace_back(toolWindow, index);
+    }
+}
+
+void MainWindow::onWindowMenuAction(Widget *toolWindow) {
+    if(!m_toolWindowManager || !toolWindow) {
+        return;
+    }
+    if(m_toolWindowManager->areaFor(toolWindow)) {
+        m_toolWindowManager->hideToolWindow(toolWindow);
+    } else {
+        m_toolWindowManager->moveToolWindow(toolWindow, ToolWindowManager::LastUsedArea);
+    }
+}
+
+void MainWindow::onToolWindowVisibilityChanged(Widget *toolWindow) {
+    if(!m_toolWindowManager) {
+        return;
+    }
+    const bool visible = m_toolWindowManager->areaFor(toolWindow) != nullptr;
+    if(m_windowMenu) {
+        for(const auto &item : m_windowMenuItems) {
+            if(item.first == toolWindow) {
+                m_windowMenu->setActionChecked(item.second, visible);
+                break;
+            }
+        }
+    }
+    if(!visible && toolWindow == m_currentAssetEditor) {
+        m_currentAssetEditor = nullptr;
+        if(m_hierarchyBrowser) {
+            m_hierarchyBrowser->setEditor(nullptr);
+        }
+    }
+}
+
+void MainWindow::onCurrentToolWindowChanged(Widget *toolWindow) {
+    if(AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow)) {
+        m_currentAssetEditor = editor;
+        if(m_hierarchyBrowser) {
+            m_hierarchyBrowser->setEditor(editor);
+        }
+    }
+}
+
+void MainWindow::onContentBrowserOpen(const TString &path) {
+    AssetEditor *target = m_currentAssetEditor;
+    if(!target && m_toolWindowManager) {
+        for(Widget *toolWindow : m_toolWindowManager->toolWindows()) {
+            target = dynamic_cast<AssetEditor *>(toolWindow);
+            if(target) {
+                break;
+            }
+        }
+    }
+    if(!target) {
+        aWarning() << "No active asset editor is available to open:" << path;
+        return;
+    }
+    AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
+    if(!settings) {
+        aWarning() << "Unable to load asset settings for:" << path;
+        return;
+    }
+    target->loadAsset(settings);
+    if(m_toolWindowManager && !m_toolWindowManager->areaFor(target)) {
+        m_toolWindowManager->moveToolWindow(target, ToolWindowManager::LastUsedArea);
+    }
+    if(m_toolWindowManager) {
+        m_toolWindowManager->activateToolWindow(target);
     }
 }
 

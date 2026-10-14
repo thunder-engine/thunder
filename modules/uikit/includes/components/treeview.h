@@ -25,7 +25,7 @@ class ItemViewDelegate;
 class MaterialInstance;
 
 class UIKIT_EXPORT TreeView : public AbstractItemView {
-    A_OBJECT(TreeView, AbstractItemView, Components/UI)
+    A_OBJECT(TreeView, AbstractItemView, UI)
 
     A_PROPERTIES(
         A_PROPERTY(int, rowHeight, TreeView::rowHeight, TreeView::setRowHeight),
@@ -45,6 +45,10 @@ public:
 
     int indentation() const;
     void setIndentation(int indentation);
+
+    void refresh();
+    void expandToDepth(int depth);
+    void expandToIndex(const ModelIndex &index);
 
     ItemViewDelegate *delegate() const;
     void setDelegate(ItemViewDelegate *delegate);
@@ -66,6 +70,8 @@ protected:
     void drawSub() override;
 
     Vector2 cellSize() const override;
+    ModelIndex modelIndexAtPosition(const Vector2 &position) override;
+    void onDragFinished(bool dropped) override;
 
 private:
     struct ItemData {

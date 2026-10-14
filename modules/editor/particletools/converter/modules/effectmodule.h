@@ -102,7 +102,7 @@ public:
 
     virtual void setRoot(EffectRootNode *effect);
 
-    Widget *widget(Object *parent);
+    Widget *widget(Widget *parent);
 
     void toXml(pugi::xml_node &element);
     void fromXml(const pugi::xml_node &element);

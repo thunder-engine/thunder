@@ -18,12 +18,12 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <functional>
 
 class UIKIT_EXPORT Action : public Widget {
-    A_OBJECT(Action, Widget, Components/UI)
+    A_OBJECT(Action, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Action::text, Action::setText),

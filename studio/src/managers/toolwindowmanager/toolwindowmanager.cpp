@@ -20,9 +20,8 @@
 #include "abstracttoolwindowmanagerarea.h"
 #include "private/toolwindowmanagerarea_p.h"
 
-#include <components/actor.h>
-#include <components/layout.h>
-#include <components/recttransform.h>
+#include <actor.h>
+#include <layout.h>
 #include <engine.h>
 #include <input.h>
 #include <log.h>
@@ -62,11 +61,11 @@ ToolWindowManager::~ToolWindowManager() {
 void ToolWindowManager::composeComponent() {
     Widget::composeComponent();
 
-    m_rootLayout = rectTransform()->layout();
+    m_rootLayout = this->layout();
     if(!m_rootLayout) {
         m_rootLayout = new Layout;
         m_rootLayout->setOrientation(Widget::Vertical);
-        rectTransform()->setLayout(m_rootLayout);
+        this->setLayout(m_rootLayout);
     }
 }
 
@@ -108,7 +107,7 @@ void ToolWindowManager::update(const Vector2 &position) {
 void ToolWindowManager::updateDropTarget(const Vector2 &position) {
     m_dropArea = nullptr;
     for(AbstractToolWindowManagerArea *area : m_areas) {
-        const Vector4 bounds = area->rectTransform()->clipRegion();
+        const Vector4 bounds = area->clipRegion();
         if(position.x < bounds.x || position.x > bounds.x + bounds.z ||
            position.y < bounds.y || position.y > bounds.y + bounds.w ||
            bounds.z <= 0.0f || bounds.w <= 0.0f) {
@@ -180,7 +179,7 @@ void ToolWindowManager::addToolWindows(const std::vector<Widget *> &toolWindows,
 
     std::vector<Widget *> added;
     for(Widget *toolWindow : toolWindows) {
-        if(!toolWindow || !toolWindow->actor()) {
+        if(!toolWindow) {
             aWarning() << "Cannot add a null or uncomposed tool window";
             continue;
         }
@@ -208,7 +207,7 @@ void ToolWindowManager::addToolWindows(const std::vector<Widget *> &toolWindows,
 
     std::vector<Widget *> added;
     for(Widget *toolWindow : toolWindows) {
-        if(!toolWindow || !toolWindow->actor()) {
+        if(!toolWindow) {
             aWarning() << "Cannot add a null or uncomposed tool window";
             continue;
         }
@@ -286,7 +285,7 @@ void ToolWindowManager::moveToolWindows(const std::vector<Widget *> &toolWindows
         } else {
             target = createAndSetupArea();
             if(target && m_rootLayout) {
-                m_rootLayout->addTransform(target->rectTransform());
+                m_rootLayout->addWidget(target);
             }
         }
     } else if(area == EmptySpaceArea) {
@@ -295,7 +294,7 @@ void ToolWindowManager::moveToolWindows(const std::vector<Widget *> &toolWindows
         } else {
             target = createAndSetupArea();
             if(target && m_rootLayout) {
-                m_rootLayout->addTransform(target->rectTransform());
+                m_rootLayout->addWidget(target);
             }
         }
     }
@@ -382,12 +381,12 @@ void ToolWindowManager::removeToolWindow(Widget *toolWindow) {
         return;
     }
     moveToolWindow(toolWindow, NoArea);
-    if(toolWindow->actor()) {
+    if(toolWindow) {
         if(m_rootLayout) {
-            m_rootLayout->removeTransform(toolWindow->rectTransform());
+            m_rootLayout->removeWidget(toolWindow);
         }
-        toolWindow->actor()->setParent(nullptr);
-        toolWindow->actor()->setEnabled(true);
+        toolWindow->setParent(nullptr);
+        toolWindow->setEnabled(true);
     }
     m_toolWindows.erase(std::remove(m_toolWindows.begin(), m_toolWindows.end(), toolWindow),
                         m_toolWindows.end());
@@ -414,11 +413,11 @@ Variant ToolWindowManager::saveState() const {
 
     std::set<TString> names;
     for(Widget *toolWindow : m_toolWindows) {
-        if(!toolWindow || !toolWindow->actor()) {
+        if(!toolWindow) {
             aWarning() << "Cannot save state with an uncomposed tool window";
             return Variant();
         }
-        const TString name = toolWindow->actor()->name();
+        const TString name = toolWindow->name();
         if(name.isEmpty() || !names.insert(name).second) {
             aWarning() << "Tool window actor names must be unique and non-empty to save state";
             return Variant();
@@ -450,7 +449,7 @@ bool ToolWindowManager::restoreState(const Variant &data) {
         simplifyLayout();
         return false;
     }
-    m_rootLayout->addTransform(root->rectTransform());
+    m_rootLayout->addWidget(root);
 
     for(Widget *toolWindow : m_toolWindows) {
         //areaFor(toolWindow);
@@ -486,12 +485,12 @@ void ToolWindowManager::onCurrentToolWindowChanged(Widget *toolWindow) {
 }
 
 Splitter *ToolWindowManager::createSplitter() {
-    Actor *splitterActor = Engine::composeActor<Splitter>(
-                TString("toolWindowSplitter_%1").arg(TString::number(static_cast<int>(++m_splitterCounter))), actor());
+    Widget *splitterActor = Widget::createWidget<Splitter>(
+                TString("toolWindowSplitter_%1").arg(TString::number(static_cast<int>(++m_splitterCounter))), this);
     if(!splitterActor) {
         return nullptr;
     }
-    Splitter *splitter = splitterActor->getComponent<Splitter>();
+    Splitter *splitter = dynamic_cast<Splitter *>(splitterActor);
     if(!splitter) {
         aError() << "Tool window splitter component is missing";
         splitterActor->deleteLater();
@@ -500,12 +499,12 @@ Splitter *ToolWindowManager::createSplitter() {
 }
 
 AbstractToolWindowManagerArea *ToolWindowManager::createArea() {
-    Actor *areaActor = Engine::composeActor<ToolWindowManagerArea>(
-                TString("toolWindowArea_%1").arg(TString::number(static_cast<int>(++m_areaCounter))), actor());
+    Widget *areaActor = Widget::createWidget<ToolWindowManagerArea>(
+                TString("toolWindowArea_%1").arg(TString::number(static_cast<int>(++m_areaCounter))), this);
     if(!areaActor) {
         return nullptr;
     }
-    ToolWindowManagerArea *area = areaActor->getComponent<ToolWindowManagerArea>();
+    ToolWindowManagerArea *area = dynamic_cast<ToolWindowManagerArea *>(areaActor);
     if(!area) {
         aError() << "Tool window area component is missing";
         areaActor->deleteLater();
@@ -519,8 +518,8 @@ AbstractToolWindowManagerArea *ToolWindowManager::createAndSetupArea() {
         aError() << "Unable to create tool window area";
         return nullptr;
     }
-    area->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
-    area->rectTransform()->setVerticalPolicy(RectTransform::Expanding);
+    area->setHorizontalPolicy(Widget::Expanding);
+    area->setVerticalPolicy(Widget::Expanding);
     area->setManager(this);
     m_areas.push_back(area);
     connect(area, _SIGNAL(currentToolWindowChanged(Widget*)),
@@ -534,8 +533,10 @@ Splitter *ToolWindowManager::createAndSetupSplitter() {
         aError() << "Unable to create tool window splitter";
         return nullptr;
     }
-    splitter->rectTransform()->setHorizontalPolicy(RectTransform::Expanding);
-    splitter->rectTransform()->setVerticalPolicy(RectTransform::Expanding);
+    splitter->setHorizontalPolicy(Widget::Expanding);
+    splitter->setVerticalPolicy(Widget::Expanding);
+    splitter->setHandleWidth(6);
+    splitter->setBackgroundColor(Vector4(0.35f, 0.35f, 0.35f, 1.0f));
     m_splitters.push_back(splitter);
     return splitter;
 }
@@ -544,8 +545,7 @@ Widget *ToolWindowManager::rootWidget() const {
     if(!m_rootLayout || m_rootLayout->count() == 0) {
         return nullptr;
     }
-    RectTransform *rootTransform = m_rootLayout->transformAt(0);
-    return rootTransform ? rootTransform->widget() : nullptr;
+    return m_rootLayout->widgetAt(0);
 }
 
 bool ToolWindowManager::splitArea(AbstractToolWindowManagerArea *target,
@@ -556,7 +556,7 @@ bool ToolWindowManager::splitArea(AbstractToolWindowManagerArea *target,
         aWarning() << "Cannot split a detached tool window area";
         return false;
     }
-    Layout *parentLayout = parent->rectTransform()->layout();
+    Layout *parentLayout = parent->layout();
     if(!parentLayout) {
         aWarning() << "Tool window area parent has no layout";
         return false;
@@ -566,7 +566,7 @@ bool ToolWindowManager::splitArea(AbstractToolWindowManagerArea *target,
     const bool before = reference == ReferenceLeftOf || reference == ReferenceTopOf;
     const int orientation = horizontal ? Widget::Horizontal : Widget::Vertical;
     Splitter *parentSplitter = dynamic_cast<Splitter *>(parent);
-    const int targetIndex = parentLayout->indexOf(target->rectTransform());
+    const int targetIndex = parentLayout->indexOf(target);
     if(targetIndex < 0) {
         aWarning() << "Tool window area is missing from its parent layout";
         return false;
@@ -584,9 +584,9 @@ bool ToolWindowManager::splitArea(AbstractToolWindowManagerArea *target,
     }
     splitter->setOrientation(orientation);
 
-    target->rectTransform()->setParentTransform(nullptr);
-    splitter->rectTransform()->setParentTransform(parent->rectTransform());
-    parentLayout->insertTransform(targetIndex, splitter->rectTransform());
+    target->setParent(nullptr);
+    splitter->setParent(parent);
+    parentLayout->insertWidget(targetIndex, splitter);
 
     if(before) {
         splitter->insertWidget(0, added);
@@ -605,7 +605,7 @@ void ToolWindowManager::equalizeSplitter(Splitter *splitter) {
     }
 
     const bool horizontal = splitter->orentation() == Widget::Horizontal;
-    const Vector2 splitterSize = splitter->rectTransform()->size();
+    const Vector2 splitterSize = splitter->size();
     float available = horizontal ? splitterSize.x : splitterSize.y;
     if(available <= 0.0f) {
         available = 200.0f;
@@ -616,24 +616,24 @@ void ToolWindowManager::equalizeSplitter(Splitter *splitter) {
         if(!child) {
             continue;
         }
-        Vector2 size = child->rectTransform()->size();
+        Vector2 size = child->size();
         if(horizontal) {
             size.x = childSize;
         } else {
             size.y = childSize;
         }
-        child->rectTransform()->setSize(size);
+        child->setSize(size);
     }
 }
 
 void ToolWindowManager::parkToolWindows(const std::vector<Widget *> &toolWindows) {
     for(Widget *toolWindow : toolWindows) {
-        if(toolWindow && toolWindow->actor()) {
-            toolWindow->actor()->setParent(actor());
+        if(toolWindow) {
+            toolWindow->setParent(this);
             if(m_rootLayout) {
-                m_rootLayout->removeTransform(toolWindow->rectTransform());
+                m_rootLayout->removeWidget(toolWindow);
             }
-            toolWindow->actor()->setEnabled(false);
+            toolWindow->setEnabled(false);
         }
     }
 }
@@ -650,13 +650,12 @@ void ToolWindowManager::simplifyLayout() {
             m_lastUsedArea = nullptr;
         }
         Widget *parent = area->parentWidget();
-        Layout *parentLayout = parent ? parent->rectTransform()->layout() : nullptr;
+        Layout *parentLayout = parent ? parent->layout() : nullptr;
         if(parentLayout) {
-            parentLayout->removeTransform(area->rectTransform());
+            parentLayout->removeWidget(area);
         }
-        area->rectTransform()->setParentTransform(nullptr);
-        if(area->actor()) {
-            area->actor()->deleteLater();
+        if(area) {
+            area->deleteLater();
         }
         m_areas.erase(m_areas.begin() + i);
     }
@@ -672,8 +671,8 @@ void ToolWindowManager::simplifyLayout() {
             }
 
             Widget *parent = splitter->parentWidget();
-            Layout *parentLayout = parent ? parent->rectTransform()->layout() : nullptr;
-            const int index = parentLayout ? parentLayout->indexOf(splitter->rectTransform()) : -1;
+            Layout *parentLayout = parent ? parent->layout() : nullptr;
+            const int index = parentLayout ? parentLayout->indexOf(splitter) : -1;
             if(!parentLayout || index < 0) {
                 continue;
             }
@@ -681,14 +680,12 @@ void ToolWindowManager::simplifyLayout() {
             if(count == 1) {
                 Widget *child = splitter->widget(0);
                 if(child) {
-                    child->rectTransform()->setParentTransform(parent->rectTransform());
-                    parentLayout->insertTransform(index, child->rectTransform());
+                    parentLayout->insertWidget(index, child);
                 }
             }
-            parentLayout->removeTransform(splitter->rectTransform());
-            splitter->rectTransform()->setParentTransform(nullptr);
-            if(splitter->actor()) {
-                splitter->actor()->deleteLater();
+            parentLayout->removeWidget(splitter);
+            if(splitter) {
+                splitter->deleteLater();
             }
             m_splitters.erase(m_splitters.begin() + i);
             changed = true;
@@ -703,8 +700,8 @@ VariantMap ToolWindowManager::saveWidgetState(Widget *widget) const {
         result[kType] = Variant(kArea);
         VariantList names;
         for(Widget *toolWindow : area->toolWindows()) {
-            if(toolWindow && toolWindow->actor()) {
-                names.push_back(Variant(toolWindow->actor()->name()));
+            if(toolWindow) {
+                names.push_back(Variant(toolWindow->name()));
             }
         }
         result[kObjectNames] = Variant(names);
@@ -723,7 +720,7 @@ VariantMap ToolWindowManager::saveWidgetState(Widget *widget) const {
                 continue;
             }
             items.push_back(Variant(saveWidgetState(child)));
-            sizes.push_back(Variant(child->rectTransform()->size()));
+            sizes.push_back(Variant(child->size()));
         }
         result[kItems] = Variant(items);
         result[kSizes] = Variant(sizes);
@@ -781,7 +778,7 @@ Widget *ToolWindowManager::restoreWidgetState(const VariantMap &data) {
         if(child) {
             splitter->insertWidget(-1, child);
             if(sizeIt != sizes.end()) {
-                child->rectTransform()->setSize(sizeIt->toVector2());
+                child->setSize(sizeIt->toVector2());
             }
         }
         if(sizeIt != sizes.end()) {
@@ -789,8 +786,8 @@ Widget *ToolWindowManager::restoreWidgetState(const VariantMap &data) {
         }
     }
     if(splitter->count() == 0) {
-        if(splitter->actor()) {
-            splitter->actor()->deleteLater();
+        if(splitter) {
+            splitter->deleteLater();
         }
         m_splitters.erase(std::remove(m_splitters.begin(), m_splitters.end(), splitter),
                           m_splitters.end());
@@ -811,7 +808,7 @@ AbstractToolWindowManagerArea *ToolWindowManager::restoreAreaState(const Variant
         const TString name = nameValue.toString();
         auto it = std::find_if(m_toolWindows.begin(), m_toolWindows.end(),
                                [&name](Widget *window) {
-            return window && window->actor() && window->actor()->name() == name;
+            return window && window && window->name() == name;
         });
         if(it == m_toolWindows.end()) {
             aWarning() << "Tool window not found while restoring state:" << name;

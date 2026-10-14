@@ -15,12 +15,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/foldout.h"
+#include "foldout.h"
 
-#include "components/checkbox.h"
-#include "components/label.h"
-#include "components/recttransform.h"
-#include "components/layout.h"
+#include "checkbox.h"
+#include "label.h"
+#include "layout.h"
 
 namespace {
     const char *gLabel("label");
@@ -47,14 +46,14 @@ Foldout::Foldout() :
     Effectively placing it inside the foldout's expanded content area.
 */
 void Foldout::insertWidget(int index, Widget *widget) {
-    insertRect(index, widget->rectTransform());
+    insertRect(index, widget);
 }
 /*!
     Returns true id foldout is currently expanded; otherwise returns false.
 */
 bool Foldout::isExpanded() const {
     if(m_contentArea) {
-        return m_contentArea->actor()->isEnabled();
+        return m_contentArea->isEnabled();
     }
     return false;
 }
@@ -63,7 +62,7 @@ bool Foldout::isExpanded() const {
 */
 void Foldout::setExpanded(bool expanded) {
     if(m_contentArea) {
-        m_contentArea->actor()->setEnabled(expanded);
+        m_contentArea->setEnabled(expanded);
         repaint();
     }
 }
@@ -85,13 +84,13 @@ void Foldout::setText(const TString &text) {
     if(label) {
         label->setText(text);
     } else {
-        Actor *labelActor = Engine::composeActor<Label>(gLabel, m_indicator->actor());
-        Label *label = labelActor->getComponent<Label>();
+        Widget *labelActor = Widget::createWidget<Label>(gLabel, m_indicator);
+        Label *label = dynamic_cast<Label *>(labelActor);
         label->setText(text);
         label->setAlign(Alignment::Left | Alignment::Middle);
         setSubWidget(label);
 
-        RectTransform *rect = label->rectTransform();
+        Widget *rect = label;
         rect->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
         rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
     }
@@ -108,10 +107,10 @@ Frame *Foldout::container() const {
 void Foldout::setContainer(Frame *container) {
     setSubWidget(container);
 
-    m_contentArea = container->rectTransform();
+    m_contentArea = container;
     if(m_contentArea && !m_contentArea->layout()) {
-        m_contentArea->setHorizontalPolicy(RectTransform::Expanding);
-        m_contentArea->setVerticalPolicy(RectTransform::Preferred);
+        m_contentArea->setHorizontalPolicy(Widget::Expanding);
+        m_contentArea->setVerticalPolicy(Widget::Preferred);
 
         Layout *contentLayout = new Layout();
         contentLayout->setOrientation(Widget::Vertical);
@@ -130,8 +129,8 @@ CheckBox *Foldout::indicator() const {
 void Foldout::setIndicator(CheckBox *indicator) {
     setSubWidget(indicator);
 
-    RectTransform *rect = indicator->rectTransform();
-    rect->setHorizontalPolicy(RectTransform::Expanding);
+    Widget *rect = indicator;
+    rect->setHorizontalPolicy(Widget::Expanding);
 
     m_indicator = indicator;
 }
@@ -144,29 +143,28 @@ void Foldout::onExpand() {
 /*!
     \internal
 */
-void Foldout::childAdded(RectTransform *rect) {
-    if(rect && rect != m_indicator->rectTransform() && rect != m_contentArea) {
+void Foldout::childAdded(Widget *rect) {
+    if(rect && rect != m_indicator && rect != m_contentArea) {
         insertRect(-1, rect);
     }
 }
 /*!
     \internal
 */
-void Foldout::insertRect(int index, RectTransform *content) {
-    content->setHorizontalPolicy(RectTransform::Expanding);
-    content->setVerticalPolicy(RectTransform::Fixed);
+void Foldout::insertRect(int index, Widget *content) {
+    content->setHorizontalPolicy(Widget::Expanding);
+    content->setVerticalPolicy(Widget::Fixed);
 
-    m_contentArea->layout()->addTransform(content);
+    m_contentArea->layout()->addWidget(content);
     repaint();
 }
 /*!
     \internal
 */
 void Foldout::composeComponent() {
-    Actor *actor = Widget::actor();
     // Fold button
-    Actor *indicatorActor = Engine::composeActor<CheckBox>(gIndicator, actor);
-    CheckBox *indicator = indicatorActor->getComponent<CheckBox>();
+    Widget *indicatorActor = Widget::createWidget<CheckBox>(gIndicator, this);
+    CheckBox *indicator = dynamic_cast<CheckBox *>(indicatorActor);
 
     indicator->setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
     indicator->setIndicatorSize(Vector2(16.0f, 8.0f));
@@ -176,8 +174,8 @@ void Foldout::composeComponent() {
     Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
 
     // Content container
-    Actor *containerActor = Engine::composeActor<Frame>(gContainer, actor);
-    setContainer(containerActor->getComponent<Frame>());
+    Widget *containerActor = Widget::createWidget<Frame>(gContainer, this);
+    setContainer(dynamic_cast<Frame *>(containerActor));
 
     // Need to call it after sub widgets creation
     Widget::composeComponent();
@@ -185,13 +183,12 @@ void Foldout::composeComponent() {
     Layout *mainLayout = new Layout();
     mainLayout->setOrientation(Widget::Vertical);
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     rect->setLayout(mainLayout);
-    rect->setVerticalPolicy(RectTransform::Preferred);
+    rect->setVerticalPolicy(Widget::Preferred);
 
-    // Initially add tab bar and content area to layout
-    mainLayout->addTransform(indicator->rectTransform());
-    mainLayout->addTransform(m_contentArea);
+    mainLayout->addWidget(indicator);
+    mainLayout->addWidget(m_contentArea);
 
     rect->setSize(Vector2(100.0f, 20.0f));
 }

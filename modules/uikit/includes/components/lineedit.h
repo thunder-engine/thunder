@@ -18,7 +18,7 @@
 #ifndef LINEEDIT_H
 #define LINEEDIT_H
 
-#include "frame.h"
+#include <frame.h>
 
 #include <font.h>
 
@@ -26,7 +26,7 @@ class Label;
 class Sprite;
 
 class UIKIT_EXPORT LineEdit : public Frame {
-    A_OBJECT(LineEdit, Frame, Components/UI)
+    A_OBJECT(LineEdit, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, LineEdit::text, LineEdit::setText),

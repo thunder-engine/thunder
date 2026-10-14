@@ -15,10 +15,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/slider.h"
+#include "slider.h"
 
-#include "components/progressbar.h"
-#include "components/recttransform.h"
+#include "progressbar.h"
 
 namespace {
     const char *gBackground("background");
@@ -70,7 +69,7 @@ void Slider::setOrientation(int orientation) {
     if(bar) {
         bar->setOrientation(orientation);
 
-        RectTransform *rectBar = bar->rectTransform();
+        Widget *rectBar = bar;
         if(m_orientation == Widget::Horizontal) {
             rectBar->setSize(Vector2(0.0f, 10.0f));
             rectBar->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
@@ -111,9 +110,9 @@ void Slider::setValue(int value) {
         float factor = value != 0 ? static_cast<float>(value) / static_cast<float>(m_maximum-m_minimum) : 0.0f;
         factor = CLAMP(factor, 0.0f, 1.0f);
         if(m_orientation == Widget::Horizontal) {
-            knob->rectTransform()->setAnchors(Vector2(factor, 0.5f), Vector2(factor, 0.5f));
+            knob->setAnchors(Vector2(factor, 0.5f), Vector2(factor, 0.5f));
         } else {
-            knob->rectTransform()->setAnchors(Vector2(0.5f, factor), Vector2(0.5f, factor));
+            knob->setAnchors(Vector2(0.5f, factor), Vector2(0.5f, factor));
         }
     }
 
@@ -151,8 +150,8 @@ void Slider::composeComponent() {
     AbstractSlider::composeComponent();
 
     // Add background
-    Actor *barActor = Engine::composeActor<ProgressBar>(gBackground, actor());
-    ProgressBar *bar = barActor->getComponent<ProgressBar>();
+    Widget *barActor = Widget::createWidget<ProgressBar>(gBackground, this);
+    ProgressBar *bar = dynamic_cast<ProgressBar *>(barActor);
     bar->setValue(m_value);
     bar->setProgressColor(m_normalColor);
 
@@ -161,12 +160,12 @@ void Slider::composeComponent() {
     setOrientation(Widget::Horizontal);
 
     // Add knob
-    Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
-    Frame *knob = knobActor->getComponent<Frame>();
+    Widget *knobActor = Widget::createWidget<Frame>(gKnob, this);
+    Frame *knob = dynamic_cast<Frame *>(knobActor);
     knob->setCorners(Vector4(8.0f));
     knob->setBackgroundColor(Vector4(1.0f));
 
-    RectTransform *rectKnob = knob->rectTransform();
+    Widget *rectKnob = knob;
     rectKnob->setSize(Vector2(16.0f, 16.0f));
     rectKnob->setAnchors(Vector2(0.5f), Vector2(0.5f));
 
@@ -174,5 +173,5 @@ void Slider::composeComponent() {
 
     setValue(m_value);
 
-    rectTransform()->setSize(Vector2(100.0f, 20.0f));
+    this->setSize(Vector2(100.0f, 20.0f));
 }

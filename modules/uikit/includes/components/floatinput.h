@@ -18,13 +18,13 @@
 #ifndef FLOATINPUT_H
 #define FLOATINPUT_H
 
-#include "widget.h"
+#include <widget.h>
 
 class LineEdit;
 class Button;
 
 class UIKIT_EXPORT FloatInput : public Widget {
-    A_OBJECT(FloatInput, Widget, Components/UI)
+    A_OBJECT(FloatInput, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(float, value, FloatInput::value, FloatInput::setValue),

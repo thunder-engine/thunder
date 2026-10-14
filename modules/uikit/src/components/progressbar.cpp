@@ -15,12 +15,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/progressbar.h"
+#include "progressbar.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
-
-#include <components/actor.h>
+#include "canvas.h"
 
 #include <resources/material.h>
 
@@ -204,7 +201,7 @@ void ProgressBar::setProgressImage(Sprite *image) {
 void ProgressBar::draw() {
     Frame::draw();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     if(m_dirtyProgress) {
         if(m_progressImage && m_imageProgress) {
             delete m_progressMesh;
@@ -258,7 +255,7 @@ void ProgressBar::composeComponent() {
 
     setValue(0.5f);
 
-    rectTransform()->setSize(Vector2(100.0f, 20.0f));
+    this->setSize(Vector2(100.0f, 20.0f));
 }
 
 void ProgressBar::materialUpdated(int state, void *ptr) {

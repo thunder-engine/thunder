@@ -15,21 +15,18 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/lineedit.h"
+#include "lineedit.h"
 
-#include "components/label.h"
-#include "components/frame.h"
-#include "components/recttransform.h"
-#include "components/canvas.h"
-
-#include <components/actor.h>
+#include "label.h"
+#include "frame.h"
+#include "canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/font.h>
+#include <resources/material.h>
 
 #include <input.h>
 #include <timer.h>
-#include <commandbuffer.h>
 #include <pipelinecontext.h>
 
 #include <algorithm>
@@ -131,7 +128,7 @@ LineEdit::~LineEdit() {
 void LineEdit::draw() {
     Canvas *canvas = LineEdit::canvas();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     if(m_textDirty && m_font && m_fontMaterial) {
         const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, m_textColor, rect->size()};
         m_font->composeMesh(m_textMesh, m_text, settings);
@@ -159,6 +156,19 @@ void LineEdit::draw() {
 
     // Draw cursor
     if(m_cursorVisible && m_cursorMaterial) {
+        const Vector3Vector &vertices = m_textMesh->vertices();
+        if(m_font && !m_text.isEmpty() && !vertices.empty()) {
+            float minY = vertices.front().y;
+            float maxY = minY;
+            for(const Vector3 &vertex : vertices) {
+                minY = MIN(minY, vertex.y);
+                maxY = MAX(maxY, vertex.y);
+            }
+            m_cursorTransform[13] = (minY + maxY) * 0.5f;
+        } else {
+            m_cursorTransform[13] = rect->size().y * 0.5f;
+        }
+
         uint32_t hash;
         std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
         m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform, 0, hash);
@@ -348,7 +358,8 @@ void LineEdit::update(const Vector2 &pos) {
     }
 
     if(m_hovered) {
-        if(!m_focused && (Input::isMouseButtonDown(0) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN))) {
+        if(!m_focused && (Input::isMouseButtonDown(Input::MOUSE_LEFT) ||
+                          (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN))) {
             Widget::setFocusWidget(this);
 
             focusIn();
@@ -367,7 +378,7 @@ void LineEdit::composeComponent() {
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("");
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     if(rect) {
         rect->setSize(Vector2(100.0f, 30.0f));
         rect->setPadding(Vector4(2.0f));
@@ -382,7 +393,7 @@ void LineEdit::composeComponent() {
 void LineEdit::recalcCursor() {
     float pos = (m_cursorPosition > 0) ? cursorAt(m_cursorPosition) : 0.0f;
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     float padding = rect->padding().w;
     m_cursorTransform[12] = pos + padding;
     m_cursorTransform[13] = rect->size().y * 0.5f;

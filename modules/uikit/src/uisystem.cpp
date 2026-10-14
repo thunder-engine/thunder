@@ -33,9 +33,8 @@
 #include "components/treeview.h"
 #include "components/itemviewdelegate.h"
 #include "components/menu.h"
-#include "components/menubarwidget.h"
+#include "components/menubar.h"
 #include "components/progressbar.h"
-#include "components/recttransform.h"
 #include "components/scrollbar.h"
 #include "components/slider.h"
 #include "components/splitter.h"
@@ -54,8 +53,6 @@ UiSystem::UiSystem() :
 
     StyleSheet::registerClassFactory(Engine::resourceSystem());
     UiDocument::registerClassFactory(Engine::resourceSystem());
-
-    RectTransform::registerClassFactory(this);
 
     Widget::registerClassFactory(this);
     Canvas::registerClassFactory(this);
@@ -101,8 +98,6 @@ UiSystem::UiSystem() :
 
 UiSystem::~UiSystem() {
     PROFILE_FUNCTION();
-
-    RectTransform::unregisterClassFactory(this);
 
     Canvas::unregisterClassFactory(this);
 

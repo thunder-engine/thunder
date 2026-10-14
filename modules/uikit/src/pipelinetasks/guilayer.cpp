@@ -19,9 +19,7 @@
 
 #include "components/world.h"
 #include "components/scene.h"
-#include "components/actor.h"
 #include "components/canvas.h"
-#include "components/recttransform.h"
 
 #include <commandbuffer.h>
 #include <input.h>
@@ -29,18 +27,15 @@
 void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position) {
     Object::ObjectList children = object->getChildren();
 
-    Actor *actor = dynamic_cast<Actor *>(object);
-    if(actor) {
-        Canvas *canvas = actor->getComponent<Canvas>();
-        if(canvas && canvas->isEnabledInHierarchy()) {
-            if(!canvas->parentWidget()) {
-                canvas->setSize(width, height);
-            }
-            canvas->rectTransform()->worldTransform();
-            canvas->update(position);
-            canvas->skipRenderResult(canvas->parentWidget() != nullptr);
-            canvases.push(canvas);
+    Canvas *canvas = dynamic_cast<Canvas *>(object);
+    if(canvas && canvas->isEnabled()) {
+        if(!canvas->parentWidget()) {
+            canvas->setSize(width, height);
         }
+        canvas->worldTransform();
+        canvas->update(position);
+        canvas->skipRenderResult(canvas->parentWidget() != nullptr);
+        canvases.push(canvas);
     }
 
     for(auto child : children) {

@@ -23,7 +23,7 @@
 #include <action.h>
 
 class UIKIT_EXPORT Menu : public Frame {
-    A_OBJECT(Menu, Frame, Components/UI)
+    A_OBJECT(Menu, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Font *, font, Menu::font, Menu::setFont, "editor=Asset")
@@ -67,6 +67,7 @@ public:
 
     void show(const Vector2 &position);
     void hide();
+    bool isVisible() const;
 
     TString itemText(int index);
     void setItemText(int index, const TString &text);
@@ -83,6 +84,8 @@ public: // signals
     void triggered(int);
 
 private:
+    friend class Canvas;
+
     void draw() override;
     void update(const Vector2 &pos) override;
 
@@ -121,6 +124,7 @@ private:
 
     bool m_hiding = false;
     bool m_dirtyText;
+    bool m_visible = false;
 };
 
 #endif // MENU_H

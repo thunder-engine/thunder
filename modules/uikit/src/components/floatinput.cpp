@@ -17,11 +17,8 @@
 */
 #include "components/floatinput.h"
 
-#include "components/recttransform.h"
-#include "components/button.h"
-#include "components/lineedit.h"
-
-#include <components/actor.h>
+#include "button.h"
+#include "lineedit.h"
 
 #include <resources/sprite.h>
 
@@ -105,12 +102,12 @@ void FloatInput::setSingleStep(float step) {
 
     Button *increaseBtn = increaseButton();
     if(increaseBtn) {
-        increaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
+        increaseBtn->setEnabled(m_singleStep != 0.0f);
     }
 
     Button *decreaseBtn = decreaseButton();
     if(decreaseBtn) {
-        decreaseBtn->actor()->setEnabled(m_singleStep != 0.0f);
+        decreaseBtn->setEnabled(m_singleStep != 0.0f);
     }
 
     repaint();
@@ -212,9 +209,9 @@ void FloatInput::composeComponent() {
 
     const float width = 20.0f;
 
-    Actor *text = Engine::composeActor<LineEdit>(gInput, actor());
+    Widget *text = Widget::createWidget<LineEdit>(gInput, this);
 
-    LineEdit *input = text->getComponent<LineEdit>();
+    LineEdit *input = dynamic_cast<LineEdit *>(text);
     if(input) {
         connect(input, _SIGNAL(focusOut()), this, _SLOT(onEditingFinished()));
         connect(input, _SIGNAL(editingFinished()), this, _SLOT(onEditingFinished()));
@@ -222,15 +219,15 @@ void FloatInput::composeComponent() {
         setValue(m_value);
         setInput(input);
     }
-    RectTransform *textRect = static_cast<RectTransform *>(text->transform());
+    Widget *textRect = text;
     textRect->setSize(Vector2(0.0f));
     textRect->setMargin(Vector4(0.0f, width, 0.0f, width));
     textRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
 
-    Actor *left = Engine::composeActor<Button>(gDecrease, actor());
-    Button *decreaseBtn = left->getComponent<Button>();
+    Widget *left = Widget::createWidget<Button>(gDecrease, this);
+    Button *decreaseBtn = dynamic_cast<Button *>(left);
     if(decreaseBtn) {
         connect(decreaseBtn, _SIGNAL(clicked()), this, _SLOT(onDecrease()));
 
@@ -241,13 +238,13 @@ void FloatInput::composeComponent() {
         decreaseBtn->setIconRotation(-90.0f);
     }
 
-    RectTransform *leftRect = static_cast<RectTransform *>(left->transform());
+    Widget *leftRect = left;
     leftRect->setSize(Vector2(width, 0.0f));
     leftRect->setAnchors(Vector2(0.0f), Vector2(0.0f, 1.0f));
     leftRect->setPivot(Vector2(0.0f));
 
-    Actor *right = Engine::composeActor<Button>(gIncrease, actor());
-    Button *increaseBtn = right->getComponent<Button>();
+    Widget *right = Widget::createWidget<Button>(gIncrease, this);
+    Button *increaseBtn = dynamic_cast<Button *>(right);
     if(increaseBtn) {
         connect(increaseBtn, _SIGNAL(clicked()), this, _SLOT(onIncrease()));
 
@@ -258,12 +255,12 @@ void FloatInput::composeComponent() {
         increaseBtn->setIconRotation(90.0f);
     }
 
-    RectTransform *rightRect = static_cast<RectTransform *>(right->transform());
+    Widget *rightRect = right;
     rightRect->setSize(Vector2(width, 0.0f));
     rightRect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f));
     rightRect->setPivot(Vector2(1.0f, 1.0f));
 
-    rectTransform()->setSize(Vector2(100.0f, 20.0f));
+    this->setSize(Vector2(100.0f, 20.0f));
 
     setCorners(Vector4(4.0f));
 }

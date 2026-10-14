@@ -15,14 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/checkbox.h"
+#include "checkbox.h"
 
-#include "components/canvas.h"
-#include "components/recttransform.h"
-
-#include <resources/material.h>
+#include "canvas.h"
 
 #include "stylesheet.h"
+
+#include <resources/material.h>
 
 namespace {
     const char *gOverride("mainTexture");
@@ -177,7 +176,7 @@ void CheckBox::setIndicatorSize(const Vector2 &size) {
 void CheckBox::setFoldMode(bool fold) {
     m_foldMode = fold;
     if(m_foldMode) {
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         if(rect) {
             m_iconOffset = rect->size().x * 0.5f;
         }
@@ -202,7 +201,7 @@ void CheckBox::draw() {
             m_dirtyIcon = false;
         }
 
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         Vector2 size(rect->size());
 
         Matrix4 mat(rect->worldTransform());
@@ -263,7 +262,7 @@ void CheckBox::applyStyle() {
 void CheckBox::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     rect->blockSignals(true);
     rect->setSize(Vector2(16.0f));
     rect->blockSignals(false);

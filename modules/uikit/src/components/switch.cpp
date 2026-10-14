@@ -15,12 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/switch.h"
-
-#include "components/recttransform.h"
-
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "switch.h"
 
 #include <timer.h>
 
@@ -51,7 +46,7 @@ void Switch::update(const Vector2 &pos) {
         m_currentFade += 1.0f / m_switchDuration * Timer::deltaTime();
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
 
-        float width = rectTransform()->size().x;
+        float width = this->size().x;
         float left = (width - m_knobSize.x) * -0.5f;
         float right = (width - m_knobSize.x) * 0.5f;
         m_iconOffset = m_checked ? MIX(left, right, m_currentFade) : MIX(right, left, m_currentFade);
@@ -72,7 +67,7 @@ void Switch::checkStateSet() {
 void Switch::composeComponent() {
     CheckBox::composeComponent();
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     rect->blockSignals(true);
     rect->setSize(Vector2(32.0f, 16.0f));
     rect->blockSignals(false);

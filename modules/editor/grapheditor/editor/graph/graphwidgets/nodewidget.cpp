@@ -6,15 +6,10 @@
 #include "../graphview.h"
 #include "../graphcontroller.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-#include <components/spriterender.h>
-
-#include <components/recttransform.h>
-#include <components/layout.h>
-#include <components/label.h>
-#include <components/image.h>
-#include <components/toolbutton.h>
+#include <layout.h>
+#include <label.h>
+#include <image.h>
+#include <toolbutton.h>
 
 #include <resources/material.h>
 #include <resources/font.h>
@@ -43,7 +38,7 @@ void NodeWidget::setGraphNode(GraphNode *node) {
         m_header->setBackgroundColor(m_node->color());
     }
 
-    rectTransform()->setSize(m_node->defaultSize());
+    this->setSize(m_node->defaultSize());
 
     // Call ports
     for(NodePort &port : m_node->ports()) {
@@ -155,24 +150,22 @@ void NodeWidget::composeComponent() {
     Layout *layout = new Layout;
     layout->setSpacing(2.0f);
 
-    RectTransform *rect = rectTransform();
-    rect->setPivot(Vector2(0.0f, 1.0f));
-    rect->setLayout(layout);
-    rect->setVerticalPolicy(RectTransform::Preferred);
-    rect->setHorizontalPolicy(RectTransform::Fixed);
-    rect->setBorder(2.0f);
+    setPivot(Vector2(0.0f, 1.0f));
+    setLayout(layout);
+    setVerticalPolicy(NodeWidget::Preferred);
+    setHorizontalPolicy(NodeWidget::Fixed);
+    setBorder(2.0f);
 
-    Actor *header = Engine::composeActor<Frame>("Header", actor());
+    Frame *header = Widget::createWidget<Frame>("Header", this);
     if(header) {
-        m_header = header->getComponent<Frame>();
+        m_header = header;
         if(m_header) {
-            RectTransform *headerRect = m_header->rectTransform();
-            layout->addTransform(headerRect);
+            layout->addTransform(m_header);
 
-            headerRect->setSize(Vector2(0, row));
-            headerRect->setPivot(Vector2(0.0f, 1.0f));
-            headerRect->setHorizontalPolicy(RectTransform::Expanding);
-            headerRect->setVerticalPolicy(RectTransform::Fixed);
+            m_header->setSize(Vector2(0, row));
+            m_header->setPivot(Vector2(0.0f, 1.0f));
+            m_header->setHorizontalPolicy(Frame::Expanding);
+            m_header->setVerticalPolicy(Frame::Fixed);
 
             Vector4 corn(corners() - 1);
             corn.x = corn.y;
@@ -180,9 +173,9 @@ void NodeWidget::composeComponent() {
             m_header->setCorners(corn);
             m_header->setBorderColor(Vector4());
 
-            Actor *title = Engine::composeActor<Label>("Title", header);
+            Label *title = Widget::createWidget<Label>("Title", header);
             if(title) {
-                m_title = title->getComponent<Label>();
+                m_title = title;
             }
         }
     }
@@ -191,39 +184,35 @@ void NodeWidget::composeComponent() {
 }
 
 void NodeWidget::composePort(NodePort &port) {
-    Actor *portActor = Engine::composeActor<PortWidget>(port.m_name, actor());
-    if(portActor) {
-        PortWidget *portWidget = portActor->getComponent<PortWidget>();
+    PortWidget *portWidget = Widget::createWidget<PortWidget>(port.m_name, this);
+    if(portWidget) {
         if(portWidget) {
-            RectTransform *portRect = portWidget->rectTransform();
-            portRect->setSize(Vector2(0, row));
-            portRect->setHorizontalPolicy(RectTransform::Expanding);
-
+            portWidget->setSize(Vector2(0, row));
+            portWidget->setHorizontalPolicy(PortWidget::Expanding);
             portWidget->setNodePort(&port);
 
             if(port.m_call) {
                 if(m_callRect) {
                     Layout *layout = m_callRect->layout();
                     if(port.m_out) {
-                        layout->insertTransform(-1, portRect);
+                        layout->insertTransform(-1, portWidget);
                     } else {
-                        layout->insertTransform(0, portRect);
+                        layout->insertTransform(0, portWidget);
                     }
                 } else {
-                    Actor *callPannel = Engine::composeActor<Widget>("CallPannel", actor());
-                    Widget *callWidget = callPannel->getComponent<Widget>();
+                    Widget *callWidget = Widget::createWidget<Widget>("CallPannel", this);
                     if(callWidget) {
-                        m_callRect = callWidget->rectTransform();
+                        m_callRect = callWidget;
                         if(m_callRect) {
                             m_callRect->setSize(Vector2(0, row));
-                            m_callRect->setHorizontalPolicy(RectTransform::Expanding);
-                            m_callRect->setVerticalPolicy(RectTransform::Fixed);
+                            m_callRect->setHorizontalPolicy(Widget::Expanding);
+                            m_callRect->setVerticalPolicy(Widget::Fixed);
 
                             Layout *layout = new Layout;
                             layout->setOrientation(Widget::Horizontal);
                             m_callRect->setLayout(layout);
 
-                            layout->addTransform(portRect);
+                            layout->addTransform(portWidget);
                         }
                     }
                 }

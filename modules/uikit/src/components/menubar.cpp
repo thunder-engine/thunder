@@ -15,79 +15,143 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/menubarwidget.h"
+#include "menubar.h"
 
-#include "components/button.h"
-#include "components/action.h"
-#include "components/canvas.h"
-#include "components/menu.h"
-#include "components/recttransform.h"
+#include "button.h"
+#include "action.h"
+#include "canvas.h"
+#include "menu.h"
 
-#include <components/actor.h>
 #include <engine.h>
 #include <font.h>
 #include <input.h>
+#include <log.h>
+#include <window.h>
+
+#include <os/menubar.h>
 #include <os/nativemenu.h>
 
 #include <algorithm>
 #include <iterator>
 
 namespace {
-    const float kMenuBarHeight = 28.0f;
+    const float kMenuBarHeight = 22.0f;
     const float kMenuHorizontalPadding = 16.0f;
-
 }
 
 MenuBar::MenuBar() :
-        m_menuBar(nullptr),
+        m_menuBar(new NativeMenuBar),
+        m_window(nullptr),
         m_changeSubscription(0),
         m_activeMenuIndex(-1),
         m_dirty(false) {
+
+    m_changeSubscription = m_menuBar->subscribeChanged([this]() {
+        m_dirty = true;
+        repaint();
+    });
 }
 
 MenuBar::~MenuBar() {
-    if(m_menuBar && m_changeSubscription) {
-        m_menuBar->unsubscribeChanged(m_changeSubscription);
+    m_menuBar->unsubscribeChanged(m_changeSubscription);
+    detachFromWindow();
+    for(MenuModel *model : m_menuModels) {
+        delete model;
+    }
+    delete m_menuBar;
+}
+
+void MenuBar::detachFromWindow() {
+    if(m_window) {
+        m_window->setMenuBar(nullptr);
+        m_window = nullptr;
     }
 }
 
-void MenuBar::setMenuBar(NativeMenuBar *menuBar) {
-    if(m_menuBar == menuBar) {
-        return;
-    }
-    if(m_menuBar && m_changeSubscription) {
-        m_menuBar->unsubscribeChanged(m_changeSubscription);
-    }
-    m_menuBar = menuBar;
-    m_changeSubscription = 0;
-    if(m_menuBar) {
-        m_changeSubscription = m_menuBar->subscribeChanged([this]() {
-            m_dirty = true;
-            repaint();
-        });
-    }
-    rebuild();
+MenuBar::MenuModel::MenuModel(MenuBar *owner, NativeMenu *menu) :
+        m_owner(owner),
+        m_menu(menu) {
 }
 
-NativeMenuBar *MenuBar::menuBar() const {
-    return m_menuBar;
+void MenuBar::MenuModel::addAction(const TString &text, const std::function<void()> &handler) {
+    if(m_menu) {
+        m_menu->addAction(text, handler);
+    }
 }
 
-bool MenuBar::attachToCanvas(Canvas *canvas) {
-    if(!canvas || !actor() || !canvas->actor() || actor() == canvas->actor()) {
+size_t MenuBar::MenuModel::addCheckableAction(const TString &text,
+                                               const std::function<void()> &handler,
+                                               bool checked) {
+    if(!m_menu) {
+        return 0;
+    }
+    const size_t index = m_menu->items().size();
+    m_menu->addAction(text, handler, true, checked);
+    return index;
+}
+
+void MenuBar::MenuModel::setActionChecked(size_t index, bool checked) {
+    if(m_menu) {
+        m_menu->setActionChecked(index, checked);
+    }
+}
+
+MenuBar::MenuModel *MenuBar::MenuModel::addMenu(const TString &title) {
+    if(!m_menu || !m_owner) {
+        return nullptr;
+    }
+    return m_owner->createMenuModel(m_menu->addMenu(title));
+}
+
+void MenuBar::MenuModel::addSeparator() {
+    if(m_menu) {
+        m_menu->addSeparator();
+    }
+}
+
+MenuBar::MenuModel *MenuBar::addMenu(const TString &title) {
+    return createMenuModel(m_menuBar->addMenu(title));
+}
+
+MenuBar::MenuModel *MenuBar::createMenuModel(NativeMenu *menu) {
+    if(!menu) {
+        return nullptr;
+    }
+    MenuModel *model = new MenuModel(this, menu);
+    m_menuModels.push_back(model);
+    return model;
+}
+
+bool MenuBar::isUsingNativeMenuBar() const {
+    return m_menuBar->isAttached();
+}
+
+bool MenuBar::attachToCanvas(Canvas *canvas, Window *window) {
+    if(!canvas) {
         return false;
     }
-    actor()->setParent(canvas->actor());
+    if(parentWidget() != canvas) {
+        setParent(canvas);
+    }
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     rect->setPivot(Vector2(0.0f, 1.0f));
     rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
     rect->setSize(Vector2(0.0f, kMenuBarHeight));
     rect->setPosition(Vector3(0.0f, 0.0f, 0.0f));
+
+    m_window = window;
+    if(m_window && !m_window->setMenuBar(m_menuBar)) {
+        aWarning() << "Failed to attach the native menu bar; using the UiKit menu bar.";
+    }
+
     return true;
 }
 
 void MenuBar::draw() {
+    if(isUsingNativeMenuBar()) {
+        return;
+    }
     if(m_dirty) {
         rebuild();
     }
@@ -95,14 +159,13 @@ void MenuBar::draw() {
 }
 
 void MenuBar::update(const Vector2 &position) {
+    if(isUsingNativeMenuBar()) {
+        return;
+    }
     if(m_dirty) {
         rebuild();
     }
     Widget::update(position);
-    if(!m_menuBar || m_menuBar->isAttached()) {
-        return;
-    }
-
     int modifiers = 0;
     if(Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT)) {
         modifiers |= Action::Shift;
@@ -123,13 +186,13 @@ void MenuBar::update(const Vector2 &position) {
     }
 }
 
-Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) {
+Menu *MenuBar::buildMenu(NativeMenu *model, Widget *parent, const TString &name) {
     if(!model || !parent) {
         return nullptr;
     }
 
-    Actor *menuActor = Engine::composeActor<Menu>(name, parent);
-    Menu *view = menuActor ? menuActor->getComponent<Menu>() : nullptr;
+    Widget *menuActor = Widget::createWidget<Menu>(name, parent);
+    Menu *view = menuActor ? dynamic_cast<Menu *>(menuActor) : nullptr;
     if(!view) {
         return nullptr;
     }
@@ -150,8 +213,8 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
             view->addSubmenu(item.text, submenu);
             actions.emplace_back(nullptr, itemIndex);
         } else {
-            Actor *actionActor = Engine::composeActor<Action>(item.text, menuActor);
-            Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
+            Widget *actionActor = Widget::createWidget<Action>(item.text, menuActor);
+            Action *action = actionActor ? dynamic_cast<Action *>(actionActor) : nullptr;
             if(!action) {
                 actions.emplace_back(nullptr, itemIndex);
                 continue;
@@ -173,22 +236,19 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
 void MenuBar::rebuild() {
     m_dirty = false;
     clearWidgets();
-    if(!m_menuBar || !actor()) {
-        return;
-    }
 
     Font *font = Engine::loadResource<Font>(".embedded/Roboto.ttf");
     float offset = 0.0f;
     for(const auto &model : m_menuBar->menus()) {
-        Actor *buttonActor = Engine::composeActor<Button>(model->title(), actor());
-        Button *button = buttonActor ? buttonActor->getComponent<Button>() : nullptr;
+        Widget *buttonActor = Widget::createWidget<Button>(model->title(), this);
+        Button *button = buttonActor ? dynamic_cast<Button *>(buttonActor) : nullptr;
         if(!button) {
             continue;
         }
 
         button->setText(model->title());
         button->setFont(font);
-        RectTransform *buttonRect = button->rectTransform();
+        Widget *buttonRect = button;
         const float labelWidth = font ? font->textWidth(model->title(), button->fontSize(), 0) : 60.0f;
         const float width = labelWidth + kMenuHorizontalPadding * 2.0f;
         buttonRect->setPivot(Vector2(0.0f, 1.0f));
@@ -215,12 +275,9 @@ void MenuBar::clearWidgets() {
     m_topMenus.clear();
     m_activeMenuIndex = -1;
 
-    if(!actor()) {
-        return;
-    }
-    for(Object *child : actor()->getChildren()) {
-        Actor *childActor = dynamic_cast<Actor *>(child);
-        if(childActor && childActor->getComponent<Button>()) {
+    for(Object *child : getChildren()) {
+        Widget *childActor = dynamic_cast<Widget *>(child);
+        if(childActor && dynamic_cast<Button *>(childActor)) {
             childActor->setEnabled(false);
             childActor->deleteLater();
         }
@@ -243,7 +300,7 @@ void MenuBar::onMenuButtonClicked() {
         return;
     }
     const int index = static_cast<int>(std::distance(m_buttons.begin(), it));
-    if(index == m_activeMenuIndex && m_topMenus[index]->isEnabled()) {
+    if(index == m_activeMenuIndex && m_topMenus[index]->isVisible()) {
         hideMenus();
         return;
     }
@@ -263,5 +320,4 @@ void MenuBar::onMenuTriggered(int index) {
     if(entry.first) {
         entry.first->triggerAction(entry.second);
     }
-    hideMenus();
 }

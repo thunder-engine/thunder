@@ -17,16 +17,10 @@
 */
 #include "components/label.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include "stylesheet.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-#include <components/transform.h>
-
-#include <resources/resource.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -91,15 +85,14 @@ Label::~Label() {
 */
 void Label::draw() {
     Canvas *canvas = Label::canvas();
-    RectTransform *rect = rectTransform();
 
-    if(m_clip && canvas && rect) {
-        canvas->setClipRegion(rect->clipRegion());
+    if(m_clip && canvas) {
+        canvas->setClipRegion(clipRegion());
     }
 
     if(m_material && !m_text.isEmpty()) {
         if(m_dirty && m_font) {
-            m_mesh->setName(actor()->name());
+            m_mesh->setName(name());
             const Font::Settings settings = {m_size, m_alignment, m_flags, m_color, m_boundaries};
             m_font->composeMesh(m_mesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
@@ -108,11 +101,11 @@ void Label::draw() {
             m_dirty = false;
         }
 
-        Matrix4 mat(rect->worldTransform());
+        Matrix4 mat(worldTransform());
 
-        mat[12] += rect->padding().w;
+        mat[12] += padding().w;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = Label::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
@@ -123,7 +116,7 @@ void Label::draw() {
 
     Widget::draw();
 
-    if(m_clip && canvas && rect) {
+    if(m_clip && canvas) {
         canvas->disableClip();
     }
 }
@@ -351,7 +344,7 @@ float Label::textWidth() const {
     \internal
 */
 void Label::loadData(const VariantList &data) {
-    Component::loadData(data);
+    Object::loadData(data);
 
     m_dirty = true;
     repaint();
@@ -387,7 +380,7 @@ void Label::composeComponent() {
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
 
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     if(rect) {
         rect->setSize(Vector2(100.0f, fontSize() + 2));
     }

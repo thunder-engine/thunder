@@ -9,7 +9,8 @@ public:
         DisplayRole	= 0,
         DecorationRole,
         EditRole,
-        ToolTipRole
+        ToolTipRole,
+        UserRole = 0x100
     };
 
 public:

@@ -30,6 +30,7 @@ public:
     virtual uint32_t screenWidth() const = 0;
     virtual uint32_t screenHeight() const = 0;
 
+    virtual Window *window();
     virtual void setWindow(Window *window);
 
     virtual bool key(Input::KeyCode code) const;

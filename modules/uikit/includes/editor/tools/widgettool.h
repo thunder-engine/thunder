@@ -21,7 +21,7 @@
 #include <editor/editortool.h>
 
 class WidgetController;
-class RectTransform;
+class Widget;
 
 class WidgetTool : public EditorTool {
 public:
@@ -44,7 +44,7 @@ protected:
     bool snapHelperX(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
     bool snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
 
-    void snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, RectTransform *rect, RectTransform *parent, const Vector2 &translation) const;
+    void snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, Widget *rect, Widget *parent, const Vector2 &translation) const;
 
     void drawAnchors(const Vector3 &center, const Vector3 &size, const Vector2 &minAnchor, const Vector2 &maxAnchor);
 

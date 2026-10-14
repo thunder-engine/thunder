@@ -15,23 +15,20 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/treeview.h"
+#include "treeview.h"
 
-#include "components/itemviewdelegate.h"
-#include "components/recttransform.h"
-#include "components/scrollbar.h"
-#include "components/canvas.h"
-
-#include <algorithm>
-#include <string.h>
+#include "itemviewdelegate.h"
+#include "scrollbar.h"
+#include "canvas.h"
 
 #include <input.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 
 #include <abstractitemmodel.h>
-#include <pipelinecontext.h>
-#include <commandbuffer.h>
+
+#include <algorithm>
+#include <string.h>
 
 TreeView::TreeView() :
         m_delegate(nullptr),
@@ -70,6 +67,55 @@ void TreeView::setModel(AbstractItemModel *model) {
     m_dirtyItems = true;
 }
 
+void TreeView::refresh() {
+    if(!m_model || !m_content) {
+        m_dirtyItems = true;
+        return;
+    }
+    m_dirtyItems = true;
+    rebuildItems();
+    m_dirtyItems = false;
+}
+
+void TreeView::expandToDepth(int depth) {
+    if(!m_model || depth < 0) {
+        return;
+    }
+    auto expand = [this, depth](const auto &self, const ModelIndex &parent, int level) -> void {
+        const int count = m_model->rowCount(parent);
+        for(int row = 0; row < count; ++row) {
+            ModelIndex index = m_model->index(row, 0, parent);
+            if(!index.isValid()) {
+                continue;
+            }
+            if(level <= depth && m_model->rowCount(index) > 0) {
+                setExpanded(index, true);
+            }
+            if(level < depth) {
+                self(self, index, level + 1);
+            }
+        }
+    };
+    expand(expand, m_rootIndex, 0);
+    refresh();
+}
+
+void TreeView::expandToIndex(const ModelIndex &index) {
+    if(!m_model || !index.isValid() || index.model() != m_model) {
+        return;
+    }
+    std::vector<ModelIndex> ancestors;
+    ModelIndex ancestor = index.parent();
+    while(ancestor.isValid()) {
+        ancestors.push_back(ancestor);
+        ancestor = ancestor.parent();
+    }
+    for(auto it = ancestors.rbegin(); it != ancestors.rend(); ++it) {
+        setExpanded(*it, true);
+    }
+    refresh();
+}
+
 int TreeView::rowHeight() const {
     return m_rowHeight;
 }
@@ -106,11 +152,12 @@ void TreeView::setDelegate(ItemViewDelegate *delegate) {
 
 void TreeView::composeComponent() {
     AbstractItemView::composeComponent();
-    Actor *widgetActor = Engine::composeActor<Widget>("content", actor());
-    setContent(widgetActor->getComponent<Widget>());
+    Widget *widgetActor = Widget::createWidget<Widget>("content", this);
+    setContent(dynamic_cast<Widget *>(widgetActor));
 
-    Actor *delegateActor = Engine::composeActor<ItemViewDelegate>("delegate");
-    setDelegate(delegateActor->getComponent<ItemViewDelegate>());
+    Widget *delegateActor = Widget::createWidget<ItemViewDelegate>("delegate", this);
+    setDelegate(dynamic_cast<ItemViewDelegate *>(delegateActor));
+    m_delegate->setEnabled(false);
 
     setRowHeight(m_rowHeight);
 
@@ -173,8 +220,8 @@ void TreeView::toggleExpanded(int row) {
 
 void TreeView::clearDelegates() {
     for(auto &data : m_itemsData) {
-        if(data.delegate && data.delegate->actor()) {
-            data.delegate->actor()->deleteLater();
+        if(data.delegate) {
+            data.delegate->deleteLater();
         }
         data.delegate = nullptr;
     }
@@ -279,7 +326,7 @@ void TreeView::rebuildItems() {
                 delegate->setEnabled(false);
             }
         }
-        RectTransform *contentRect = m_content->rectTransform();
+        Widget *contentRect = m_content;
         if(contentRect) {
             contentRect->setSize(Vector2(viewportSize().x, 0));
         }
@@ -302,8 +349,8 @@ void TreeView::rebuildItems() {
             delegate = existingDelegates[delegateIndex];
             delegateIndex++;
         } else if(m_delegate) {
-            Actor *itemActor = static_cast<Actor *>(m_delegate->actor()->clone(m_content->actor()));
-            delegate = itemActor->getComponent<ItemViewDelegate>();
+            Widget *itemActor = static_cast<Widget *>(m_delegate->clone(m_content));
+            delegate = dynamic_cast<ItemViewDelegate *>(itemActor);
             if(delegate) {
                 m_content->setSubWidget(delegate);
             }
@@ -314,7 +361,7 @@ void TreeView::rebuildItems() {
             delegate->setEnabled(true);
             delegate->bind(this, data.index);
 
-            RectTransform *rect = delegate->rectTransform();
+            Widget *rect = delegate;
             if(rect) {
                 rect->setAnchors(Vector2(0, 1), Vector2(0, 1));
                 rect->setPivot(Vector2(0, 1));
@@ -332,7 +379,7 @@ void TreeView::rebuildItems() {
         }
     }
 
-    RectTransform *contentRect = m_content->rectTransform();
+    Widget *contentRect = m_content;
     if(contentRect) {
         contentRect->setSize(Vector2(viewportSize().x, m_itemsData.size() * m_rowHeight));
     }
@@ -383,7 +430,7 @@ void TreeView::buildArrowInstances() {
         if(!data.delegate || !data.delegate->isEnabled()) continue;
         if(m_model->rowCount(data.index) == 0) continue;
 
-        RectTransform *rect = data.delegate->rectTransform();
+        Widget *rect = data.delegate;
         if(!rect) continue;
 
         Vector3 pos = rect->position();
@@ -410,7 +457,7 @@ void TreeView::buildArrowInstances() {
         if(!itemData.delegate || !itemData.delegate->isEnabled()) continue;
         if(m_model->rowCount(itemData.index) == 0) continue;
 
-        RectTransform *rect = itemData.delegate->rectTransform();
+        Widget *rect = itemData.delegate;
         if(!rect) continue;
 
         Matrix4 transform = rect->worldTransform();
@@ -452,7 +499,7 @@ Vector4 TreeView::getArrowRect(int row) const {
         return Vector4();
     }
 
-    RectTransform *rect = data->delegate->rectTransform();
+    Widget *rect = data->delegate;
     if(!rect) {
         return Vector4();
     }
@@ -470,7 +517,7 @@ void TreeView::drawSub() {
 
     Canvas *canvas = TreeView::canvas();
     if(canvas && m_arrowMaterial && m_arrowMesh) {
-        canvas->setClipRegion(rectTransform()->clipRegion());
+        canvas->setClipRegion(this->clipRegion());
         canvas->drawMesh(m_arrowMesh, m_arrowMaterial);
         canvas->disableClip();
 
@@ -490,7 +537,7 @@ bool TreeView::isClickOnIndicator(int row, const Vector2 &pos) const {
 int TreeView::indexAtPosition(const Vector2 &pos) const {
     Vector2 local(pos);
     if(m_content) {
-        RectTransform *contentRect = m_content->rectTransform();
+        Widget *contentRect = m_content;
         if(contentRect) {
             local += contentRect->position();
         }
@@ -504,7 +551,7 @@ Vector2 TreeView::positionAtIndex(int row) const {
 }
 
 Vector2 TreeView::viewportSize() {
-    RectTransform *rect = rectTransform();
+    Widget *rect = this;
     return rect ? rect->size() : Vector2();
 }
 
@@ -544,19 +591,23 @@ bool TreeView::onMouseDown(int x, int y) {
 
     m_isPressed = true;
     handleItemClick(row);
+    prepareDrag(m_itemsData[row].index);
     return true;
 }
 
 bool TreeView::onMouseUp(int x, int y) {
     if(!m_isPressed) {
+        Widget::cancelDragCandidate(this);
         return false;
     }
     m_isPressed = false;
     int row = indexAtPosition(Vector2(x, y));
     if(row >= 0 && row < static_cast<int>(m_itemsData.size())) {
         clicked(m_itemsData[row].index);
+        Widget::cancelDragCandidate(this);
         return true;
     }
+    Widget::cancelDragCandidate(this);
     return false;
 }
 
@@ -568,11 +619,23 @@ bool TreeView::onMouseMove(int x, int y) {
             if(row >= 0 && row < static_cast<int>(m_itemsData.size())) {
                 hovered = data.index == m_itemsData[row].index;
             }
+
             data.delegate->setHovered(hovered);
         }
     }
     repaint();
     return true;
+}
+
+ModelIndex TreeView::modelIndexAtPosition(const Vector2 &position) {
+    int row = indexAtPosition(position);
+    const ItemData *data = getItemData(row);
+    return data ? data->index : ModelIndex();
+}
+
+void TreeView::onDragFinished(bool dropped) {
+    AbstractItemView::onDragFinished(dropped);
+    m_isPressed = false;
 }
 
 bool TreeView::onMouseDoubleClick(int x, int y) {

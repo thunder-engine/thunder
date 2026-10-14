@@ -18,12 +18,12 @@
 #ifndef TABBAR_H
 #define TABBAR_H
 
-#include "components/button.h"
+#include <button.h>
 
 #include <list>
 
 class UIKIT_EXPORT TabBar : public Widget {
-    A_OBJECT(TabBar, Widget, Components/UI)
+    A_OBJECT(TabBar, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(bool, tabsClosable, TabBar::tabsClosable, TabBar::setTabsClosable)
@@ -90,7 +90,7 @@ protected:
     void onBackClicked();
     void onFrontClicked();
 
-    void createCloseButton(Actor *parent);
+    void createCloseButton(Widget *parent);
 
     void recalcOffset();
 

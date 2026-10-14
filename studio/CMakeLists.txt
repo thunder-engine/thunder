@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 project(studio)
 
-file(GLOB ${PROJECT_NAME}_srcFiles
-    "*.cpp"
+file(GLOB_RECURSE ${PROJECT_NAME}_srcFiles
+    "src/*.cpp"
+    "src/*.h"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -15,6 +16,9 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes/components"
     "../thirdparty/glfw/include"
     "../editor/includes"
+    "../modules/uikit/includes"
+    "../modules/uikit/includes/components"
+    "../modules/uikit/includes/resources"
     "../thirdparty/next/inc"
     "../thirdparty/next/inc/math"
     "../thirdparty/next/inc/core"

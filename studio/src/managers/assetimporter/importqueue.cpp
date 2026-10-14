@@ -70,17 +70,13 @@ void ImportQueue::startImport() {
     setFrom(0.0f);
     setTo(static_cast<float>(std::max(m_totalImports, 1)));
     setValue(0.0f);
-    if(actor()) {
-        actor()->setEnabled(true);
-    }
+    setEnabled(true);
 }
 
 void ImportQueue::finishImport() {
     m_started = false;
     m_building = false;
-    if(actor()) {
-        actor()->setEnabled(false);
-    }
+    setEnabled(false);
     importFinished();
 }
 

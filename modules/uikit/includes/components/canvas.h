@@ -18,22 +18,24 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <component.h>
 #include <uikit.h>
 
 #include <widget.h>
 #include <uidocument.h>
 #include <stylesheet.h>
 
+#include <vector>
+
 class CommandBuffer;
-class RectTransform;
+class Widget;
 class RenderTarget;
 class Texture;
 class Mesh;
 class MaterialInstance;
+class Menu;
 
 class UIKIT_EXPORT Canvas : public Widget {
-    A_OBJECT(Canvas, Widget, Components/UI)
+    A_OBJECT(Canvas, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(UiDocument *, document, Canvas::document, Canvas::setDocument, "editor=Asset"),
@@ -53,18 +55,22 @@ public:
 
     void update(const Vector2 &position) override;
 
+    void draw() override;
     virtual void draw(CommandBuffer *buffer);
 
-    void drawRect(MaterialInstance *material, RectTransform *transform);
+    void drawRect(MaterialInstance *material, Widget *transform);
 
     void drawMesh(Mesh *mesh, MaterialInstance *material);
 
+    using Widget::setSize;
     virtual void setSize(int width, int height);
 
     void setClipRegion(const Vector4 &region);
     void disableClip();
 
     virtual Texture *texture() const;
+
+    Canvas *canvas() override;
 
     void skipRenderResult(bool skip);
 
@@ -78,14 +84,8 @@ public:
     void fromBuffer(const TString &buffer);
     void documentLoaded();
 
-private:
-    void composeComponent() override;
-
-    void draw() override;
-
 protected:
     RenderTarget *renderTarget() const;
-    void boundChanged(const Vector2 &size) override;
 
 private:
     void resizeTexture(int width, int height);
@@ -96,6 +96,8 @@ private:
     static void materialUpdated(int state, void *ptr);
 
 private:
+    friend class Menu;
+
     Vector2 m_lastPosition;
 
     TString m_documentStyle;
@@ -117,6 +119,8 @@ private:
     bool m_skipRenderResult;
 
     bool m_lastPositionValid;
+    bool m_drawingPopups = false;
+    std::vector<Menu *> m_popupMenus;
 
 };
 

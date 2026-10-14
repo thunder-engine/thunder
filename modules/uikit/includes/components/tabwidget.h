@@ -18,16 +18,15 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <list>
 
-class RectTransform;
 class Frame;
 class TabBar;
 
 class UIKIT_EXPORT TabWidget : public Widget {
-    A_OBJECT(TabWidget, Widget, Components/UI)
+    A_OBJECT(TabWidget, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(bool, tabsClosable, TabWidget::tabsClosable, TabWidget::setTabsClosable)
@@ -68,14 +67,12 @@ public:
     void setContentArea(Frame *area);
 
 public: // signals
-    void tabCloseRequested();
+    void tabCloseRequested(int index);
 
 protected:
     void composeComponent() override;
 
-    void childAdded(RectTransform *rect) override;
-
-    int insertTab(int index, const TString &title, RectTransform *content);
+    void childAdded(Widget *rect) override;
 
     void onObjectNameChanged(const TString &objectName);
 
@@ -85,15 +82,16 @@ private:
     void onTabCloseRequested(int index);
     void updateTabStyles();
 
-    std::list<RectTransform *> m_tabs;
+    std::list<Widget *> m_tabs;
 
     TabBar *m_tabBar;
-    RectTransform *m_contentArea;
+    Widget *m_contentArea;
 
     int m_currentIndex;
 
     float m_tabBarHeight;
     bool m_closeOnRequest;
+    bool m_composingComponent;
 };
 
 #endif // TABWIDGET_H

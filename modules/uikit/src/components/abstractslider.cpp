@@ -17,8 +17,6 @@
 */
 #include "components/abstractslider.h"
 
-#include "components/recttransform.h"
-
 #include <timer.h>
 #include <input.h>
 
@@ -153,7 +151,7 @@ void AbstractSlider::update(const Vector2 &pos) {
 
         if((Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0)) {
             Vector3 min, max;
-            rectTransform()->bound().box(min, max);
+            this->bound().box(min, max);
             if(m_orientation == Widget::Horizontal) {
                 min.x += m_areaGap;
                 max.x -= m_areaGap;
