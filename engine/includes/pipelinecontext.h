@@ -40,6 +40,7 @@ public:
     CommandBuffer *buffer() const;
 
     void draw(Camera *camera);
+    void draw(Camera *camera, CommandBuffer *buffer);
 
     void cameraReset();
 
@@ -76,6 +77,9 @@ public:
     Vector2 size() const;
     void resize(int32_t width, int32_t height);
 
+    Vector2 positionOffset() const;
+    void setPositionOffset(const Vector2 &position);
+
     void invalidateTasks();
 
     void subscribePost(RenderCallback callback, void *object);
@@ -96,6 +100,8 @@ protected:
     typedef std::map<TString, RenderTarget *> TargetsMap;
 
     typedef std::list<std::pair<PipelineContext::RenderCallback, void *>> Callbacks;
+
+    Vector2 m_positionOffset;
 
     Callbacks m_postObservers;
 

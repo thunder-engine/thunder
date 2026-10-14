@@ -208,9 +208,12 @@ void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 void CommandBufferVk::disableScissor() {
     PROFILE_FUNCTION();
 
-    VkRect2D scissor = {};
-
     CommandBuffer::disableScissor();
+    applyScissorState();
+}
+
+void CommandBufferVk::applyScissorState() {
+    VkRect2D scissor = {};
     if(m_scissorStack.empty()) {
         scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
         scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};

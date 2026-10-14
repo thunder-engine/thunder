@@ -46,6 +46,8 @@ protected:
 
     void disableScissor() override;
 
+    void applyScissorState() override;
+
     void beginDebugMarker(const TString &name) override;
     void endDebugMarker() override;
 

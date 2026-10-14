@@ -70,6 +70,18 @@ CommandBuffer *PipelineContext::buffer() const {
     Initiates the rendering process using the specified camera.
 */
 void PipelineContext::draw(Camera *camera) {
+    draw(camera, nullptr);
+}
+
+void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
+    CommandBuffer *previousBuffer = m_buffer;
+    Vector4 previousViewport;
+    if(buffer) {
+        previousViewport = buffer->viewport();
+        buffer->beginScissorScope();
+        m_buffer = buffer;
+    }
+
     analizeGraph();
 
     camera->setRatio((float)m_width / (float)m_height);
@@ -92,6 +104,17 @@ void PipelineContext::draw(Camera *camera) {
 
     for(auto it : m_postObservers) {
         (*it.first)(it.second);
+    }
+
+    if(buffer) {
+        if(previousViewport.z > 0.0f && previousViewport.w > 0.0f) {
+            m_buffer->setViewport(static_cast<int32_t>(previousViewport.x),
+                                  static_cast<int32_t>(previousViewport.y),
+                                  static_cast<int32_t>(previousViewport.z),
+                                  static_cast<int32_t>(previousViewport.w));
+        }
+        m_buffer->endScissorScope();
+        m_buffer = previousBuffer;
     }
 }
 /*!
@@ -131,6 +154,22 @@ void PipelineContext::resize(int32_t width, int32_t height) {
             camera->setRatio(float(m_width) / float(m_height));
         }
     }
+}
+/*!
+    Returns a position offset this pipline context.
+    Most of the time returns [0, 0]. This value will be set for viewports in the editor.
+    This value can be used to recalculate mouse position.
+*/
+Vector2 PipelineContext::positionOffset() const {
+    return m_positionOffset;
+}
+/*!
+    Sets a \a position offset this pipline context.
+    This value will be set for viewports in the editor.
+    This value can be used to recalculate mouse position.
+*/
+void PipelineContext::setPositionOffset(const Vector2 &position) {
+    m_positionOffset = position;
 }
 /*!
     Invalidates all the pipeline tasks to let them to reestablish connections.
