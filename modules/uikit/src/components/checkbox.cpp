@@ -192,10 +192,12 @@ void CheckBox::setFoldMode(bool fold) {
 void CheckBox::draw() {
     AbstractButton::draw();
 
-    if(m_checked || m_foldMode || m_switchMode) {
+    if((m_checked || m_foldMode || m_switchMode) && (m_iconMaterial || m_frameMaterial)) {
         if(m_knobIcon && m_dirtyIcon) {
-            m_iconMaterial->setTexture(gOverride, m_knobIcon->texture());
-            m_knobIcon->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
+            if(m_iconMaterial) {
+                m_iconMaterial->setTexture(gOverride, m_knobIcon->texture());
+                m_knobIcon->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
+            }
 
             m_dirtyIcon = false;
         }
@@ -221,10 +223,10 @@ void CheckBox::draw() {
         }
 
         Canvas *canvas = CheckBox::canvas();
-        if(m_knobIcon) {
+        if(m_knobIcon && m_iconMaterial) {
             m_iconMaterial->setTransform(mat, 0, hash);
             canvas->drawMesh(m_iconMesh, m_iconMaterial);
-        } else {
+        } else if(m_frameMaterial) {
             Matrix4 s;
             s[0] = m_knobSize.x;
             s[5] = m_knobSize.y;
@@ -300,24 +302,20 @@ void CheckBox::iconUpdated(int state, void *ptr) {
 }
 
 void CheckBox::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
     CheckBox *checkBox = static_cast<CheckBox *>(ptr);
     if(!checkBox) {
         return;
     }
 
-    if(checkBox->m_iconMaterial) {
-        checkBox->m_iconMaterial->setVector4(gColor, &checkBox->m_knobColor);
-    }
-    if(checkBox->m_frameMaterial) {
-        Vector4 width(0.0f);
-        checkBox->m_frameMaterial->setVector4(gBorderWidth, &width);
-        checkBox->m_frameMaterial->setVector4(gBorderRadius, &checkBox->m_borderRadius);
-        checkBox->m_frameMaterial->setVector4(gBorderColor, &checkBox->m_borderColor);
-        checkBox->m_frameMaterial->setVector4(gBackgroundColor, &checkBox->m_knobColor);
+    if(state == Material::ToBeDeleted) {
+        if(checkBox->m_iconMaterial && checkBox->m_iconMaterial->material()->state() == state) {
+            delete checkBox->m_iconMaterial;
+            checkBox->m_iconMaterial = nullptr;
+        }
+        if(checkBox->m_frameMaterial && checkBox->m_frameMaterial->material()->state() == state) {
+            delete checkBox->m_frameMaterial;
+            checkBox->m_frameMaterial = nullptr;
+        }
     }
 
     checkBox->m_dirtyIcon = true;

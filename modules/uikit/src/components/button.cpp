@@ -299,7 +299,7 @@ void Button::draw() {
         canvas->drawMesh(m_textMesh, m_fontMaterial);
     }
 
-    if(m_icon) {
+    if(m_icon && m_iconMaterial) {
         if(m_dirtyIcon) {
             m_iconMaterial->setTexture(gOverride, m_icon->texture());
             m_icon->composeMesh(m_iconMesh, Sprite::Sliced, m_iconSize);
@@ -378,26 +378,24 @@ void Button::iconUpdated(int state, void *ptr) {
 }
 
 void Button::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
     Button *button = static_cast<Button *>(ptr);
     if(!button) {
         return;
     }
 
-    if(button->m_fontMaterial) {
-        int sdf = 0;
-        button->m_fontMaterial->setInteger(gUseSDF, &sdf);
-        button->m_fontMaterial->setVector4(gColor, &button->m_textColor);
-    }
-    if(button->m_iconMaterial) {
-        Vector4 color(1.0f);
-        button->m_iconMaterial->setVector4(gColor, &color);
+    if(state == Material::ToBeDeleted) {
+        if(button->m_fontMaterial && button->m_fontMaterial->material()->state() == state) {
+            delete button->m_fontMaterial;
+            button->m_fontMaterial = nullptr;
+        }
+        if(button->m_iconMaterial && button->m_iconMaterial->material()->state() == state) {
+            delete button->m_iconMaterial;
+            button->m_iconMaterial = nullptr;
+        }
     }
 
     button->m_dirtyText = true;
     button->m_dirtyIcon = true;
     button->repaint();
+
 }

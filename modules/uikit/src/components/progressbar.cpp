@@ -50,8 +50,6 @@ ProgressBar::ProgressBar() :
         m_progressColor(1.0f, 1.0f, 1.0f, 1.0f),
         m_progressImage(nullptr),
         m_progressMesh(nullptr),
-        m_spriteMaterial(nullptr),
-        m_defaultFrameMaterial(nullptr),
         m_imageProgress(nullptr),
         m_frameProgress(nullptr),
         m_orientation(Horizontal),
@@ -60,42 +58,41 @@ ProgressBar::ProgressBar() :
         m_value(0.0f),
         m_dirtyProgress(true) {
 
-    m_spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
-    if(m_spriteMaterial) {
-        m_imageProgress = m_spriteMaterial->createInstance();
+    Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
+    if(spriteMaterial) {
+        m_imageProgress = spriteMaterial->createInstance();
         m_imageProgress->setVector4(gColor, &m_progressColor);
-        m_spriteMaterial->subscribe(&ProgressBar::materialUpdated, this);
+        spriteMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 
-    m_defaultFrameMaterial = Engine::loadResource<Material>(gDefaultFrame);
-    if(m_defaultFrameMaterial) {
-        m_frameProgress = m_defaultFrameMaterial->createInstance();
+    Material *defaultFrameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(defaultFrameMaterial) {
+        m_frameProgress = defaultFrameMaterial->createInstance();
 
         Vector4 width(0.0f);
         m_frameProgress->setVector4(gBorderWidth, &width);
         m_frameProgress->setVector4(gBorderRadius, &m_borderRadius);
         m_frameProgress->setVector4(gBorderColor, &m_borderColor);
         m_frameProgress->setVector4(gBackgroundColor, &m_progressColor);
-        m_defaultFrameMaterial->subscribe(&ProgressBar::materialUpdated, this);
+        defaultFrameMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 }
 
 ProgressBar::~ProgressBar() {
-    if(m_spriteMaterial) {
-        m_spriteMaterial->unsubscribe(this);
+    if(m_imageProgress) {
+        m_imageProgress->material()->unsubscribe(this);
     }
-    if(m_defaultFrameMaterial) {
-        m_defaultFrameMaterial->unsubscribe(this);
-    }
-
-    delete m_progressImage;
-    delete m_progressMesh;
-
     delete m_imageProgress;
     m_imageProgress = nullptr;
 
+    if(m_frameProgress) {
+        m_frameProgress->material()->unsubscribe(this);
+    }
     delete m_frameProgress;
     m_frameProgress = nullptr;
+
+    delete m_progressImage;
+    delete m_progressMesh;
 }
 /*!
     Returns the orientation of the progress bar.
@@ -209,7 +206,7 @@ void ProgressBar::draw() {
 
     RectTransform *rect = rectTransform();
     if(m_dirtyProgress) {
-        if(m_progressImage) {
+        if(m_progressImage && m_imageProgress) {
             delete m_progressMesh;
             m_progressMesh = Engine::objectCreate<Mesh>();
             m_progressMesh->makeDynamic();
@@ -232,7 +229,7 @@ void ProgressBar::draw() {
     }
 
     canvas->setClipRegion(clip);
-    if(m_progressImage) {
+    if(m_progressImage && m_imageProgress && m_progressMesh) {
         Matrix4 mat(rect->worldTransform());
 
         const Vector3Vector &verts(m_progressMesh->vertices());
@@ -247,7 +244,7 @@ void ProgressBar::draw() {
         m_imageProgress->setTransform(mat, 0, hash);
 
         canvas->drawMesh(m_progressMesh, m_imageProgress);
-    } else {
+    } else if(m_frameProgress) {
         canvas->drawRect(m_frameProgress, rect);
     }
     canvas->disableClip();
@@ -265,30 +262,19 @@ void ProgressBar::composeComponent() {
 }
 
 void ProgressBar::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
     ProgressBar *progressBar = static_cast<ProgressBar *>(ptr);
     if(!progressBar) {
         return;
     }
 
-    if(progressBar->m_frameProgress) {
-        RectTransform *rect = progressBar->rectTransform();
-        const float height = MAX(rect->size().y, 1.0f);
-        Vector4 borderRadius(progressBar->m_borderRadius / height);
-        Vector4 zeroWidth(0.0f);
-        progressBar->m_frameProgress->setVector4(gBorderWidth, &zeroWidth);
-        progressBar->m_frameProgress->setVector4(gBorderRadius, &borderRadius);
-        progressBar->m_frameProgress->setVector4(gBorderColor, &progressBar->m_borderColor);
-        progressBar->m_frameProgress->setVector4(gBackgroundColor, &progressBar->m_progressColor);
-    }
-
-    if(progressBar->m_imageProgress) {
-        progressBar->m_imageProgress->setVector4(gColor, &progressBar->m_progressColor);
-        if(progressBar->m_progressImage) {
-            progressBar->m_imageProgress->setTexture(gOverride, progressBar->m_progressImage->texture());
+    if(state == Material::ToBeDeleted) {
+        if(progressBar->m_imageProgress && progressBar->m_imageProgress->material()->state() == state) {
+            delete progressBar->m_imageProgress;
+            progressBar->m_imageProgress = nullptr;
+        }
+        if(progressBar->m_frameProgress && progressBar->m_frameProgress->material()->state() == state) {
+            delete progressBar->m_frameProgress;
+            progressBar->m_frameProgress = nullptr;
         }
     }
 

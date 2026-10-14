@@ -53,18 +53,18 @@ public:
 
     void update(const Vector2 &position) override;
 
-    void draw(CommandBuffer *buffer);
+    virtual void draw(CommandBuffer *buffer);
 
     void drawRect(MaterialInstance *material, RectTransform *transform);
 
     void drawMesh(Mesh *mesh, MaterialInstance *material);
 
-    void setSize(int width, int height);
+    virtual void setSize(int width, int height);
 
     void setClipRegion(const Vector4 &region);
     void disableClip();
 
-    Texture *texture() const;
+    virtual Texture *texture() const;
 
     void skipRenderResult(bool skip);
 
@@ -80,6 +80,15 @@ public:
 
 private:
     void composeComponent() override;
+
+    void draw() override;
+
+protected:
+    RenderTarget *renderTarget() const;
+    void boundChanged(const Vector2 &size) override;
+
+private:
+    void resizeTexture(int width, int height);
 
     void resolveStyleSheet(Widget *widget);
     void cleanHierarchy(Widget *widget);

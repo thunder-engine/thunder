@@ -257,16 +257,6 @@ MaterialInstance *MaterialGL::createInstance(SurfaceType type) {
     return result;
 }
 
-void MaterialGL::switchState(State state) {
-    Material::switchState(state);
-
-    if(state == ToBeUpdated) {
-        for(auto it : Material::m_instances) {
-            initInstance(it);
-        }
-    }
-}
-
 inline int32_t convertAction(int32_t action) {
     switch(action) {
         case Material::ActionType::Keep: return GL_KEEP;

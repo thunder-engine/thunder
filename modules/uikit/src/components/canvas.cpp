@@ -216,14 +216,20 @@ void Canvas::draw(CommandBuffer *buffer) {
     m_buffer = buffer;
 
     RenderTarget *target = m_buffer->renderTarget();
+    Vector4 viewport = m_buffer->viewport();
+    RectTransform *rect = rectTransform();
+    Matrix4 view;
+    view[14] = -50.0f;
+    Matrix4 projection = Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f);
+
     /*if(m_dirty)*/ {
-        Matrix4 v;
-        v[14] = -50.0f;
+        m_buffer->setViewProjection(view * rect->worldTransform().inverse(), projection);
+        RenderTarget *canvasTarget = renderTarget();
+        if(m_buffer->renderTarget() != canvasTarget) {
+            m_buffer->setRenderTarget(canvasTarget);
+        }
+        m_buffer->setViewport(0, 0, m_texture->width(), m_texture->height());
 
-        m_buffer->setViewProjection(v, Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f));
-        m_buffer->setRenderTarget(m_target);
-
-        RectTransform *rect = rectTransform();
         for(auto it : rect->children()) {
             RectTransform *childRect = dynamic_cast<RectTransform *>(it);
             if(childRect && childRect->isEnabled()) {
@@ -237,8 +243,17 @@ void Canvas::draw(CommandBuffer *buffer) {
     }
 
     if(!m_skipRenderResult) {
+        m_buffer->setViewProjection(view, projection);
+    }
+    if(m_buffer->renderTarget() != target) {
         m_buffer->setRenderTarget(target);
+    }
+    if(!m_skipRenderResult && m_finalMaterial) {
         m_buffer->drawMesh(PipelineContext::defaultPlane(), 0, Material::Opaque, *m_finalMaterial);
+    }
+    if(viewport.z > 0.0f && viewport.w > 0.0f) {
+        m_buffer->setViewport(static_cast<int32_t>(viewport.x), static_cast<int32_t>(viewport.y),
+                              static_cast<int32_t>(viewport.z), static_cast<int32_t>(viewport.w));
     }
 }
 /*!
@@ -281,6 +296,15 @@ void Canvas::setSize(int width, int height) {
         rect->setSize(Vector2(width, height));
     }
 
+    resizeTexture(width, height);
+}
+
+void Canvas::boundChanged(const Vector2 &size) {
+    Widget::boundChanged(size);
+    resizeTexture(static_cast<int>(size.x), static_cast<int>(size.y));
+}
+
+void Canvas::resizeTexture(int width, int height) {
     if(m_texture) {
         if(m_texture->width() == width && m_texture->height() == height) {
             return;
@@ -314,6 +338,11 @@ void Canvas::disableClip() {
 Texture *Canvas::texture() const {
     return m_texture;
 }
+
+RenderTarget *Canvas::renderTarget() const {
+    return m_target;
+}
+
 /*!
     Allows to \a skip the rendering of the result.
     This is useful if the UI is the only rendering task.
@@ -423,6 +452,28 @@ void Canvas::composeComponent() {
 }
 /*!
     \internal
+    Draws content of this canvas as widget.
+*/
+void Canvas::draw() {
+    Canvas *canvas = Canvas::canvas();
+    if(canvas) {
+        RectTransform *rect = rectTransform();
+        CommandBuffer *buffer = canvas->m_buffer;
+        Vector4 viewport(buffer->viewport());
+        Vector4 clip(rect->clipRegion());
+        if(clip.z > 0.0f && clip.w > 0.0f) {
+            buffer->setViewport(clip.x, clip.y, clip.z, clip.w);
+            if(m_finalMaterial) {
+                canvas->drawRect(m_finalMaterial, rect);
+            }
+            if(viewport.z > 0.0f && viewport.w > 0.0f) {
+                buffer->setViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+            }
+        }
+    }
+}
+/*!
+    \internal
 */
 void Canvas::resolveStyleSheet(Widget *widget) {
     for(auto it : widget->childWidgets()) {
@@ -450,11 +501,11 @@ void Canvas::cleanHierarchy(Widget *widget) {
     \internal
 */
 void Canvas::materialUpdated(int state, void *ptr) {
-    if(state <= Material::Ready) {
+    if(state == Material::ToBeDeleted) {
         Canvas *canvas = static_cast<Canvas *>(ptr);
-        if(canvas->m_finalMaterial) {
-            canvas->m_finalMaterial->setTexture("mainTexture", canvas->m_texture);
-            canvas->markDirty();
+        if(canvas && canvas->m_finalMaterial) {
+            delete canvas->m_finalMaterial;
+            canvas->m_finalMaterial = nullptr;
         }
     }
 }

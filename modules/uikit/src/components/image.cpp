@@ -314,13 +314,18 @@ void Image::spriteUpdated(int state, void *ptr) {
 }
 
 void Image::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
+    Image *image = static_cast<Image *>(ptr);
+    if(!image) {
         return;
     }
 
-    Image *image = static_cast<Image *>(ptr);
-    if(image) {
-        image->m_dirtyMaterial = true;
-        image->repaint();
+    if(state == Material::ToBeDeleted) {
+        if(image->m_material) {
+            delete image->m_material;
+            image->m_material = nullptr;
+        }
     }
+
+    image->m_dirtyMaterial = true;
+    image->repaint();
 }

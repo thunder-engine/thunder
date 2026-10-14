@@ -243,17 +243,19 @@ void TreeView::arrowUpdated(int state, void *ptr) {
 }
 
 void TreeView::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
+    TreeView *treeView = static_cast<TreeView *>(ptr);
+    if(!treeView) {
         return;
     }
 
-    TreeView *treeView = static_cast<TreeView *>(ptr);
-    if(treeView && treeView->m_arrowMaterial) {
-        if(treeView->m_arrowSprite) {
-            treeView->m_arrowMaterial->setTexture("mainTexture", treeView->m_arrowSprite->texture());
+    if(state == Material::ToBeDeleted) {
+        if(treeView->m_arrowMaterial) {
+            delete treeView->m_arrowMaterial;
+            treeView->m_arrowMaterial = nullptr;
         }
-        treeView->repaint();
     }
+
+    treeView->repaint();
 }
 
 void TreeView::rebuildItems() {

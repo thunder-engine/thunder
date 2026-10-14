@@ -326,7 +326,7 @@ void Menu::draw() {
     Vector2 size(rect->size());
     Matrix4 transform(rect->worldTransform());
 
-    if(m_dirtyText && m_font) {
+    if(m_dirtyText && m_font && m_textMaterial) {
         m_textMesh->clear();
         Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, Font::Additive, m_textColor};
         settings.boundaries = Vector2(size.x - 40.0f, m_rowHeight);
@@ -358,9 +358,11 @@ void Menu::draw() {
     Canvas *canvas = Menu::canvas();
 
     uint32_t hash = rect->hash();
-    m_textMaterial->setTransform(transform, 0, hash);
+    if(m_textMaterial) {
+        m_textMaterial->setTransform(transform, 0, hash);
+    }
 
-    if(m_hoveredIndex > -1 && m_items[m_hoveredIndex].type != MenuItem::Separator) {
+    if(m_selectionMaterial && m_hoveredIndex > -1 && m_items[m_hoveredIndex].type != MenuItem::Separator) {
         Matrix4 s;
         s[0] = size.x;
         s[5] = m_rowHeight;
@@ -376,7 +378,9 @@ void Menu::draw() {
         canvas->drawRect(m_selectionMaterial, nullptr);
     }
 
-    canvas->drawMesh(m_textMesh, m_textMaterial);
+    if(m_textMaterial) {
+        canvas->drawMesh(m_textMesh, m_textMaterial);
+    }
 }
 /*!
     \internal
@@ -509,25 +513,20 @@ void Menu::fontUpdated(int state, void *ptr) {
 }
 
 void Menu::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
     Menu *menu = static_cast<Menu *>(ptr);
     if(!menu) {
         return;
     }
 
-    if(menu->m_textMaterial) {
-        int sdf = 0;
-        menu->m_textMaterial->setInteger(gUseSDF, &sdf);
-    }
-    if(menu->m_selectionMaterial) {
-        Vector4 width(0.0f);
-        menu->m_selectionMaterial->setVector4(gBorderWidth, &width);
-        menu->m_selectionMaterial->setVector4(gBorderRadius, &menu->m_borderRadius);
-        menu->m_selectionMaterial->setVector4(gBorderColor, &menu->m_borderColor);
-        menu->m_selectionMaterial->setVector4(gBackgroundColor, &menu->m_selectionColor);
+    if(state == Material::ToBeDeleted) {
+        if(menu->m_textMaterial && menu->m_textMaterial->material()->state() == state) {
+            delete menu->m_textMaterial;
+            menu->m_textMaterial = nullptr;
+        }
+        if(menu->m_selectionMaterial && menu->m_selectionMaterial->material()->state() == state) {
+            delete menu->m_selectionMaterial;
+            menu->m_selectionMaterial = nullptr;
+        }
     }
 
     menu->m_dirtyText = true;
