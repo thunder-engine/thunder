@@ -18,10 +18,9 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "frame.h"
-#include "action.h"
-
-class Font;
+#include <font.h>
+#include <frame.h>
+#include <action.h>
 
 class UIKIT_EXPORT Menu : public Frame {
     A_OBJECT(Menu, Frame, Components/UI)

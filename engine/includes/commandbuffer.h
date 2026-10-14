@@ -6,6 +6,7 @@
 #include "material.h"
 
 #include <stack>
+#include <vector>
 
 #define GLOBAL_BIND     0
 #define LOCAL_BIND      1
@@ -53,11 +54,16 @@ public:
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
+    Vector4 viewport() const;
+
     void setCameraProperties(Camera *camera);
 
     virtual void enableScissor(int32_t x, int32_t y, int32_t width, int32_t height);
 
     virtual void disableScissor();
+
+    void beginScissorScope();
+    void endScissorScope();
 
     virtual Texture *texture(const TString &name) const;
 
@@ -86,8 +92,13 @@ protected:
     };
 
     std::stack<ScissorRect> m_scissorStack;
+    std::vector<std::stack<ScissorRect>> m_scissorScopes;
 
     RenderTarget *m_target;
+
+    Vector4 m_viewportRect;
+
+    virtual void applyScissorState();
 
 };
 

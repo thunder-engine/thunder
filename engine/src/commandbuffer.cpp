@@ -18,7 +18,8 @@ static bool s_Inited = false;
 */
 
 CommandBuffer::CommandBuffer() :
-        m_target(nullptr) {
+        m_target(nullptr),
+        m_viewportRect(0.0f) {
     uint32_t size = Texture::maxTextureSize();
     m_global.params.x = 1.0f / (float)size;
 }
@@ -147,10 +148,16 @@ void CommandBuffer::flipResult() {
     Parameters \a width and \a height viewport dimensions.
 */
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
-    A_UNUSED(x);
-    A_UNUSED(y);
+    m_viewportRect = Vector4(static_cast<float>(x), static_cast<float>(y),
+                             static_cast<float>(width), static_cast<float>(height));
     m_global.cameraParams.z = 1.0f / (float)width;
     m_global.cameraParams.w = 1.0f / (float)height;
+}
+/*!
+    Returns the current viewport rectangle.
+*/
+Vector4 CommandBuffer::viewport() const {
+    return m_viewportRect;
 }
 /*!
     Sets the \a camera specific global variables.
@@ -194,4 +201,29 @@ void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t h
 */
 void CommandBuffer::disableScissor() {
     m_scissorStack.pop();
+}
+/*!
+    Starts an isolated scissor scope.
+*/
+void CommandBuffer::beginScissorScope() {
+    m_scissorScopes.push_back(m_scissorStack);
+    m_scissorStack = std::stack<ScissorRect>();
+    applyScissorState();
+}
+/*!
+    Restores the scissor state saved by the matching beginScissorScope call.
+*/
+void CommandBuffer::endScissorScope() {
+    if(m_scissorScopes.empty()) {
+        return;
+    }
+
+    m_scissorStack = m_scissorScopes.back();
+    m_scissorScopes.pop_back();
+    applyScissorState();
+}
+/*!
+    Applies the current scissor state to the rendering backend.
+*/
+void CommandBuffer::applyScissorState() {
 }

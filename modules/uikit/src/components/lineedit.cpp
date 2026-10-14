@@ -46,22 +46,22 @@ namespace {
 }
 
 void LineEdit::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
     LineEdit *lineEdit = static_cast<LineEdit *>(ptr);
     if(!lineEdit) {
         return;
     }
 
-    if(lineEdit->m_fontMaterial) {
-        int sdf = 0;
-        lineEdit->m_fontMaterial->setInteger(gUseSDF, &sdf);
+    if(state == Material::ToBeDeleted) {
+        if(lineEdit->m_fontMaterial && lineEdit->m_fontMaterial->material()->state() == state) {
+            delete lineEdit->m_fontMaterial;
+            lineEdit->m_fontMaterial = nullptr;
+        }
+        if(lineEdit->m_cursorMaterial && lineEdit->m_cursorMaterial->material()->state() == state) {
+            delete lineEdit->m_cursorMaterial;
+            lineEdit->m_cursorMaterial = nullptr;
+        }
     }
-    if(lineEdit->m_cursorMaterial) {
-        lineEdit->m_cursorMaterial->setTexture(gTexture, PipelineContext::whiteTexture());
-    }
+
 
     lineEdit->m_textDirty = true;
     lineEdit->repaint();
@@ -132,7 +132,7 @@ void LineEdit::draw() {
     Canvas *canvas = LineEdit::canvas();
 
     RectTransform *rect = rectTransform();
-    if(m_textDirty && m_font) {
+    if(m_textDirty && m_font && m_fontMaterial) {
         const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, m_textColor, rect->size()};
         m_font->composeMesh(m_textMesh, m_text, settings);
 

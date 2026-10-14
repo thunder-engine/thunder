@@ -112,7 +112,7 @@ Frame::~Frame() {
 void Frame::draw() {
     RectTransform *rect = rectTransform();
     if(m_dirtyBackground) {
-        if(m_backgroundImage) {
+        if(m_backgroundImage && m_imageMaterial) {
             m_backgroundMesh = Engine::objectCreate<Mesh>();
             m_backgroundMesh->makeDynamic();
 
@@ -125,7 +125,7 @@ void Frame::draw() {
     }
 
     Canvas *canvas = Frame::canvas();
-    if(m_backgroundImage) {
+    if(m_backgroundImage && m_imageMaterial && m_backgroundMesh) {
         Matrix4 mat(rect->worldTransform());
 
         const Vector3Vector &verts(m_backgroundMesh->vertices());
@@ -140,7 +140,7 @@ void Frame::draw() {
         m_imageMaterial->setTransform(mat, 0, hash);
 
         canvas->drawMesh(m_backgroundMesh, m_imageMaterial);
-    } else {
+    } else if(!m_backgroundImage && m_frameMaterial) {
         canvas->drawRect(m_frameMaterial, rect);
     }
 
@@ -292,22 +292,25 @@ void Frame::boundChanged(const Vector2 &size) {
     \internal
 */
 void Frame::materialUpdated(int state, void *ptr) {
-    if(state <= Material::Ready) {
-        Frame *frame = static_cast<Frame *>(ptr);
-        if(frame) {
-            if(frame->m_frameMaterial) {
-                frame->m_frameMaterial->setVector4(gBorderColor, &(frame->m_borderColor));
-                frame->m_frameMaterial->setVector4(gBackgroundColor, &(frame->m_backgroundColor));
-            }
-
-            if(frame->m_imageMaterial) {
-                frame->m_imageMaterial->setVector4(gBackgroundColor, &(frame->m_backgroundColor));
-            }
-
-            RectTransform *rect = frame->rectTransform();
-            frame->boundChanged(rect->size());
-            frame->m_dirtyBackground = true;
-            frame->repaint();
-        }
+    Frame *frame = static_cast<Frame *>(ptr);
+    if(!frame) {
+        return;
     }
+
+    if(state == Material::ToBeDeleted) {
+        if(frame->m_frameMaterial && frame->m_frameMaterial->material()->state() == state) {
+            delete frame->m_frameMaterial;
+            frame->m_frameMaterial = nullptr;
+        }
+        if(frame->m_imageMaterial && frame->m_imageMaterial->material()->state() == state) {
+            delete frame->m_imageMaterial;
+            frame->m_imageMaterial = nullptr;
+        }
+    } else {
+        RectTransform *rect = frame->rectTransform();
+        frame->boundChanged(rect->size());
+    }
+
+    frame->m_dirtyBackground = true;
+    frame->repaint();
 }

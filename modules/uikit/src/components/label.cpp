@@ -43,25 +43,6 @@ namespace  {
     const char *gCssWhiteSpace("white-space");
 }
 
-void Label::materialUpdated(int state, void *ptr) {
-    if(state > Material::Ready) {
-        return;
-    }
-
-    Label *label = static_cast<Label *>(ptr);
-    if(!label) {
-        return;
-    }
-
-    if(label->m_material) {
-        int sdf = 0;
-        label->m_material->setInteger(gUseSDF, &sdf);
-    }
-
-    label->m_dirty = true;
-    label->repaint();
-}
-
 /*!
     \class Label
     \brief Draws a text for the UI.
@@ -419,5 +400,21 @@ void Label::fontUpdated(int state, void *ptr) {
         Label *p = static_cast<Label *>(ptr);
         p->m_dirty = true;
         p->repaint();
+    }
+}
+/*!
+    \internal
+*/
+void Label::materialUpdated(int state, void *ptr) {
+    if(state <= Material::Ready) {
+        Label *label = static_cast<Label *>(ptr);
+        label->m_dirty = true;
+        label->repaint();
+    }
+
+    if(state == Material::ToBeDeleted) {
+        Label *label = static_cast<Label *>(ptr);
+        delete label->m_material;
+        label->m_material = nullptr;
     }
 }

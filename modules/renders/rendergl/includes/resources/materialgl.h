@@ -94,8 +94,6 @@ protected:
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
 
-    void switchState(State state) override;
-
 private:
     friend class MaterialInstanceGL;
 

@@ -71,8 +71,6 @@ private:
 
     Mesh *m_progressMesh;
 
-    Material *m_spriteMaterial;
-    Material *m_defaultFrameMaterial;
     MaterialInstance *m_imageProgress;
     MaterialInstance *m_frameProgress;
 

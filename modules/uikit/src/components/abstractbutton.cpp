@@ -219,9 +219,13 @@ void AbstractButton::checkStateSet() {
 void AbstractButton::updateBackgroundColor(const Vector4 &color) {
     m_currentColor = color;
     if(m_backgroundImage) {
-        m_imageMaterial->setVector4(gColor, &color);
+        if(m_imageMaterial) {
+            m_imageMaterial->setVector4(gColor, &color);
+        }
     } else {
-        m_frameMaterial->setVector4(gBackgroundColor, &color);
+        if(m_frameMaterial) {
+            m_frameMaterial->setVector4(gBackgroundColor, &color);
+        }
     }
     repaint();
 }
