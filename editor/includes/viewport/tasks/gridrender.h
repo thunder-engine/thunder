@@ -29,7 +29,7 @@
 
 #include "editor/editorsettings.h"
 
-#include "../legacycameracontroller.h"
+#include "../cameracontroller.h"
 
 namespace {
     const char *gGridColor("Viewport/Grid/Color");
@@ -61,7 +61,7 @@ public:
         loadSettings();
     }
 
-    void setController(LegacyCameraController *ctrl) {
+    void setController(CameraControllerCore *ctrl) {
         m_controller = ctrl;
     }
 
@@ -128,23 +128,23 @@ private:
             planeScale = Vector3(height * camera->ratio(), height, 1.0f);
 
             float depth = camera->farPlane() * 0.5f;
-            LegacyCameraController::Axis axis = LegacyCameraController::Axis::Z;
+            CameraControllerCore::Axis axis = CameraControllerCore::Axis::Z;
             if(m_controller) {
                 axis = m_controller->gridAxis();
             }
 
             switch(axis) {
-                case LegacyCameraController::Axis::X: {
+                case CameraControllerCore::Axis::X: {
                     rot = Quaternion(Vector3(0, 1, 0), 90.0f);
                     pos = Vector3(cam.x/* + ((side == LegacyCameraController::ViewSide::VIEW_LEFT) ? depth : -depth)*/, cam.y, cam.z);
                     orientation = ZY;
                 } break;
-                case LegacyCameraController::Axis::Y: {
+                case CameraControllerCore::Axis::Y: {
                     rot = Quaternion(Vector3(1, 0, 0), 90.0f);
                     pos = Vector3(cam.x, cam.y/* + ((side == LegacyCameraController::ViewSide::VIEW_TOP) ? -depth : depth)*/, cam.z);
                     orientation = XZ;
                 } break;
-                case LegacyCameraController::Axis::Z: {
+                case CameraControllerCore::Axis::Z: {
                     rot = Quaternion();
                     pos = Vector3(cam.x, cam.y, cam.z/* + ((side == LegacyCameraController::ViewSide::VIEW_FRONT) ? -depth : depth)*/);
                     orientation = XY;
@@ -198,7 +198,7 @@ private:
 private:
     Vector4 m_gridColor;
 
-    LegacyCameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     RenderTarget *m_resultTarget;
 

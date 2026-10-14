@@ -8,6 +8,7 @@ Project {
     property string COMPANY_NAME: "ThunderEngine"
     property string EDITOR_NAME: "WorldEditor"
     property string BUILDER_NAME: "Builder"
+	property string STUDIO_NAME: "Studio"
 
     property string bundle: {
         if(qbs.targetOS.contains("darwin")) {
@@ -98,6 +99,7 @@ Project {
         "builder/builder.qbs",
         "resourcecompiler/resourcecompiler.qbs",
         "build/install.qbs",
-        "tests/tests.qbs"
+        "tests/tests.qbs",
+		"studio/studio.qbs",
     ]
 }

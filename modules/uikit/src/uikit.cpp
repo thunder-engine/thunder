@@ -22,10 +22,6 @@
 #include "uisystem.h"
 
 #ifdef SHARED_DEFINE
-#include "editor/uiedit.h"
-#include "converters/uiconverter.h"
-#include "converters/stylesheetconverter.h"
-
 Module *moduleCreate(Engine *engine) {
     return new UiKit(engine);
 }
@@ -38,10 +34,7 @@ static const char *meta = \
 "   \"description\": \"UiKit Module\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"UiSystem\": \"system\","
-"       \"UiEdit\": \"editor\","
-"       \"UiConverter\": \"converter\","
-"       \"StyleSheetConverter\": \"converter\""
+"       \"UiSystem\": \"system\""
 "   },"
 "   \"components\": ["
 "       \"AbstractButton\","
@@ -100,14 +93,5 @@ void *UiKit::getObject(const char *name) {
     if(strcmp(name, "UiSystem") == 0) {
         return new UiSystem;
     }
-#ifdef SHARED_DEFINE
-    if(strcmp(name, "UiEdit") == 0) {
-        return new UiEdit;
-    } else if(strcmp(name, "UiConverter") == 0) {
-        return new UiConverter;
-    } else if(strcmp(name, "StyleSheetConverter") == 0) {
-        return new StyleSheetConverter;
-    }
-#endif
     return nullptr;
 }

@@ -15,12 +15,9 @@ Project {
         "includes",
         "includes/components",
         "includes/resources",
-        "includes/editor",
-        "includes/editor/tools",
         "../../engine/includes",
         "../../engine/includes/components",
         "../../engine/includes/resources",
-        "../../editor/includes",
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",
@@ -31,23 +28,11 @@ Project {
     DynamicLibrary {
         name: "uikit-editor"
         condition: uikit.desktop
-        files: {
-            var sources = srcFiles
-            sources.push("src/converters/*.cpp")
-            sources.push("includes/converters/*.h")
-            sources.push("src/editor/**/*.cpp")
-            sources.push("src/editor/**/*.h")
-            sources.push("includes/editor/**/*.h")
-            sources.push("src/editor/*.ui")
-            sources.push("src/editor/*.qrc")
-            return sources
-        }
+        files: srcFiles
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
-        Depends { name: "editor" }
-        Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
         cpp.defines: {

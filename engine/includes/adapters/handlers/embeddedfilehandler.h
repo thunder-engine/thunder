@@ -26,7 +26,9 @@
 #include <string>
 #include <vector>
 
-class EmbeddedFileHandler : public FileHandler {
+class FileHandler;
+
+class ENGINE_EXPORT EmbeddedFileHandler : public FileHandler {
 public:
     struct EmbeddedFile {
         const char *name;

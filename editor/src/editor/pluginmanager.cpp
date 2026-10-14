@@ -79,6 +79,7 @@ PluginManager::PluginManager() :
     m_initialWhiteList.push_back("RenderVK");
     m_initialWhiteList.push_back("RenderMT");
     m_initialWhiteList.push_back("UiKit");
+    m_initialWhiteList.push_back("UiKitForms");
     m_initialWhiteList.push_back("Media");
     m_initialWhiteList.push_back("Bullet");
     m_initialWhiteList.push_back("Angel");
@@ -404,6 +405,7 @@ void PluginManager::listChanged() {
 void PluginManager::syncWhiteList() {
     StringList toRemove;
 
+    bool changed = false;
     auto &plugins = Editor::project()->plugins();
     for(auto &it : plugins) {
         if(it.second) {
@@ -411,12 +413,14 @@ void PluginManager::syncWhiteList() {
                 toRemove.push_back(it.first);
             } else {
                 m_whiteList.push_back(it.first);
+                changed = true;
             }
         } else {
             if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
                 m_whiteList.remove(it.first);
             } else {
                 toRemove.push_back(it.first);
+                changed = true;
             }
         }
     }
@@ -426,7 +430,9 @@ void PluginManager::syncWhiteList() {
             plugins.erase(it);
         }
     }
-    Editor::project()->saveSettings();
+    if(changed) {
+        Editor::project()->saveSettings();
+    }
 }
 
 /*!

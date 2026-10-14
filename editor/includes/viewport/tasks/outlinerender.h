@@ -28,7 +28,7 @@
 
 #include "editor/editorsettings.h"
 
-#include "../legacycameracontroller.h"
+#include "../cameracontroller.h"
 
 namespace {
     const char *gOutlineWidth("Viewport/Outline/Width");
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    void setController(LegacyCameraController *controller) {
+    void setController(CameraControllerCore *controller) {
         m_controller = controller;
     }
 
@@ -127,10 +127,12 @@ private:
     void analyze(World *world) override {
         RenderList outline;
 
-        for(auto actor : m_controller->selected()) {
-            for(auto it : m_context->culledRenderables()) {
-                if(it->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
-                    outline.push_back(it);
+        if(m_controller) {
+            for(auto actor : m_controller->selected()) {
+                for(auto it : m_context->culledRenderables()) {
+                    if(it->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
+                        outline.push_back(it);
+                    }
                 }
             }
         }
@@ -152,7 +154,7 @@ protected:
 
     MaterialInstance *m_combineMaterial;
 
-    LegacyCameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     float m_width;
 

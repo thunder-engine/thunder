@@ -176,7 +176,7 @@ Project {
 
         Properties {
             condition: engine.desktop
-            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/desktopadaptor.cpp", "src/adapters/handlers/embeddedfilehandler.cpp"])
         }
 
         Properties {

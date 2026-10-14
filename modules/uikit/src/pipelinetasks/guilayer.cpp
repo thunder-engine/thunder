@@ -21,6 +21,7 @@
 #include "components/scene.h"
 #include "components/actor.h"
 #include "components/canvas.h"
+#include "components/recttransform.h"
 
 #include <commandbuffer.h>
 #include <input.h>
@@ -32,8 +33,12 @@ void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, i
     if(actor) {
         Canvas *canvas = actor->getComponent<Canvas>();
         if(canvas && canvas->isEnabledInHierarchy()) {
-            canvas->setSize(width, height);
+            if(!canvas->parentWidget()) {
+                canvas->setSize(width, height);
+            }
+            canvas->rectTransform()->worldTransform();
             canvas->update(position);
+            canvas->skipRenderResult(canvas->parentWidget() != nullptr);
             canvases.push(canvas);
         }
     }
@@ -72,6 +77,7 @@ void GuiLayer::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("GuiLayer");
+    buffer->setViewport(0, 0, m_width, m_height);
 
     while(!m_canvas.empty()) {
         m_canvas.top()->draw(buffer);
