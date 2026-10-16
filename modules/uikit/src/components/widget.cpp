@@ -208,7 +208,11 @@ void Widget::setEnabled(bool enabled) {
     if(m_enabled != enabled) {
         m_enabled = enabled;
         if(m_attachedLayout) {
-            m_attachedLayout->invalidate();
+            Layout *layout = m_attachedLayout;
+            layout->invalidate();
+            if(Widget *widget = layout->widget()) {
+                widget->cleanDirtySize();
+            }
         }
     }
     repaint();
@@ -221,6 +225,13 @@ bool Widget::isVisible() const { return m_visible; }
 void Widget::setVisible(bool visible) {
     if(m_visible != visible) {
         m_visible = visible;
+        if(m_attachedLayout) {
+            Layout *layout = m_attachedLayout;
+            layout->invalidate();
+            if(Widget *widget = layout->widget()) {
+                widget->cleanDirtySize();
+            }
+        }
         repaint();
     }
 }
@@ -490,8 +501,12 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     } else {
         setDirty();
     }
-    if(newParent && newParent->layout() && m_attachedLayout != newParent->layout()) {
-        newParent->layout()->addWidget(this);
+    if(newParent && newParent->layout()) {
+        if(m_attachedLayout != newParent->layout()) {
+            newParent->layout()->addWidget(this);
+        } else if(oldParent == newParent) {
+            newParent->layout()->insertWidget(position, this);
+        }
     }
     if(oldParent && oldParent != newParent && oldParent->layout() &&
        m_attachedLayout == oldParent->layout()) {
@@ -951,6 +966,16 @@ void Widget::cleanDirtySize() const {
     if(m_attachedLayout == nullptr) {
         const bool fitWidth = abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON;
         const bool fitHeight = abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON;
+        if(m_layout && ((!fitWidth && m_horizontalPolicy == Preferred) ||
+                        (!fitHeight && m_verticalPolicy == Preferred))) {
+            Vector2 hint(m_layout->sizeHint());
+            if(!fitWidth && m_horizontalPolicy == Preferred) {
+                m_size.x = hint.x;
+            }
+            if(!fitHeight && m_verticalPolicy == Preferred) {
+                m_size.y = hint.y;
+            }
+        }
         if(fitWidth || fitHeight) {
             Vector2 parentSize;
             if(Widget *parent = parentWidget()) {
@@ -980,7 +1005,7 @@ void Widget::cleanDirty() const {
                                     MAX(0.0f, m_size.y - inset.x - inset.z));
         m_layout->solveItemsDimension(availableSize.x, true, false);
         m_layout->solveItemsDimension(availableSize.y, false, false);
-        m_layout->solveItemsPosition(m_size.y - inset.x,
+        m_layout->solveItemsPosition(m_size.y,
                                     Vector2(inset.w, inset.z));
     }
     m_transform.identity();
