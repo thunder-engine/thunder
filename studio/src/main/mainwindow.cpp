@@ -109,8 +109,7 @@ void MainWindow::onOpenProject(const TString &path) {
         AbstractToolWindowManagerArea *composerArea = m_toolWindowManager->areaFor(composer);
         if(composerArea) {
             m_toolWindowManager->addToolWindow(m_hierarchyBrowser, ToolWindowManager::ReferenceLeftOf, composerArea);
-            connect(m_toolWindowManager, _SIGNAL(currentToolWindowChanged(Widget*)),
-                    this, _SLOT(onCurrentToolWindowChanged(Widget*)));
+            connect(m_toolWindowManager, _SIGNAL(currentToolWindowChanged(Widget*)), this, _SLOT(onCurrentToolWindowChanged(Widget*)));
             onCurrentToolWindowChanged(composer);
         } else {
             aError() << "Unable to add HierarchyBrowser beside SceneComposer.";
@@ -273,25 +272,19 @@ void MainWindow::initUI() {
         }
     }
 
-    m_toolWindowManager = Widget::createWidget<ToolWindowManager>(
-                "ToolWindowManager", canvas);
-    Widget *toolWindowManagerRect = m_toolWindowManager;
-    toolWindowManagerRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    toolWindowManagerRect->setMargin(Vector4(m_menuBarWidget && !m_menuBarWidget->isUsingNativeMenuBar() ?
-                                             kMenuBarHeight : 0.0f,
-                                             0.0f, kStatusBarHeight, 0.0f));
+    m_toolWindowManager = Widget::createWidget<ToolWindowManager>("ToolWindowManager", canvas);
+    m_toolWindowManager->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    m_toolWindowManager->setMargin(Vector4(m_menuBarWidget && !m_menuBarWidget->isUsingNativeMenuBar() ? kMenuBarHeight : 0.0f, 0.0f, kStatusBarHeight, 0.0f));
 
     Frame *statusBar = Widget::createWidget<Frame>("StatusBar", canvas);
-    Widget *statusBarRect = statusBar;
-    statusBarRect->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f));
-    statusBarRect->setPivot(Vector2(0.0f, 0.0f));
-    statusBarRect->setSize(Vector2(0.0f, kStatusBarHeight));
+    statusBar->setAnchors(Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f));
+    statusBar->setPivot(Vector2(0.0f, 0.0f));
+    statusBar->setSize(Vector2(0.0f, kStatusBarHeight));
     statusBar->setBackgroundColor(Vector4(0.12f, 0.12f, 0.12f, 1.0f));
 
     m_queue = Widget::createWidget<ImportQueue>("ImportQueue", statusBar);
-    Widget *progressRect = m_queue;
-    progressRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-    progressRect->setMargin(Vector4(4.0f));
+    m_queue->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    m_queue->setMargin(Vector4(4.0f));
     m_queue->setProgressColor(Vector4(0.25f, 0.65f, 0.95f, 1.0f));
     m_queue->setEnabled(false);
     connect(m_queue, _SIGNAL(importFinished()), this, _SLOT(onImportFinished()));
@@ -357,16 +350,8 @@ void MainWindow::createMenus(SceneComposer *composer) {
         if(!toolWindow) {
             continue;
         }
-        TString title = toolWindow->name();
-        if(title == "SceneComposer") {
-            title = "Scene Composer";
-        } else if(title == "HierarchyBrowser") {
-            title = "Hierarchy";
-        } else if(title == "ContentBrowser") {
-            title = "Content Browser";
-        }
         const bool visible = m_toolWindowManager->areaFor(toolWindow) != nullptr;
-        const size_t index = m_windowMenu->addCheckableAction(title, [this, toolWindow]() {
+        const size_t index = m_windowMenu->addCheckableAction(toolWindow->name(), [this, toolWindow]() {
             onWindowMenuAction(toolWindow);
         }, visible);
         m_windowMenuItems.emplace_back(toolWindow, index);
