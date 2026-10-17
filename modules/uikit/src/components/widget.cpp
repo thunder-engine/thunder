@@ -956,10 +956,10 @@ Vector4 Widget::clipRegion() const {
 }
 
 void Widget::setDirty() {
-    if(!m_dirty) {
-        for(Widget *child : m_childWidgets) child->setDirty();
-    }
     m_dirty = true;
+    for(Widget *child : m_childWidgets) {
+        child->setDirty();
+    }
 }
 
 void Widget::cleanDirtySize() const {

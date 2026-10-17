@@ -57,7 +57,7 @@ namespace {
 Frame::Frame() :
         Widget(),
         m_borderRadius(0.0f),
-        m_backgroundColor(1.0f, 1.0f, 1.0f, 0.5f),
+        m_backgroundColor(0.0f, 0.0f, 0.0f, 0.2f),
         m_borderColor(0.8f),
         m_backgroundImage(nullptr),
         m_backgroundMesh(nullptr),

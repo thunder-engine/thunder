@@ -72,23 +72,12 @@ void HierarchyBrowser::setEditor(AssetEditor *editor) {
 void HierarchyBrowser::composeComponent() {
     Widget::composeComponent();
 
-    Widget *root = this;
-    if(!root) {
-        aError() << "Unable to create the HierarchyBrowser layout.";
-        return;
-    }
-
     Layout *layout = new Layout;
     layout->setOrientation(Widget::Vertical);
     layout->setSpacing(2);
-    root->setLayout(layout);
+    setLayout(layout);
 
-    Widget *searchBarActor = Widget::createWidget<Frame>("HierarchySearchBar", this);
-    Frame *searchBar = searchBarActor ? dynamic_cast<Frame *>(searchBarActor) : nullptr;
-    if(!searchBar) {
-        aError() << "Unable to create the HierarchyBrowser search bar.";
-        return;
-    }
+    Widget *searchBar = Widget::createWidget<Widget>("searchBar", this);
     searchBar->setSize(Vector2(0.0f, 24.0f));
     searchBar->setHorizontalPolicy(Widget::Expanding);
     searchBar->setVerticalPolicy(Widget::Fixed);
@@ -98,12 +87,7 @@ void HierarchyBrowser::composeComponent() {
     searchBar->setLayout(searchBarLayout);
     layout->addWidget(searchBar);
 
-    Widget *addButtonActor = Widget::createWidget<Button>("HierarchyAddButton", searchBarActor);
-    m_addButton = addButtonActor ? dynamic_cast<Button *>(addButtonActor) : nullptr;
-    if(!m_addButton) {
-        aError() << "Unable to create the HierarchyBrowser add button.";
-        return;
-    }
+    m_addButton = Widget::createWidget<Button>("addButton", searchBar);
     m_addButton->setText("+");
     m_addButton->setSize(Vector2(24.0f, 24.0f));
     m_addButton->setHorizontalPolicy(Widget::Fixed);
@@ -111,35 +95,20 @@ void HierarchyBrowser::composeComponent() {
     searchBarLayout->addWidget(m_addButton);
     connect(m_addButton, _SIGNAL(clicked()), this, _SLOT(onAddButtonClicked()));
 
-    Widget *addMenuActor = Widget::createWidget<Menu>("HierarchyAddMenu", addButtonActor);
-    m_addMenu = addMenuActor ? dynamic_cast<Menu *>(addMenuActor) : nullptr;
-    if(!m_addMenu) {
-        aError() << "Unable to create the HierarchyBrowser add menu.";
-        return;
-    }
+    m_addMenu = Widget::createWidget<Menu>("addMenu", m_addButton);
     m_addButton->setSubWidget(m_addMenu);
     for(const auto &factory : Engine::factories()) {
         m_addMenu->addAction(factory.first);
     }
     connect(m_addMenu, _SIGNAL(triggered(int)), this, _SLOT(onAddMenuTriggered(int)));
 
-    Widget *searchActor = Widget::createWidget<LineEdit>("HierarchySearch", this);
-    m_search = searchActor ? dynamic_cast<LineEdit *>(searchActor) : nullptr;
-    if(!m_search) {
-        aError() << "Unable to create the HierarchyBrowser search field.";
-        return;
-    }
+    m_search = Widget::createWidget<LineEdit>("Search", this);
     m_search->setSize(Vector2(120.0f, 24.0f));
     m_search->setHorizontalPolicy(Widget::Expanding);
     m_search->setVerticalPolicy(Widget::Fixed);
     searchBarLayout->addWidget(m_search);
 
-    Widget *treeActor = Widget::createWidget<TreeView>("HierarchyTree", this);
-    m_tree = treeActor ? dynamic_cast<TreeView *>(treeActor) : nullptr;
-    if(!m_tree) {
-        aError() << "Unable to create the HierarchyBrowser tree.";
-        return;
-    }
+    m_tree = Widget::createWidget<TreeView>("hierarchyTree", this);
     m_tree->setHorizontalPolicy(Widget::Expanding);
     m_tree->setVerticalPolicy(Widget::Expanding);
     m_tree->setSelectionMode(AbstractItemView::ExtendedSelection);

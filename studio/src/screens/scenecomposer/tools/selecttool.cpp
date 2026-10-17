@@ -156,7 +156,7 @@ LineEdit *SelectTool::snapWidget(Widget *parent) {
             m_snapEditor->setText(stream.str());
             Widget *rect = m_snapEditor;
             if(rect) {
-                rect->setSize(Vector2(60.0f, 22.0f));
+                rect->setSize(Vector2(60.0f, 24.0f));
             }
         }
     }

@@ -164,11 +164,11 @@ void SceneComposer::composeComponent() {
 
         SelectTool *selectTool = dynamic_cast<SelectTool *>(tool);
         if(selectTool) {
-            LineEdit *input = selectTool->snapWidget(toolbarWidget);
-            if(input) {
-                m_toolbarLayout->addWidget(input);
-                connect(input, _SIGNAL(editingFinished()), this, _SLOT(onChangeSnap()));
-            }
+            //LineEdit *input = selectTool->snapWidget(toolbarWidget);
+            //if(input) {
+            //    m_toolbarLayout->addWidget(input);
+            //    connect(input, _SIGNAL(editingFinished()), this, _SLOT(onChangeSnap()));
+            //}
         }
     }
 

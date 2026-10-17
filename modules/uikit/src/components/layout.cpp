@@ -67,6 +67,17 @@ void Layout::insertWidget(int index, Widget *widget) {
         if(m_widget && widget->parentWidget() != m_widget) {
             widget->setParent(m_widget, index);
         }
+        if(widget->m_attachedLayout) {
+            Layout *attachedLayout = widget->m_attachedLayout;
+            attachedLayout->m_items.remove(widget);
+            widget->m_attachedLayout = nullptr;
+        }
+        widget->m_attachedLayout = this;
+        if(index >= 0 && index < m_items.size()) {
+            m_items.insert(std::next(m_items.begin(), index), widget);
+        } else {
+            m_items.push_back(widget);
+        }
 
         invalidate();
         if(m_widget) {
