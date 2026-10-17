@@ -14,6 +14,10 @@ Project {
             "src/adapters/platform*.cpp"
         ]
 
+        if(engine.desktop) {
+            sources.push("src/adapters/window.cpp")
+        }
+
         // Freetype
         sources.push("../thirdparty/freetype/src/base/*tbase.c")
         sources.push("../thirdparty/freetype/src/base/*tinit.c")
