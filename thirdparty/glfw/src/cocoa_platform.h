@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include <IOKit/hidsystem/IOLLEvent.h>
 #include <Carbon/Carbon.h>
 #include <IOKit/hid/IOHIDLib.h>
 
@@ -299,4 +300,3 @@ GLFWbool _glfwCreateContextNSGL(_GLFWwindow* window,
                                 const _GLFWctxconfig* ctxconfig,
                                 const _GLFWfbconfig* fbconfig);
 void _glfwDestroyContextNSGL(_GLFWwindow* window);
-
