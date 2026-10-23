@@ -24,6 +24,7 @@ Project {
         "../../thirdparty/next/inc",
         "../../thirdparty/next/inc/math",
         "../../thirdparty/next/inc/core",
+        "../../thirdparty/next/inc/os",
         "../../thirdparty/pugixml/src",
         "../../thirdparty/cssparser/include",
     ]

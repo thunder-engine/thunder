@@ -20,6 +20,7 @@
 #include "label.h"
 #include "frame.h"
 #include "canvas.h"
+#include "recttransform.h"
 
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -129,9 +130,10 @@ void LineEdit::draw() {
     const bool showingPlaceholder = m_text.isEmpty() && !m_placeholderText.isEmpty();
     const TString &displayText = showingPlaceholder ? m_placeholderText : m_text;
 
+    RectTransform *rect = rectTransform();
     if(m_textDirty && m_font && m_fontMaterial) {
         const Vector4 color = showingPlaceholder ? Vector4(0.6f, 0.6f, 0.6f, 1.0f) : m_textColor;
-        const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, color, size()};
+        const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, color, rect->size()};
         m_font->composeMesh(m_textMesh, displayText, settings);
 
         m_fontMaterial->setTexture(gTexture, m_font->page());
@@ -141,10 +143,10 @@ void LineEdit::draw() {
 
     // Draw background
     Frame::draw();
-    canvas->setClipRegion(clipRegion());
+    canvas->setClipRegion(rect->clipRegion());
 
     const Vector3Vector &vertices = m_textMesh->vertices();
-    float cursorY = size().y * 0.5f;
+    float cursorY = rect->size().y * 0.5f;
     if(m_font && !m_text.isEmpty() && !vertices.empty()) {
         float minY = vertices.front().y;
         float maxY = minY;
@@ -167,20 +169,20 @@ void LineEdit::draw() {
             selectionTransform[12] = (start + end) * 0.5f;
             selectionTransform[13] = cursorY;
 
-            uint32_t hash = LineEdit::hash();
+            uint32_t hash = rect->hash();
             Mathf::hashCombine(hash, selectionTransform[12]);
             Mathf::hashCombine(hash, selectionTransform[13]);
             Mathf::hashCombine(hash, width);
-            m_selectionMaterial->setTransform(worldTransform() * selectionTransform, 0, hash);
+            m_selectionMaterial->setTransform(rect->worldTransform() * selectionTransform, 0, hash);
             canvas->drawMesh(PipelineContext::defaultPlane(), m_selectionMaterial);
         }
     }
     // Draw text
     if(m_fontMaterial && !displayText.isEmpty()) {
-        Matrix4 m(worldTransform());
+        Matrix4 m(rect->worldTransform());
         m[12] += m_textPosition;
 
-        uint32_t hash = LineEdit::hash();
+        uint32_t hash = rect->hash();
         Mathf::hashCombine(hash, m[12]);
 
         m_fontMaterial->setTransform(m, 0, hash);
@@ -193,7 +195,7 @@ void LineEdit::draw() {
 
         uint32_t hash;
         std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
-        m_cursorMaterial->setTransform(worldTransform() * m_cursorTransform, 0, hash);
+        m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform, 0, hash);
         canvas->drawRect(m_cursorMaterial, nullptr);
     }
     canvas->disableClip();
@@ -441,8 +443,9 @@ void LineEdit::update(const Vector2 &pos) {
                 if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
                     m_mouseSelecting = false;
                 } else {
-                    Vector2 mousePosition = Widget::mousePosition();
-                    Vector2 localPosition = mapFromGlobal(mousePosition.x, mousePosition.y);
+                    RectTransform *rect = rectTransform();
+                    Vector2 mousePosition = Input::mousePosition();
+                    Vector2 localPosition = rect->mapFromGlobal(mousePosition.x, mousePosition.y);
                     setCursorPosition(cursorPositionAt(localPosition.x), true);
                     breakCursorFlashing = true;
                 }
@@ -579,7 +582,7 @@ void LineEdit::composeComponent() {
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("");
 
-    Widget *rect = this;
+    RectTransform *rect = rectTransform();
     if(rect) {
         rect->setSize(Vector2(100.0f, 30.0f));
         rect->setPadding(Vector4(2.0f));
@@ -594,7 +597,7 @@ void LineEdit::composeComponent() {
 void LineEdit::recalcCursor() {
     float pos = (m_cursorPosition > 0) ? cursorAt(m_cursorPosition) : 0.0f;
 
-    Widget *rect = this;
+    RectTransform *rect = rectTransform();
     float padding = rect->padding().w;
     m_cursorTransform[12] = pos;
     m_cursorTransform[13] = rect->size().y * 0.5f;
