@@ -39,13 +39,28 @@ void NativeMenu::setTitle(const TString &title) {
     }
 }
 
-NativeMenu::Item *NativeMenu::addAction(const TString &text, const std::function<void()> &handler) {
+NativeMenu::Item *NativeMenu::addAction(const TString &text, const std::function<void()> &handler,
+                                        bool checkable, bool checked) {
     Item item;
     item.text = text;
     item.triggered = handler;
+    item.checkable = checkable;
+    item.checked = checkable && checked;
     m_items.push_back(std::move(item));
     notifyChanged();
     return &m_items.back();
+}
+
+void NativeMenu::setActionChecked(size_t index, bool checked) {
+    if(index >= m_items.size()) {
+        return;
+    }
+    Item &item = m_items[index];
+    if(item.separator || item.submenu || !item.checkable || item.checked == checked) {
+        return;
+    }
+    item.checked = checked;
+    notifyChanged();
 }
 
 NativeMenu *NativeMenu::addMenu(const TString &title) {

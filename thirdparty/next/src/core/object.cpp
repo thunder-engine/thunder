@@ -19,6 +19,7 @@
 #include "core/objectsystem.h"
 
 #include <algorithm>
+#include <vector>
 
 /*!
     \module Core
@@ -786,6 +787,22 @@ void Object::emitSignal(const char *signal, const Variant &args) {
         }
     }
 }
+
+void Object::emitSignal(const char *signal, const Variant &first, const Variant &second) {
+    VariantList args;
+    args.push_back(first);
+    args.push_back(second);
+    emitSignal(signal, Variant(args));
+}
+
+void Object::emitSignal(const char *signal, const Variant &first, const Variant &second, const Variant &third) {
+    VariantList args;
+    args.push_back(first);
+    args.push_back(second);
+    args.push_back(third);
+    emitSignal(signal, Variant(args));
+}
+
 /*!
     Place event to internal \a event queue to be processed in event loop.
 */
@@ -1021,10 +1038,15 @@ ObjectSystem *Object::system() const {
 void Object::methodCallEvent(MethodCallEvent *event) {
     m_currentSender = event->sender();
     Variant result;
-    if(event->args()->isValid()) {
-        metaObject()->method(event->method()).invoke(this, result, 1, event->args());
+    MetaMethod method = metaObject()->method(event->method());
+    if(!event->args()->isValid()) {
+        method.invoke(this, result, 0, nullptr);
+    } else if(method.parameterCount() <= 1 || event->args()->type() != MetaType::VARIANTLIST) {
+        method.invoke(this, result, 1, event->args());
     } else {
-        metaObject()->method(event->method()).invoke(this, result, 0, nullptr);
+        VariantList values = event->args()->toList();
+        std::vector<Variant> args(values.begin(), values.end());
+        method.invoke(this, result, static_cast<int>(args.size()), args.data());
     }
     m_currentSender = nullptr;
 }

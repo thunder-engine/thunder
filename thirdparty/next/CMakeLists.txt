@@ -49,10 +49,15 @@ if(desktop)
 
         enable_language(OBJCXX)
         target_sources(${PROJECT_NAME}-editor PRIVATE
+            src/os/clipboard.mm
             src/os/menubar.mm
             src/os/standardpaths.mm
         )
-        target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework Foundation" "-framework AppKit")
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE "-framework Foundation" "-framework AppKit" objc)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+        target_link_libraries(${PROJECT_NAME}-editor PRIVATE PkgConfig::GTK3)
     endif()
 
     # Solve build error using Clang on BSDs
@@ -86,6 +91,18 @@ endif()
 # Static Library
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_srcFiles})
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_incPaths})
+
+if(desktop)
+    target_sources(${PROJECT_NAME} PRIVATE src/os/clipboard.cpp)
+    if(APPLE)
+        target_sources(${PROJECT_NAME} PRIVATE src/os/clipboard.mm)
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Foundation" "-framework AppKit" objc)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::GTK3)
+    elseif(WIN32)
+        target_link_libraries(${PROJECT_NAME} PRIVATE User32)
+    endif()
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG "../../${STATIC_PATH}"
