@@ -9,6 +9,8 @@
 
 extern int thunderMain();
 
+class Window;
+
 class ENGINE_EXPORT PlatformAdaptor {
 public:
     virtual ~PlatformAdaptor() {}
@@ -27,6 +29,9 @@ public:
 
     virtual uint32_t screenWidth() const = 0;
     virtual uint32_t screenHeight() const = 0;
+
+    virtual Window *window();
+    virtual void setWindow(Window *window);
 
     virtual bool key(Input::KeyCode code) const;
     virtual bool keyPressed(Input::KeyCode code) const;

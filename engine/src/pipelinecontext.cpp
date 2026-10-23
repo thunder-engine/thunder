@@ -21,10 +21,9 @@
 #include "pipelinetask.h"
 #include "commandbuffer.h"
 #include "log.h"
+#include "frustum.h"
 
 #include <algorithm>
-
-#include "frustum.h"
 
 namespace {
     const char *gTexture("mainTexture");
@@ -49,6 +48,8 @@ PipelineContext::PipelineContext() :
         m_height(64),
         m_frustumCulling(true) {
 
+    m_defaultTarget->setFlags(RenderTarget::ClearColor);
+    m_defaultTarget->setClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 PipelineContext::~PipelineContext() {
@@ -90,6 +91,13 @@ void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
     for(auto it : m_renderTasks) {
         if(it && it->isEnabled()) {
             it->exec();
+        }
+    }
+
+    if(m_finalMaterial == nullptr) {
+        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+        if(mtl) {
+            m_finalMaterial = mtl->createInstance();
         }
     }
 
@@ -390,13 +398,6 @@ int32_t PipelineContext::lod(float size) {
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */
 void PipelineContext::setPipeline(Pipeline *pipeline) {
-    if(m_finalMaterial == nullptr) {
-        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
-        if(mtl) {
-            m_finalMaterial = mtl->createInstance();
-        }
-    }
-
     m_pipeline = pipeline;
 
     if(m_pipeline) {
@@ -419,6 +420,7 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
 void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before) {
     if(task) {
         task->setContext(this);
+        task->resize(m_width, m_height);
 
         for(int32_t i = 0; i < task->outputCount(); i++) {
             Texture *texture = task->output(i);

@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <mutex>
 #include <vector>
+#include <cstring>
 
 struct EmbeddedFileHandler::Handle {
     int *fallbackHandle;

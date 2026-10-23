@@ -28,7 +28,7 @@ public:
     Sprite();
     ~Sprite();
 
-    Mesh *mesh() const;
+    Mesh *mesh();
 
     float pixelsPerUnit() const;
     void setPixelsPerUnit(float pixels);

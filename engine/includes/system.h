@@ -3,8 +3,6 @@
 
 #include <engine.h>
 
-class Component;
-
 class ENGINE_EXPORT System : public ObjectSystem {
 public:
     enum ThreadPolicy {

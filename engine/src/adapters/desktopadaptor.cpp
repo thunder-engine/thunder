@@ -9,8 +9,6 @@
 #include <standardpaths.h>
 
 #include <filesystem>
-#include <cstring>
-
 #include "handlers/physfsfilehandler.h"
 #include "systems/resourcesystem.h"
 
@@ -18,6 +16,7 @@
 #define RELEASE 0
 #define PRESS 1
 #define REPEAT 2
+#define DOUBLE 3
 
 namespace {
     const char *gConfigName("config.json");
@@ -27,7 +26,9 @@ namespace {
     const char *gScreenWindowed("s.windowed");
     const char *gScreenVsync("s.vsync");
 
-    const char *gRhi(".rhi");
+    const float DOUBLE_CLICK_TIME = 0.3f;
+    const float DOUBLE_CLICK_DIST = 5.0f;
+
 };
 
 Vector4 DesktopAdaptor::s_mousePosition = Vector4();
@@ -35,24 +36,20 @@ Vector4 DesktopAdaptor::s_oldMousePosition = Vector4();
 
 float DesktopAdaptor::s_mouseScrollDelta = 0.0f;
 
-int32_t DesktopAdaptor::s_width = 0;
-int32_t DesktopAdaptor::s_height = 0;
-bool DesktopAdaptor::s_windowed = false;
-bool DesktopAdaptor::s_vSync = false;
 bool DesktopAdaptor::s_appActive = true;
 
 TString DesktopAdaptor::s_inputString;
 
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_keys;
 std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_mouseButtons;
-std::unordered_map<int32_t, int32_t> DesktopAdaptor::s_mouseDoubleClick;
 std::unordered_map<int32_t, GLFWcursor *> DesktopAdaptor::s_mouseCursors;
 
-DesktopAdaptor::DesktopAdaptor() :
-        m_window(nullptr),
-        m_monitor(nullptr),
-        m_noOpenGL(false) {
-}
+double DesktopAdaptor::s_lastClickTime   = -1.0;
+int    DesktopAdaptor::s_lastClickButton = -1;
+double DesktopAdaptor::s_lastClickX      = 0.0;
+double DesktopAdaptor::s_lastClickY      = 0.0;
+
+DesktopAdaptor::DesktopAdaptor() = default;
 
 bool DesktopAdaptor::init() {
     glfwSetErrorCallback(errorCallback);
@@ -65,45 +62,37 @@ bool DesktopAdaptor::init() {
 }
 
 void DesktopAdaptor::update() {
-    if(!m_noOpenGL) {
-        glfwSwapBuffers(m_window);
+    if(m_window) {
+        m_window->swapBuffers();
     }
 
     s_inputString.clear();
 
     for(auto &it : s_keys) {
         switch(it.second) {
-            case RELEASE: it.second = NONE; break;
-            case PRESS: it.second = REPEAT; break;
-            default: break;
+        case RELEASE: it.second = NONE; break;
+        case PRESS:   it.second = REPEAT; break;
+        default: break;
         }
     }
 
     for(auto &it : s_mouseButtons) {
         switch(it.second) {
-            case RELEASE: it.second = NONE; break;
-            case PRESS: it.second = REPEAT; break;
-            default: break;
-        }
-    }
-
-    for(auto &it : s_mouseDoubleClick) {
-        switch(it.second) {
-            case RELEASE: it.second = NONE; break;
-            case PRESS: it.second = REPEAT; break;
-            default: break;
+        case RELEASE: it.second = NONE; break;
+        case PRESS:   it.second = REPEAT; break;
+        case DOUBLE:  it.second = NONE; break;
+        default: break;
         }
     }
 
     s_oldMousePosition = s_mousePosition;
-
     s_mouseScrollDelta = 0.0f;
 
     PlatformAdaptor::update();
 }
 
 void DesktopAdaptor::loop() {
-    while(!glfwWindowShouldClose(m_window)) {
+    while(m_window && !m_window->shouldClose()) {
         Engine::update(Engine::world());
 
         Engine::platformAdaptor()->update();
@@ -123,20 +112,6 @@ bool DesktopAdaptor::start() {
 
     fileHandler->mount(locationLocalDir().data(), true);
 
-    s_width = Engine::value(gScreenWidth, s_width).toInt();
-    s_height = Engine::value(gScreenHeight, s_height).toInt();
-
-    m_monitor = glfwGetPrimaryMonitor();
-    if(m_monitor) {
-        const GLFWvidmode *mode = glfwGetVideoMode(m_monitor);
-        if(s_width <= 0) {
-            s_width = mode->width;
-        }
-        if(s_height <= 0) {
-            s_height = mode->height;
-        }
-    }
-
     if(!File::exists(gConfigName)) {
         Engine::syncValues();
     }
@@ -151,45 +126,29 @@ bool DesktopAdaptor::start() {
         }
     }
 
-    TString rhi = Engine::value(gRhi, "").toString();
-    m_noOpenGL = (rhi == "RenderVK");
-
-    if(m_noOpenGL) {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    } else {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    const int32_t width = Engine::value(gScreenWidth, 0).toInt();
+    const int32_t height = Engine::value(gScreenHeight, 0).toInt();
+    uint32_t windowFlags = Window::None;
+    if(Engine::value(gScreenWindowed, false).toBool()) {
+        windowFlags |= Window::Windowed;
+    }
+    if(Engine::value(gScreenVsync, false).toBool()) {
+        windowFlags |= Window::VSync;
     }
 
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
-    s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
-
-    m_window = glfwCreateWindow(s_width, s_height, Engine::applicationName().data(), (s_windowed) ? nullptr : m_monitor, nullptr);
-    if(!m_window) {
+    m_window = new Window;
+    if(!m_window->create(width, height, Engine::applicationName().data(), windowFlags)) {
         glfwTerminate();
         return false;
-    }
-
-    glfwSetWindowFocusCallback(m_window, windowFocusCallback);
-    glfwSetCharCallback(m_window, charCallback);
-    glfwSetKeyCallback(m_window, keyCallback);
-    glfwSetMouseButtonCallback(m_window, buttonCallback);
-    glfwSetScrollCallback(m_window, scrollCallback);
-    glfwSetCursorPosCallback(m_window, cursorPositionCallback);
-
-    if(!m_noOpenGL) {
-        glfwSwapInterval(s_vSync);
-        glfwMakeContextCurrent(m_window);
     }
 
     return true;
 }
 
 void DesktopAdaptor::destroy() {
+    if(m_window) {
+        m_window->destroy();
+    }
     glfwTerminate();
 }
 
@@ -198,7 +157,10 @@ bool DesktopAdaptor::isActive() const {
 }
 
 bool DesktopAdaptor::key(Input::KeyCode code) const {
-    return (m_window && glfwGetKey(m_window, code) == GLFW_PRESS);
+    if(m_window) {
+        return m_window->key(code);
+    }
+    return false;
 }
 
 bool DesktopAdaptor::keyPressed(Input::KeyCode code) const {
@@ -226,23 +188,34 @@ float DesktopAdaptor::mouseScrollDelta() const {
 }
 
 bool DesktopAdaptor::mouseButton(int button) const {
-    return (m_window && glfwGetMouseButton(m_window, button | 0x10000000) == GLFW_PRESS);
+    if(m_window) {
+        return m_window->mouseButton(button & ~0x10000000);
+    }
+    return false;
 }
 
 bool DesktopAdaptor::mousePressed(int button) const {
-    return (s_mouseButtons[button | 0x10000000] == PRESS);
+    const int key = button | 0x10000000;
+    auto it = s_mouseButtons.find(key);
+    return (it != s_mouseButtons.end() && (it->second == PRESS));
 }
 
-bool DesktopAdaptor::mouseReleased(int  button) const {
-    return (s_mouseButtons[button | 0x10000000] == RELEASE);
+bool DesktopAdaptor::mouseReleased(int button) const {
+    const int key = button | 0x10000000;
+    auto it = s_mouseButtons.find(key);
+    return (it != s_mouseButtons.end() && it->second == RELEASE);
 }
 
 bool DesktopAdaptor::mouseButtonDoubleClick(int button) const {
-    return (s_mouseDoubleClick[button | 0x10000000] == PRESS);
+    const int key = button | 0x10000000;
+    auto it = s_mouseButtons.find(key);
+    return (it != s_mouseButtons.end() && it->second == DOUBLE);
 }
 
 void DesktopAdaptor::mouseLockCursor(bool lock) {
-    glfwSetInputMode(m_window, GLFW_CURSOR, lock ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+    if(m_window) {
+        m_window->setCursorLocked(lock);
+    }
 }
 
 void DesktopAdaptor::mouseSetCursor(Input::CursorShape shape) {
@@ -273,15 +246,23 @@ void DesktopAdaptor::mouseSetCursor(Input::CursorShape shape) {
         }
     }
 
-    glfwSetCursor(m_window, cursor);
+    if(m_window) {
+        m_window->setCursor(cursor);
+    }
 }
 
 uint32_t DesktopAdaptor::screenWidth() const {
-    return s_width;
+    if(m_window) {
+        return m_window->width();
+    }
+    return 0;
 }
 
 uint32_t DesktopAdaptor::screenHeight() const {
-    return s_height;
+    if(m_window) {
+        return m_window->height();
+    }
+    return 0;
 }
 
 uint32_t DesktopAdaptor::joystickCount() const {
@@ -328,24 +309,11 @@ void DesktopAdaptor::windowFocusCallback(GLFWwindow *, int focused) {
     s_appActive = focused;
 }
 
-void DesktopAdaptor::toggleFullscreen(GLFWwindow *window) {
-    if(s_windowed) {
-        glfwSetWindowMonitor(window, NULL, 0, 30, s_width, s_height, GLFW_DONT_CARE);
-        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE); // Disable for frameless
-    } else {
-        GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-    }
-
-    s_windowed = !s_windowed;
-}
-
-void DesktopAdaptor::keyCallback(GLFWwindow *widnow, int code, int, int action, int mods) {
+void DesktopAdaptor::keyCallback(GLFWwindow *window, int code, int, int action, int mods) {
     s_keys[static_cast<Input::KeyCode>(code)] = action;
 
     if(code == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
-        toggleFullscreen(widnow);
+        Window::fromHandle(window)->toggleFullscreen();
     }
 }
 
@@ -353,17 +321,36 @@ void DesktopAdaptor::charCallback(GLFWwindow *, unsigned int codepoint) {
     s_inputString += TString::fromWc32(codepoint);
 }
 
-void DesktopAdaptor::buttonCallback(GLFWwindow *, int button, int action, int) {
-    s_mouseButtons[button | 0x10000000] = action;
+void DesktopAdaptor::buttonCallback(GLFWwindow *window, int button, int action, int) {
+    const int key = button | 0x10000000;
 
-    if(action == PRESS) {
-        int key = button | 0x10000000;
-        auto it = s_mouseDoubleClick.find(key);
-        if (it != s_mouseDoubleClick.end() && it->second == REPEAT) {
-            s_mouseDoubleClick[key] = PRESS;
-        } else {
-            s_mouseDoubleClick[key] = action;
-        }
+    if(action == RELEASE) {
+        s_mouseButtons[key] = RELEASE;
+        return;
+    }
+
+    if(action != PRESS) {
+        return;
+    }
+
+    const double now = glfwGetTime();
+    double x = 0.0, y = 0.0;
+    glfwGetCursorPos(window, &x, &y);
+
+    const bool sameButton = (button == s_lastClickButton);
+    const bool inTime = (now - s_lastClickTime) < DOUBLE_CLICK_TIME;
+    const bool inPlace = std::abs(x - s_lastClickX) < DOUBLE_CLICK_DIST && std::abs(y - s_lastClickY) < DOUBLE_CLICK_DIST;
+
+    if(sameButton && inTime && inPlace) {
+        s_mouseButtons[key] = DOUBLE;
+        s_lastClickTime = -1.0;
+        s_lastClickButton = -1;
+    } else {
+        s_mouseButtons[key] = PRESS;
+        s_lastClickTime = now;
+        s_lastClickButton = button;
+        s_lastClickX  = x;
+        s_lastClickY = y;
     }
 }
 
@@ -371,8 +358,11 @@ void DesktopAdaptor::scrollCallback(GLFWwindow *, double, double yoffset) {
     s_mouseScrollDelta = yoffset;
 }
 
-void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double ypos) {
-    s_mousePosition = Vector4(xpos, s_height - ypos, xpos / s_width, (s_height - ypos) / s_height);
+void DesktopAdaptor::cursorPositionCallback(GLFWwindow *handle, double xpos, double ypos) {
+    Window *window = Window::fromHandle(handle);
+    const int32_t width = window->width();
+    const int32_t height = window->height();
+    s_mousePosition = Vector4(xpos, height - ypos, xpos / width, (height - ypos) / height);
 
     static bool first = true;
     if(first) {
@@ -383,6 +373,14 @@ void DesktopAdaptor::cursorPositionCallback(GLFWwindow *, double xpos, double yp
 
 void DesktopAdaptor::errorCallback(int error, const char *description) {
     aError() << "Desktop adaptor failed with code:" << error << description;
+}
+
+Window *DesktopAdaptor::window() {
+    return m_window;
+}
+
+void DesktopAdaptor::setWindow(Window *window) {
+    m_window = window;
 }
 
 TString DesktopAdaptor::locationLocalDir() const {
@@ -406,23 +404,29 @@ TString DesktopAdaptor::locationLocalDir() const {
 }
 
 void DesktopAdaptor::syncConfiguration(VariantMap &map) const {
-    s_width = Engine::value(gScreenWidth, s_width).toInt();
-    s_height = Engine::value(gScreenHeight, s_height).toInt();
-    s_windowed = Engine::value(gScreenWindowed, s_windowed).toBool();
-    s_vSync = Engine::value(gScreenVsync, s_vSync).toBool();
+    if(m_window == nullptr) {
+        return;
+    }
+    const int32_t width = Engine::value(gScreenWidth, m_window->width()).toInt();
+    const int32_t height = Engine::value(gScreenHeight, m_window->height()).toInt();
+    const bool windowed = Engine::value(gScreenWindowed, m_window->isWindowed()).toBool();
+    const bool vSync = Engine::value(gScreenVsync, m_window->isVSync()).toBool();
 
-    if(m_window) {
-        int32_t x, y;
-        glfwGetWindowPos(m_window, &x, &y);
-        glfwSetWindowMonitor(m_window, (s_windowed) ? nullptr : m_monitor, x, y, s_width, s_height, GLFW_DONT_CARE);
-
-        //glfwSwapInterval(s_vSync);
+    uint32_t windowFlags = Window::None;
+    if(windowed) {
+        windowFlags |= Window::Windowed;
+    }
+    if(vSync) {
+        windowFlags |= Window::VSync;
     }
 
-    map[gScreenWidth] = s_width;
-    map[gScreenHeight] = s_height;
-    map[gScreenWindowed] = s_windowed;
-    map[gScreenVsync] = s_vSync;
+    m_window->setFlags(windowFlags);
+    m_window->setSize(width, height);
+
+    map[gScreenWidth] = width;
+    map[gScreenHeight] = height;
+    map[gScreenWindowed] = windowed;
+    map[gScreenVsync] = vSync;
 
     File fp(gConfigName);
     if(fp.open(File::Write)) {

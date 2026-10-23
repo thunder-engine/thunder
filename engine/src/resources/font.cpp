@@ -13,8 +13,73 @@
 
 #include "log.h"
 
+#include <cstddef>
+
 namespace  {
     const char *gData("Data");
+
+    bool copyBitmap(const FT_Bitmap &bitmap, ByteArray &data) {
+        uint32_t bytesPerRow = 0;
+        switch(bitmap.pixel_mode) {
+        case FT_PIXEL_MODE_GRAY:
+            bytesPerRow = bitmap.width;
+            if(bitmap.num_grays < 2) {
+                return false;
+            }
+            break;
+        case FT_PIXEL_MODE_MONO:
+            bytesPerRow = (bitmap.width + 7) / 8;
+            break;
+        case FT_PIXEL_MODE_GRAY2:
+            bytesPerRow = (bitmap.width + 3) / 4;
+            break;
+        case FT_PIXEL_MODE_GRAY4:
+            bytesPerRow = (bitmap.width + 1) / 2;
+            break;
+        case FT_PIXEL_MODE_BGRA:
+            bytesPerRow = bitmap.width * 4;
+            break;
+        default:
+            return false;
+        }
+
+        const int pitch = bitmap.pitch >= 0 ? bitmap.pitch : -bitmap.pitch;
+        if(!bitmap.buffer || static_cast<uint32_t>(pitch) < bytesPerRow) {
+            return false;
+        }
+
+        data.resize(static_cast<size_t>(bitmap.width) * bitmap.rows);
+        for(uint32_t y = 0; y < bitmap.rows; ++y) {
+            const uint8_t *row = bitmap.buffer + static_cast<ptrdiff_t>(y) * bitmap.pitch;
+            for(uint32_t x = 0; x < bitmap.width; ++x) {
+                uint8_t value = 0;
+                switch(bitmap.pixel_mode) {
+                case FT_PIXEL_MODE_GRAY:
+                    value = row[x];
+                    if(bitmap.num_grays != 256) {
+                        value = static_cast<uint8_t>(value * 255 / (bitmap.num_grays - 1));
+                    }
+                    break;
+                case FT_PIXEL_MODE_MONO:
+                    value = (row[x >> 3] & (0x80 >> (x & 7))) ? 255 : 0;
+                    break;
+                case FT_PIXEL_MODE_GRAY2:
+                    value = static_cast<uint8_t>(((row[x >> 2] >> ((3 - (x & 3)) * 2)) & 0x03) * 85);
+                    break;
+                case FT_PIXEL_MODE_GRAY4:
+                    value = static_cast<uint8_t>(((row[x >> 1] >> ((1 - (x & 1)) * 4)) & 0x0f) * 17);
+                    break;
+                case FT_PIXEL_MODE_BGRA:
+                    value = row[x * 4 + 3];
+                    break;
+                default:
+                    return false;
+                }
+                data[static_cast<size_t>(y) * bitmap.width + x] = value;
+            }
+        }
+        return true;
+    }
 }
 
 #define DF_GLYPH_SIZE 64
@@ -59,36 +124,39 @@ void Font::requestCharacters(const std::u32string &characters, uint32_t size) {
         uint32_t ch = it;
         Mathf::hashCombine(ch, size);
         if(m_shapes.find(ch) == m_shapes.end()) {
-            error = FT_Load_Glyph(face, FT_Get_Char_Index(face, it), FT_LOAD_RENDER);
+            FT_Int32 loadFlags = FT_LOAD_DEFAULT;
+            if(size >= DF_GLYPH_SIZE) {
+                loadFlags |= FT_LOAD_NO_BITMAP;
+            }
+            error = FT_Load_Glyph(face, FT_Get_Char_Index(face, it), loadFlags);
             if(!error) {
                 FT_GlyphSlot slot = face->glyph;
-                error = FT_Render_Glyph(slot, (size < DF_GLYPH_SIZE) ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_SDF);
+                if(slot->format != FT_GLYPH_FORMAT_BITMAP) {
+                    error = FT_Render_Glyph(slot, (size < DF_GLYPH_SIZE) ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_SDF);
+                }
                 if(!error) {
                     if(slot->bitmap.width && slot->bitmap.rows) {
                         GlyphData data;
-
-                        FT_Glyph ftGlyph;
-                        error = FT_Get_Glyph(slot, &ftGlyph);
-                        if(!error) {
-                            FT_BBox bbox;
-                            FT_Glyph_Get_CBox(ftGlyph, ft_glyph_bbox_pixels, &bbox);
-
-                            data.vertices = {Vector3(bbox.xMin, bbox.yMax, 0.0f) / static_cast<float>(size),
-                                             Vector3(bbox.xMax, bbox.yMax, 0.0f) / static_cast<float>(size),
-                                             Vector3(bbox.xMax, bbox.yMin, 0.0f) / static_cast<float>(size),
-                                             Vector3(bbox.xMin, bbox.yMin, 0.0f) / static_cast<float>(size)};
-
-                            data.indices = {0, 1, 2, 0, 2, 3};
-
-                            isNew = true;
-                        }
-
                         data.width = slot->bitmap.width;
                         data.height = slot->bitmap.rows;
-                        data.data.resize(data.width * data.height);
-                        memcpy(data.data.data(), slot->bitmap.buffer, data.data.size());
+                        const float inverseSize = 1.0f / static_cast<float>(size);
+                        const float left = static_cast<float>(slot->bitmap_left);
+                        const float top = static_cast<float>(slot->bitmap_top);
+                        const float right = left + slot->bitmap.width;
+                        const float bottom = top - slot->bitmap.rows;
 
-                        m_shapes[ch] = data;
+                        data.vertices = {Vector3(left, top, 0.0f) * inverseSize,
+                                         Vector3(right, top, 0.0f) * inverseSize,
+                                         Vector3(right, bottom, 0.0f) * inverseSize,
+                                         Vector3(left, bottom, 0.0f) * inverseSize};
+                        data.indices = {0, 1, 2, 0, 2, 3};
+
+                        if(copyBitmap(slot->bitmap, data.data)) {
+                            isNew = true;
+                            m_shapes[ch] = data;
+                        } else {
+                            Log(Log::ERR) << "Unable to copy font glyph bitmap:" << static_cast<uint32_t>(it);
+                        }
                     }
                 }
             }

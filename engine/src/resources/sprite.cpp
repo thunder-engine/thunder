@@ -68,8 +68,13 @@ VariantMap Sprite::saveUserData() const {
 /*!
     Returns a mesh which represents the sprite.
 */
-Mesh *Sprite::mesh() const {
+Mesh *Sprite::mesh() {
     PROFILE_FUNCTION();
+
+    if(m_dirtyMesh) {
+        recalcMesh();
+        m_dirtyMesh = false;
+    }
 
     return m_mesh;
 }
