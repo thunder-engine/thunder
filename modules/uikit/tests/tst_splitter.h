@@ -30,14 +30,11 @@ namespace UikitSuite {
         Engine engine;
         engine.addModule(new UiKit(&engine));
 
-        Actor *actor = Engine::composeActor<Splitter>("Test");
-        Splitter* splitter = actor->getComponent<Splitter>();
+        Splitter *splitter = Widget::createWidget<Splitter>("Test");
         if (splitter) {
-            Actor* actorFrame1 = Engine::composeActor<Frame>("Frame1");
-            Frame* frame1 = actorFrame1->getComponent<Frame>();
+            Frame *frame1 = Widget::createWidget<Frame>("Frame1");
 
-            Actor* actorFrame2 = Engine::composeActor<Frame>("Frame2");
-            Frame* frame2 = actorFrame2->getComponent<Frame>();
+            Frame *frame2 = Widget::createWidget<Frame>("Frame2");
 
             splitter->addWidget(frame1);
             splitter->addWidget(frame2);
@@ -57,17 +54,13 @@ namespace UikitSuite {
         Engine engine;
         engine.addModule(new UiKit(&engine));
 
-        Actor* actor = Engine::composeActor<Splitter>("Test");
-        Splitter* splitter = actor->getComponent<Splitter>();
+        Splitter *splitter = Widget::createWidget<Splitter>("Test");
         if (splitter) {
-            Actor* actorFrame1 = Engine::composeActor<Frame>("Frame1");
-            Frame* frame1 = actorFrame1->getComponent<Frame>();
+            Frame *frame1 = Widget::createWidget<Frame>("Frame1");
 
-            Actor* actorFrame2 = Engine::composeActor<Frame>("Frame2");
-            Frame* frame2 = actorFrame2->getComponent<Frame>();
+            Frame *frame2 = Widget::createWidget<Frame>("Frame2");
 
-            Actor* actorFrame3 = Engine::composeActor<Frame>("Frame3");
-            Frame* frame3 = actorFrame3->getComponent<Frame>();
+            Frame *frame3 = Widget::createWidget<Frame>("Frame3");
 
             splitter->addWidget(frame1);
             splitter->addWidget(frame3);
@@ -83,24 +76,20 @@ namespace UikitSuite {
         Engine engine;
         engine.addModule(new UiKit(&engine));
 
-        Actor* actor = Engine::composeActor<Splitter>("Test");
-        Splitter* splitter = actor->getComponent<Splitter>();
+        Splitter *splitter = Widget::createWidget<Splitter>("Test");
         if (splitter) {
-            Actor* actorFrame1 = Engine::composeActor<Frame>("Frame1");
-            Frame* frame1 = actorFrame1->getComponent<Frame>();
+            Frame *frame1 = Widget::createWidget<Frame>("Frame1");
 
-            Actor* actorFrame2 = Engine::composeActor<Frame>("Frame2");
-            Frame* frame2 = actorFrame2->getComponent<Frame>();
+            Frame *frame2 = Widget::createWidget<Frame>("Frame2");
 
-            Actor* actorFrame3 = Engine::composeActor<Frame>("Frame3");
-            Frame* frame3 = actorFrame3->getComponent<Frame>();
+            Frame *frame3 = Widget::createWidget<Frame>("Frame3");
 
             splitter->addWidget(frame1);
             splitter->addWidget(frame3);
             Widget* widget = splitter->replaceWidget(1, frame2);
 
             ASSERT_EQ(frame3, widget);
-            actorFrame3->setParent(nullptr);
+            frame3->setParent(nullptr);
 
             ASSERT_EQ(2, splitter->count());
             ASSERT_EQ(frame2, splitter->widget(1));
@@ -111,14 +100,11 @@ namespace UikitSuite {
         Engine engine;
         engine.addModule(new UiKit(&engine));
 
-        Actor* actor = Engine::composeActor<Splitter>("Test");
-        Splitter* splitter = actor->getComponent<Splitter>();
+        Splitter *splitter = Widget::createWidget<Splitter>("Test");
         if (splitter) {
-            Actor* actorFrame1 = Engine::composeActor<Frame>("Frame1", actor);
-            Frame* frame1 = actorFrame1->getComponent<Frame>();
+            Frame *frame1 = Widget::createWidget<Frame>("Frame1", splitter);
 
-            Actor* actorFrame2 = Engine::composeActor<Frame>("Frame2", actor);
-            Frame* frame2 = actorFrame2->getComponent<Frame>();
+            Frame *frame2 = Widget::createWidget<Frame>("Frame2", splitter);
 
             ASSERT_EQ(2, splitter->count());
             ASSERT_EQ(frame1, splitter->widget(0));

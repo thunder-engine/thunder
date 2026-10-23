@@ -17,10 +17,6 @@
 */
 #include "components/layout.h"
 
-#include "components/recttransform.h"
-
-#include <components/actor.h>
-
 /*!
     \class Layout
     \brief The Layout class is a base class for managing the layout and positioning of widgets within a graphical user interface.
@@ -32,7 +28,7 @@
 */
 
 Layout::Layout() :
-        m_rectTransform(nullptr),
+        m_widget(nullptr),
         m_spacing(0),
         m_orientation(Widget::Vertical) {
 
@@ -46,48 +42,57 @@ Layout::~Layout() {
 /*!
     Adds a \a transform to the current layout.
 */
-void Layout::addTransform(RectTransform *transform) {
-    insertTransform(-1, transform);
+void Layout::addWidget(Widget *widget) {
+    insertWidget(-1, widget);
 }
 /*!
      Inserts a \a transform at the specified \a index.
      If -1, the layout is appended to the end.
 */
-void Layout::insertTransform(int index, RectTransform *transform) {
-    if(transform) {
-        if(transform->m_attachedLayout) {
-            transform->m_attachedLayout->removeTransform(transform);
-            transform->m_attachedLayout = nullptr;
+void Layout::insertWidget(int index, Widget *widget) {
+    if(widget) {
+        if(widget->m_attachedLayout) {
+            widget->m_attachedLayout->removeWidget(widget);
+            widget->m_attachedLayout = nullptr;
         }
 
-        transform->m_attachedLayout = this;
-        transform->setPivot(Vector2(0, 1));
+        widget->m_attachedLayout = this;
+        widget->setPivot(Vector2(0, 1));
 
         if(index >= 0 && index < m_items.size()) {
-            m_items.insert(std::next(m_items.begin(), index), transform);
+            m_items.insert(std::next(m_items.begin(), index), widget);
         } else {
-            m_items.push_back(transform);
+            m_items.push_back(widget);
         }
-        // Transfer ownership without re-entering RectTransform::updateHierarchy.
-        RectTransform *parent = rectTransform();
-        if(parent && transform->actor() && transform->actor()->parent() != parent->actor()) {
-            transform->actor()->setParent(parent->actor(), index);
+        if(m_widget && widget->parentWidget() != m_widget) {
+            widget->setParent(m_widget, index);
+        }
+        if(widget->m_attachedLayout) {
+            Layout *attachedLayout = widget->m_attachedLayout;
+            attachedLayout->m_items.remove(widget);
+            widget->m_attachedLayout = nullptr;
+        }
+        widget->m_attachedLayout = this;
+        if(index >= 0 && index < m_items.size()) {
+            m_items.insert(std::next(m_items.begin(), index), widget);
+        } else {
+            m_items.push_back(widget);
         }
 
         invalidate();
-        if(m_rectTransform) {
-            m_rectTransform->cleanDirty();
+        if(m_widget) {
+            m_widget->cleanDirty();
         }
     }
 }
 /*!
     Removes a \a transform from the current layout.
 */
-void Layout::removeTransform(RectTransform *transform) {
-    if(transform) {
-        m_items.remove(transform);
-        if(transform->m_attachedLayout == this) {
-            transform->m_attachedLayout = nullptr;
+void Layout::removeWidget(Widget *widget) {
+    if(widget) {
+        m_items.remove(widget);
+        if(widget->m_attachedLayout == this) {
+            widget->m_attachedLayout = nullptr;
         }
 
         invalidate();
@@ -96,11 +101,11 @@ void Layout::removeTransform(RectTransform *transform) {
 /*!
     Returns the index of the specified \a transform.
 */
-int Layout::indexOf(const RectTransform *transform) const {
+int Layout::indexOf(const Widget *widget) const {
     int result = -1;
     for(auto it : m_items) {
         ++result;
-        if(it == transform) {
+        if(it == widget) {
             return result;
         }
     }
@@ -109,7 +114,7 @@ int Layout::indexOf(const RectTransform *transform) const {
 /*!
     Returns transform located at \a index.
 */
-RectTransform *Layout::transformAt(int index) {
+Widget *Layout::widgetAt(int index) {
     if(index > -1 && index < m_items.size()) {
         auto it = std::next(m_items.begin(), index);
         return (*it);
@@ -120,16 +125,16 @@ RectTransform *Layout::transformAt(int index) {
     Returns the parent rect transform of this layout, or nullptr if this layout is not installed on any rect transform.
     If the layout is a sub-layout, this function returns the parent rect transform of the parent layout.
 */
-RectTransform *Layout::rectTransform() {
-    return m_rectTransform;
+Widget *Layout::widget() const {
+    return m_widget;
 }
 /*!
     \internal
     Sets the parent rect \a tranform for this layout.
     It will be used to notify parent rect transform for any layout changes.
 */
-void Layout::setRectTransform(RectTransform *transform) {
-    m_rectTransform = transform;
+void Layout::setWidget(Widget *widget) {
+    m_widget = widget;
     invalidate();
 }
 /*!
@@ -174,11 +179,7 @@ Vector2 Layout::sizeHint() {
     for(auto it : m_items) {
         it->cleanDirtySize();
 
-        Actor *actor = it->actor();
-        if(actor && !actor->isEnabled()) {
-            continue;
-        }
-        if(it->isEnabled()) {
+        if(it->isVisible()) {
             float spacing = (!first) ? m_spacing : 0.0f;
 
             Vector4 margin(it->margin());
@@ -198,9 +199,9 @@ Vector2 Layout::sizeHint() {
         }
     }
 
-    if(m_rectTransform) {
-        Vector4 padding(m_rectTransform->padding());
-        Vector4 border(m_rectTransform->border());
+    if(m_widget) {
+        Vector4 padding(m_widget->padding());
+        Vector4 border(m_widget->border());
 
         result.x += padding.w + padding.y + border.y + border.w;
         result.y += padding.x + padding.z + border.x + border.z;
@@ -212,10 +213,11 @@ Vector2 Layout::sizeHint() {
     Marks the layout as dirty, indicating that it needs to be recomputed.
 */
 void Layout::invalidate() {
-    if(m_rectTransform) {
-        m_rectTransform->setDirty();
+    if(m_widget) {
+        m_widget->setDirty();
+        m_widget->repaint();
 
-        Layout *layout = m_rectTransform->m_attachedLayout;
+        Layout *layout = m_widget->m_attachedLayout;
         if(layout) {
             layout->invalidate();
         }
@@ -228,7 +230,8 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
     if(m_orientation == Widget::Vertical) {
         if(horizontal) {
             for(auto it : m_items) {
-                if(it->horizontalPolicy() == RectTransform::Expanding) {
+                if(it->isVisible() &&
+                   it->horizontalPolicy() == Widget::Expanding) {
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.x = availableSpace - (margin.w + margin.y);
@@ -242,7 +245,8 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
     } else {
         if(!horizontal) {
             for(auto it : m_items) {
-                if(it->verticalPolicy() == RectTransform::Expanding) {
+                if(it->isVisible() &&
+                   it->verticalPolicy() == Widget::Expanding) {
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.y = availableSpace - (margin.x + margin.z);
@@ -264,12 +268,8 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
     std::list<float> sizes;
 
     for(auto it : m_items) {
-        Actor *actor = it->actor();
-        if(actor && !actor->isEnabled()) {
-            continue;
-        }
-        if(it->isEnabled()) {
-            RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
+        if(it->isVisible()) {
+            Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
             float pref = horizontal ? it->size().x : it->size().y;
             Vector4 margin(it->margin());
             pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
@@ -277,9 +277,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
             totalPref += pref;
 
             switch(policy) {
-                case RectTransform::Fixed: fixedCount++; break;
-                case RectTransform::Preferred: preferredCount++; break;
-                case RectTransform::Expanding: expandingCount++; totalExp += pref; sizes.push_back(pref); break;
+                case Widget::Fixed: fixedCount++; break;
+                case Widget::Preferred: preferredCount++; break;
+                case Widget::Expanding: expandingCount++; totalExp += pref; sizes.push_back(pref); break;
                 default: break;
             }
         }
@@ -292,13 +292,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
     auto size = sizes.begin();
     std::list<float> weights;
     for(auto it : m_items) {
-        Actor *actor = it->actor();
-        if(actor && !actor->isEnabled()) {
-            continue;
-        }
-        if(it->isEnabled()) {
-            RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-            if(policy == RectTransform::Expanding) {
+        if(it->isVisible()) {
+            Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
+            if(policy == Widget::Expanding) {
                 float weight = 1.0f / static_cast<float>(expandingCount);
                 if(keepProportions && totalExp > 0.0f) {
                     weight = (*size) / totalExp;
@@ -313,13 +309,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
         float remainingSpace = availableSpace;
 
         for(auto it : m_items) {
-            Actor *actor = it->actor();
-            if(actor && !actor->isEnabled()) {
-                continue;
-            }
-            if(it->isEnabled()) {
-                RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-                if(policy == RectTransform::Fixed || policy == RectTransform::Preferred) {
+            if(it->isVisible()) {
+                Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
+                if(policy == Widget::Fixed || policy == Widget::Preferred) {
                     float pref = horizontal ? it->size().x : it->size().y;
                     Vector4 margin(it->margin());
                     pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
@@ -333,13 +325,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
         if(expandingCount > 0 && remainingSpace > 0) {
             auto weight = weights.begin();
             for(auto it : m_items) {
-                Actor *actor = it->actor();
-                if(actor && !actor->isEnabled()) {
-                    continue;
-                }
-                if(it->isEnabled()) {
-                    RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-                    if(policy == RectTransform::Expanding) {
+                if(it->isVisible()) {
+                    Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
+                    if(policy == Widget::Expanding) {
                         Vector4 margin(it->margin());
                         Vector2 size(it->size());
                         if(horizontal) {
@@ -359,13 +347,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
         float extra = availableSpace - totalPref;
         auto weight = weights.begin();
         for(auto it : m_items) {
-            Actor *actor = it->actor();
-            if(actor && !actor->isEnabled()) {
-                continue;
-            }
-            if(it->isEnabled()) {
-                RectTransform::SizePolicy policy = horizontal ? it->horizontalPolicy() : it->verticalPolicy();
-                if(policy == RectTransform::Expanding) {
+            if(it->isVisible()) {
+                Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
+                if(policy == Widget::Expanding) {
                     float extraSize = extra * (*weight);
                     if(extraSize != 0) {
                         Vector2 size(it->size());
@@ -391,11 +375,7 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
     bool first = true;
     float shift = ((m_orientation == Widget::Vertical) ? offset.y : offset.x);
     for(auto it : m_items) {
-        Actor *actor = it->actor();
-        if(actor && !actor->isEnabled()) {
-            continue;
-        }
-        if(it->isEnabled()) {
+        if(it->isVisible()) {
             shift += (!first) ? m_spacing : 0.0f;
 
             Vector2 size(it->size());

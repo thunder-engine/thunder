@@ -15,15 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/abstractbutton.h"
+#include "abstractbutton.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
+#include "stylesheet.h"
 
-#include <resources/stylesheet.h>
+#include <resources/material.h>
 
 #include <input.h>
 #include <timer.h>
@@ -165,11 +163,14 @@ void AbstractButton::update(const Vector2 &pos) {
     Widget::update(pos);
 
     setHovered(isHovered(pos));
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        m_pressed = false;
+    }
 
     Vector4 color(m_checked ? m_pressedColor : m_backgroundColor);
     if(m_hovered) {
         color = m_highlightedColor;
-        if(Input::isMouseButtonDown(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN) {
             m_currentFade = 0.0f;
 
             if(m_checkable) {
@@ -178,13 +179,13 @@ void AbstractButton::update(const Vector2 &pos) {
             pressed();
         }
 
-        if(Input::isMouseButtonUp(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED)) {
+        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED) {
             m_currentFade = 0.0f;
 
             clicked();
         }
 
-        if(Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0) {
+        if(m_pressed || Input::touchCount() > 0) {
             color = m_pressedColor;
         }
     }
@@ -196,19 +197,41 @@ void AbstractButton::update(const Vector2 &pos) {
         updateBackgroundColor(MIX(m_currentColor, color, m_currentFade));
     }
 }
+
+bool AbstractButton::onMouseDown(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    m_pressed = true;
+    m_currentFade = 0.0f;
+    Widget::setFocusWidget(this);
+    if(m_checkable) {
+        setChecked(!m_checked);
+    }
+    pressed();
+    return true;
+}
+
+bool AbstractButton::onMouseUp(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    const bool wasPressed = m_pressed;
+    m_pressed = false;
+    if(wasPressed && isHovered(mousePosition())) {
+        m_currentFade = 0.0f;
+        clicked();
+    }
+    return true;
+}
 /*!
     \internal
     Internal method to handle the button's checked state, ensuring exclusivity in exclusive mode.
 */
 void AbstractButton::checkStateSet() {
     if(m_exclusive && m_checked) {
-        for(auto it : actor()->getChildren()) {
-            Actor *actor = dynamic_cast<Actor *>(it);
-            if(actor) {
-                AbstractButton *btn = actor->getComponent<AbstractButton>();
-                if(btn && btn != this) {
-                    btn->setChecked(false);
-                }
+        for(Widget *child : childWidgets()) {
+            AbstractButton *btn = dynamic_cast<AbstractButton *>(child);
+            if(btn && btn != this) {
+                btn->setChecked(false);
             }
         }
     }

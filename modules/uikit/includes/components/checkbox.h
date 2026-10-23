@@ -18,10 +18,10 @@
 #ifndef CHECKBOX_H
 #define CHECKBOX_H
 
-#include "abstractbutton.h"
+#include <abstractbutton.h>
 
 class UIKIT_EXPORT CheckBox : public AbstractButton {
-    A_OBJECT(CheckBox, AbstractButton, Components/UI)
+    A_OBJECT(CheckBox, AbstractButton, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Sprite *, indicator, CheckBox::indicator, CheckBox::setIndicator, "editor=Asset"),

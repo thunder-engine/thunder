@@ -19,29 +19,10 @@
 
 #include "components/world.h"
 #include "components/scene.h"
-#include "components/actor.h"
 #include "components/canvas.h"
 
 #include <commandbuffer.h>
 #include <input.h>
-
-void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position) {
-    Object::ObjectList children = object->getChildren();
-
-    Actor *actor = dynamic_cast<Actor *>(object);
-    if(actor) {
-        Canvas *canvas = actor->getComponent<Canvas>();
-        if(canvas && canvas->isEnabledInHierarchy()) {
-            canvas->setSize(width, height);
-            canvas->update(position);
-            canvases.push(canvas);
-        }
-    }
-
-    for(auto child : children) {
-        collectCanvases(child, canvases, width, height, position);
-    }
-}
 
 GuiLayer::GuiLayer() {
 
@@ -72,6 +53,7 @@ void GuiLayer::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("GuiLayer");
+    buffer->setViewport(0, 0, m_width, m_height);
 
     while(!m_canvas.empty()) {
         m_canvas.top()->draw(buffer);
@@ -83,4 +65,23 @@ void GuiLayer::exec() {
 
 void GuiLayer::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
+}
+
+void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position) {
+    Object::ObjectList children = object->getChildren();
+
+    Canvas *canvas = dynamic_cast<Canvas *>(object);
+    if(canvas && canvas->isEnabled()) {
+        if(!canvas->parentWidget()) {
+            canvas->setSize(width, height);
+        }
+        canvas->worldTransform();
+        canvas->update(position);
+        canvas->skipRenderResult(canvas->parentWidget() != nullptr);
+        canvases.push(canvas);
+    }
+
+    for(auto child : children) {
+        collectCanvases(child, canvases, width, height, position);
+    }
 }

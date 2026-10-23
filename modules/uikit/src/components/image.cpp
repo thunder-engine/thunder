@@ -15,17 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/image.h"
+#include "image.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/material.h>
 #include <resources/sprite.h>
-
-#include <commandbuffer.h>
-#include <pipelinecontext.h>
 
 #include <cstring>
 
@@ -112,15 +108,14 @@ void Image::draw() {
     }
 
     if(m_material) {
-        RectTransform *rect = rectTransform();
-        Matrix4 mat(rect->worldTransform());
+        Matrix4 mat(Image::worldTransform());
 
         const Vector3Vector &verts(m_mesh->vertices());
-        Vector2 scl(rect->worldScale());
+        Vector2 scl(Image::worldScale());
         mat[12] -= verts[0].x * scl.x;
         mat[13] -= verts[0].y * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = Image::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
@@ -180,10 +175,6 @@ Sprite *Image::sprite() const {
     Replaces the current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
-    if(rectTransform() == nullptr) {
-        return;
-    }
-
     if(m_sprite != sprite) {
         if(m_sprite) {
             m_sprite->unsubscribe(this);
@@ -258,11 +249,8 @@ void Image::setDrawMode(int mode) {
 void Image::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    if(m_size != size) {
-        m_size = size;
-        m_dirtyMesh = true;
-        repaint();
-    }
+    m_dirtyMesh = true;
+    repaint();
 }
 /*!
     \internal

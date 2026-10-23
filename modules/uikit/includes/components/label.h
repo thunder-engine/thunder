@@ -18,7 +18,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <font.h>
 
@@ -99,15 +99,13 @@ private:
 
     Vector4 m_color;
 
-    Vector2 m_boundaries;
-
     Font *m_font;
 
     MaterialInstance *m_material;
 
     Mesh *m_mesh;
 
-    int32_t m_size;
+    int32_t m_fontSize;
 
     int m_alignment;
 

@@ -15,18 +15,15 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/frame.h"
+#include "frame.h"
 
-#include "components/canvas.h"
-#include "components/recttransform.h"
+#include "canvas.h"
 
-#include <components/actor.h>
-#include <components/spriterender.h>
+#include "stylesheet.h"
 
 #include <resources/sprite.h>
 #include <resources/mesh.h>
 #include <resources/material.h>
-#include <resources/stylesheet.h>
 
 #include <commandbuffer.h>
 #include <gizmos.h>
@@ -60,7 +57,7 @@ namespace {
 Frame::Frame() :
         Widget(),
         m_borderRadius(0.0f),
-        m_backgroundColor(1.0f, 1.0f, 1.0f, 0.5f),
+        m_backgroundColor(0.0f, 0.0f, 0.0f, 0.2f),
         m_borderColor(0.8f),
         m_backgroundImage(nullptr),
         m_backgroundMesh(nullptr),
@@ -110,13 +107,12 @@ Frame::~Frame() {
     \internal
 */
 void Frame::draw() {
-    RectTransform *rect = rectTransform();
     if(m_dirtyBackground) {
         if(m_backgroundImage && m_imageMaterial) {
             m_backgroundMesh = Engine::objectCreate<Mesh>();
             m_backgroundMesh->makeDynamic();
 
-            Vector2 size(rect->size());
+            Vector2 size(Frame::size());
             m_backgroundImage->composeMesh(m_backgroundMesh, Sprite::Sliced, size);
 
             m_imageMaterial->setTexture(gOverride, m_backgroundImage->texture());
@@ -126,14 +122,14 @@ void Frame::draw() {
 
     Canvas *canvas = Frame::canvas();
     if(m_backgroundImage && m_imageMaterial && m_backgroundMesh) {
-        Matrix4 mat(rect->worldTransform());
+        Matrix4 mat(worldTransform());
 
         const Vector3Vector &verts(m_backgroundMesh->vertices());
-        Vector2 scl(rect->worldScale());
+        Vector2 scl(worldScale());
         mat[12] -= verts[0].x * scl.x;
         mat[13] -= verts[0].y * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = Frame::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
@@ -141,7 +137,7 @@ void Frame::draw() {
 
         canvas->drawMesh(m_backgroundMesh, m_imageMaterial);
     } else if(!m_backgroundImage && m_frameMaterial) {
-        canvas->drawRect(m_frameMaterial, rect);
+        canvas->drawRect(m_frameMaterial, this);
     }
 
     Widget::draw();
@@ -192,11 +188,8 @@ Vector4 Frame::corners() const {
 void Frame::setCorners(const Vector4 &corners) {
     m_borderRadius = corners;
     if(m_frameMaterial) {
-        RectTransform *rect = rectTransform();
-        if(rect) {
-            Vector4 normCorners(m_borderRadius / rect->size().y);
-            m_frameMaterial->setVector4(gBorderRadius, &normCorners);
-        }
+        Vector4 normCorners(m_borderRadius / size().y);
+        m_frameMaterial->setVector4(gBorderRadius, &normCorners);
     }
     repaint();
 
@@ -283,7 +276,7 @@ void Frame::boundChanged(const Vector2 &size) {
         Vector4 normCorners(m_borderRadius / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderRadius, &normCorners);
 
-        Vector4 normBorders(rectTransform()->border() / MAX(size.y, 1.0f));
+        Vector4 normBorders(border() / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderWidth, &normBorders);
         repaint();
     }
@@ -307,8 +300,7 @@ void Frame::materialUpdated(int state, void *ptr) {
             frame->m_imageMaterial = nullptr;
         }
     } else {
-        RectTransform *rect = frame->rectTransform();
-        frame->boundChanged(rect->size());
+        frame->boundChanged(frame->size());
     }
 
     frame->m_dirtyBackground = true;
