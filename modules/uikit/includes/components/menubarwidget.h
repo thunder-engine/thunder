@@ -55,7 +55,7 @@ public:
     void update(const Vector2 &position) override;
 
 private:
-    Menu *buildMenu(NativeMenu *model, Actor *parent, const TString &name);
+    Menu *buildMenu(NativeMenu *model, Widget *parent, const TString &name);
     void rebuild();
     void clearWidgets();
     void hideMenus();

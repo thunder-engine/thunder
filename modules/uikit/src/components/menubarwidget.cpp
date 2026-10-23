@@ -21,7 +21,6 @@
 #include "components/action.h"
 #include "components/canvas.h"
 #include "components/menu.h"
-#include "components/recttransform.h"
 
 #include <components/actor.h>
 #include <engine.h>
@@ -74,16 +73,15 @@ NativeMenuBar *MenuBar::menuBar() const {
 }
 
 bool MenuBar::attachToCanvas(Canvas *canvas) {
-    if(!canvas || !actor() || !canvas->actor() || actor() == canvas->actor()) {
+    if(!canvas) {
         return false;
     }
-    actor()->setParent(canvas->actor());
+    setParent(canvas);
+    setPivot(Vector2(0.0f, 1.0f));
+    setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+    setSize(Vector2(0.0f, kMenuBarHeight));
+    setPosition(Vector3(0.0f, 0.0f, 0.0f));
 
-    RectTransform *rect = rectTransform();
-    rect->setPivot(Vector2(0.0f, 1.0f));
-    rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-    rect->setSize(Vector2(0.0f, kMenuBarHeight));
-    rect->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     return true;
 }
 
@@ -123,16 +121,12 @@ void MenuBar::update(const Vector2 &position) {
     }
 }
 
-Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) {
+Menu *MenuBar::buildMenu(NativeMenu *model, Widget *parent, const TString &name) {
     if(!model || !parent) {
         return nullptr;
     }
 
-    Actor *menuActor = Engine::composeActor<Menu>(name, parent);
-    Menu *view = menuActor ? menuActor->getComponent<Menu>() : nullptr;
-    if(!view) {
-        return nullptr;
-    }
+    Menu *view = Widget::createWidget<Menu>(name, parent);
 
     std::vector<std::pair<NativeMenu *, size_t>> &actions = m_actionMap[view];
     const auto &items = model->items();
@@ -142,7 +136,7 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
             view->addSeparator();
             actions.emplace_back(nullptr, itemIndex);
         } else if(item.submenu) {
-            Menu *submenu = buildMenu(item.submenu, menuActor, TString(item.submenu->title()));
+            Menu *submenu = buildMenu(item.submenu, view, TString(item.submenu->title()));
             if(!submenu) {
                 actions.emplace_back(nullptr, itemIndex);
                 continue;
@@ -150,8 +144,7 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
             view->addSubmenu(item.text, submenu);
             actions.emplace_back(nullptr, itemIndex);
         } else {
-            Actor *actionActor = Engine::composeActor<Action>(item.text, menuActor);
-            Action *action = actionActor ? actionActor->getComponent<Action>() : nullptr;
+            Action *action = Widget::createWidget<Action>(item.text, view);
             if(!action) {
                 actions.emplace_back(nullptr, itemIndex);
                 continue;
@@ -173,31 +166,29 @@ Menu *MenuBar::buildMenu(NativeMenu *model, Actor *parent, const TString &name) 
 void MenuBar::rebuild() {
     m_dirty = false;
     clearWidgets();
-    if(!m_menuBar || !actor()) {
+    if(!m_menuBar) {
         return;
     }
 
     Font *font = Engine::loadResource<Font>(".embedded/Roboto.ttf");
     float offset = 0.0f;
     for(const auto &model : m_menuBar->menus()) {
-        Actor *buttonActor = Engine::composeActor<Button>(model->title(), actor());
-        Button *button = buttonActor ? buttonActor->getComponent<Button>() : nullptr;
+        Button *button = Widget::createWidget<Button>(model->title(), this);
         if(!button) {
             continue;
         }
 
         button->setText(model->title());
         button->setFont(font);
-        RectTransform *buttonRect = button->rectTransform();
         const float labelWidth = font ? font->textWidth(model->title(), button->fontSize(), 0) : 60.0f;
         const float width = labelWidth + kMenuHorizontalPadding * 2.0f;
-        buttonRect->setPivot(Vector2(0.0f, 1.0f));
-        buttonRect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
-        buttonRect->setSize(Vector2(width, kMenuBarHeight));
-        buttonRect->setPosition(Vector3(offset, 0.0f, 0.0f));
+        button->setPivot(Vector2(0.0f, 1.0f));
+        button->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
+        button->setSize(Vector2(width, kMenuBarHeight));
+        button->setPosition(Vector3(offset, 0.0f, 0.0f));
         offset += width;
 
-        Menu *popup = buildMenu(model.get(), buttonActor, model->title() + TString("-popup"));
+        Menu *popup = buildMenu(model.get(), button, model->title() + TString("-popup"));
         if(popup) {
             button->setSubWidget(popup);
             m_buttons.push_back(button);
@@ -215,12 +206,9 @@ void MenuBar::clearWidgets() {
     m_topMenus.clear();
     m_activeMenuIndex = -1;
 
-    if(!actor()) {
-        return;
-    }
-    for(Object *child : actor()->getChildren()) {
-        Actor *childActor = dynamic_cast<Actor *>(child);
-        if(childActor && childActor->getComponent<Button>()) {
+    for(Object *child : getChildren()) {
+        Button *childActor = dynamic_cast<Button *>(child);
+        if(childActor) {
             childActor->setEnabled(false);
             childActor->deleteLater();
         }
