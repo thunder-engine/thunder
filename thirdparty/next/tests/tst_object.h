@@ -149,6 +149,23 @@ namespace NextSuite {
         }
     }
 
+    TEST_F(ObjectTest, Emit_signal_with_three_arguments) {
+        TestObject obj1;
+        TestObject obj2;
+        TestObject obj3;
+
+        ASSERT_TRUE(Object::connect(&obj1, _SIGNAL(signalTriple(int,int,int)), &obj2,
+                                    _SIGNAL(signalTriple(int,int,int))));
+        ASSERT_TRUE(Object::connect(&obj2, _SIGNAL(signalTriple(int,int,int)), &obj3,
+                                    _SLOT(setTripleSlot(int,int,int))));
+
+        obj1.signalTriple(1, 2, 3);
+
+        EXPECT_EQ(obj3.m_tripleSlot[0], 1);
+        EXPECT_EQ(obj3.m_tripleSlot[1], 2);
+        EXPECT_EQ(obj3.m_tripleSlot[2], 3);
+    }
+
     TEST_F(ObjectTest, Find_object) {
         Object obj1;
         TestObject obj2;

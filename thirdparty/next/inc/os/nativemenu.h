@@ -47,7 +47,9 @@ public:
     TString title() const;
     void setTitle(const TString &title);
 
-    Item *addAction(const TString &text, const std::function<void()> &handler = std::function<void()>());
+    Item *addAction(const TString &text, const std::function<void()> &handler = std::function<void()>(),
+                    bool checkable = false, bool checked = false);
+    void setActionChecked(size_t index, bool checked);
     NativeMenu *addMenu(const TString &title);
     void addSeparator();
 

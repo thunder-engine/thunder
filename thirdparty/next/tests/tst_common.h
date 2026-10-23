@@ -30,8 +30,10 @@ class TestObject : public Object {
 
     A_METHODS(
         A_SLOT(TestObject::setSlot),
+        A_SLOT(TestObject::setTripleSlot),
         A_SLOT(TestObject::onDestroyed),
         A_SIGNAL(TestObject::signal),
+        A_SIGNAL(TestObject::signalTriple),
         A_METHOD(bool, TestObject::test),
         A_METHOD(int, TestObject::testInt),
         A_METHOD(TString, TestObject::testString)
@@ -103,14 +105,25 @@ public:
         m_bSlot = true;
     }
 
+    void setTripleSlot(int first, int second, int third) {
+        m_tripleSlot[0] = first;
+        m_tripleSlot[1] = second;
+        m_tripleSlot[2] = third;
+    }
+
     void signal(int value) {
         emitSignal(_SIGNAL(signal(int)), value);
+    }
+
+    void signalTriple(int first, int second, int third) {
+        emitSignal(_SIGNAL(signalTriple(int,int,int)), first, second, third);
     }
 
     int         m_bSlot;
     int         m_Integer;
     Vector2     m_Vector2;
     TestObject *m_pResource;
+    int         m_tripleSlot[3] = {0, 0, 0};
 };
 
 inline bool compare(const Object::Link &left, const Object::Link &right) {

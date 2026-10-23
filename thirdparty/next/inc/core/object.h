@@ -126,6 +126,8 @@ public:
     bool isSignalsBlocked() const;
 
     void emitSignal(const char *signal, const Variant &args = Variant());
+    void emitSignal(const char *signal, const Variant &first, const Variant &second);
+    void emitSignal(const char *signal, const Variant &first, const Variant &second, const Variant &third);
 
     static void enumObjects(Object *object, Object::ObjectList &list);
 
