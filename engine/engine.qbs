@@ -151,7 +151,6 @@ Project {
         name: "engine-editor"
         condition: engine.desktop
         files: engine.srcFiles
-
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "next-editor" }
@@ -176,7 +175,7 @@ Project {
 
         Properties {
             condition: engine.desktop
-            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+            files: outer.concat(["src/adapters/desktopadaptor.cpp", "src/adapters/handlers/embeddedfilehandler.cpp", "src/window/window.cpp"])
         }
 
         Properties {
@@ -247,8 +246,8 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("windows") || (qbs.targetOS.contains("linux") && !qbs.targetOS.contains("android"))
-            files: outer.concat(["src/adapters/desktopadaptor.cpp"])
+            condition: engine.desktop
+            files: outer.concat(["src/adapters/desktopadaptor.cpp", "src/adapters/handlers/embeddedfilehandler.cpp", "src/window/window.cpp"])
         }
 
         Properties {
