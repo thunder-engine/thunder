@@ -25,7 +25,9 @@
 #include <resources/font.h>
 #include <resources/material.h>
 
+#ifndef THUNDER_MOBILE
 #include <clipboard.h>
+#endif
 #include <input.h>
 #include <timer.h>
 #include <pipelinecontext.h>
@@ -326,7 +328,9 @@ void LineEdit::update(const Vector2 &pos) {
                 recalcCursor();
                 breakCursorFlashing = true;
                 clipboardKey = true;
-            } else if(command && (Input::isKeyDown(Input::KEY_C) || Input::isKeyDown(Input::KEY_X))) {
+            }
+#ifndef THUNDER_MOBILE
+            if(command && (Input::isKeyDown(Input::KEY_C) || Input::isKeyDown(Input::KEY_X))) {
                 clipboardKey = true;
                 if(hasSelection()) {
                     const std::u32string text = m_text.toUtf32();
@@ -363,6 +367,7 @@ void LineEdit::update(const Vector2 &pos) {
                     breakCursorFlashing = true;
                 }
             }
+#endif
 
             const bool backspace = Input::isKey(Input::KEY_BACKSPACE);
             const bool deleteForward = Input::isKey(Input::KEY_DELETE);
