@@ -2,15 +2,13 @@
 
 #include <engine.h>
 
-#include <components/frame.h>
-#include <components/label.h>
-#include <components/image.h>
-#include <components/button.h>
-#include <components/layout.h>
-#include <components/checkbox.h>
-#include <components/recttransform.h>
-
-#include <components/foldout.h>
+#include <frame.h>
+#include <label.h>
+#include <image.h>
+#include <button.h>
+#include <layout.h>
+#include <checkbox.h>
+#include <foldout.h>
 
 #include <pugixml.hpp>
 
@@ -83,14 +81,13 @@ void EffectRootNode::fromXml(const pugi::xml_node &element) {
     }
 }
 
-Foldout *EffectRootNode::createFold(const TString &name, Actor *parent) {
-    Actor *spawnActor = Engine::composeActor<Foldout>(name, parent);
-    Foldout *result = spawnActor->getComponent<Foldout>();
-    result->setText(name);
-    RectTransform *rect = result->rectTransform();
-    if(rect) {
-        rect->setHorizontalPolicy(RectTransform::Expanding);
+Foldout *EffectRootNode::createFold(const TString &name, Widget *parent) {
+    Foldout *result = Widget::createWidget<Foldout>(name, parent);
+    if(!result) {
+        return nullptr;
     }
+    result->setText(name);
+    result->setHorizontalPolicy(Foldout::Expanding);
 
     return result;
 }
@@ -99,25 +96,25 @@ Widget *EffectRootNode::widget() {
     Widget *result = GraphNode::widget();
 
     if(m_emitterUpdateFold == nullptr) {
-        m_emitterUpdateFold = createFold("Emitter Update", result->actor());
-        m_particleSpawnFold = createFold("Particle Spawn", result->actor());
-        m_particleUpdateFold = createFold("Particle Update", result->actor());
-        m_renderFold = createFold("Render", result->actor());
+        m_emitterUpdateFold = createFold("Emitter Update", result);
+        m_particleSpawnFold = createFold("Particle Spawn", result);
+        m_particleUpdateFold = createFold("Particle Update", result);
+        m_renderFold = createFold("Render", result);
 
         for(auto it : getChildren()) {
             EffectModule *module = static_cast<EffectModule *>(it);
             switch(module->stage()) {
                 case EffectModule::EmitterUpdate: {
-                    m_emitterUpdateFold->insertWidget(-1, module->widget(m_emitterUpdateFold->actor()));
+                    m_emitterUpdateFold->insertWidget(-1, module->widget(m_emitterUpdateFold));
                 } break;
                 case EffectModule::ParticleSpawn: {
-                    m_particleSpawnFold->insertWidget(-1, module->widget(m_particleSpawnFold->actor()));
+                    m_particleSpawnFold->insertWidget(-1, module->widget(m_particleSpawnFold));
                 } break;
                 case EffectModule::ParticleUpdate: {
-                    m_particleUpdateFold->insertWidget(-1, module->widget(m_particleUpdateFold->actor()));
+                    m_particleUpdateFold->insertWidget(-1, module->widget(m_particleUpdateFold));
                 } break;
                 case EffectModule::Render: {
-                    m_renderFold->insertWidget(-1, module->widget(m_renderFold->actor()));
+                    m_renderFold->insertWidget(-1, module->widget(m_renderFold));
                 } break;
                 default: break;
             }
@@ -413,7 +410,7 @@ EffectModule *EffectRootNode::insertModule(const TString &type, int index) {
     module->setParent(this, index + 1);
 
     if(m_nodeWidget) {
-        Widget *widget = module->widget(m_nodeWidget->actor());
+        Widget *widget = module->widget(m_nodeWidget);
 
         switch(module->stage()) {
             case EffectModule::EmitterUpdate: {
@@ -448,7 +445,7 @@ int EffectRootNode::moduleIndex(EffectModule *module) {
 
 void EffectRootNode::removeModule(EffectModule *module) {
     Widget *widget = module->widget(nullptr);
-    delete widget->actor();
+    delete widget;
 
     delete module;
 }

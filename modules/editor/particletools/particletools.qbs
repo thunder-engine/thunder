@@ -16,8 +16,8 @@ Project {
     property stringList incPaths: [
         "converter",
         "../../../engine/includes",
-        "../../../engine/includes/resources",
         "../../../engine/includes/components",
+        "../../../engine/includes/resources",
         "../../../editor/includes",
         "../../../thirdparty/next/inc",
         "../../../thirdparty/next/inc/math",
@@ -25,6 +25,7 @@ Project {
         "../../../thirdparty/pugixml/src",
         "../../../modules/editor/grapheditor/editor",
         "../../../modules/uikit/includes",
+        "../../../modules/uikit/includes/components",
     ]
 
     DynamicLibrary {

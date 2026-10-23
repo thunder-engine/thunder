@@ -9,11 +9,13 @@
 class QMenu;
 
 class AbstractNodeGraph;
+class Canvas;
 class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
 class Scene;
+class Widget;
 
 class NODEGRAPH_EXPORT GraphView : public LegacyViewport {
     Q_OBJECT
@@ -27,7 +29,7 @@ public:
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
 
-    Actor &view() const;
+    Widget &view() const;
 
     Frame *rubberBand();
 
@@ -78,9 +80,9 @@ private:
 protected:
     Scene *m_scene;
 
-    Actor *m_view;
+    Widget *m_view;
 
-    Actor *m_canvas;
+    Canvas *m_canvas;
 
     QMenu *m_createMenu;
 

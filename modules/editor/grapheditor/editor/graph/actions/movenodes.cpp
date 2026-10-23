@@ -2,8 +2,6 @@
 
 #include "../graphwidgets/nodewidget.h"
 
-#include <components/recttransform.h>
-
 MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl) {
@@ -15,8 +13,7 @@ MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *
     for(auto &it : selection) {
         m_indices.push_back(g->node(it->node()));
 
-        RectTransform *rect = it->rectTransform();
-        Vector3 pos(rect->position());
+        Vector3 pos(it->position());
         m_points.push_back(Vector2(pos.x, pos.y));
     }
 }
@@ -35,8 +32,8 @@ void MoveNodes::redo() {
         node->setPosition(m_points.at(i));
 
         // Update widget position
-        RectTransform *rect = static_cast<NodeWidget *>(node->widget())->rectTransform();
-        rect->setPosition(Vector3(node->position(), 0.0f));
+        NodeWidget *widget = static_cast<NodeWidget *>(node->widget());
+        widget->setPosition(Vector3(node->position(), 0.0f));
     }
     // Recalc links positions
     static_cast<GraphController *>(m_controller)->composeLinks();

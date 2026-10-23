@@ -6,13 +6,11 @@
 #include <editor/assetconverter.h>
 #include <graph/graphnode.h>
 
-#include <components/actor.h>
-#include <components/frame.h>
-#include <components/label.h>
-#include <components/image.h>
-#include <components/button.h>
-#include <components/recttransform.h>
-#include <components/layout.h>
+#include <frame.h>
+#include <label.h>
+#include <image.h>
+#include <button.h>
+#include <layout.h>
 
 #include <components/spriterender.h>
 

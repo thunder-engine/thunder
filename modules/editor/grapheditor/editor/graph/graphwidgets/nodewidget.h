@@ -55,7 +55,7 @@ protected:
 
     Frame *m_header;
 
-    RectTransform *m_callRect;
+    Widget *m_callRect;
 
     bool m_hovered;
 
