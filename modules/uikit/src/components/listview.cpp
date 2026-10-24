@@ -568,7 +568,6 @@ void ListView::handleItemDoubleClick(int index) {
 
     handleItemClick(index);
     activateCurrentItem();
-    edit(idx);
 }
 
 void ListView::handleItemClick(int index) {

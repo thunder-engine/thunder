@@ -52,14 +52,6 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
 
     VkDevice device = WrapperVk::device();
 
-    for(auto &it : m_textures) {
-        if(it.texture && it.texture->state() == Resource::ToBeUpdated) {
-            TextureVk *texture = static_cast<TextureVk *>(it.texture);
-            VkDescriptorImageInfo info = {};
-            texture->attributes(info);
-        }
-    }
-
     for(auto it : m_suspended) {
         vkDestroyBuffer(device, it.first, nullptr);
         vkFreeMemory(device, it.second, nullptr);

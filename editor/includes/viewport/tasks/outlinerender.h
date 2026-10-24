@@ -127,10 +127,12 @@ private:
     void analyze(World *world) override {
         RenderList outline;
 
-        for(auto actor : m_controller->selected()) {
-            for(auto it : m_context->culledRenderables()) {
-                if(it->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
-                    outline.push_back(it);
+        if(m_controller) {
+            for(auto actor : m_controller->selected()) {
+                for(auto it : m_context->culledRenderables()) {
+                    if(it->actor()->isInHierarchy(static_cast<Actor *>(actor))) {
+                        outline.push_back(it);
+                    }
                 }
             }
         }

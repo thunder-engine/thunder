@@ -121,7 +121,7 @@ private:
         }
 
         Camera *c = Camera::current();
-        if(CommandBuffer::isInited() && c) {
+        if(c) {
             m_context->cameraReset();
 
             buffer->setRenderTarget(m_geometryTarget);
@@ -157,8 +157,11 @@ private:
 
     void update() {
         Vector4 mouse(Input::mousePosition());
-        mouse.x -= m_width-gNaviCubeSize;
-        mouse.y -= m_height-gNaviCubeSize;
+
+        Vector2 offset(m_context->positionOffset());
+
+        mouse.x -= m_width-gNaviCubeSize+offset.x;
+        mouse.y -= m_height-gNaviCubeSize+offset.y;
 
         Ray ray = m_camera->castRay(mouse.x / float(gNaviCubeSize), mouse.y / float(gNaviCubeSize));
 

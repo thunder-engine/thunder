@@ -43,7 +43,7 @@ void main(void) {
     if(depth < 1.0) {
         vec4 normSamp = texture(normalsMap, proj);
         if(normSamp.a > 0.0f) {
-            vec3 n = normSamp.xyz * 2.0f - 1.0f;
+            vec3 n = normalize(normSamp.xyz * 2.0f - 1.0f);
 
             vec3 world = getWorld(_screenToWorld, proj, depth);
             vec3 v = normalize(world - cameraPosition());

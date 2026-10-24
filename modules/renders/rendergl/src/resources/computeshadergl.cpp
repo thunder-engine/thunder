@@ -23,9 +23,8 @@
 #include "resources/texturegl.h"
 #include "resources/computebuffergl.h"
 
-#include <cstring>
-
 #include <log.h>
+#include <pipelinecontext.h>
 
 void ComputeShaderGL::loadUserData(const VariantMap &data) {
     VariantMap rhiDataStorage;
@@ -208,12 +207,12 @@ bool ComputeInstanceGL::bind(CommandBufferGL *buffer) {
             uint8_t i = 0;
             for(auto &it : shader->textures()) {
                 Texture *tex = it.texture;
-                Texture *tmp = texture(it.name.data());
+                Texture *tmp = texture(it.name);
 
                 if(tmp) {
                     tex = tmp;
                 } else {
-                    tmp = buffer->texture(it.name.data());
+                    tmp = buffer->context()->textureBuffer(it.hash);
                     if(tmp) {
                         tex = tmp;
                     }

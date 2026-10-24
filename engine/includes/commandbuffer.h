@@ -38,6 +38,9 @@ public:
 
     void begin();
 
+    PipelineContext *context();
+    void setPipelineContext(PipelineContext *context);
+
     virtual void dispatchCompute(ComputeInstance &shader, int32_t groupsX, int32_t groupsY, int32_t groupsZ);
 
     virtual void drawMesh(Mesh *mesh, uint32_t sub, uint32_t layer, MaterialInstance &instance);
@@ -49,8 +52,6 @@ public:
     void setViewProjection(const Matrix4 &view, const Matrix4 &projection);
 
     virtual void setViewProjection(const Matrix4 &viewProjection);
-
-    virtual void setGlobalTexture(const TString &name, Texture *texture);
 
     virtual void setViewport(int32_t x, int32_t y, int32_t width, int32_t height);
 
@@ -65,21 +66,13 @@ public:
     void beginScissorScope();
     void endScissorScope();
 
-    virtual Texture *texture(const TString &name) const;
-
     virtual void beginDebugMarker(const TString &name);
     virtual void endDebugMarker();
 
     virtual void flipResult();
 
-    static bool isInited();
-
-    static void setInited();
-
 protected:
     Global m_global;
-
-    Material::Textures m_textures;
 
     struct ScissorRect {
         int32_t x;
@@ -94,9 +87,11 @@ protected:
     std::stack<ScissorRect> m_scissorStack;
     std::vector<std::stack<ScissorRect>> m_scissorScopes;
 
+    Vector4 m_viewportRect;
+
     RenderTarget *m_target;
 
-    Vector4 m_viewportRect;
+    PipelineContext *m_context;
 
     virtual void applyScissorState();
 
