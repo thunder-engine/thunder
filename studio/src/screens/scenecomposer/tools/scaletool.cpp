@@ -1,0 +1,128 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#include "scaletool.h"
+
+#include <components/actor.h>
+#include <components/transform.h>
+#include <components/camera.h>
+
+#include <viewport/handles.h>
+
+#include "../objectcontroller.h"
+
+ScaleTool::ScaleTool(ObjectController *controller) :
+    SelectTool(controller) {
+
+    m_snap = 1.0f;
+}
+
+void ScaleTool::update(bool center, bool local, bool snap) {
+    SelectTool::update(center, local, snap);
+
+    bool isDrag = m_controller->isDrag();
+
+    if(!isDrag) {
+        m_position = objectPosition();
+        Handles::s_Axes = 0;
+    }
+
+    SelectTool::SelectList &list = m_controller->selectList();
+    if(!list.empty()) {
+        Transform *t = list.back().object->transform();
+
+        m_world = Handles::scaleTool(m_position, local ? t->worldQuaternion() : Quaternion(), isDrag);
+
+        Camera *camera = Camera::current();
+        if(isDrag && camera) {
+            Vector3 normal = m_position - camera->transform()->position();
+
+            Vector3 delta(m_world - m_savedWorld);
+
+            Vector3 s;
+            if(Handles::s_Axes & Handles::AXIS_X) {
+                float scale = (normal.x < 0) ? delta.x : -delta.x;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.x += scale;
+            }
+            if(Handles::s_Axes & Handles::AXIS_Y) {
+                float scale = (normal.y < 0) ? delta.y : -delta.y;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.y += scale;
+            }
+            if(Handles::s_Axes & Handles::AXIS_Z) {
+                float scale = (normal.z < 0) ? delta.z : -delta.z;
+                if(m_snap > 0) {
+                    scale = m_snap * int(scale / m_snap);
+                }
+                s.z += scale;
+            }
+
+            auto scaleIt = m_scales.begin();
+            auto positionIt = m_positions.begin();
+            for(const auto &it : list) {
+                Transform *tr = it.object->transform();
+                Matrix4 parent;
+                if(tr->parentTransform()) {
+                    parent = tr->parentTransform()->worldTransform();
+                }
+
+                Vector3 v(*scaleIt + s);
+                tr->setScale(v);
+
+                Vector3 p(parent * *positionIt - m_position);
+                tr->setPosition(parent.inverse() * (v * p + m_position));
+
+                scaleIt++;
+                positionIt++;
+            }
+        }
+    }
+}
+
+void ScaleTool::beginControl() {
+    SelectTool::beginControl();
+
+    m_scales.clear();
+    m_positions.clear();
+
+    for(auto it : m_controller->selectList()) {
+        Transform *t = it.object->transform();
+        m_scales.push_back(t->scale());
+        m_positions.push_back(t->position());
+    }
+}
+
+TString ScaleTool::icon() const {
+    return ":/Images/editor/Scale.png";
+}
+
+TString ScaleTool::name() const {
+    return "Scale";
+}
+
+TString ScaleTool::toolTip() const {
+    return "Select and Scale objects";
+}
+
+TString ScaleTool::shortcut() const {
+    return "Shift+S";
+}

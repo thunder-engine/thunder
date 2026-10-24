@@ -1,0 +1,146 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#ifndef SPLINETOOL_H
+#define SPLINETOOL_H
+
+#include "editor/editortool.h"
+
+#include <components/spline.h>
+
+#include "splinepanel.h"
+#include "../../objectcontroller.h"
+
+class Spline;
+
+class SplineTool : public EditorTool {
+public:
+    explicit SplineTool(ObjectController *controller);
+
+    ObjectController *controller() { return m_controller; }
+
+    int pointIndex() const { return m_index; }
+    void setPointIndex(int index);
+
+    int tangent() const { return m_tangent; }
+    void setTangent(int tangent) { m_tangent = tangent; }
+
+    void update();
+
+    Spline *spline();
+
+private:
+    void update(bool center, bool local, bool snap) override;
+
+    void beginControl() override;
+    void endControl() override;
+    void cancelControl() override;
+
+    TString icon() const override;
+    TString name() const override;
+
+    TString component() const override;
+
+    bool blockSelection() const override;
+
+    Widget *panel(Widget *parent);
+    QWidget *panel() override { return nullptr; }
+
+private:
+    Spline::Point m_point;
+
+    Vector4 m_dotColor;
+    Vector4 m_dotColorSelected;
+    Vector4 m_lineColor;
+
+    Vector3 m_world;
+    Vector3 m_savedWorld;
+
+    ObjectController *m_controller;
+
+    Spline *m_spline;
+
+    SplinePanel *m_splinePanel;
+
+    float m_dotSize;
+
+    int m_index;
+    int m_tangent;
+
+    bool m_canceled;
+
+};
+
+class SelectSplinePoint : public UndoCommand {
+public:
+    SelectSplinePoint(int index, int tangent, SplineTool *tool, const TString &name = "Select Spline Point", UndoCommand *group = nullptr);
+    void undo() override { redo(); }
+    void redo() override;
+
+protected:
+    SplineTool *m_tool;
+
+    int m_index;
+    int m_tangent;
+
+};
+
+class ChangeSplinePoint : public UndoCommand {
+public:
+    ChangeSplinePoint(const Spline::Point &point, SplineTool *tool, const TString &name = "Change Spline Point", UndoCommand *group = nullptr);
+    void undo() override { redo(); }
+    void redo() override;
+
+protected:
+    SplineTool *m_tool;
+
+    Spline::Point m_point;
+
+};
+
+class DeleteSplinePoint : public UndoCommand {
+public:
+    DeleteSplinePoint(SplineTool *tool, const TString &name = "Delete Spline Point", UndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    SplineTool *m_tool;
+
+    Spline::Point m_point;
+
+    int m_index;
+    int m_tangent;
+
+};
+
+class InsertSplinePoint : public UndoCommand {
+public:
+    InsertSplinePoint(float factor, SplineTool *tool, const TString &name = "Duplicate Spline Point", UndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+protected:
+    SplineTool *m_tool;
+
+    float m_factor;
+
+    int m_index;
+
+};
+
+#endif // SPLINETOOL_H

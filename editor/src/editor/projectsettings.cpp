@@ -102,6 +102,7 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     Loads platforms supported by the registered code builders.
 */
 void ProjectSettings::loadPlatforms() {
+    m_supportedPlatforms.clear();
     for(auto &it : Editor::assets()->builders()) {
         for(auto &platform : it->platforms()) {
             m_supportedPlatforms[platform] = it;

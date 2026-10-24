@@ -1,0 +1,195 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#include "selecttool.h"
+
+#include <components/actor.h>
+#include <components/transform.h>
+#include <components/renderable.h>
+
+#include <viewport/handles.h>
+
+#include <input.h>
+
+#include "../actions/pasteobjects.h"
+#include "../actions/changeobjectproperty.h"
+
+#include "../objectcontroller.h"
+
+#include <sstream>
+#include <iomanip>
+
+SelectTool::SelectTool(ObjectController *controller) :
+        EditorTool(),
+        m_controller(controller),
+        m_snapEditor(nullptr),
+        m_snap(0.0f)  {
+
+}
+
+void SelectTool::update(bool center, bool local, bool snap) {
+    if(Input::isKeyDown(Input::KEY_DELETE)) {
+        m_controller->onRemoveActor(m_controller->selected());
+    }
+}
+
+void SelectTool::beginControl() {
+    EditorTool::beginControl();
+
+    if(Input::isKey(Input::KEY_LEFT_SHIFT)) {
+        m_controller->undoRedo()->push(new PasteObjects(m_controller->dumpSelected(), m_controller, "Duplicate Selected"));
+    }
+
+    m_propertiesCache.clear();
+
+    for(auto &it : m_controller->selectList()) {
+        VariantMap components;
+        for(auto &child : it.object->getChildren()) {
+            Component *component = dynamic_cast<Component *>(child);
+            if(component) {
+                VariantMap properies;
+                const MetaObject *meta = component->metaObject();
+                for(int i = 0; i < meta->propertyCount(); i++) {
+                    MetaProperty property = meta->property(i);
+                    properies[property.name()] = property.read(component);
+                }
+                components[std::to_string(component->uuid())] = properies;
+            }
+        }
+        m_propertiesCache.push_back(components);
+    }
+
+    m_position = objectPosition();
+    m_savedWorld = m_world;
+}
+
+void SelectTool::endControl() {
+    UndoCommand *group = new UndoCommand(name());
+
+    auto cache = m_propertiesCache.begin();
+    if(cache != m_propertiesCache.end()) {
+        for(auto &it : m_controller->selectList()) {
+            VariantMap components = (*cache).toMap();
+            for(auto &child : it.object->getChildren()) {
+                Component *component = dynamic_cast<Component *>(child);
+                if(component) {
+                    VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                    const MetaObject *meta = component->metaObject();
+                    for(int i = 0; i < meta->propertyCount(); i++) {
+                        MetaProperty property = meta->property(i);
+
+                        Variant value = property.read(component);
+                        Variant data = properties[property.name()];
+                        if(value != data) {
+                            property.write(component, data);
+
+                            new ChangeObjectProperty({component}, property.name(), value, m_controller, "", group);
+                        }
+                    }
+                }
+            }
+
+            ++cache;
+        }
+    }
+
+    if(group->childCount() > 0) {
+        m_controller->undoRedo()->push(group);
+    }
+}
+
+void SelectTool::cancelControl() {
+    auto cache = m_propertiesCache.begin();
+    if(cache != m_propertiesCache.end()) {
+        for(auto &it : m_controller->selectList()) {
+            VariantMap components = (*cache).toMap();
+            for(auto &child : it.object->getChildren()) {
+                Component *component = dynamic_cast<Component *>(child);
+                if(component) {
+                    VariantMap properties = components[std::to_string(component->uuid())].toMap();
+                    const MetaObject *meta = component->metaObject();
+                    for(int i = 0; i < meta->propertyCount(); i++) {
+                        MetaProperty property = meta->property(i);
+                        property.write(component, properties[property.name()]);
+                    }
+                }
+            }
+
+            ++cache;
+        }
+    }
+}
+
+TString SelectTool::icon() const {
+    return ":/Images/editor/Select.png";
+}
+
+TString SelectTool::name() const {
+    return "Select";
+}
+
+TString SelectTool::component() const {
+    return Transform::metaClass()->name();
+}
+
+LineEdit *SelectTool::snapWidget(Widget *parent) {
+    if(m_snapEditor == nullptr && parent) {
+        Widget *field = Widget::createWidget<LineEdit>(name(), parent);
+        m_snapEditor = dynamic_cast<LineEdit *>(field);
+        if(m_snapEditor) {
+            std::ostringstream stream;
+            stream << std::fixed << std::setprecision(2) << m_snap;
+            m_snapEditor->setText(stream.str());
+            Widget *rect = m_snapEditor;
+            if(rect) {
+                rect->setSize(Vector2(60.0f, 24.0f));
+            }
+        }
+    }
+    return m_snapEditor;
+}
+
+float SelectTool::snap() const {
+    return m_snap;
+}
+
+void SelectTool::setSnap(float snap) {
+    m_snap = snap;
+}
+
+Vector3 SelectTool::objectPosition() {
+    if(m_controller->selectList().size() == 1) {
+        return m_controller->selectList().front().object->transform()->worldPosition();
+    }
+    return objectBound().center;
+}
+
+AABBox SelectTool::objectBound() {
+    AABBox result;
+    result.extent = Vector3(-1.0f);
+    if(!m_controller->selectList().empty()) {
+        bool first = true;
+        for(auto &it : m_controller->selectList()) {
+            if(first) {
+                result.center = it.object->transform()->worldPosition();
+            } else {
+                result.encapsulate(it.object->transform()->worldPosition());
+            }
+        }
+    }
+    return result;
+}
