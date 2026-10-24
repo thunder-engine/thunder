@@ -81,6 +81,7 @@ Widget *TabWidget::takeTab(int index) {
         auto current = m_tabs.begin();
         std::advance(current, oldCurrentIndex);
         if(current != m_tabs.end() && *current) {
+            Widget *currentWidget = *current;
             currentWidget->setEnabled(false);
             currentWidget->setVisible(false);
         }
