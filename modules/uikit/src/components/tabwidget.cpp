@@ -316,13 +316,10 @@ int TabWidget::insertTab(int index, const TString &title, Widget *content) {
         return -1;
     }
 
-    Widget *actor = content;
-    if(actor) {
-        connect(actor, _SIGNAL(objectNameChanged(TString)), this, _SLOT(onObjectNameChanged(TString)));
-        if(m_currentIndex != -1) {
-            actor->setEnabled(false);
-            actor->setVisible(false);
-        }
+    connect(content, _SIGNAL(objectNameChanged(TString)), this, _SLOT(onObjectNameChanged(TString)));
+    if(m_currentIndex != -1) {
+        content->setEnabled(false);
+        content->setVisible(false);
     }
 
     m_tabBar->insertTab(index, title);
