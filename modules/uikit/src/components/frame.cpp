@@ -63,6 +63,7 @@ Frame::Frame() :
         m_backgroundMesh(nullptr),
         m_imageMaterial(nullptr),
         m_frameMaterial(nullptr),
+        m_materialHeight(-1.0f),
         m_dirtyBackground(true) {
 
     Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
@@ -107,6 +108,11 @@ Frame::~Frame() {
     \internal
 */
 void Frame::draw() {
+    worldTransform();
+    if(size().y != m_materialHeight) {
+        boundChanged(size());
+    }
+
     if(m_dirtyBackground) {
         if(m_backgroundImage && m_imageMaterial) {
             m_backgroundMesh = Engine::objectCreate<Mesh>();
@@ -272,6 +278,7 @@ void Frame::setBackgroundImage(Sprite *image) {
 void Frame::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
+    m_materialHeight = size.y;
     if(m_frameMaterial) {
         Vector4 normCorners(m_borderRadius / MAX(size.y, 1.0f));
         m_frameMaterial->setVector4(gBorderRadius, &normCorners);

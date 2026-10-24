@@ -131,11 +131,16 @@ void GraphView::setWorld(World *scene) {
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
     m_canvas = Engine::objectCreate<Canvas>("Canvas", m_scene);
-    m_view = m_canvas;
+    if(!m_canvas) {
+        aError() << "Unable to create the graph editor canvas.";
+        return;
+    }
+    m_view = Widget::createWidget<Widget>("View", m_canvas);
     if(!m_view) {
         aError() << "Unable to create the graph editor widget root.";
         return;
     }
+    m_view->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
     m_linksRender = Widget::createWidget<LinksRender>(gLinksRender, m_view);
 

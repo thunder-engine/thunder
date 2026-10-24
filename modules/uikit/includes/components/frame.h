@@ -74,6 +74,8 @@ protected:
     MaterialInstance *m_imageMaterial;
     MaterialInstance *m_frameMaterial;
 
+    float m_materialHeight;
+
     bool m_dirtyBackground;
 
 };

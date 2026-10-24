@@ -89,6 +89,7 @@ void Label::draw() {
         canvas->setClipRegion(clipRegion());
     }
 
+    Matrix4 mat(worldTransform());
     if(m_material && !m_text.isEmpty()) {
         if(m_dirty && m_font) {
             m_mesh->setName(name());
@@ -100,7 +101,6 @@ void Label::draw() {
             m_dirty = false;
         }
 
-        Matrix4 mat(worldTransform());
         mat[12] += padding().w;
 
         uint32_t hash = Label::hash();

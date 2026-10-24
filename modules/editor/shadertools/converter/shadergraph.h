@@ -108,7 +108,7 @@ private:
 
         bool isDirty = true;
 
-        bool isVisible = false;
+        bool isVisible = true;
     };
 
 private:

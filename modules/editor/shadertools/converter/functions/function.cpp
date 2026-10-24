@@ -195,10 +195,10 @@ TString ShaderNode::typeToString(int type) {
 }
 
 void ShaderNode::switchPreview() {
-    m_preview->setEnabled(!m_preview->isEnabled());
+    m_preview->setVisible(!m_preview->isVisible());
 
     ShaderGraph *graph = static_cast<ShaderGraph *>(GraphNode::graph());
-    graph->setPreviewVisible(this, m_preview->isEnabled());
+    graph->setPreviewVisible(this, m_preview->isVisible());
 
     m_nodeWidget->raise();
 }
