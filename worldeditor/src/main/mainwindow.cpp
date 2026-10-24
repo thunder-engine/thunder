@@ -291,12 +291,7 @@ void MainWindow::setGameMode(bool mode) {
 void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     ProjectModel::addProject(path);
     Editor::project()->init(path);
-
-    Editor::plugins()->init(&engine);
-
-    m_queue = new ImportQueue;
-    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
-
+    // Strict after project initialization
     Editor::assets()->init();
 
     // Read settings early for converters
@@ -306,6 +301,8 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
         Editor::project()->currentBuilder(Editor::project()->currentPlatformName())->makeOutdated();
     }
 
+    m_queue = new ImportQueue;
+    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
     Editor::assets()->rescan();
     m_queue->startImport();
 
@@ -323,7 +320,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
 void MainWindow::onImportFinished() {
     Editor::plugins()->initSystems();
 
-    Editor::init();
+    Editor::initDocumentSystem();
 
     SceneComposer *composer = new SceneComposer(this);
     Editor::addEditor(composer);

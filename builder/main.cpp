@@ -82,17 +82,18 @@ int main(int argc, char *argv[]) {
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
 
-    Editor editor(argc, argv);
     Builder *builder = new Builder();
     Log::addHandler(builder);
 
     aInfo() << "Starting builder...";
 
+    Editor::init(argc, argv);
+
     Editor::project()->init(parser.value(sourceFileOption).toStdString(), parser.value(targetDirectoryOption).toStdString());
     builder->setAssetsOnly(parser.isSet(assetsOnlyOption));
     builder->setPackageAssets(!parser.isSet(noPackageOption));
 
-    Editor::plugins()->init(&engine);
+    // Strict after project initialization
     Editor::assets()->init();
 
     if(!Editor::plugins()->rescanProject(Editor::project()->pluginsPath())) {

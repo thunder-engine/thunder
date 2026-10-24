@@ -42,10 +42,12 @@ class LegacyDocumentModel;
 
 class EDITOR_EXPORT Editor : public Object {
 public:
-    Editor(int argc, char *argv[]);
+    Editor();
     ~Editor();
 
-    static void init();
+    static void init(int argc, char *argv[]);
+
+    static void initDocumentSystem();
 
     static void backup();
     static void restore();

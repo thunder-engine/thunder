@@ -356,7 +356,18 @@ void AssetManager::makePrefab(const TString &source, const TString &target) {
     TString name = source.right(index + 1);
     Actor *actor = dynamic_cast<Actor *>(Engine::findObject(id.toLong()));
     if(actor) {
-        TString path = Editor::project()->contentPath() + "/" + target + "/" + name + ".fab";
+        const TString contentPath = Editor::project()->contentPath();
+        TString path;
+        if(target == contentPath || target.startsWith(contentPath + "/")) {
+            path = target;
+        } else {
+            path = contentPath;
+            if(!target.isEmpty()) {
+                path += "/";
+                path += target;
+            }
+        }
+        path += TString("/") + name + ".fab";
 
         PrefabConverter *converter = dynamic_cast<PrefabConverter *>(getConverter(path));
         if(converter) {
