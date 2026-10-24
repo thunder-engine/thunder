@@ -107,10 +107,12 @@ void LegacyViewport::init() {
             m_debugRender = new DebugRender;
 
             if(!m_gameView) {
+                Texture *depthmap = m_pipelineContext->textureBuffer(Mathf::hashString("depthMap"));
+
                 m_gridRender = new GridRender;
                 m_gridRender->setController(m_controller);
                 m_gridRender->setInput(0, m_guiLayer->output(0));
-                m_gridRender->setInput(1, m_pipelineContext->textureBuffer("depthMap"));
+                m_gridRender->setInput(1, depthmap);
 
                 m_outlinePass = new Outline;
                 m_outlinePass->setController(m_controller);
@@ -119,7 +121,7 @@ void LegacyViewport::init() {
                 m_gizmoRender = new GizmoRender;
                 m_gizmoRender->setController(m_controller);
                 m_gizmoRender->setInput(0, m_guiLayer->output(0));
-                m_gizmoRender->setInput(1, m_pipelineContext->textureBuffer("depthMap"));
+                m_gizmoRender->setInput(1, depthmap);
 
                 if(m_controller) {
                     m_controller->init(this);

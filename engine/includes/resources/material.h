@@ -6,7 +6,7 @@
 
 class Transform;
 class MaterialInstance;
-class CommandBuffer;
+class PipelineContext;
 
 class ENGINE_EXPORT Material : public Resource {
     A_OBJECT(Material, Resource, Resources)
@@ -181,6 +181,8 @@ public:
         Texture *texture;
 
         int32_t binding;
+
+        int32_t hash;
 
         int32_t flags;
     };

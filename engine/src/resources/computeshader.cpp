@@ -196,6 +196,7 @@ void ComputeShader::loadUserData(const VariantMap &data) {
                 item.name = (*f).toString();
                 ++f;
                 item.flags = (*f).toInt();
+                item.hash = Mathf::hashString(item.name);
 
                 m_textures.push_back(item);
             }

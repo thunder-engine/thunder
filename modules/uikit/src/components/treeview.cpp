@@ -575,7 +575,6 @@ void TreeView::handleItemDoubleClick(int row) {
     }
     handleItemClick(row);
     activateCurrentItem();
-    edit(data->index);
 }
 
 bool TreeView::onMouseDown(int x, int y) {

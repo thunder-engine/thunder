@@ -1,6 +1,7 @@
 #include "resources/material.h"
 #include "resources/texture.h"
 
+#include "pipelinecontext.h"
 #include "commandbuffer.h"
 
 #include <cstring>
@@ -62,7 +63,7 @@ Texture *MaterialInstance::texture(CommandBuffer &buffer, int32_t binding) {
         } else {
             for(auto &t : m_material->m_textures) {
                 if(t.binding == binding) {
-                    Texture *texture = buffer.texture(t.name);
+                    Texture *texture = buffer.context()->textureBuffer(t.hash);
                     if(texture == nullptr) {
                         texture = Engine::loadResource<Texture>(".embedded/invalid.png");
                     }
@@ -451,6 +452,7 @@ void Material::loadUserData(const VariantMap &data) {
             item.binding = (*f).toInt();
             ++f;
             item.flags = (*f).toInt();
+            item.hash = Mathf::hashString(item.name);
 
             m_textures.push_back(item);
         }

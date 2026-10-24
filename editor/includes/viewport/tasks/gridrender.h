@@ -92,9 +92,10 @@ private:
     void exec() override {
         Camera *camera = Camera::current();
 
-        Transform *t = camera->transform();
-        Vector3 cam = t->position();
+        Transform *transform = camera->transform();
+        Vector3 cam = transform->position();
         Vector3 pos(cam.x, 0.0f, cam.z);
+        uint32_t hash = transform->hash();
 
         Quaternion rot;
 
@@ -115,6 +116,7 @@ private:
         bool ortho = camera->orthographic();
         if(ortho) {
             float height = camera->orthoSize();
+            Mathf::hashCombine(hash, height);
 
             m_scale = 1.0f;
             while(m_scale < height * 0.01f) {
@@ -178,7 +180,7 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, t->hash());
+        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, hash);
         m_grid->setBool("ortho", &ortho);
         m_grid->setInteger("scale", &m_scale);
         m_grid->setFloat("width", &zoom);

@@ -76,11 +76,14 @@ void PipelineContext::draw(Camera *camera) {
 
 void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
     CommandBuffer *previousBuffer = m_buffer;
+    PipelineContext *previousContext = nullptr;
     Vector4 previousViewport;
     if(buffer) {
+        previousContext = buffer->context();
         previousViewport = buffer->viewport();
-        buffer->beginScissorScope();
         m_buffer = buffer;
+        m_buffer->beginScissorScope();
+        m_buffer->setPipelineContext(this);
     }
 
     analizeGraph();
@@ -121,6 +124,7 @@ void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
                                   static_cast<int32_t>(previousViewport.z),
                                   static_cast<int32_t>(previousViewport.w));
         }
+        m_buffer->setPipelineContext(previousContext);
         m_buffer->endScissorScope();
         m_buffer = previousBuffer;
     }
@@ -324,14 +328,13 @@ void PipelineContext::setDefaultTarget(RenderTarget *target) {
     Adds a \a texture buffer to the global textures in the command buffer.
 */
 void PipelineContext::addTextureBuffer(Texture *texture) {
-    m_buffer->setGlobalTexture(texture->name(), texture);
-    m_textureBuffers[texture->name()] = texture;
+    m_textureBuffers[Mathf::hashString(texture->name())] = texture;
 }
 /*!
-    Returns a texture buffer based on its \a name.
+    Returns a texture buffer based on its \a hash of name.
 */
-Texture *PipelineContext::textureBuffer(const TString &name) {
-    auto it = m_textureBuffers.find(name);
+Texture *PipelineContext::textureBuffer(int32_t hash) {
+    auto it = m_textureBuffers.find(hash);
     if(it != m_textureBuffers.end()) {
         return it->second;
     }
@@ -449,7 +452,7 @@ const std::list<PipelineTask *> &PipelineContext::renderTasks() const {
 StringList PipelineContext::renderTextures() const {
     StringList result;
     for(auto &it : m_textureBuffers) {
-        result.push_back(it.first);
+        result.push_back(it.second->name());
     }
 
     return result;

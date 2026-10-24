@@ -114,8 +114,6 @@ bool RenderGLSystem::init() {
 
     Texture::setMaxCubemapSize(texture);
 
-    CommandBufferGL::setInited();
-
     return RenderSystem::init();
 }
 /*!
@@ -125,8 +123,9 @@ void RenderGLSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PipelineContext *context = pipelineContext();
-    if(context && CommandBufferGL::isInited()) {
+    if(context) {
         CommandBufferGL *cmd = static_cast<CommandBufferGL *>(context->buffer());
+        cmd->setPipelineContext(context);
         cmd->begin();
 
         if(m_target == -1) {

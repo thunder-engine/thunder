@@ -25,6 +25,7 @@
 #include "resources/texturevk.h"
 #include "resources/computebuffervk.h"
 
+#include <pipelinecontext.h>
 #include <log.h>
 
 ComputeShaderVk::ComputeShaderVk() :
@@ -147,7 +148,7 @@ TString ComputeShaderVk::textureName(int32_t index) {
             return it.name;
         }
     }
-    return std::string();
+    return TString();
 }
 
 int32_t ComputeShaderVk::textureBinding(const TString &name) {
@@ -357,7 +358,7 @@ void ComputeInstanceVk::createDescriptors(CommandBufferVk &buffer, VkDescriptorS
                 TString name = m->textureName(binding.binding);
                 TextureVk *t = static_cast<TextureVk *>(texture(name));
                 if(t == nullptr) {
-                    t = static_cast<TextureVk *>(buffer.texture(name));
+                    t = static_cast<TextureVk *>(buffer.context()->textureBuffer(Mathf::hashString(name)));
                 }
 
                 VkDescriptorImageInfo imageInfo = {};

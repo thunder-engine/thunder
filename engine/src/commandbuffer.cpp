@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-static bool s_Inited = false;
-
 /*!
     \class CommandBuffer
     \brief Represents a command buffer used in a graphics rendering pipeline.
@@ -18,8 +16,9 @@ static bool s_Inited = false;
 */
 
 CommandBuffer::CommandBuffer() :
+        m_viewportRect(0.0f),
         m_target(nullptr),
-        m_viewportRect(0.0f) {
+        m_context(nullptr) {
     uint32_t size = Texture::maxTextureSize();
     m_global.params.x = 1.0f / (float)size;
 }
@@ -28,6 +27,18 @@ void CommandBuffer::begin() {
     m_global.params.y = Timer::time();
     m_global.params.z = Timer::deltaTime();
     m_global.params.w = 0.0f;
+}
+/*!
+    Returns pipeline context associated with this CommandBuffer.
+*/
+PipelineContext *CommandBuffer::context() {
+    return m_context;
+}
+/*!
+    Sets pipeline \a context associated with this CommandBuffer.
+*/
+void CommandBuffer::setPipelineContext(PipelineContext *context) {
+    m_context = context;
 }
 /*!
     Dispatches a compute \a shader with the specified workgroup dimensions.
@@ -65,18 +76,6 @@ void CommandBuffer::setRenderTarget(RenderTarget *target, uint32_t level) {
     m_target = target;
 }
 /*!
-    Returns true if the CommandBuffer is initialized; otherwise, false.
-*/
-bool CommandBuffer::isInited() {
-    return s_Inited;
-}
-/*!
-    \internal
-*/
-void CommandBuffer::setInited() {
-    s_Inited = true;
-}
-/*!
     Sets the \a view and \a projection matrices.
 */
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
@@ -90,38 +89,6 @@ void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projec
 */
 void CommandBuffer::setViewProjection(const Matrix4 &viewProjection) {
     m_global.cameraWorldToScreen = viewProjection;
-}
-/*!
-    Sets a global \a texture based on its \a name.
-*/
-void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            it.texture = texture;
-            return;
-        }
-    }
-
-    Material::TextureItem item;
-    item.name = name;
-    item.texture = texture;
-    item.binding = -1;
-    m_textures.push_back(item);
-}
-/*!
-    Retrieves a global texture based on its \a name.
-*/
-Texture *CommandBuffer::texture(const TString &name) const {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            return it.texture;
-        }
-    }
-    return nullptr;
 }
 /*!
     Begins a debug marker with the specified \a name.

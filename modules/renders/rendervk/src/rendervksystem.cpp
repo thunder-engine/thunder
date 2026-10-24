@@ -94,8 +94,6 @@ bool RenderVkSystem::init() {
 
     Texture::setMaxTextureSize(MAX_RESOLUTION);
 
-    CommandBufferVk::setInited();
-
     return RenderSystem::init();
 }
 /*!
@@ -105,8 +103,9 @@ void RenderVkSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PipelineContext *context = pipelineContext();
-    if(context && CommandBufferVk::isInited()) {
+    if(context) {
         CommandBufferVk *cmd = static_cast<CommandBufferVk *>(context->buffer());
+        cmd->setPipelineContext(context);
 
         VkCommandBuffer commadBuffer = VK_NULL_HANDLE;
 
