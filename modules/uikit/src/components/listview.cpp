@@ -51,7 +51,7 @@ void ListView::setRootIndex(const ModelIndex &index) {
     AbstractItemView::setRootIndex(index);
     clearSelection();
     m_firstVisibleIndex = 0;
-    if(m_content && m_content) {
+    if(m_content) {
         m_content->setPosition(Vector3(0.0f, 0.0f, 0.0f));
     }
     if(m_vScroll) {
