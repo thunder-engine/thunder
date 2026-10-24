@@ -25,6 +25,7 @@
 #include <cstring>
 
 #include <log.h>
+#include <pipelinecontext.h>
 
 ComputeShaderMt::ComputeShaderMt() :
         m_computePipeline(nullptr) {
@@ -146,12 +147,12 @@ bool ComputeInstanceMt::bind(CommandBufferMt *buffer, MTL::ComputeCommandEncoder
             uint8_t i = 0;
             for(auto &it : shader->textures()) {
                 Texture *tex = it.texture;
-                Texture *tmp = texture(it.name.data());
+                Texture *tmp = texture(it.name);
 
                 if(tmp) {
                     tex = tmp;
                 } else {
-                    tmp = buffer->texture(it.name.data());
+                    tmp = buffer->context()->textureBuffer(it.hash);
                     if(tmp) {
                         tex = tmp;
                     }

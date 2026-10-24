@@ -84,11 +84,7 @@ RenderMtSystem::~RenderMtSystem() {
 bool RenderMtSystem::init() {
     PROFILE_FUNCTION();
 
-    bool result = RenderSystem::init();
-
-    CommandBufferMt::setInited();
-
-    return result;
+    return RenderSystem::init();
 }
 /*!
     Main drawing procedure.
@@ -97,7 +93,7 @@ void RenderMtSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PipelineContext *context = pipelineContext();
-    if(context && CommandBufferMt::isInited()) {
+    if(context) {
         NS::AutoreleasePool *pool = NS::AutoreleasePool::alloc()->init();
         MTL::CommandBuffer *cmdMt = WrapperMt::queue()->commandBuffer();
         
