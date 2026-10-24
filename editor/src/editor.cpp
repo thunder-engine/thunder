@@ -59,18 +59,24 @@ LegacyDocumentModel *Editor::s_documentModel = nullptr;
 
 TString Editor::m_binPath;
 
-Editor::Editor(int argc, char *argv[]) {
-    if(argc > 0) {
-        Url url(argv[0]);
-        m_binPath = url.absoluteDir();
-    }
+Editor::Editor() {
+
 }
 
 Editor::~Editor() {
 
 }
 
-void Editor::init() {
+void Editor::init(int argc, char *argv[]) {
+    if(argc > 0) {
+        Url url(argv[0]);
+        m_binPath = url.absoluteDir();
+    }
+
+    Editor::plugins()->init(&Engine::instance());
+}
+
+void Editor::initDocumentSystem() {
     s_documentModel = new LegacyDocumentModel;
 
     for(auto &it : Editor::plugins()->extensions("gadget")) {
