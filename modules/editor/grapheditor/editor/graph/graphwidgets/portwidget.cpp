@@ -3,10 +3,7 @@
 #include "../graphnode.h"
 #include "../abstractnodegraph.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-#include <components/recttransform.h>
-#include <components/label.h>
+#include <label.h>
 
 #include <input.h>
 
@@ -49,13 +46,11 @@ void PortWidget::setNodePort(NodePort *port) {
     m_port = port;
     m_port->m_widget = this;
 
-    RectTransform *rect = rectTransform();
     if(m_knob) {
-        float knobSize = rect->size().y - 6.0f;
-        RectTransform *knobRect = m_knob->rectTransform();
-        knobRect->setBorder(0.0f);
-        knobRect->setSize(Vector2(port->m_call ? knobSize + 4 : knobSize, knobSize));
-        knobRect->setAnchors(Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f), Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f));
+        float knobSize = size().y - 6.0f;
+        m_knob->setBorder(0.0f);
+        m_knob->setSize(Vector2(port->m_call ? knobSize + 4 : knobSize, knobSize));
+        m_knob->setAnchors(Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f), Vector2(m_port->m_out ? 1.0f : 0.0f, 0.5f));
 
         if(port->m_call) {
             m_knob->setCorners(Vector4(knobSize * 0.1f, knobSize * 0.9f, knobSize * 0.9f, knobSize * 0.1f));
@@ -68,25 +63,18 @@ void PortWidget::setNodePort(NodePort *port) {
     // Create editor (only for inputs)
     if(!m_port->m_out) {
         if(m_editor) {
-            Widget *widget = m_editor->getComponent<Widget>();
-
-            RectTransform *widgetRect = widget->rectTransform();
-            widgetRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
-            widgetRect->setAnchors(Vector2(), Vector2(1.0f));
+            m_editor->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
+            m_editor->setAnchors(Vector2(), Vector2(1.0f));
         }
     }
 
-    m_label = Engine::composeActor<Label>(m_port->m_name, actor());
-    Label *label = m_label->getComponent<Label>();
-
-    RectTransform *labelRect = label->rectTransform();
-    labelRect->setSize(Vector2());
-    labelRect->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
-    labelRect->setAnchors(Vector2(0.0f), Vector2(1.0f));
-
-    label->setText(m_port->m_name);
-    label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
-    label->setColor(Vector4(1.0f));
+    m_label = Widget::createWidget<Label>(m_port->m_name, this);
+    m_label->setSize(Vector2());
+    m_label->setMargin(Vector4(0.0f, 10.0f, 0.0f, 10.0f));
+    m_label->setAnchors(Vector2(0.0f), Vector2(1.0f));
+    m_label->setText(m_port->m_name);
+    m_label->setAlign(Alignment::Middle | (m_port->m_out ? Alignment::Right : Alignment::Left));
+    m_label->setColor(Vector4(1.0f));
 
     portUpdate();
 }
@@ -133,12 +121,8 @@ void PortWidget::update(const Vector2 &pos) {
 void PortWidget::composeComponent() {
     Widget::composeComponent();
 
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-        rect->setPivot(Vector2(0.0f, 1.0f));
-    }
+    setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+    setPivot(Vector2(0.0f, 1.0f));
 
-    Actor *knob = Engine::composeActor<Frame>("Knob", actor());
-    m_knob = knob->getComponent<Frame>();
+    m_knob = Widget::createWidget<Frame>("Knob", this);
 }

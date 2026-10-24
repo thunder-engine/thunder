@@ -20,7 +20,6 @@
 #include "label.h"
 #include "frame.h"
 #include "canvas.h"
-#include "recttransform.h"
 
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -130,10 +129,9 @@ void LineEdit::draw() {
     const bool showingPlaceholder = m_text.isEmpty() && !m_placeholderText.isEmpty();
     const TString &displayText = showingPlaceholder ? m_placeholderText : m_text;
 
-    RectTransform *rect = rectTransform();
     if(m_textDirty && m_font && m_fontMaterial) {
         const Vector4 color = showingPlaceholder ? Vector4(0.6f, 0.6f, 0.6f, 1.0f) : m_textColor;
-        const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, color, rect->size()};
+        const Font::Settings settings = {m_fontSize, Alignment::Left | Alignment::Middle, 0, color, size()};
         m_font->composeMesh(m_textMesh, displayText, settings);
 
         m_fontMaterial->setTexture(gTexture, m_font->page());
@@ -143,10 +141,10 @@ void LineEdit::draw() {
 
     // Draw background
     Frame::draw();
-    canvas->setClipRegion(rect->clipRegion());
+    canvas->setClipRegion(clipRegion());
 
     const Vector3Vector &vertices = m_textMesh->vertices();
-    float cursorY = rect->size().y * 0.5f;
+    float cursorY = size().y * 0.5f;
     if(m_font && !m_text.isEmpty() && !vertices.empty()) {
         float minY = vertices.front().y;
         float maxY = minY;
@@ -169,20 +167,20 @@ void LineEdit::draw() {
             selectionTransform[12] = (start + end) * 0.5f;
             selectionTransform[13] = cursorY;
 
-            uint32_t hash = rect->hash();
+            uint32_t hash = LineEdit::hash();
             Mathf::hashCombine(hash, selectionTransform[12]);
             Mathf::hashCombine(hash, selectionTransform[13]);
             Mathf::hashCombine(hash, width);
-            m_selectionMaterial->setTransform(rect->worldTransform() * selectionTransform, 0, hash);
+            m_selectionMaterial->setTransform(worldTransform() * selectionTransform, 0, hash);
             canvas->drawMesh(PipelineContext::defaultPlane(), m_selectionMaterial);
         }
     }
     // Draw text
     if(m_fontMaterial && !displayText.isEmpty()) {
-        Matrix4 m(rect->worldTransform());
+        Matrix4 m(worldTransform());
         m[12] += m_textPosition;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = LineEdit::hash();
         Mathf::hashCombine(hash, m[12]);
 
         m_fontMaterial->setTransform(m, 0, hash);
@@ -195,7 +193,7 @@ void LineEdit::draw() {
 
         uint32_t hash;
         std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
-        m_cursorMaterial->setTransform(rect->worldTransform() * m_cursorTransform, 0, hash);
+        m_cursorMaterial->setTransform(worldTransform() * m_cursorTransform, 0, hash);
         canvas->drawRect(m_cursorMaterial, nullptr);
     }
     canvas->disableClip();
@@ -222,6 +220,16 @@ void LineEdit::setText(const TString &text) {
     recalcCursor();
     repaint();
 }
+
+void LineEdit::selectAll() {
+    m_selectionAnchor = 0;
+    m_cursorPosition = static_cast<int32_t>(m_text.toUtf32().size());
+    recalcCursor();
+    m_cursorVisible = true;
+    m_cursorBlinkCurrent = 0.0f;
+    repaint();
+}
+
 /*!
     Returns the font which will be used to draw a text.
 */
@@ -443,9 +451,8 @@ void LineEdit::update(const Vector2 &pos) {
                 if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
                     m_mouseSelecting = false;
                 } else {
-                    RectTransform *rect = rectTransform();
-                    Vector2 mousePosition = Input::mousePosition();
-                    Vector2 localPosition = rect->mapFromGlobal(mousePosition.x, mousePosition.y);
+                    Vector2 mousePosition = Widget::mousePosition();
+                    Vector2 localPosition = mapFromGlobal(mousePosition.x, mousePosition.y);
                     setCursorPosition(cursorPositionAt(localPosition.x), true);
                     breakCursorFlashing = true;
                 }
@@ -582,11 +589,8 @@ void LineEdit::composeComponent() {
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("");
 
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        rect->setSize(Vector2(100.0f, 30.0f));
-        rect->setPadding(Vector4(2.0f));
-    }
+    setSize(Vector2(100.0f, 30.0f));
+    setPadding(Vector4(2.0f));
 
     recalcCursor();
 }
@@ -597,13 +601,12 @@ void LineEdit::composeComponent() {
 void LineEdit::recalcCursor() {
     float pos = (m_cursorPosition > 0) ? cursorAt(m_cursorPosition) : 0.0f;
 
-    RectTransform *rect = rectTransform();
-    float padding = rect->padding().w;
+    float padding = LineEdit::padding().w;
     m_cursorTransform[12] = pos;
-    m_cursorTransform[13] = rect->size().y * 0.5f;
+    m_cursorTransform[13] = size().y * 0.5f;
     m_textPosition = padding;
 
-    float size = rect->clipRegion().z;
+    float size = clipRegion().z;
     float gap = pos + m_textPosition;
     if(gap > size) {
         m_textPosition += size - pos;

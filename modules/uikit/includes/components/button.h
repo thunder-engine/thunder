@@ -18,12 +18,12 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "abstractbutton.h"
+#include <abstractbutton.h>
 
 #include <font.h>
 
 class UIKIT_EXPORT Button : public AbstractButton {
-    A_OBJECT(Button, AbstractButton, Components/UI)
+    A_OBJECT(Button, AbstractButton, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Button::text, Button::setText),

@@ -15,14 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/checkbox.h"
+#include "checkbox.h"
 
-#include "components/canvas.h"
-#include "components/recttransform.h"
-
-#include <resources/material.h>
+#include "canvas.h"
 
 #include "stylesheet.h"
+
+#include <resources/material.h>
 
 namespace {
     const char *gOverride("mainTexture");
@@ -177,10 +176,7 @@ void CheckBox::setIndicatorSize(const Vector2 &size) {
 void CheckBox::setFoldMode(bool fold) {
     m_foldMode = fold;
     if(m_foldMode) {
-        RectTransform *rect = rectTransform();
-        if(rect) {
-            m_iconOffset = rect->size().x * 0.5f;
-        }
+        m_iconOffset = size().x * 0.5f;
     } else {
         m_iconOffset = 0.0f;
     }
@@ -202,15 +198,14 @@ void CheckBox::draw() {
             m_dirtyIcon = false;
         }
 
-        RectTransform *rect = rectTransform();
-        Vector2 size(rect->size());
+        Vector2 size(CheckBox::size());
 
-        Matrix4 mat(rect->worldTransform());
-        Vector2 scl(rect->worldScale());
+        Matrix4 mat(worldTransform());
+        Vector2 scl(worldScale());
         mat[12] += (size.x * 0.5f + m_iconOffset) * scl.x;
         mat[13] += size.y * 0.5f * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = CheckBox::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
         Mathf::hashCombine(hash, m_iconOffset);
@@ -263,10 +258,9 @@ void CheckBox::applyStyle() {
 void CheckBox::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = rectTransform();
-    rect->blockSignals(true);
-    rect->setSize(Vector2(16.0f));
-    rect->blockSignals(false);
+    blockSignals(true);
+    setSize(Vector2(16.0f));
+    blockSignals(false);
 }
 /*!
     \internal

@@ -15,13 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef MENUBARWIDGET_H
-#define MENUBARWIDGET_H
+#ifndef MENUBAR_H
+#define MENUBAR_H
 
-#include "widget.h"
+#include <widget.h>
 
-#include <os/menubar.h>
-
+#include <functional>
+#include <cstdint>
 #include <map>
 #include <vector>
 
@@ -30,9 +30,10 @@ class NativeMenu;
 class Button;
 class Canvas;
 class Menu;
+class Window;
 
 class UIKIT_EXPORT MenuBar : public Widget {
-    A_OBJECT(MenuBar, Widget, Components/UI)
+    A_OBJECT(MenuBar, Widget, UI)
 
     A_NOPROPERTIES()
     A_METHODS(
@@ -42,20 +43,40 @@ class UIKIT_EXPORT MenuBar : public Widget {
     A_NOENUMS()
 
 public:
+    class UIKIT_EXPORT MenuModel {
+    public:
+        void addAction(const TString &text, const std::function<void()> &handler = {});
+        size_t addCheckableAction(const TString &text, const std::function<void()> &handler = {},
+                                  bool checked = false);
+        void setActionChecked(size_t index, bool checked);
+        MenuModel *addMenu(const TString &title);
+        void addSeparator();
+
+    private:
+        friend class MenuBar;
+
+        MenuModel(MenuBar *owner, NativeMenu *menu);
+
+        MenuBar *m_owner;
+        NativeMenu *m_menu;
+    };
+
     MenuBar();
     ~MenuBar() override;
 
-    // The menu model must outlive this widget.
-    void setMenuBar(NativeMenuBar *menuBar);
-    NativeMenuBar *menuBar() const;
-    // Attaches this fallback widget to a Canvas on platforms without native menus.
-    bool attachToCanvas(Canvas *canvas);
+    MenuModel *addMenu(const TString &title);
+    bool isUsingNativeMenuBar() const;
+    // Attaches the widget to a Canvas and its native model to the window when supported.
+    bool attachToCanvas(Canvas *canvas, Window *window);
+    void detachFromWindow();
 
     void draw() override;
     void update(const Vector2 &position) override;
 
 private:
-    Menu *buildMenu(NativeMenu *model, Actor *parent, const TString &name);
+    MenuModel *createMenuModel(NativeMenu *menu);
+
+    Menu *buildMenu(NativeMenu *model, Widget *parent, const TString &name);
     void rebuild();
     void clearWidgets();
     void hideMenus();
@@ -65,7 +86,9 @@ private:
 
 private:
     NativeMenuBar *m_menuBar;
-    NativeMenuBar::ChangeSubscription m_changeSubscription;
+    Window *m_window;
+    std::vector<MenuModel *> m_menuModels;
+    std::uint64_t m_changeSubscription;
     std::vector<Button *> m_buttons;
     std::vector<Menu *> m_topMenus;
     std::map<Menu *, std::vector<std::pair<NativeMenu *, size_t>>> m_actionMap;
@@ -74,4 +97,4 @@ private:
     bool m_dirty;
 };
 
-#endif // MENUBARWIDGET_H
+#endif // MENUBAR_H

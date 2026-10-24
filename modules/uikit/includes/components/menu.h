@@ -22,8 +22,11 @@
 #include <frame.h>
 #include <action.h>
 
+class Mesh;
+class Material;
+
 class UIKIT_EXPORT Menu : public Frame {
-    A_OBJECT(Menu, Frame, Components/UI)
+    A_OBJECT(Menu, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Font *, font, Menu::font, Menu::setFont, "editor=Asset")
@@ -32,41 +35,43 @@ class UIKIT_EXPORT Menu : public Frame {
         A_SLOT(Menu::onActionChanged),
         A_SIGNAL(Menu::aboutToHide),
         A_SIGNAL(Menu::aboutToShow),
-        A_SIGNAL(Menu::triggered)
+        A_SIGNAL(Menu::triggered),
+        A_SIGNAL(Menu::actionTriggered)
     )
     A_NOENUMS()
 
     struct MenuItem {
         enum Type { Action, Separator, Submenu };
 
-        Type type = Action;
-        TString text;
-        TString shortcut;
+        MenuItem() :
+                type(Action),
+                label(),
+                action(nullptr),
+                submenu(nullptr),
+                iconMaterial(nullptr) {
+        }
 
-        ::Action *action = nullptr;
-        Sprite *icon = nullptr;
+        Type type;
+        TString label;
 
-        Menu *submenu = nullptr;
-
-        bool enabled = true;
-        bool hovered = false;
-        bool checkable = false;
-        bool checked = false;
+        ::Action *action;
+        Menu *submenu;
+        MaterialInstance *iconMaterial;
     };
 
 public:
     Menu();
     ~Menu();
 
-    void addAction(const TString &text, Sprite *icon = nullptr);
-    Action *addAction(Action *action, Sprite *icon = nullptr);
+    Action *addAction(const TString &text, Sprite *icon = nullptr, const TString &shortcut = TString());
+    Action *addAction(Action *action);
     void addSeparator();
-    void addSubmenu(const TString &text, Menu *submenu, Sprite *icon = nullptr);
+    void addSubmenu(const TString &text, Menu *submenu);
     void setItemState(int index, bool enabled, bool checkable, bool checked);
-    void setItemShortcut(int index, const TString &shortcut);
 
     void show(const Vector2 &position);
     void hide();
+    bool isVisible() const;
 
     TString itemText(int index);
     void setItemText(int index, const TString &text);
@@ -81,46 +86,72 @@ public: // signals
     void aboutToShow();
     void aboutToHide();
     void triggered(int);
+    void actionTriggered(Action *action);
 
 private:
+    friend class Canvas;
+
     void draw() override;
     void update(const Vector2 &pos) override;
+    bool isHovered(const Vector2 &pos) override;
+    bool onMouseDown(int x, int y) override;
 
     void updateSize();
+    void updateCheckIcons();
+    void updateArrowIcons();
+    void updateIconInstances(Sprite *sprite, MaterialInstance *material, ByteArray &buffer, bool checkedIcons);
+    void invalidateIconDraws();
+    bool hasActionIcons() const;
     bool containsMenuAt(const Vector2 &position);
     void onActionChanged();
 
     void composeComponent() override;
+    void boundChanged(const Vector2 &size) override;
 
     static void fontUpdated(int state, void *ptr);
+    static void checkSpriteUpdated(int state, void *ptr);
+    static void arrowSpriteUpdated(int state, void *ptr);
     static void materialUpdated(int state, void *ptr);
 
 private:
     std::vector<MenuItem> m_items;
 
-    Vector4 m_textColor = Vector4(1);
-    Vector4 m_selectionColor = Vector4(0.01f, 0.6f, 0.89f, 1.0f);
-    Vector4 m_separatorColor = Vector4(0.5f, 0.5f, 0.5f, 1.0f);
-    Vector2 m_iconSize = Vector2(16, 16);
+    Vector4 m_textColor;
+    Vector4 m_selectionColor;
+    Vector4 m_separatorColor;
+    Vector2 m_iconSize;
 
-    Font *m_font = nullptr;
+    Font *m_font;
+    Sprite *m_checkSprite;
+    Sprite *m_arrowSprite;
+
+    static Menu *m_currentMenu;
 
     Mesh *m_textMesh;
     MaterialInstance *m_textMaterial;
+    MaterialInstance *m_checkMaterial;
+    MaterialInstance *m_arrowMaterial;
+    Material *m_itemIconMaterial;
     MaterialInstance *m_selectionMaterial;
+    ByteArray m_checkInstanceBuffer;
+    ByteArray m_arrowInstanceBuffer;
 
-    int m_fontSize = 14;
+    int m_fontSize;
 
-    int m_hoveredIndex = -1;
-    int m_selectedIndex = -1;
-    Menu *m_openSubmenu = nullptr;
+    int m_hoveredIndex;
+    int m_selectedIndex;
+    Menu *m_openSubmenu;
+    uint32_t m_iconWorldHash;
 
-    float m_separatorHeight = 5.0f;
-    float m_rowHeight = 20.0f;
-    float m_minWidth = 100.0f;
+    float m_separatorHeight;
+    float m_rowHeight;
+    float m_minWidth;
 
-    bool m_hiding = false;
+    bool m_hiding;
     bool m_dirtyText;
+    bool m_dirtyCheckIcons;
+    bool m_dirtyArrowIcons;
+    bool m_visible;
 };
 
 #endif // MENU_H

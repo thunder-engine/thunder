@@ -25,12 +25,12 @@ class ItemViewDelegate;
 class MaterialInstance;
 
 class UIKIT_EXPORT TreeView : public AbstractItemView {
-    A_OBJECT(TreeView, AbstractItemView, Components/UI)
+    A_OBJECT(TreeView, AbstractItemView, UI)
 
     A_PROPERTIES(
         A_PROPERTY(int, rowHeight, TreeView::rowHeight, TreeView::setRowHeight),
         A_PROPERTY(int, indentation, TreeView::indentation, TreeView::setIndentation)
-        )
+    )
     A_NOMETHODS()
     A_NOENUMS()
 
@@ -39,12 +39,17 @@ public:
     ~TreeView();
 
     void setModel(AbstractItemModel *model) override;
+    bool edit(const ModelIndex &index) override;
 
     int rowHeight() const;
     void setRowHeight(int height);
 
     int indentation() const;
     void setIndentation(int indentation);
+
+    void refresh() override;
+    void expandToDepth(int depth);
+    void expandToIndex(const ModelIndex &index);
 
     ItemViewDelegate *delegate() const;
     void setDelegate(ItemViewDelegate *delegate);
@@ -58,6 +63,7 @@ protected:
     bool onKeyPress(KeyEvent *event) override;
 
     void update(const Vector2 &pos) override;
+    void updateSelectionVisuals() override;
     void composeComponent() override;
     void boundChanged(const Vector2 &size) override;
     void activateCurrentItem() override;
@@ -66,6 +72,8 @@ protected:
     void drawSub() override;
 
     Vector2 cellSize() const override;
+    ModelIndex modelIndexAtPosition(const Vector2 &position) override;
+    void onDragFinished(bool dropped) override;
 
 private:
     struct ItemData {

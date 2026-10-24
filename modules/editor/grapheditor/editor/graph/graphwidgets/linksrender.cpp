@@ -5,9 +5,7 @@
 #include "../abstractnodegraph.h"
 #include "../graphcontroller.h"
 
-#include <components/actor.h>
-#include <components/canvas.h>
-#include <components/recttransform.h>
+#include <canvas.h>
 
 #include <resources/material.h>
 
@@ -38,14 +36,17 @@ void LinksRender::setGraph(AbstractNodeGraph *graph) {
 */
 void LinksRender::update(const Vector2 &pos) {
     if(m_creationMesh && m_portWidget) {
-        RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
-        Vector2 parentScale(parentTransform->scale());
-        Vector2 parentSize(parentTransform->size());
+        Widget *parent = parentWidget();
+        if(!parent) {
+            return;
+        }
+        Vector2 parentScale(parent->scale());
+        Vector2 parentSize(parent->size());
 
         parentSize.x /= parentScale.x;
         parentSize.y /= parentScale.y;
 
-        Matrix4 worlToView(parentTransform->worldTransform().inverse());
+        Matrix4 worlToView(parent->worldTransform().inverse());
 
         Vector3Vector vertices;
         Vector2Vector uvs;
@@ -56,11 +57,11 @@ void LinksRender::update(const Vector2 &pos) {
 
         PortWidget *widget = dynamic_cast<PortWidget *>(m_portWidget);
         if(widget) {
-            RectTransform *rect = widget->knob()->rectTransform();
-            Matrix4 m(rect->worldTransform());
+            Widget *knob = widget->knob();
+            Matrix4 m(knob->worldTransform());
 
             Vector3 s, e;
-            s = e = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
+            s = e = worlToView * (m * Vector3(knob->size() * 0.5f, 0.0f));
 
             if(widget->port()->m_out) {
                 e = worlToView * Vector3(pos.x, pos.y, 0.0f);
@@ -79,11 +80,10 @@ void LinksRender::update(const Vector2 &pos) {
             }
 
             composeBezierLink(s, e, vertices, uvs, colors, indices);
-        } else {
-            RectTransform *rect = m_portWidget->rectTransform();
-            Matrix4 m(rect->worldTransform());
+        } else if(m_portWidget) {
+            Matrix4 m(m_portWidget->worldTransform());
 
-            Vector3 s(worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f)));
+            Vector3 s(worlToView * (m * Vector3(m_portWidget->size() * 0.5f, 0.0f)));
             s.x -= parentSize.x * 0.5f;
             s.y -= parentSize.y * 0.5f;
 
@@ -109,8 +109,7 @@ void LinksRender::update(const Vector2 &pos) {
     \internal
 */
 void LinksRender::draw() {
-    Transform *t = rectTransform();
-    m_material->setTransform(t->worldTransform(), 0, t->hash());
+    m_material->setTransform(worldTransform(), 0, hash());
 
     Canvas *canvas = LinksRender::canvas();
 
@@ -145,14 +144,17 @@ void LinksRender::composeLinks() {
     Vector4Vector colors;
     IndexVector indices;
 
-    RectTransform *parentTransform = static_cast<RectTransform *>(static_cast<Actor *>(actor()->parent())->transform());
-    Vector2 parentScale(parentTransform->scale());
-    Vector2 parentSize(parentTransform->size());
+    Widget *parent = parentWidget();
+    if(!parent) {
+        return;
+    }
+    Vector2 parentScale(parent->scale());
+    Vector2 parentSize(parent->size());
 
     parentSize.x /= parentScale.x;
     parentSize.y /= parentScale.y;
 
-    Matrix4 worlToView(parentTransform->worldTransform().inverse());
+    Matrix4 worlToView(parent->worldTransform().inverse());
 
     for(auto it : m_graph->links()) {
         bool state = false;
@@ -160,15 +162,15 @@ void LinksRender::composeLinks() {
         if(it->oport) {
             PortWidget *widget = static_cast<PortWidget *>(it->oport->m_widget);
             if(widget) {
-                RectTransform *rect = widget->knob()->rectTransform();
-                Matrix4 m(rect->worldTransform());
-                s = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
+                Widget *knob = widget->knob();
+                Matrix4 m(knob->worldTransform());
+                s = worlToView * (m * Vector3(knob->size() * 0.5f, 0.0f));
             }
         } else {
             state = true;
-            RectTransform *rect = static_cast<NodeWidget *>(it->sender->widget())->rectTransform();
-            Matrix4 m(rect->worldTransform());
-            s = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
+            Widget *widget = it->sender->widget();
+            Matrix4 m(widget->worldTransform());
+            s = worlToView * (m * Vector3(widget->size() * 0.5f, 0.0f));
         }
 
         s.x -= parentSize.x * 0.5f;
@@ -178,18 +180,18 @@ void LinksRender::composeLinks() {
         if(it->iport) {
             PortWidget *widget = static_cast<PortWidget *>(it->iport->m_widget);
             if(widget) {
-                RectTransform *rect = widget->knob()->rectTransform();
-                Matrix4 m(rect->worldTransform());
-                e = worlToView * (m * Vector3(rect->size() * 0.5f, 0.0f));
+                Widget *knob = widget->knob();
+                Matrix4 m(knob->worldTransform());
+                e = worlToView * (m * Vector3(knob->size() * 0.5f, 0.0f));
 
                 e.x -= parentSize.x * 0.5f;
                 e.y -= parentSize.y * 0.5f;
             }
         } else {
             state = true;
-            RectTransform *rect = static_cast<NodeWidget *>(it->receiver->widget())->rectTransform();
-            Matrix4 m(rect->worldTransform());
-            Vector3 h(rect->size() * 0.5f, 0.0f);
+            Widget *widget = it->receiver->widget();
+            Matrix4 m(widget->worldTransform());
+            Vector3 h(widget->size() * 0.5f, 0.0f);
             e = worlToView * (m * h);
 
             e.x -= parentSize.x * 0.5f;

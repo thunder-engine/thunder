@@ -15,12 +15,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/progressbar.h"
+#include "progressbar.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
-
-#include <components/actor.h>
+#include "canvas.h"
 
 #include <resources/material.h>
 
@@ -204,14 +201,13 @@ void ProgressBar::setProgressImage(Sprite *image) {
 void ProgressBar::draw() {
     Frame::draw();
 
-    RectTransform *rect = rectTransform();
     if(m_dirtyProgress) {
         if(m_progressImage && m_imageProgress) {
             delete m_progressMesh;
             m_progressMesh = Engine::objectCreate<Mesh>();
             m_progressMesh->makeDynamic();
 
-            Vector2 size(rect->size());
+            Vector2 size(ProgressBar::size());
             m_progressImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
 
             m_imageProgress->setTexture(gOverride, m_progressImage->texture());
@@ -221,7 +217,7 @@ void ProgressBar::draw() {
 
     Canvas *canvas = Frame::canvas();
 
-    Vector4 clip = rect->clipRegion();
+    Vector4 clip = clipRegion();
     if(m_orientation == Horizontal) {
         clip.z = clip.z / (m_to - m_from) * m_value;
     } else {
@@ -230,14 +226,14 @@ void ProgressBar::draw() {
 
     canvas->setClipRegion(clip);
     if(m_progressImage && m_imageProgress && m_progressMesh) {
-        Matrix4 mat(rect->worldTransform());
+        Matrix4 mat(worldTransform());
 
         const Vector3Vector &verts(m_progressMesh->vertices());
-        Vector2 scl(rect->worldScale());
+        Vector2 scl(worldScale());
         mat[12] -= verts[0].x * scl.x;
         mat[13] -= verts[0].y * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = ProgressBar::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
@@ -245,7 +241,7 @@ void ProgressBar::draw() {
 
         canvas->drawMesh(m_progressMesh, m_imageProgress);
     } else if(m_frameProgress) {
-        canvas->drawRect(m_frameProgress, rect);
+        canvas->drawRect(m_frameProgress, this);
     }
     canvas->disableClip();
 }
@@ -258,7 +254,7 @@ void ProgressBar::composeComponent() {
 
     setValue(0.5f);
 
-    rectTransform()->setSize(Vector2(100.0f, 20.0f));
+    setSize(Vector2(100.0f, 20.0f));
 }
 
 void ProgressBar::materialUpdated(int state, void *ptr) {

@@ -20,7 +20,7 @@
 #include "image.h"
 #include "label.h"
 #include "listview.h"
-#include "recttransform.h"
+#include "abstractitemview.h"
 
 #include <abstractitemmodel.h>
 #include <algorithm>
@@ -40,6 +40,14 @@ void ItemViewDelegate::bind(AbstractItemView *view, const ModelIndex &index) {
     m_modelIndex = index;
 
     updateData(view);
+}
+
+bool ItemViewDelegate::beginEditing(AbstractItemView *view) {
+    if(!view || !m_label || !m_modelIndex.isValid() ||
+       !(m_modelIndex.model()->flags(m_modelIndex) & AbstractItemModel::ItemIsEditable)) {
+        return false;
+    }
+    return view->beginEditing(m_modelIndex, m_label);
 }
 
 int ItemViewDelegate::index() const {
@@ -81,15 +89,21 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
 
     bool showIcon = false;
     if(m_icon == nullptr) {
-        m_icon = actor()->findChild<Image *>();
+        m_icon = findChild<Image *>();
     }
 
     Vector2 cellSize;
     if(view) {
         cellSize = view->cellSize();
     }
-    bool iconMode = view && view->iconPosition() == AbstractItemView::TextUnderIcon;
-    Vector2 iconSize(cellSize.x > 0.0f ? cellSize.x : 32.0f);
+    ListView *listView = dynamic_cast<ListView *>(view);
+    bool iconMode = view && (view->iconPosition() == AbstractItemView::TextUnderIcon ||
+                             (listView && listView->viewMode() == ListView::IconMode));
+    float iconExtent = cellSize.x > 0.0f ? cellSize.x : 32.0f;
+    if(iconMode) {
+        iconExtent = std::max(1.0f, std::min(cellSize.x - 8.0f, cellSize.y - 28.0f));
+    }
+    Vector2 iconSize(iconExtent);
 
     if(m_icon) {
         Variant value = m_modelIndex.model()->data(m_modelIndex, AbstractItemModel::DecorationRole);
@@ -100,19 +114,16 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
                 m_icon->setSprite(icon);
                 m_icon->setEnabled(showIcon);
 
-                RectTransform *rect = m_icon->rectTransform();
-                if(rect) {
-                    if(iconMode) {
-                        rect->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
-                        rect->setPivot(Vector2(0.5f, 1.0f));
-                        rect->setPosition(Vector3(0.0f, -2.0f, 0.0f));
-                    } else {
-                        rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
-                        rect->setPivot(Vector2(0.0f, 0.5f));
-                        rect->setPosition(Vector3(2.0f, 0.0f, 0.0f));
-                    }
-                    rect->setSize(iconSize);
+                if(iconMode) {
+                    m_icon->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
+                    m_icon->setPivot(Vector2(0.5f, 1.0f));
+                    m_icon->setPosition(Vector3(0.0f, -2.0f, 0.0f));
+                } else {
+                    m_icon->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
+                    m_icon->setPivot(Vector2(0.0f, 0.5f));
+                    m_icon->setPosition(Vector3(2.0f, 0.0f, 0.0f));
                 }
+                m_icon->setSize(iconSize);
             }
         }
     }
@@ -122,38 +133,38 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
     }
 
     if(m_label == nullptr) {
-        m_label = actor()->findChild<Label *>();
+        m_label = findChild<Label *>();
         onHierarchyUpdated();
     }
     if(m_label) {
+        m_label->setVisible(true);
         m_label->setText(m_modelIndex.model()->data(m_modelIndex, AbstractItemModel::DisplayRole).toString());
+        if(iconMode) {
+            m_label->setAlign(Alignment::Center | Alignment::Bottom);
+        } else {
+            m_label->setAlign(Alignment::Left | Alignment::Middle);
+        }
 
         float textWidth = m_label->textWidth();
         float contentOffset = showIcon ? iconSize.x + 4.0f : 2.0f;
         float totalWidth = std::max(contentOffset + textWidth + 2.0f, std::max(cellSize.x, 1.0f));
 
-        RectTransform *rect = m_label->rectTransform();
-        if(rect) {
-            if(iconMode) {
-                rect->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
-                rect->setPivot(Vector2(0.5f, 1.0f));
-                rect->setPosition(Vector3(0.0f, -(cellSize.y + 4.0f), 0.0f));
-                rect->setSize(Vector2(std::min(textWidth, std::max(cellSize.x, 1.0f)), 16.0f));
-            } else {
-                rect->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
-                rect->setPivot(Vector2(0.0f, 0.5f));
-                rect->setPosition(Vector3(contentOffset, 0, 0));
-                rect->setSize(Vector2(totalWidth, std::max(cellSize.y, 1.0f)));
-            }
+        if(iconMode) {
+            m_label->setAnchors(Vector2(0.5f, 1.0f), Vector2(0.5f, 1.0f));
+            m_label->setPivot(Vector2(0.5f, 1.0f));
+            m_label->setPosition(Vector3(0.0f, -(iconSize.y + 4.0f), 0.0f));
+            m_label->setSize(Vector2(std::max(cellSize.x - 4.0f, 1.0f), 16.0f));
+        } else {
+            m_label->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
+            m_label->setPivot(Vector2(0.0f, 0.5f));
+            m_label->setPosition(Vector3(contentOffset, 0, 0));
+            m_label->setSize(Vector2(totalWidth, std::max(cellSize.y, 1.0f)));
         }
 
-        RectTransform *delegateRect = rectTransform();
-        if(delegateRect) {
-            if(iconMode) {
-                delegateRect->setSize(Vector2(std::max(cellSize.x, 1.0f), std::max(cellSize.y, 1.0f)));
-            } else {
-                delegateRect->setSize(Vector2(totalWidth, std::max(cellSize.y, 1.0f)));
-            }
+        if(iconMode) {
+            setSize(Vector2(std::max(cellSize.x, 1.0f), std::max(cellSize.y, 1.0f)));
+        } else {
+            setSize(Vector2(totalWidth, std::max(cellSize.y, 1.0f)));
         }
     }
 }
@@ -161,25 +172,18 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
 void ItemViewDelegate::composeComponent() {
     Widget::composeComponent();
 
-    Actor *iconActor = Engine::composeActor<Image>("icon", actor());
-    m_icon = iconActor->getComponent<Image>();
+    m_icon = Widget::createWidget<Image>("icon", this);
     if(m_icon) {
-        RectTransform *rect = m_icon->rectTransform();
-        if(rect) {
-            rect->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
-            rect->setPivot(Vector2(0, 0.5f));
-            rect->setPosition(Vector3(2, 0, 0));
-        }
+        m_icon->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
+        m_icon->setPivot(Vector2(0, 0.5f));
+        m_icon->setPosition(Vector3(2, 0, 0));
     }
 
-    Actor *labelActor = Engine::composeActor<Label>("label", actor());
-    m_label = labelActor->getComponent<Label>();
+    m_label = Widget::createWidget<Label>("label", this);
     if(m_label) {
-        RectTransform *rect = m_label->rectTransform();
-        if(rect) {
-            rect->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
-            rect->setPivot(Vector2(0, 0.5f));
-        }
+        m_label->setAnchors(Vector2(0, 0.5f), Vector2(0, 0.5f));
+        m_label->setPivot(Vector2(0, 0.5f));
+
         m_label->setAlign(Alignment::Left | Alignment::Middle);
         m_label->setWordWrap(false);
         m_label->setClip(true);

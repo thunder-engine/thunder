@@ -18,11 +18,11 @@
 #ifndef ABSTRACTSCROLLAREA_H
 #define ABSTRACTSCROLLAREA_H
 
-#include "frame.h"
-#include "scrollbar.h"
+#include <frame.h>
+#include <scrollbar.h>
 
 class UIKIT_EXPORT AbstractScrollArea : public Frame {
-    A_OBJECT(AbstractScrollArea, Frame, Components/UI)
+    A_OBJECT(AbstractScrollArea, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(ScrollBar *, verticalScrollBar, AbstractScrollArea::verticalScrollBar, AbstractScrollArea::setVerticalScrollBar, "editor=Component"),

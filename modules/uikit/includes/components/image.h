@@ -18,7 +18,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <sprite.h>
 #include <material.h>
@@ -28,7 +28,7 @@ class Texture;
 class MaterialInstance;
 
 class UIKIT_EXPORT Image : public Widget {
-    A_OBJECT(Image, Widget, Components/UI)
+    A_OBJECT(Image, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Material *, material, Image::material, Image::setMaterial, "editor=Asset"),
@@ -82,8 +82,6 @@ protected:
 
 protected:
     Vector4 m_color;
-
-    Vector2 m_size;
 
     Mesh *m_mesh;
 

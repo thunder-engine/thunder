@@ -18,7 +18,7 @@
 #ifndef ABSTRACTSLIDER_H
 #define ABSTRACTSLIDER_H
 
-#include "widget.h"
+#include <widget.h>
 
 class UIKIT_EXPORT AbstractSlider : public Widget {
     A_OBJECT(AbstractSlider, Widget, General)
@@ -61,6 +61,8 @@ public: // signals
 
 protected:
     void update(const Vector2 &pos) override;
+    bool onMouseDown(int x, int y) override;
+    bool onMouseUp(int x, int y) override;
 
 protected:
     int m_value;
@@ -74,6 +76,7 @@ protected:
     float m_areaGap;
 
     bool m_hovered;
+    bool m_mousePressed = false;
 
 };
 

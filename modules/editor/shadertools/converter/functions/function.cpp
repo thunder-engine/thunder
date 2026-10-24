@@ -195,11 +195,10 @@ TString ShaderNode::typeToString(int type) {
 }
 
 void ShaderNode::switchPreview() {
-    Actor *p = m_preview->actor();
-    p->setEnabled(!p->isEnabled());
+    m_preview->setVisible(!m_preview->isVisible());
 
     ShaderGraph *graph = static_cast<ShaderGraph *>(GraphNode::graph());
-    graph->setPreviewVisible(this, p->isEnabled());
+    graph->setPreviewVisible(this, m_preview->isVisible());
 
     m_nodeWidget->raise();
 }
@@ -213,39 +212,33 @@ Widget *ShaderNode::widget() {
         if(graph) {
             Texture *preview = graph->preview(this);
             if(preview) {
-                Actor *actor = Engine::composeActor<Image>("Preview", result->actor());
-                m_preview = actor->getComponent<Image>();
+                m_preview = Widget::createWidget<Image>("Preview", result);
                 if(m_preview) {
                     m_preview->setTexture(preview);
                     m_preview->setDrawMode(SpriteRender::Simple);
-
-                    RectTransform *r = m_preview->rectTransform();
-                    r->setSize(Vector2(preview->width(), preview->height()));
-                    r->setPivot(Vector2(0.0, 1.0f));
+                    m_preview->setSize(Vector2(preview->width(), preview->height()));
+                    m_preview->setPivot(Vector2(0.0, 1.0f));
                 }
-                actor->setEnabled(false);
+                if(m_preview) {
+                    m_preview->setEnabled(false);
+                }
 
-                Actor *title = result->actor();
-                for(auto it : title->getChildren()) {
-                    if(it->name() == "Header") {
-                        title = static_cast<Actor *>(it);
+                Widget *title = result;
+                for(Widget *child : result->childWidgets()) {
+                    if(child->name() == "Header") {
+                        title = child;
                     }
                 }
 
-                Actor *icon = Engine::composeActor<Button>("PreviewBtn", title);
-                m_previewBtn = icon->getComponent<Button>();
+                m_previewBtn = Widget::createWidget<Button>("PreviewBtn", title);
                 m_previewBtn->setIconSize(Vector2(16.0f, 8.0f));
                 m_previewBtn->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+                m_previewBtn->setSize(Vector2(16.0f));
+                m_previewBtn->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
+                m_previewBtn->setPivot(Vector2(1.0f, 0.5f));
+                m_previewBtn->setPosition(Vector3(-8.0f, 0.0f, 0.0f));
 
                 Object::connect(m_previewBtn, _SIGNAL(clicked()), this, _SLOT(switchPreview()));
-
-                RectTransform *previewRect = m_previewBtn->rectTransform();
-                if(previewRect) {
-                    previewRect->setSize(Vector2(16.0f));
-                    previewRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
-                    previewRect->setPivot(Vector2(1.0f, 0.5f));
-                    previewRect->setPosition(Vector3(-8.0f, 0.0f, 0.0f));
-                }
             }
         }
     }

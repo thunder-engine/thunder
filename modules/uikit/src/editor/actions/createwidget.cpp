@@ -17,7 +17,6 @@
 */
 #include "createwidget.h"
 
-#include <actor.h>
 #include "components/widget.h"
 
 CreateWidget::CreateWidget(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group) :
@@ -50,12 +49,12 @@ void CreateWidget::redo() {
     }
 
     Widget *root = m_controller->root();
-    Object *parent = root->actor();
+    Object *parent = root;
     if(!m_controller->selected().empty()) {
         parent = m_controller->selected().front();        
     }
 
-    Object *object = Engine::composeActor(m_type, m_type, parent);
+    Object *object = Widget::createWidget(m_type, m_type, parent);
     if(object) {
         m_objects.push_back(object->uuid());
     }

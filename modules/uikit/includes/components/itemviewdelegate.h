@@ -36,6 +36,7 @@ public:
     ~ItemViewDelegate();
 
     virtual void bind(AbstractItemView *view, const ModelIndex &index);
+    bool beginEditing(AbstractItemView *view);
 
     int index() const;
     const ModelIndex &modelIndex() const;

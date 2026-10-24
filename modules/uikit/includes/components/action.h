@@ -18,17 +18,19 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "widget.h"
+#include <widget.h>
 
-#include <functional>
+class Sprite;
 
-class UIKIT_EXPORT Action : public Widget {
-    A_OBJECT(Action, Widget, Components/UI)
+class UIKIT_EXPORT Action : public Object {
+    A_OBJECT(Action, Object, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Action::text, Action::setText),
+        A_PROPERTY(bool, enabled, Action::isEnabled, Action::setEnabled),
         A_PROPERTY(bool, checkable, Action::isCheckable, Action::setCheckable),
         A_PROPERTY(bool, checked, Action::isChecked, Action::setChecked),
+        A_PROPERTYEX(Sprite *, icon, Action::icon, Action::setIcon, "editor=Asset"),
         A_PROPERTY(int, shortcut, Action::shortcut, Action::setShortcut),
         A_PROPERTY(int, shortcutModifiers, Action::shortcutModifiers, Action::setShortcutModifiers)
     )
@@ -39,8 +41,6 @@ class UIKIT_EXPORT Action : public Widget {
     A_NOENUMS()
 
 public:
-    using TriggeredHandler = std::function<void()>;
-
     enum ShortcutModifier {
         Shift = 0x0001,
         Control = 0x0002,
@@ -49,11 +49,13 @@ public:
     };
 
     Action();
-    ~Action() override = default;
+    ~Action() override;
 
     TString text() const;
     void setText(const TString &text);
-    void setEnabled(bool enabled) override;
+
+    bool isEnabled() const;
+    void setEnabled(bool enabled);
 
     bool isCheckable() const;
     void setCheckable(bool checkable);
@@ -61,24 +63,31 @@ public:
     bool isChecked() const;
     void setChecked(bool checked);
 
+    Sprite *icon() const;
+    void setIcon(Sprite *icon);
+
     int shortcut() const;
     void setShortcut(int key);
+    bool setShortcutText(const TString &shortcut);
 
     int shortcutModifiers() const;
     void setShortcutModifiers(int modifiers);
     TString shortcutText() const;
 
-    void setTriggeredHandler(const TriggeredHandler &handler);
     void trigger();
 
     void triggered();
     void changed();
 
 private:
+    static void iconUpdated(int state, void *ptr);
+
+private:
     TString m_text;
-    TriggeredHandler m_handler;
+    Sprite *m_icon;
     int m_shortcut;
     int m_shortcutModifiers;
+    bool m_enabled;
     bool m_checkable;
     bool m_checked;
 };

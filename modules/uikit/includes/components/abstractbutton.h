@@ -18,7 +18,7 @@
 #ifndef ABSTRACTBUTTON_H
 #define ABSTRACTBUTTON_H
 
-#include "frame.h"
+#include <frame.h>
 
 class MaterialInstance;
 
@@ -68,6 +68,8 @@ protected:
     void updateBackgroundColor(const Vector4 &color);
 
     void update(const Vector2 &pos) override;
+    bool onMouseDown(int x, int y) override;
+    bool onMouseUp(int x, int y) override;
 
     virtual void checkStateSet();
 
@@ -83,6 +85,7 @@ protected:
     bool m_checkable;
     bool m_checked;
     bool m_exclusive;
+    bool m_pressed = false;
 
 };
 

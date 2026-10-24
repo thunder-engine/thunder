@@ -2,11 +2,7 @@
 
 #include "../nodegroup.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-
-#include <components/label.h>
-#include <components/recttransform.h>
+#include <label.h>
 
 #include <resources/material.h>
 #include <resources/font.h>
@@ -33,8 +29,7 @@ void GroupWidget::setSize(const Vector2 &size) {
     NodeGroup *node = static_cast<NodeGroup *>(m_node);
     node->setWidth(size.x);
     node->setHeight(size.y);
-    RectTransform *rect = rectTransform();
-    rect->setSize(size);
+    NodeWidget::setSize(size);
 }
 
 void GroupWidget::update(const Vector2 &pos) {
@@ -53,9 +48,8 @@ void GroupWidget::update(const Vector2 &pos) {
         if(hover && Input::isMouseButtonDown(0)) {
             emitSignal(_SIGNAL(pressed()));
         } else {
-            RectTransform *r = rectTransform();
-            Vector3 worldPos = r->worldPosition();
-            Vector2 size = r->size();
+            Vector3 worldPos = worldPosition();
+            Vector2 size = GroupWidget::size();
 
             Vector2 lb(worldPos.x, worldPos.y);
             Vector2 lt(worldPos.x, worldPos.y + size.y);
@@ -116,7 +110,7 @@ void GroupWidget::update(const Vector2 &pos) {
                         }
                     }
 
-                    r->setPosition(worldPos);
+                    setPosition(worldPos);
                     setSize(size);
                 }
             } else if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
@@ -135,14 +129,13 @@ void GroupWidget::composeComponent() {
 
     setBackgroundColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
 
-    Actor *header = Engine::composeActor<Frame>("Header", actor());
+    Frame *header = Widget::createWidget<Frame>("Header", this);
     if(header) {
-        m_header = header->getComponent<Frame>();
+        m_header = header;
         if(m_header) {
-            RectTransform *rect = m_header->rectTransform();
-            rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
-            rect->setSize(Vector2(0, row));
-            rect->setPivot(Vector2(0.0f, 1.0f));
+            m_header->setAnchors(Vector2(0.0f, 1.0f), Vector2(1.0f, 1.0f));
+            m_header->setSize(Vector2(0, row));
+            m_header->setPivot(Vector2(0.0f, 1.0f));
 
             Vector4 corn(corners());
             corn.x = corn.y = 0.0f;
@@ -150,7 +143,7 @@ void GroupWidget::composeComponent() {
             m_header->setCorners(corn);
             m_header->setBorderColor(Vector4());
 
-            m_title = Engine::objectCreate<Label>("Title", header);
+            m_title = Widget::createWidget<Label>("Title", header);
             if(m_title) {
                 m_title->lower();
                 m_title->setFontSize(32);

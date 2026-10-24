@@ -18,10 +18,9 @@
 #include "widgetcontroller.h"
 
 #include "components/widget.h"
-#include "components/recttransform.h"
 
 #include <components/camera.h>
-#include <components/actor.h>
+#include <components/transform.h>
 
 #include <viewport/handles.h>
 #include <editor/editorplatform.h>
@@ -58,9 +57,9 @@ void WidgetController::clear(bool signal) {
 Object::ObjectList WidgetController::selected() {
     Object::ObjectList result;
 
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
-    if(actor) {
-        result.push_back(actor);
+    Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_selected));
+    if(widget) {
+        result.push_back(widget);
     }
 
     return result;
@@ -80,8 +79,8 @@ void WidgetController::resize(int32_t width, int32_t height) {
 
 void WidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
-        Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
-        if(actor) {
+        Widget *widget = dynamic_cast<Widget *>(Engine::findObject(it));
+        if(widget) {
             m_selected = it;
             break;
         }
@@ -114,10 +113,8 @@ void WidgetController::drawHandles() {
         m_widgetTool->update(false, true, Input::isKey(Input::KEY_LEFT_CONTROL));
     }
 
-    RectTransform *rect = m_rootObject->rectTransform();
-
-    Vector2 size(rect->size());
-    Vector3 position(size * rect->pivot(), 0.0f);
+    Vector2 size(m_rootObject->size());
+    Vector3 position(size * m_rootObject->pivot(), 0.0f);
 
     Gizmos::drawWireRectangle(position, size, Handles::s_yColor);
 }
@@ -151,9 +148,9 @@ void WidgetController::update() {
             if(!m_canceled) {
                 uint32_t id = 0;
                 if(focusWidget) {
-                    id = focusWidget->actor()->uuid();
+                    id = focusWidget->uuid();
                     if(focusWidget->isSubWidget()) {
-                        id = focusWidget->parentWidget()->actor()->uuid();
+                        id = focusWidget->parentWidget()->uuid();
                     }
                 }
                 onSelectActor(id);
@@ -183,7 +180,7 @@ void WidgetController::update() {
         if(Input::isKeyDown(Input::KEY_DELETE)) {
             bool isRoot = false;
             for(auto it : selected()) {
-                if(it == root()->actor()) {
+                if(it == root()) {
                     isRoot = true;
                 }
             }
@@ -195,10 +192,9 @@ void WidgetController::update() {
 }
 
 void WidgetController::cameraMove(const Vector3 &delta) {
-    RectTransform *rect = m_rootObject->rectTransform();
-    rect->setPosition(rect->position() + Vector3(m_mouseDelta, 0.0f));
+    m_rootObject->setPosition(m_rootObject->position() + Vector3(m_mouseDelta, 0.0f));
 
-    m_widgetTool->setTranslation(rect->position(), rect->scale());
+    m_widgetTool->setTranslation(m_rootObject->position(), m_rootObject->scale());
 
     Transform *cameraTransform = m_activeCamera->transform();
     cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());
@@ -213,8 +209,7 @@ void WidgetController::cameraZoom(float delta) {
 
     m_zoom = zoom;
 
-    RectTransform *rect = m_rootObject->rectTransform();
-    Vector3 world(m_activeCamera->unproject(rect->position()));
+    Vector3 world(m_activeCamera->unproject(m_rootObject->position()));
 
     Transform *cameraTransform = m_activeCamera->transform();
 
@@ -229,10 +224,10 @@ void WidgetController::cameraZoom(float delta) {
 
     m_lastZoom = center;
 
-    rect->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
-    rect->setScale(Vector3(scale, scale, 1.0f));
+    m_rootObject->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
+    m_rootObject->setScale(Vector3(scale, scale, 1.0f));
 
-    m_widgetTool->setTranslation(rect->position(), rect->scale());
+    m_widgetTool->setTranslation(m_rootObject->position(), m_rootObject->scale());
 }
 
 void WidgetController::setDrag(bool drag) {
@@ -243,9 +238,9 @@ void WidgetController::setDrag(bool drag) {
 }
 
 void WidgetController::copySelected() {
-    Actor *actor = dynamic_cast<Actor *>(Engine::findObject(m_selected));
-    if(actor) {
-        m_copyData = Engine::toVariant(actor);
+    Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_selected));
+    if(widget) {
+        m_copyData = Engine::toVariant(widget);
         emit copied();
     }
 }

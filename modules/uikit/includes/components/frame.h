@@ -18,7 +18,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <sprite.h>
 
@@ -26,7 +26,7 @@ class Mesh;
 class MaterialInstance;
 
 class UIKIT_EXPORT Frame : public Widget {
-    A_OBJECT(Frame, Widget, Components/UI)
+    A_OBJECT(Frame, Widget, UI)
 
     A_PROPERTIES(
         A_PROPERTY(Vector4, corners, Frame::corners, Frame::setCorners),
@@ -73,6 +73,8 @@ protected:
 
     MaterialInstance *m_imageMaterial;
     MaterialInstance *m_frameMaterial;
+
+    float m_materialHeight;
 
     bool m_dirtyBackground;
 

@@ -2,8 +2,6 @@
 
 #include <pugixml.hpp>
 
-#include <components/recttransform.h>
-
 #include <editor/assetconverter.h>
 
 #include "abstractnodegraph.h"
@@ -93,9 +91,8 @@ void GraphNode::setPosition(const Vector2 &position) {
 
 Widget *GraphNode::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor<NodeWidget>(name());
-        if(nodeActor) {
-            NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
+        NodeWidget *nodeWidget = Widget::createWidget<NodeWidget>(name());
+        if(nodeWidget) {
             nodeWidget->setGraphNode(this);
 
             m_nodeWidget = nodeWidget;

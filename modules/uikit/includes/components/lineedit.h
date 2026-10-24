@@ -26,7 +26,7 @@ class Label;
 class Sprite;
 
 class UIKIT_EXPORT LineEdit : public Frame {
-    A_OBJECT(LineEdit, Frame, Components/UI)
+    A_OBJECT(LineEdit, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, LineEdit::text, LineEdit::setText),
@@ -48,6 +48,7 @@ public:
 
     TString text() const;
     void setText(const TString &text);
+    void selectAll();
 
     TString placeholderText() const;
     void setPlaceholderText(const TString &text);
