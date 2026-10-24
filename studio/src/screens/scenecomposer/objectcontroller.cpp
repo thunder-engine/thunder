@@ -1,0 +1,706 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#include "objectcontroller.h"
+
+#include <components/world.h>
+#include <components/actor.h>
+#include <components/transform.h>
+#include <components/camera.h>
+#include <components/armature.h>
+#include <components/animator.h>
+#include <components/effectrender.h>
+
+#include <resources/map.h>
+#include <resources/texture.h>
+#include <resources/rendertarget.h>
+
+#include <viewport/viewport.h>
+#include <viewport/handles.h>
+
+#include <pipelinetask.h>
+#include <pipelinecontext.h>
+#include <commandbuffer.h>
+#include <input.h>
+#include <log.h>
+#include <url.h>
+
+#include <message.h>
+
+#include "tools/selecttool.h"
+#include "tools/movetool.h"
+#include "tools/rotatetool.h"
+#include "tools/scaletool.h"
+#include "tools/transformtool.h"
+#include "tools/spline/splinetool.h"
+
+#include "actions/selectobjects.h"
+#include "actions/deleteobjects.h"
+#include "actions/createobject.h"
+
+#include "config.h"
+
+#include <editor/assetmanager.h>
+#include <editor/projectsettings.h>
+#include <editor/editorsettings.h>
+
+namespace  {
+    const char *gBackgroundColor("Viewport/Background_Color");
+    const char *gIsolationColor("Viewport/Isolation_Color");
+
+}
+
+class ViewportRaycast : public PipelineTask {
+    A_OBJECT(ViewportRaycast, PipelineTask, Editor)
+
+    A_METHODS(
+        A_SLOT(ViewportRaycast::onApplySettings)
+    )
+
+public:
+    ViewportRaycast() :
+            m_objectId(0),
+            m_depth(Engine::objectCreate<Texture>()),
+            m_resultTexture(Engine::objectCreate<Texture>()),
+            m_resultTarget(Engine::objectCreate<RenderTarget>("viewportRaycast")),
+            m_controller(nullptr) {
+
+        m_resultTexture->setFormat(Texture::RGBA8);
+        m_resultTexture->setFlags(Texture::Render | Texture::Feedback);
+
+        m_depth->setFormat(Texture::Depth);
+        m_depth->setDepthBits(24);
+        m_depth->setFlags(Texture::Render | Texture::Feedback);
+
+        m_resultTarget->setColorAttachment(0, m_resultTexture);
+        m_resultTarget->setDepthAttachment(m_depth);
+        m_resultTarget->setFlags(RenderTarget::ClearColor | RenderTarget::ClearDepth);
+    }
+
+    void exec() override {
+        CommandBuffer *buffer = m_context->buffer();
+        buffer->beginDebugMarker("ViewportRaycast");
+
+        buffer->setRenderTarget(m_resultTarget);
+
+        if(!m_controller->isPickingBlocked() && !m_controller->isPickingOverlaped()) {
+            RenderList filtered;
+            for(auto it : m_context->culledRenderables()) {
+                if(it->actor()->flags() & Actor::Selectable) {
+                    filtered.push_back(it);
+                }
+            }
+
+            Renderable::GroupList list;
+            Renderable::filterByLayer(filtered, list, Material::Visibility);
+
+            Renderable::GroupList groups;
+            Renderable::group(list, groups);
+
+            for(auto &it : groups) {
+                if(it.count > 1) {
+                    it.instance->setInstanceBuffer(&it.buffer);
+                }
+                buffer->drawMesh(it.mesh, it.subMesh, Material::Visibility, *it.instance);
+                it.instance->setInstanceBuffer(nullptr);
+            }
+
+            Camera *activeCamera = m_controller->activeCamera();
+
+            Vector4 mousePosition(m_controller->viewportMousePosition());
+
+            m_resultTexture->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+            m_objectId = m_resultTexture->getPixel(0, 0, 0);
+
+            if(m_objectId) {
+                Vector3 screen(mousePosition.z, mousePosition.w, 0.0f);
+
+                m_depth->readPixels(int32_t(mousePosition.x), int32_t(mousePosition.y), 1, 1);
+                int pixel = m_depth->getPixel(0, 0, 0);
+                memcpy(&screen.z, &pixel, sizeof(float));
+                m_mouseWorld = activeCamera->unproject(screen);
+            } else {
+                Ray ray = activeCamera->castRay(mousePosition.z, mousePosition.w);
+                m_mouseWorld = (ray.dir * 10.0f) + ray.pos;
+            }
+        } else {
+            m_objectId = 0;
+        }
+
+        for(auto it : m_dragList) {
+            it->update();
+            m_context->culledRenderables().push_back(it);
+        }
+
+        buffer->endDebugMarker();
+    }
+
+    void resize(int32_t width, int32_t height) override {
+        m_resultTexture->resize(width, height);
+        m_depth->resize(width, height);
+    }
+
+    void setDragObjects(const Object::ObjectList &list) {
+        m_dragList.clear();
+        for(auto it : list) {
+            auto result = it->findChildren<Renderable *>();
+
+            m_dragList.insert(m_dragList.end(), result.begin(), result.end());
+        }
+    }
+
+    void setController(ObjectController *ctrl) {
+        m_controller = ctrl;
+    }
+
+    uint32_t objectId() const {
+        return m_objectId;
+    }
+
+    Vector3 mouseWorld() const {
+        return m_mouseWorld;
+    }
+
+    void onApplySettings() {
+        m_controller->onApplySettings();
+    }
+
+private:
+    Vector3 m_mouseWorld;
+
+    std::list<Renderable *> m_dragList;
+
+    uint32_t m_objectId;
+
+    Texture *m_depth;
+    Texture *m_resultTexture;
+
+    RenderTarget *m_resultTarget;
+
+    ObjectController *m_controller;
+
+};
+
+ObjectController::ObjectController() :
+        CameraController(),
+        m_isolatedPrefab(nullptr),
+        m_activeTool(nullptr),
+        m_rayCast(nullptr),
+        m_editor(nullptr),
+        m_viewport(nullptr),
+        m_axes(0),
+        m_drag(false),
+        m_canceled(false),
+        m_local(false) {
+
+    connect(this, _SIGNAL(sceneUpdated(Object*)), this, _SLOT(onUpdated(Object*)));
+
+    Editor::settings()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
+    Editor::settings()->registerValue(gIsolationColor, Vector4(0.0f, 0.3f, 0.55f, 0.0f), "editor=Color");
+
+    m_tools = {
+        new SelectTool(this),
+        new MoveTool(this),
+        new RotateTool(this),
+        new ScaleTool(this),
+        new SplineTool(this),
+        new TransformTool(this),
+    };
+}
+
+ObjectController::~ObjectController() {
+    for(auto it : m_tools) {
+        delete it;
+    }
+}
+
+void ObjectController::init(SceneComposer *editor, Viewport *viewport) {
+    m_editor = editor;
+    m_viewport = viewport;
+    PipelineContext *pipeline = viewport ? viewport->pipelineContext() : nullptr;
+    if(!pipeline || pipeline->renderTasks().empty()) {
+        aError() << "Unable to initialize SceneComposer picking without a render pipeline.";
+        return;
+    }
+
+    m_rayCast = new ViewportRaycast;
+    m_rayCast->setController(this);
+
+    Object::connect(Editor::settings(), _SIGNAL(updated()), m_rayCast, _SLOT(onApplySettings()));
+
+    pipeline->insertRenderTask(m_rayCast, pipeline->renderTasks().back());
+}
+
+Vector4 ObjectController::viewportMousePosition() const {
+    if(!m_viewport) {
+        return Vector4();
+    }
+
+    Vector4 position(Input::mousePosition());
+    Vector2 localPosition(m_viewport->mapFromGlobal(position.x, position.y));
+    return Vector4(localPosition.x,
+                   localPosition.y,
+                   localPosition.x / MAX(m_screenSize.x, 1.0f),
+                   localPosition.y / MAX(m_screenSize.y, 1.0f));
+}
+
+void ObjectController::update() {
+    CameraController::update();
+
+    if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
+        if(m_drag) {
+            if(m_activeTool) {
+                m_activeTool->cancelControl();
+            }
+
+            setDrag(false);
+            m_canceled = true;
+            emitSceneUpdated(nullptr);
+        }
+    }
+
+    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
+        if(!m_drag) {
+            if(Handles::s_Axes) {
+                m_axes = Handles::s_Axes;
+                setDrag(true);
+            }
+        }
+    }
+
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        if(!m_drag) {
+            if(!m_canceled) {
+                onSelectActor(m_objectsList, Input::isKey(Input::KEY_LEFT_CONTROL));
+            } else {
+                m_canceled = false;
+            }
+        } else {
+            if(m_activeTool) {
+                m_activeTool->endControl();
+            }
+        }
+
+        setDrag(false);
+    }
+
+    Vector4 pos(viewportMousePosition());
+    m_mousePosition = Vector2(pos.x, pos.y);
+
+    if(Input::isMouseButton(Input::MOUSE_LEFT)) {
+        if(m_drag) {
+            emitSceneUpdated(nullptr);
+        }
+    } else {
+        setDrag(false);
+    }
+
+    for(auto &it : m_selected) {
+        updateComponents(it.object);
+    }
+}
+
+void ObjectController::updateComponents(Actor *parent) {
+    for(auto it : parent->getChildren()) {
+        Actor *actor = dynamic_cast<Actor *>(it);
+        if(actor) {
+            updateComponents(actor);
+        } else {
+            NativeBehaviour *behaviour = dynamic_cast<NativeBehaviour *>(it);
+            if(behaviour) {
+                if(dynamic_cast<Armature *>(it) || dynamic_cast<Animator *>(it) || dynamic_cast<EffectRender *>(it)) {
+                    behaviour->update();
+                }
+            }
+        }
+    }
+}
+
+void ObjectController::drawHandles() {
+    m_objectsList.clear();
+
+    Vector3 screen = Vector3(m_mousePosition.x / m_screenSize.x, m_mousePosition.y / m_screenSize.y, 0.0f);
+    Handles::s_Mouse = Vector2(screen.x, screen.y);
+    Handles::s_Screen = m_screenSize;
+
+    if(!m_drag) {
+        Handles::s_Axes = m_axes;
+    }
+
+    if(m_isolatedPrefab) {
+        setActiveRootObject(m_isolatedPrefab->actor());
+    } else {
+        setActiveRootObject(Engine::world());
+    }
+
+    CameraController::drawHandles();
+
+    if(!m_selected.empty()) {
+        if(m_activeTool) {
+            m_activeTool->update(false, m_local, Input::isKey(Input::KEY_LEFT_CONTROL));
+        }
+    }
+
+    if(m_mousePosition.x >= 0.0f && m_mousePosition.y >= 0.0f &&
+       m_mousePosition.x < m_screenSize.x && m_mousePosition.y < m_screenSize.y) {
+
+        if(m_rayCast) {
+            uint32_t result = m_rayCast->objectId();
+            if(m_objectsList.empty() && result) {
+                m_objectsList = { result };
+            }
+            m_mouseWorld = m_rayCast->mouseWorld();
+        }
+    }
+}
+
+void ObjectController::clear(bool signal) {
+    m_selected.clear();
+    if(signal) {
+        emitObjectsSelected(selected());
+    }
+}
+
+Scene *ObjectController::scene() const {
+    return Engine::world()->activeScene();
+}
+
+void ObjectController::setDrag(bool drag) {
+    if(drag && m_activeTool) {
+        m_activeTool->beginControl();
+    }
+    m_drag = drag;
+    if(!m_drag) {
+        m_axes = 0;
+    }
+}
+
+void ObjectController::copySelected() {
+    VariantList list(dumpSelected());
+
+    if(!list.empty()) {
+        m_copyData = list;
+        emitCopied();
+    }
+}
+
+VariantList ObjectController::dumpSelected() const {
+    VariantList list;
+    for(auto &it : m_selected) {
+        if(it.object) {
+            list.push_back(Engine::toVariant(it.object, true));
+        }
+    }
+
+    return list;
+}
+
+void ObjectController::onApplySettings() {
+    if(m_activeCamera) {
+        m_activeCamera->setColor(Editor::settings()->value(m_isolatedPrefab ? gIsolationColor : gBackgroundColor).toVector4());
+    }
+}
+
+void ObjectController::onPrefabCreated(uint32_t clone) {
+    Scene *scene = nullptr;
+    bool swapped = false;
+    Object *object = Engine::findObject(clone);
+    if(object) {
+        uint32_t uuid = object->clonedFrom();
+        for(auto &it : m_selected) {
+            if(it.uuid == uuid) {
+                it.object = static_cast<Actor *>(object);
+                it.uuid = object->uuid();
+                scene = it.object->scene();
+                swapped = true;
+                break;
+            }
+        }
+    }
+    if(swapped) {
+        emitObjectsSelected(selected());
+        emitSceneUpdated(scene);
+    }
+}
+
+Object::ObjectList ObjectController::selected() {
+    std::list<Object *> result;
+    for(auto &it : m_selected) {
+        if(it.object) {
+            result.push_back(it.object);
+        }
+    }
+    return result;
+}
+
+void ObjectController::select(Object &object) {
+    m_objectsList = {object.uuid()};
+}
+
+bool ObjectController::setIsolatedPrefab(Prefab *prefab) {
+    if(m_isolatedPrefab) {
+        Actor *actor = m_isolatedPrefab->actor();
+        if(actor) {
+            actor->setParent(m_isolatedPrefab);
+        }
+    }
+
+    m_isolatedPrefab = prefab;
+    if(m_isolatedPrefab) {
+        m_isolatedPrefab->setModified(false);
+        m_isolationSelectedBackup = selected();
+        Actor *actor = m_isolatedPrefab->actor();
+        if(actor) {
+            onSelectActor({actor});
+
+            float bottom;
+            setFocusOn(actor, bottom);
+
+            blockMovement(true);
+            setFree(false);
+        } else {
+            return false;
+        }
+    } else {
+        std::list<uint32_t> local;
+        for(auto &it : m_isolationSelectedBackup) {
+            local.push_back(it->uuid());
+        }
+        clear(false);
+        selectActors(local);
+
+        blockMovement(false);
+        setFree(true);
+    }
+
+    onApplySettings();
+
+    return true;
+}
+
+void ObjectController::selectActors(const std::list<uint32_t> &list) {
+    for(auto it : list) {
+        Actor *actor = dynamic_cast<Actor *>(Engine::findObject(it));
+        if(actor) {
+            SelectTool::Select data;
+            data.object = actor;
+            data.uuid = actor->uuid();
+            m_selected.push_back(data);
+        }
+    }
+    emitObjectsSelected(selected());
+}
+
+void ObjectController::onSelectActor(const std::list<uint32_t> &list, bool additive) {
+    if(!isPickingBlocked() && !isPickingOverlaped()) {
+        bool changed = list.size() != m_selected.size();
+        if(!changed) {
+            for(auto it : list) {
+                bool found = false;
+                for(auto &s : m_selected) {
+                    if(it == s.uuid) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    changed = true;
+                }
+            }
+
+            if(!changed) {
+                return;
+            }
+        }
+
+        std::list<uint32_t> local = list;
+        if(additive) {
+            for(auto &it : m_selected) {
+                local.push_back(it.uuid);
+            }
+        }
+
+        undoRedo()->push(new SelectObjects(local, this));
+    }
+}
+
+void ObjectController::onSelectActor(Object::ObjectList list, bool additive) {
+    std::list<uint32_t> local;
+    for(auto it : list) {
+        local.push_back(it->uuid());
+    }
+    onSelectActor(local, additive);
+}
+
+void ObjectController::onRemoveActor(Object::ObjectList objects) {
+    undoRedo()->push(new DeleteObjects(objects, this));
+}
+
+void ObjectController::onChangeTool(EditorTool *tool) {
+    if(tool && std::find(m_tools.begin(), m_tools.end(), tool) != m_tools.end()) {
+        m_activeTool = tool;
+        blockPicking(m_activeTool->blockSelection());
+        SplineTool *splineTool = dynamic_cast<SplineTool *>(m_activeTool);
+        /// \todo return this
+        //emitShowToolPanel(splineTool ? splineTool->panel(m_editor->actor()) : nullptr);
+    }
+}
+
+void ObjectController::onUpdated(Object *object) {
+    Scene *scene = dynamic_cast<Scene *>(object);
+    if(scene) {
+        scene->setModified(true);
+    } else {
+        Prefab *prefab = dynamic_cast<Prefab *>(object);
+        if(prefab) {
+            prefab->setModified(true);
+            if(prefab != m_isolatedPrefab) {
+                m_editor->saveIsolated(prefab);
+            }
+        }
+    }
+}
+
+void ObjectController::onCreateComponent(const TString &type) {
+    TString typeName(type);
+    UndoCommand *group = new UndoCommand(TString("Create Component ") + typeName);
+    bool created = false;
+    bool alreadyExists = false;
+
+    for(Object *object : selected()) {
+        Actor *actor = dynamic_cast<Actor *>(object);
+        if(actor && actor->component(typeName) == nullptr) {
+            new CreateObject(TString("c.") + typeName, actor, Vector3(), this, group);
+            created = true;
+        } else if(actor) {
+            alreadyExists = true;
+        }
+    }
+
+    if(created) {
+        undoRedo()->push(group);
+    } else {
+        delete group;
+    }
+
+    if(alreadyExists && !created) {
+        Message msgBox;
+        msgBox.setIcon(Message::Warning);
+        msgBox.setText("Creation Component Failed");
+        msgBox.setInformativeText(TString("Component with type \"%1\" already defined for the selected actors.").arg(typeName));
+        msgBox.setStandardButtons(Message::Ok);
+        msgBox.exec();
+    }
+}
+
+void ObjectController::onUpdateSelected() {
+    emitObjectsSelected(selected());
+}
+
+void ObjectController::onDropAsset(const TString &path, bool additive) {
+    AssetManager *mgr = Editor::assets();
+    if(mgr->assetTypeName(path) == Map::metaClass()->name()) {
+        emitDropMap(path, additive);
+        return;
+    }
+
+    Actor *actor = mgr->createActor(path);
+    if(!actor) {
+        return;
+    }
+
+    Object *parent = m_isolatedPrefab ? static_cast<Object *>(m_isolatedPrefab->actor()) :
+            static_cast<Object *>(Engine::world()->activeScene());
+    if(!parent) {
+        aWarning() << "Unable to drop an asset without an active scene.";
+        delete actor;
+        return;
+    }
+    actor->setName(findFreeObjectName(Url(path).baseName(), parent));
+    undoRedo()->push(new CreateObject(Engine::reference(actor->prefab()), parent, m_mouseWorld, this));
+    delete actor;
+}
+
+void ObjectController::emitCopied() {
+    emitSignal(_SIGNAL(copied()));
+}
+
+void ObjectController::emitSceneUpdated(Object *object) {
+    emitSignal(_SIGNAL(sceneUpdated(Object *)), Variant::fromValue(object));
+}
+
+void ObjectController::emitObjectsSelected(const Object::ObjectList &objects) {
+    //emitSignal(_SIGNAL(objectsSelected(Object::ObjectList)), objects);
+}
+
+void ObjectController::emitPropertyChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
+    //emitSignal(_SIGNAL(propertyChanged(Object::ObjectList,TString,Variant)), objects, property, value);
+}
+
+void ObjectController::emitDropMap(const TString &map, bool additive) {
+    emitSignal(_SIGNAL(dropMap(TString,bool)), map, additive);
+}
+
+void ObjectController::emitShowToolPanel(Widget *panel) {
+    emitSignal(_SIGNAL(showToolPanel(Widget *)), Variant::fromValue(panel));
+}
+
+TString ObjectController::findFreeObjectName(const TString &name, Object *parent) {
+    TString newName = name;
+    if(!newName.isEmpty()) {
+        Object *o = parent->find(parent->name() + "/" + newName);
+        if(o != nullptr) {
+            std::string number;
+            while(isdigit(newName.back())) {
+                number.insert(0, 1, newName.back());
+                newName.removeLast();
+            }
+            int32_t i = atoi(number.c_str());
+            i++;
+            while(parent->find(parent->name() + "/" + newName + std::to_string(i)) != nullptr) {
+                i++;
+            }
+            return (newName + std::to_string(i));
+        }
+        return newName;
+    }
+    return "Object";
+}
+
+void ObjectController::getClones(Object::ObjectList &list, uint32_t uuid, const Object *parent) {
+    for(auto it : parent->getChildren()) {
+        if(it->clonedFrom() == uuid) {
+            list.push_back(it);
+        } else {
+            getClones(list, uuid, it);
+        }
+    }
+}
+
+TString ObjectController::pathTo(Object *object, Object *root) {
+    TString result;
+    Object *parent = object;
+    while(parent != nullptr) {
+        result = parent->name() + (result.isEmpty() ? "" : (TString("/") + result));
+        if(parent == root) {
+            break;
+        }
+        parent = parent->parent();
+    }
+
+    return result;
+}

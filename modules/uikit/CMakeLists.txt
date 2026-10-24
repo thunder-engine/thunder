@@ -17,16 +17,14 @@ set(${PROJECT_NAME}_incPaths
     "includes"
     "includes/resources"
     "includes/components"
-    "includes/editor"
-    "includes/editor/tools"
     "../../common"
     "../../engine/includes"
     "../../engine/includes/resources"
     "../../engine/includes/components"
-    "../../editor/includes"
     "../../thirdparty/next/inc"
     "../../thirdparty/next/inc/math"
     "../../thirdparty/next/inc/core"
+    "../../thirdparty/next/inc/os"
     "../../thirdparty/pugixml/src"
     "../../thirdparty/cssparser/include"
 )
@@ -40,22 +38,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../.. FILES ${${PROJECT_NAME}_srcF
 
 # Dynamic Library
 if(desktop)
-    set(CMAKE_AUTOUIC ON)
-
-    file(GLOB ${PROJECT_NAME}_ui
-        "src/editor/*.ui"
-    )
-
-    set(RESOURCES
-        src/editor/uieditor.qrc
-    )
-
-    file(GLOB MOC_HEADERS
-        "includes/converters/*.h"
-        "includes/editor/*.h"
-        "includes/editor/tools/*.h"
-    )
-
     # This path is only needed on the BSDs
     if(UNIX AND NOT APPLE AND NOT LINUX)
         set(${PROJECT_NAME}_incPaths
@@ -66,29 +48,13 @@ if(desktop)
         )
     endif()
 
-    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
-    QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
-    file(GLOB EDITOR_SOURCES
-        "src/converters/*.cpp"
-        "src/editor/*.cpp"
-        "src/editor/tools/*.cpp"
-        "src/editor/actions/*.cpp"
-    )
-
     add_library(${PROJECT_NAME}-editor SHARED
-        ${MOC_SRCS}
-        ${UI_HEADERS}
-        ${RES_SOURCES}
         ${${PROJECT_NAME}_srcFiles}
-        ${EDITOR_SOURCES}
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
         next-editor
         engine-editor
-        editor
         Qt::Core
         Qt::Gui
         Qt::Widgets
@@ -154,6 +120,8 @@ if(desktop)
         "includes/resources/uidocument.h"
         DESTINATION "${INC_PATH}/engine"
     )
+
+    add_subdirectory(formeditor)
 
 endif()
 

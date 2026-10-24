@@ -1,0 +1,44 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#ifndef DELETEOBJECTS_H
+#define DELETEOBJECTS_H
+
+#include "../objectcontroller.h"
+
+class DeleteObjects : public UndoCommand {
+public:
+    DeleteObjects(const Object::ObjectList &objects, ObjectController *ctrl, const TString &name = "Delete Actors", UndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
+
+    Object *getRoot(Object *object, uint32_t originRoot) const;
+
+protected:
+    VariantList m_dump;
+
+    std::list<uint32_t> m_objects;
+    std::unordered_map<uint32_t, uint32_t> m_cloneCache;
+    std::unordered_map<uint32_t, int32_t> m_positions;
+
+    ObjectController *m_controller;
+
+    uint32_t m_prefab;
+
+};
+
+#endif // DELETEOBJECTS_H
