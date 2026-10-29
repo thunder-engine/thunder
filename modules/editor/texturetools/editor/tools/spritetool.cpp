@@ -69,31 +69,37 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     bool isDrag = m_controller->isDrag();
     Input::CursorShape shape = Input::CURSOR_ARROW;
 
+    const float height = static_cast<float>(m_controller->height());
+
     m_currentPoint = m_controller->world();
 
     TextureImportSettings::Element element;
 
     TString selected(m_controller->selectedElement());
     for(auto &it : m_settings->elements()) {
+        TextureImportSettings::Element ed = it.second;
+        ed.min.y = height - it.second.max.y;
+        ed.max.y = height - it.second.min.y;
+
         AABBox rect;
-        rect.setBox(Vector3(it.second.min, 0.0f), Vector3(it.second.max, 0.0f));
+        rect.setBox(Vector3(ed.min, 0.0f), Vector3(ed.max, 0.0f));
 
         if(m_controller->isSelected(it.first)) {
-            Vector3 tl0(it.second.min.x, it.second.max.y - it.second.borderMax.y, 0.0f);
-            Vector3 tr0(it.second.max.x, it.second.max.y - it.second.borderMax.y, 0.0f);
-            Vector3 bl0(it.second.min.x, it.second.min.y + it.second.borderMin.y, 0.0f);
-            Vector3 br0(it.second.max.x, it.second.min.y + it.second.borderMin.y, 0.0f);
+            Vector3 tl0(ed.min.x, ed.max.y - ed.borderMax.y, 0.0f);
+            Vector3 tr0(ed.max.x, ed.max.y - ed.borderMax.y, 0.0f);
+            Vector3 bl0(ed.min.x, ed.min.y + ed.borderMin.y, 0.0f);
+            Vector3 br0(ed.max.x, ed.min.y + ed.borderMin.y, 0.0f);
 
-            Vector3 tl1(it.second.min.x + it.second.borderMin.x, it.second.max.y, 0.0f);
-            Vector3 tr1(it.second.max.x - it.second.borderMax.x, it.second.max.y, 0.0f);
-            Vector3 bl1(it.second.min.x + it.second.borderMin.x, it.second.min.y, 0.0f);
-            Vector3 br1(it.second.max.x - it.second.borderMax.x, it.second.min.y, 0.0f);
+            Vector3 tl1(ed.min.x + ed.borderMin.x, ed.max.y, 0.0f);
+            Vector3 tr1(ed.max.x - ed.borderMax.x, ed.max.y, 0.0f);
+            Vector3 bl1(ed.min.x + ed.borderMin.x, ed.min.y, 0.0f);
+            Vector3 br1(ed.max.x - ed.borderMax.x, ed.min.y, 0.0f);
 
-            Gizmos::drawLines({tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0, 1, 2, 3, 4, 5, 6, 7}, Handles::s_yColor);
+            Gizmos::drawLines({tr0, tl0, br0, bl0, tr1, br1, tl1, bl1}, {0,1,2,3,4,5,6,7}, Handles::s_yColor);
 
             AABBox sub;
-            sub.setBox(Vector3(it.second.min.x + it.second.borderMin.x, it.second.min.y + it.second.borderMin.y, 0.0f),
-                       Vector3(it.second.max.x - it.second.borderMax.x, it.second.max.y - it.second.borderMax.y, 0.0f));
+            sub.setBox(Vector3(ed.min.x + ed.borderMin.x, ed.min.y + ed.borderMin.y, 0.0f),
+                       Vector3(ed.max.x - ed.borderMax.x, ed.max.y - ed.borderMax.y, 0.0f));
 
             int axis;
 
@@ -120,12 +126,12 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
             if(isDrag) {
                 Vector3 delta(m_currentPoint - m_savedPoint);
 
-                Vector2 min(it.second.min);
-                Vector2 max(it.second.max);
+                Vector2 min(ed.min);
+                Vector2 max(ed.max);
 
                 if(m_useBorder) {
-                    min = it.second.borderMin;
-                    max = it.second.borderMax;
+                    min = Vector2(ed.borderMin.x, ed.borderMin.y);
+                    max = Vector2(ed.borderMax.x, ed.borderMax.y);
                 }
 
                 if(axes == (Handles::TOP | Handles::BOTTOM | Handles::LEFT | Handles::RIGHT)) {
@@ -152,18 +158,28 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
                 }
 
                 if(m_useBorder) {
-                    Vector2 size(it.second.max - it.second.min);
+                    Vector2 size(ed.max - ed.min);
 
-                    it.second.borderMin.x = CLAMP(min.x, 0.0f, size.x);
-                    it.second.borderMin.y = CLAMP(min.y, 0.0f, size.y - max.y);
+                    ed.borderMin.x = CLAMP(min.x, 0.0f, size.x);
+                    ed.borderMin.y = CLAMP(min.y, 0.0f, size.y - max.y);
 
-                    it.second.borderMax.x = CLAMP(max.x, 0.0f, size.x - min.x);
-                    it.second.borderMax.y = CLAMP(max.y, 0.0f, size.y);
+                    ed.borderMax.x = CLAMP(max.x, 0.0f, size.x - min.x);
+                    ed.borderMax.y = CLAMP(max.y, 0.0f, size.y);
+
+                    it.second.borderMin.x = ed.borderMin.x;
+                    it.second.borderMin.y = ed.borderMin.y;
+                    it.second.borderMax.x = ed.borderMax.x;
+                    it.second.borderMax.y = ed.borderMax.y;
                 } else {
-                    it.second.min.x = MAX(min.x, 0.0f);
-                    it.second.min.y = MAX(min.y, 0.0f);
-                    it.second.max.x = MIN(max.x, m_controller->width());
-                    it.second.max.y = MIN(max.y, m_controller->height());
+                    ed.min.x = MAX(min.x, 0.0f);
+                    ed.min.y = MAX(min.y, 0.0f);
+                    ed.max.x = MIN(max.x, m_controller->width());
+                    ed.max.y = MIN(max.y, height);
+
+                    it.second.min.x = ed.min.x;
+                    it.second.max.x = ed.max.x;
+                    it.second.min.y = height - ed.max.y;
+                    it.second.max.y = height - ed.min.y;
                 }
 
                 m_controller->updated();
@@ -206,8 +222,10 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 
             Vector3 world = m_controller->world();
             for(auto &it : m_settings->elements()) {
+                float yMin = height - it.second.max.y;
+                float yMax = height - it.second.min.y;
                 if(it.second.min.x < world.x && it.second.max.x > world.x &&
-                   it.second.min.y < world.y && it.second.max.y > world.y) {
+                    yMin < world.y && yMax > world.y) {
                     key = it.first;
                     break;
                 }
@@ -229,7 +247,6 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(isDrag && !selected.isEmpty()) {
             cancelControl();
-
             m_controller->undoRedo()->push(new UpdateSprite(element, m_controller));
         }
 
@@ -238,20 +255,23 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 
         if(selected.isEmpty() && m_currentPoint != m_startPoint) {
             TextureImportSettings::Element element;
-            element.min = Vector2(MIN(m_startPoint.x, m_currentPoint.x), MIN(m_startPoint.y, m_currentPoint.y));
-            element.max = Vector2(MAX(m_startPoint.x, m_currentPoint.x), MAX(m_startPoint.y, m_currentPoint.y));
+
+            float xmin = MIN(m_startPoint.x, m_currentPoint.x);
+            float xmax = MAX(m_startPoint.x, m_currentPoint.x);
+            float ymin = MIN(m_startPoint.y, m_currentPoint.y);
+            float ymax = MAX(m_startPoint.y, m_currentPoint.y);
+
+            element.min = Vector2(xmin, height - ymax);
+            element.max = Vector2(xmax, height - ymin);
 
             m_controller->undoRedo()->push(new CreateSprite(element, m_controller));
-
             m_startPoint = m_currentPoint;
         }
     }
 
-    // Creation of sprite
     if(selected.isEmpty() && Input::isMouseButton(Input::MOUSE_LEFT) && m_currentPoint != m_startPoint) {
         AABBox bb;
         bb.setBox(m_startPoint, m_currentPoint);
-
         Gizmos::drawWireRectangle(bb.center, Vector2(bb.extent.x * 2.0f, bb.extent.y * 2.0f), Handles::s_yColor);
     }
 
