@@ -91,6 +91,8 @@ public:
 
     TString propertyAllias(const TString &name) const override;
 
+    bool toVersion11(int height);
+
 private:
     VariantMap saveUserData() const override;
     void loadUserData(const VariantMap &data) override;

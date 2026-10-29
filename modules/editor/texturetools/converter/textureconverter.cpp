@@ -19,7 +19,7 @@
 
 #include <editor/projectsettings.h>
 
-#define FORMAT_VERSION 10
+#define FORMAT_VERSION 11
 
 TextureImportSettings::TextureImportSettings() :
         m_assetType(AssetType::Texture2D),
@@ -227,6 +227,19 @@ void TextureImportSettings::setSubItemData(const TString &name, const Variant &d
     m_elements[name] = element;
 }
 
+bool TextureImportSettings::toVersion11(int height) {
+    for(auto &it : m_elements) {
+        Element &e = it.second;
+
+        float newMinY = height - e.max.y;
+        float newMaxY = height - e.min.y;
+        e.min.y = newMinY;
+        e.max.y = newMaxY;
+    }
+
+    return true;
+}
+
 void TextureConverter::init() {
     AssetConverter::init();
 
@@ -244,6 +257,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
     TextureImportSettings *s = dynamic_cast<TextureImportSettings *>(settings);
     if(s) {
         texture = convertTexture(s);
+
         if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
             convertSprite(texture, s);
         }
@@ -456,6 +470,17 @@ void TextureConverter::copyRegion(const uint8_t *sourcedata, const Vector2 &sour
 
 void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *settings) const {
     Url dst(settings->absoluteDestination());
+
+    bool updated = false;
+    switch(settings->currentVersion()) {
+    case 10: updated |= settings->toVersion11(texture->height()); [[fallthrough]];
+    default: break;
+    }
+
+    if(updated) {
+        settings->setCurrentVersion(settings->version());
+        settings->saveSettings();
+    }
 
     for(auto &it : settings->elements()) {
         ResourceSystem::ResourceInfo info = settings->subItem(it.first, MetaType::name<Sprite>());
