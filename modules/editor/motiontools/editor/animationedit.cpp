@@ -1,15 +1,15 @@
 #include "animationedit.h"
 #include "ui_animationedit.h"
 
-#include <components/world.h>
-#include <components/actor.h>
-#include <components/animator.h>
-#include <components/armature.h>
-#include <components/transform.h>
-#include <components/directlight.h>
-#include <resources/animationstatemachine.h>
+#include <world.h>
+#include <actor.h>
+#include <animator.h>
+#include <armature.h>
+#include <transform.h>
+#include <directlight.h>
+#include <animationstatemachine.h>
 
-#include <editor/viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include <QToolButton>
 #include <QSettings>
@@ -57,7 +57,7 @@ AnimationEdit::AnimationEdit() :
         ui(new Ui::AnimationEdit),
         m_graph(new AnimationControllerGraph),
         m_builder(new AnimationControllerBuilder),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_light(nullptr),
         m_animator(nullptr),
         m_armature(nullptr),

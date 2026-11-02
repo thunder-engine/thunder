@@ -9,7 +9,7 @@ class AnimationControllerBuilder;
 class AnimationControllerGraph;
 class AnimationStateMachine;
 
-class CameraController;
+class LegacyCameraController;
 class Armature;
 class Animator;
 
@@ -76,7 +76,7 @@ private:
     AnimationControllerGraph *m_graph;
     AnimationControllerBuilder *m_builder;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     Actor *m_light;
 

@@ -16,7 +16,7 @@ public:
     AnimationBuilderSettings();
 
     TString previewAsset() const;
-    void setPreviewAsset(TString &asset);
+    void setPreviewAsset(const TString &asset);
 
 private:
     StringList typeNames() const override;

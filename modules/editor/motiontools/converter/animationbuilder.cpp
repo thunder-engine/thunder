@@ -12,7 +12,7 @@ TString AnimationBuilderSettings::previewAsset() const {
     return m_previewAsset;
 }
 
-void AnimationBuilderSettings::setPreviewAsset(TString &asset) {
+void AnimationBuilderSettings::setPreviewAsset(const TString &asset) {
     if(m_previewAsset != asset) {
         m_previewAsset = asset;
         setModified();
