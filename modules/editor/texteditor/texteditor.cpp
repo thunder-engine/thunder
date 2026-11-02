@@ -14,7 +14,7 @@ static const char *meta = \
 "   \"description\": \"Code Editor plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"TextEdit\": \"editor\""
+"       \"TextEdit\": \"legacyeditor\""
 "   }"
 "}";
 

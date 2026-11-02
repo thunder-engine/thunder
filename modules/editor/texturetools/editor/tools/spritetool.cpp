@@ -289,6 +289,10 @@ void SpriteTool::update(bool pivot, bool local, bool snap) {
 }
 
 TString SpriteTool::icon() const {
+    return ".embedded/composer.png/Transform";
+}
+
+TString SpriteTool::image() const {
     return ":/Images/editor/Transform.png";
 }
 

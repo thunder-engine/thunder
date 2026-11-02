@@ -119,7 +119,7 @@ void AssetList::onRendered(const TString &uuid) {
         item->setProperty(gType, mgr->assetTypeName(path).data());
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
-            QImage img = settings->icon(uuid);
+            QImage img = settings->image(uuid);
             if(!img.isNull()) {
                 item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
             }
@@ -145,7 +145,7 @@ void AssetList::update() {
 
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
-            QImage img = settings->icon(it.second.uuid);
+            QImage img = settings->image(it.second.uuid);
             if(!img.isNull()) {
                 img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
             }

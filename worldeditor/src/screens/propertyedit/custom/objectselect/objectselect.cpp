@@ -132,7 +132,7 @@ void ObjectSelect::setTemplateData(const Variant &data) {
         name = Url(path).baseName().data();
         AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
         if(settings) {
-            m_icon->setIcon(QPixmap::fromImage(settings->icon(uuid)));
+            m_icon->setIcon(QPixmap::fromImage(settings->image(uuid)));
         }
     } else {
         m_icon->setIcon(QIcon());

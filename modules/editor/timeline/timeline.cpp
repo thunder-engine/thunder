@@ -14,7 +14,7 @@ static const char *meta = \
 "   \"description\": \"Animation Track editor\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"TimelineEdit\": \"gadget\""
+"       \"TimelineEdit\": \"legacygadget\""
 "   }"
 "}";
 

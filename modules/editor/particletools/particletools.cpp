@@ -17,7 +17,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"EffectBuilder\": \"converter\","
-"       \"ParticleEdit\": \"editor\""
+"       \"ParticleEdit\": \"legacyeditor\""
 "   }"
 "}";
 

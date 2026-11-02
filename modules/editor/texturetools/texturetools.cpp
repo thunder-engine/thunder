@@ -16,7 +16,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"TextureConverter\": \"converter\","
-"       \"SpriteEdit\": \"editor\""
+"       \"SpriteEdit\": \"legacyeditor\""
 "   }"
 "}";
 

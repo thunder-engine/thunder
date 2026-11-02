@@ -80,7 +80,7 @@ public:
         m_spriteTarget->setFlags(RenderTarget::ClearDepth);
     }
 
-    void setController(LegacyCameraController *ctrl) {
+    void setController(CameraControllerCore *ctrl) {
         m_controller = ctrl;
     }
 
@@ -228,7 +228,7 @@ private:
     }
 
 private:
-    LegacyCameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     RenderTarget *m_spriteTarget;
     RenderTarget *m_geometryTarget;

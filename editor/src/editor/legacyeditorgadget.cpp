@@ -17,6 +17,8 @@
 */
 #include "editor/legacyeditorgadget.h"
 
+#include "editor/legacyasseteditor.h"
+
 /*!
     \class LegacyEditorGadget
     \brief Provides the base interface for dockable editor gadgets.
@@ -59,6 +61,27 @@
     Constructs an editor gadget with the specified Qt \a parent.
 */
 LegacyEditorGadget::LegacyEditorGadget(QWidget *parent) :
-    QWidget(parent) {
+        QWidget(parent),
+        m_currentEditor(nullptr) {
 
+}
+
+LegacyAssetEditor *LegacyEditorGadget::currentEditor() {
+    return m_currentEditor;
+}
+
+void LegacyEditorGadget::setCurrentEditor(LegacyAssetEditor *editor) {
+    if(m_currentEditor) {
+        QObject::disconnect(this, &LegacyEditorGadget::updated, m_currentEditor, &LegacyAssetEditor::onUpdated);
+        QObject::disconnect(this, &LegacyEditorGadget::objectsSelected, m_currentEditor, &LegacyAssetEditor::onObjectsSelected);
+
+        QObject::disconnect(m_currentEditor, &LegacyAssetEditor::objectsChanged, this, &LegacyEditorGadget::onObjectsChanged);
+    }
+
+    QObject::connect(this, &LegacyEditorGadget::updated, editor, &LegacyAssetEditor::onUpdated);
+    QObject::connect(this, &LegacyEditorGadget::objectsSelected, editor, &LegacyAssetEditor::onObjectsSelected);
+
+    QObject::connect(editor, &LegacyAssetEditor::objectsChanged, this, &LegacyEditorGadget::onObjectsChanged);
+
+    m_currentEditor = editor;
 }

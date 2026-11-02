@@ -104,8 +104,6 @@ private:
 private:
     Ui::HierarchyBrowser *ui;
 
-    LegacyAssetEditor *m_currentEditor;
-
     ComponentBrowser *m_components;
 
     QRubberBand *m_rect;

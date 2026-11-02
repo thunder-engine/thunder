@@ -87,7 +87,6 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         LegacyEditorGadget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
-        m_editor(nullptr),
         m_topWidget(nullptr),
         m_nextModel(new NextModel(this)),
         m_item(nullptr) {
@@ -124,11 +123,11 @@ void PropertyEditor::updateAndExpand() {
 }
 
 void PropertyEditor::onSelectionChanged() {
-    Object::ObjectList objects = m_editor->selected();
+    Object::ObjectList objects = m_currentEditor->selected();
     if(!objects.empty()) {
         m_nextModel->clear();
         m_item = objects.front();
-        setTopWidget(m_editor->propertiesWidget());
+        setTopWidget(m_currentEditor->propertiesWidget());
         m_nextModel->addObjects(objects);
 
         Actor *firstActor = dynamic_cast<Actor *>(objects.front());
@@ -183,8 +182,8 @@ void PropertyEditor::onObjectSelected(Object *object) {
             QWidget *widget = browser->commitRevert();
             connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
             setTopWidget(widget);
-        } else if(m_editor) {
-            setTopWidget(m_editor->propertiesWidget());
+        } else if(m_currentEditor) {
+            setTopWidget(m_currentEditor->propertiesWidget());
         }
 
         m_nextModel->addObject(m_item);
@@ -240,19 +239,15 @@ void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const T
 
 }
 
-LegacyAssetEditor *PropertyEditor::currentEditor() const {
-    return m_editor;
-}
-
 void PropertyEditor::setCurrentEditor(LegacyAssetEditor *editor) {
-    if(m_editor != editor) {
-        if(m_editor) {
-            disconnect(m_nextModel, &NextModel::propertyChanged, m_editor, &LegacyAssetEditor::onObjectsChanged);
+    if(m_currentEditor != editor) {
+        if(m_currentEditor) {
+            disconnect(m_nextModel, &NextModel::propertyChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
         }
 
-        m_editor = editor;
+        LegacyEditorGadget::setCurrentEditor(editor);
 
-        connect(m_nextModel, &NextModel::propertyChanged, m_editor, &LegacyAssetEditor::onObjectsChanged);
+        connect(m_nextModel, &NextModel::propertyChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
     }
 }
 
@@ -298,12 +293,12 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
-    if(m_editor) {
+    if(m_currentEditor) {
         QModelIndex index = ui->treeView->indexAt(pos);
 
         Property *p = static_cast<Property *>(m_filter->mapToSource(index).internalPointer());
         if(p) {
-            QMenu *menu = m_editor->propertyContextMenu(m_item, p->name());
+            QMenu *menu = m_currentEditor->propertyContextMenu(m_item, p->name());
             if(menu) {
                 menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
             }

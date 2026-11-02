@@ -9,6 +9,8 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes"
     "../engine/includes/components"
     "../engine/includes/resources"
+    "../modules/uikit/includes"
+    "../modules/uikit/includes/components"
     "../thirdparty/next/inc"
     "../thirdparty/next/inc/math"
     "../thirdparty/next/inc/core"
@@ -50,7 +52,6 @@ if(desktop)
     file(GLOB EDITOR_SOURCES
         "src/coverters/*.cpp"
         "src/editor/*.cpp"
-        "src/viewport/*.cpp"
         "src/*.cpp"
     )
 
@@ -72,6 +73,7 @@ if(desktop)
         assimp
         next-editor
         engine-editor
+        uikit-editor
         zlib-editor
         Qt::Core
         Qt::Gui
@@ -135,6 +137,11 @@ if(desktop)
         DESTINATION "${INC_PATH}/editor"
         FILES_MATCHING PATTERN "*.h"
         PATTERN "converters" EXCLUDE
+    )
+
+    install(DIRECTORY includes/viewport/
+        DESTINATION "${INC_PATH}/viewport"
+        FILES_MATCHING PATTERN "*.h"
     )
 
 endif()

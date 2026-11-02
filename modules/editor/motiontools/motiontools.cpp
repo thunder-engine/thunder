@@ -17,7 +17,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"AnimationBuilderSettings\": \"converter\","
-"       \"AnimationEdit\": \"editor\","
+"       \"AnimationEdit\": \"legacyeditor\","
 "       \"Condition\": \"property\""
 "   }"
 "}";

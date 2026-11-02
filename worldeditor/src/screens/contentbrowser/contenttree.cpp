@@ -173,7 +173,7 @@ void ContentTree::onRendered(const TString &uuid) {
         if(item) {
             item->setProperty(gType, asset->assetTypeName(path).data());
 
-            QImage img = settings->icon(uuid);
+            QImage img = settings->image(uuid);
             if(!img.isNull()) {
                 item->setProperty(gIcon, img);
             }
@@ -223,7 +223,7 @@ QModelIndex ContentTree::setNewAsset(const TString &name, const TString &source,
         m_newAsset->setParent(parent);
         m_newAsset->setObjectName(name.data());
         m_newAsset->setProperty(gImport, source.data());
-        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentIcon(Url(source).suffix()));
+        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentImage(Url(source).suffix()));
     } else {
         m_newAsset->setParent(nullptr);
     }
@@ -264,7 +264,7 @@ void ContentTree::update() {
             if(!File::isDir(path)) {
                 item->setProperty(gType, mgr->assetTypeName(path).data());
                 AssetConverterSettings *settings = mgr->fetchSettings(path);
-                item->setProperty(gIcon, settings->icon(settings->destination()));
+                item->setProperty(gIcon, settings->image(settings->destination()));
             } else {
                 item->setProperty(gIcon, m_folder);
             }

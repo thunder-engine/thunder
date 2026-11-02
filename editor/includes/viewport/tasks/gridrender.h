@@ -61,7 +61,7 @@ public:
         loadSettings();
     }
 
-    void setController(LegacyCameraController *ctrl) {
+    void setController(CameraControllerCore *ctrl) {
         m_controller = ctrl;
     }
 
@@ -200,7 +200,7 @@ private:
 private:
     Vector4 m_gridColor;
 
-    LegacyCameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     RenderTarget *m_resultTarget;
 

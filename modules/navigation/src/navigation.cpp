@@ -41,7 +41,7 @@ static const char *meta = \
     "   },"
     "   \"objects\": {"
     "       \"NavigationSystem\": \"system\","
-    "       \"NavigationPanel\": \"gadget\","
+    "       \"NavigationPanel\": \"legacygadget\","
     "       \"AgentTypeEdit\": \"property\""
     "   },"
     "   \"components\": ["

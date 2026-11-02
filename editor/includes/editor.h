@@ -34,10 +34,12 @@ class ProjectSettings;
 class EditorSettings;
 class AssetManager;
 class PluginManager;
+class AssetEditor;
+class EditorGadget;
+class DocumentModel;
 
 class LegacyAssetEditor;
 class LegacyEditorGadget;
-
 class LegacyDocumentModel;
 
 class EDITOR_EXPORT Editor : public Object {
@@ -47,23 +49,30 @@ public:
 
     static void init(int argc, char *argv[]);
 
-    static void initDocumentSystem();
+    static void initDocumentSystem(bool useLegacy = true);
 
     static void backup();
     static void restore();
 
+    static void addEditor(AssetEditor *editor);
     static void addEditor(LegacyAssetEditor *editor);
+    static bool closeEditor(AssetEditor *editor);
     static void closeEditor(LegacyAssetEditor *editor);
 
-    static LegacyAssetEditor *openFile(const TString &path);
+    static AssetEditor *openAssetFile(const TString &path);
+    static LegacyAssetEditor *legacyOpenFile(const TString &path);
 
-    static LegacyAssetEditor *currentEditor();
+    static AssetEditor *currentEditor();
+    static void setCurrentEditor(AssetEditor *editor);
+    static LegacyAssetEditor *legacyCurrentEditor();
     static void setCurrentEditor(LegacyAssetEditor *editor);
 
-    static std::list<LegacyAssetEditor *> documents();
+    static std::list<AssetEditor *> documents();
+    static std::list<LegacyAssetEditor *> legacyDocuments();
 
+    static void addGadget(EditorGadget *gadget);
     static void addGadget(LegacyEditorGadget *gadget);
-    static std::list<LegacyEditorGadget *> gadgets();
+    static std::list<LegacyEditorGadget *> legacyGadgets();
 
     static EditorSettings *settings();
     static ProjectSettings *project();
@@ -75,9 +84,11 @@ public:
 protected:
     static TString m_binPath;
 
-    static std::list<LegacyEditorGadget *> s_gadgets;
+    static std::list<LegacyEditorGadget *> s_legacyGadgets;
+    static std::list<EditorGadget *> s_gadgets;
 
-    static LegacyAssetEditor *s_currentEditor;
+    static LegacyAssetEditor *s_legacyCurrentEditor;
+    static LegacyDocumentModel *s_legacyDocumentModel;
 
     static EditorSettings *s_editorSettings;
     static ProjectSettings *s_projectSettings;
@@ -85,7 +96,8 @@ protected:
     static AssetManager *s_assetManager;
     static PluginManager *s_pluginManager;
 
-    static LegacyDocumentModel *s_documentModel;
+    static AssetEditor *s_currentEditor;
+    static DocumentModel *s_documentModel;
 
 };
 

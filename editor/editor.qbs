@@ -14,6 +14,9 @@ Project {
         "../engine/includes",
         "../engine/includes/components",
         "../engine/includes/resources",
+        "../modules/uikit/includes",
+        "../modules/uikit/includes/components",
+        "../modules/uikit/includes/resources",
         "../thirdparty/next/inc",
         "../thirdparty/next/inc/math",
         "../thirdparty/next/inc/core",
@@ -32,6 +35,7 @@ Project {
         Depends { name: "assimp" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }
+        Depends { name: "uikit-editor" }
         Depends { name: "zlib-editor" }
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets", "svg"]; }
         bundle.isBundle: false

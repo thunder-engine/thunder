@@ -93,7 +93,7 @@ void TimelineEdit::onSelectionChanged() {
     }
 
     Animator *result = nullptr;
-    for(auto object : m_editor->selected()) {
+    for(auto object : m_currentEditor->selected()) {
         result = findAnimator(object);
         if(result) {
             break;
