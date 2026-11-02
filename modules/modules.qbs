@@ -10,7 +10,6 @@ Project {
         "physics/bullet/bullet.qbs",
         "renders/renders.qbs",
         "uikit/uikit.qbs",
-        "uikit/formeditor/formeditor.qbs",
         "network/network.qbs",
         "vms/angel/angel.qbs"
     ]
