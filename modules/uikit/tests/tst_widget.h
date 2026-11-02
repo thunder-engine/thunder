@@ -123,6 +123,75 @@ namespace UikitSuite {
         ASSERT_EQ(1, layout->indexOf(child1));
     }
 
+    TEST_F(RectTransformTest, AnchorsRecalculateSizeAndPositionImmediately) {
+        Widget parent;
+        parent.setSize(Vector2(200.0f, 100.0f));
+
+        Widget child;
+        child.setParent(&parent);
+        child.setMargin(Vector4(2.0f, 3.0f, 4.0f, 5.0f));
+        child.setAnchors(Vector2(0.25f, 0.1f), Vector2(0.75f, 0.6f));
+
+        EXPECT_FLOAT_EQ(92.0f, child.size().x);
+        EXPECT_FLOAT_EQ(44.0f, child.size().y);
+
+        parent.setSize(Vector2(300.0f, 120.0f));
+
+        EXPECT_FLOAT_EQ(142.0f, child.size().x);
+        EXPECT_FLOAT_EQ(54.0f, child.size().y);
+
+        child.setAnchors(Vector2(0.5f, 0.25f), Vector2(0.75f, 0.75f));
+
+        EXPECT_FLOAT_EQ(67.0f, child.size().x);
+        EXPECT_FLOAT_EQ(54.0f, child.size().y);
+        EXPECT_FLOAT_EQ(155.0f, child.worldTransform()[12]);
+        EXPECT_FLOAT_EQ(34.0f, child.worldTransform()[13]);
+    }
+
+    TEST_F(RectTransformTest, PreferredSizeTracksNestedLayoutChangesImmediately) {
+        Widget preferred;
+        preferred.setVerticalPolicy(Widget::Fixed);
+
+        Widget content;
+        content.setSize(Vector2(30.0f, 40.0f));
+        content.setParent(&preferred);
+
+        Layout *contentLayout = new Layout;
+        contentLayout->setOrientation(Widget::Vertical);
+        preferred.setLayout(contentLayout);
+
+        preferred.setVerticalPolicy(Widget::Preferred);
+
+        EXPECT_FLOAT_EQ(40.0f, preferred.size().y);
+
+        content.setSize(Vector2(30.0f, 65.0f));
+
+        EXPECT_FLOAT_EQ(65.0f, preferred.size().y);
+    }
+
+    TEST_F(RectTransformTest, LayoutRepositionsFollowingWidgetAfterSizeChange) {
+        Widget parent;
+        parent.setSize(Vector2(100.0f, 100.0f));
+
+        Widget first;
+        first.setSize(Vector2(100.0f, 20.0f));
+        first.setParent(&parent);
+
+        Widget following;
+        following.setSize(Vector2(100.0f, 10.0f));
+        following.setParent(&parent);
+
+        Layout *layout = new Layout;
+        layout->setOrientation(Widget::Vertical);
+        parent.setLayout(layout);
+
+        const float initialY = following.position().y;
+        first.setSize(Vector2(100.0f, 35.0f));
+
+        EXPECT_FLOAT_EQ(initialY - 15.0f, following.position().y);
+        EXPECT_FLOAT_EQ(following.position().y, following.worldTransform()[13]);
+    }
+
     TEST_F(RectTransformTest, LayoutAutoFitParentSize) {
         Widget parent;
         parent.setVerticalPolicy(Widget::Preferred);
@@ -280,4 +349,5 @@ namespace UikitSuite {
         ASSERT_EQ(50.0f, child1.size().y);
         ASSERT_EQ(50.0f, child2.size().y);
     }
+
 }

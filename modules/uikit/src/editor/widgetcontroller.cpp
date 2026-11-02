@@ -225,7 +225,7 @@ void WidgetController::cameraZoom(float delta) {
     m_lastZoom = center;
 
     m_rootObject->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
-    m_rootObject->setScale(Vector3(scale, scale, 1.0f));
+    m_rootObject->setScale(scale);
 
     m_widgetTool->setTranslation(m_rootObject->position(), m_rootObject->scale());
 }

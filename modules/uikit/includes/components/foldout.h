@@ -30,15 +30,22 @@ class UIKIT_EXPORT Foldout : public Widget {
     A_PROPERTIES(
         A_PROPERTY(TString, text, Foldout::text, Foldout::setText),
         A_PROPERTYEX(Frame, container, Foldout::container, Foldout::setContainer, "editor=Component"),
-        A_PROPERTYEX(CheckBox, indicator, Foldout::indicator, Foldout::setIndicator, "editor=Component")
+        A_PROPERTYEX(CheckBox, header, Foldout::header, Foldout::setHeader, "editor=Component")
     )
     A_METHODS(
-        A_SLOT(Foldout::onExpand)
+        A_SLOT(Foldout::onExpand),
+        A_SIGNAL(Foldout::expandedChanged),
+        A_SIGNAL(Foldout::dropped),
+        A_SIGNAL(Foldout::headerClicked)
     )
     A_NOENUMS()
 
 public:
     Foldout();
+
+    CheckBox *header() const;
+
+    void insertHeaderWidget(int index, Widget *widget);
 
     void insertWidget(int index, Widget *widget);
 
@@ -51,25 +58,27 @@ public:
     Frame *container() const;
     void setContainer(Frame *container);
 
-    CheckBox *indicator() const;
-    void setIndicator(CheckBox *indicator);
+    void setHeader(CheckBox *header);
 
     Label *label() const;
     void setLabel(Label *label);
 
     void onExpand();
 
-protected:
-    void insertRect(int index, Widget *content);
+    void expandedChanged(bool expanded);
+    void dropped(const TString &mimeType, const TString &data);
+    void headerClicked();
 
+protected:
     void composeComponent() override;
 
     void childAdded(Widget *widget) override;
+    bool onDrop(const TString &mimeType, const TString &data, int x, int y) override;
 
 private:
     Widget *m_contentArea;
 
-    CheckBox *m_indicator;
+    CheckBox *m_header;
 };
 
 #endif // FOLDOUT_H

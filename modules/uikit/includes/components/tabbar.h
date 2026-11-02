@@ -43,7 +43,9 @@ public:
     ~TabBar();
 
     int addTab(const TString &title);
+    int addTab(const TString &title, Sprite *icon);
     int insertTab(int index, const TString &title);
+    int insertTab(int index, const TString &title, Sprite *icon);
     void removeTab(int index);
     void removeTab(Button *button);
 
@@ -63,6 +65,15 @@ public:
 
     Vector4 tabCornerRadius() const;
     void setTabCornerRadius(const Vector4 &radius);
+
+    Vector4 tabBackgroundColor() const;
+    void setTabBackgroundColor(const Vector4 &color);
+
+    Vector4 tabPressedColor() const;
+    void setTabPressedColor(const Vector4 &color);
+
+    Vector4 tabHighlightedColor() const;
+    void setTabHighlightedColor(const Vector4 &color);
 
 public: //signals
     void currentChanged(int index);
@@ -100,6 +111,10 @@ private:
     Vector4 m_tabCornerRadius;
 
     Vector4 m_tabPadding;
+
+    Vector4 m_tabBackgroundColor;
+    Vector4 m_tabPressedColor;
+    Vector4 m_tabHighlightedColor;
 
     Button *m_frontButton;
 

@@ -23,7 +23,7 @@
 
 namespace {
     const char *gLabel("label");
-    const char *gIndicator("indicator");
+    const char *gHeader("header");
     const char *gContainer("container");
 }
 
@@ -38,15 +38,35 @@ namespace {
 
 Foldout::Foldout() :
         m_contentArea(nullptr),
-        m_indicator(nullptr) {
+        m_header(nullptr) {
 
+}
+/*!
+    Returns the foldout header button.
+*/
+CheckBox *Foldout::header() const {
+    return m_header;
+}
+/*!
+    Inserts \a widget into the foldout header at given position \a index.
+*/
+void Foldout::insertHeaderWidget(int index, Widget *widget) {
+    if(m_header && m_header->layout()) {
+        m_header->layout()->insertWidget(index, widget);
+    }
 }
 /*!
     Inserts \a widget to the foldout's container, at given position \a index.
     Effectively placing it inside the foldout's expanded content area.
 */
 void Foldout::insertWidget(int index, Widget *widget) {
-    insertRect(index, widget);
+    widget->setHorizontalPolicy(Widget::Expanding);
+    widget->setVerticalPolicy(Widget::Fixed);
+
+    if(m_contentArea) {
+        m_contentArea->layout()->addWidget(widget);
+    }
+    repaint();
 }
 /*!
     Returns true id foldout is currently expanded; otherwise returns false.
@@ -62,15 +82,19 @@ bool Foldout::isExpanded() const {
 */
 void Foldout::setExpanded(bool expanded) {
     if(m_contentArea) {
+        const bool changed = isExpanded() != expanded;
         m_contentArea->setVisible(expanded);
         repaint();
+        if(changed) {
+            expandedChanged(expanded);
+        }
     }
 }
 /*!
     Returns the current text of the foldout's label.
 */
 TString Foldout::text() const {
-    Label *label = static_cast<Label *>(subWidget(gLabel));
+    Label *label = this->label();
     if(label) {
         return label->text();
     }
@@ -80,16 +104,43 @@ TString Foldout::text() const {
     Sets the label \a text for the foldout.
 */
 void Foldout::setText(const TString &text) {
-    Label *label = static_cast<Label *>(subWidget(gLabel));
+    Label *label = this->label();
     if(label) {
         label->setText(text);
     } else {
-        Label *label = Widget::createWidget<Label>(gLabel, m_indicator);
+        if(!m_header) {
+            return;
+        }
+        Label *label = Widget::createWidget<Label>(gLabel, m_header);
+        m_header->setSubWidget(label);
         label->setText(text);
         label->setAlign(Alignment::Left | Alignment::Middle);
         label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
-        label->setAnchors(Vector2(0.0f, 0.5f), Vector2(1.0f, 0.5f));
-        setSubWidget(label);
+        label->setSize(Vector2(0.0f, 20.0f));
+        label->setHorizontalPolicy(Widget::Expanding);
+        label->setVerticalPolicy(Widget::Fixed);
+    }
+}
+/*!
+    Returns the label displayed in the header.
+*/
+Label *Foldout::label() const {
+    return m_header ? static_cast<Label *>(m_header->subWidget(gLabel)) : nullptr;
+}
+/*!
+    Sets the label displayed in the header.
+*/
+void Foldout::setLabel(Label *label) {
+    if(m_header && label) {
+        m_header->setSubWidget(label);
+        label->setAlign(Alignment::Left | Alignment::Middle);
+        label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
+        label->setSize(Vector2(0.0f, 20.0f));
+        label->setHorizontalPolicy(Widget::Expanding);
+        label->setVerticalPolicy(Widget::Fixed);
+        if(m_header->layout() && m_header->layout()->indexOf(label) < 0) {
+            m_header->layout()->addWidget(label);
+        }
     }
 }
 /*!
@@ -115,64 +166,80 @@ void Foldout::setContainer(Frame *container) {
     }
 }
 /*!
-    Returns indicator button to fold and unfold container with content.
+    Sets \a header button used to fold and unfold the content.
 */
-CheckBox *Foldout::indicator() const {
-    return static_cast<CheckBox *>(subWidget(gIndicator));
-}
-/*!
-    Sets \a indicator button to fold and unfold container with content.
-*/
-void Foldout::setIndicator(CheckBox *indicator) {
-    setSubWidget(indicator);
-    if(indicator) {
-        indicator->setHorizontalPolicy(Widget::Expanding);
+void Foldout::setHeader(CheckBox *header) {
+    if(header) {
+        m_header = header;
+        setSubWidget(header);
+        if(!header->layout()) {
+            header->setLayout(new Layout());
+        }
+        header->layout()->setOrientation(Widget::Horizontal);
+        header->setSize(Vector2(100.0f, 20.0f));
+        header->setPadding(Vector4(0.0f));
+        header->setHorizontalPolicy(Widget::Expanding);
+        header->setVerticalPolicy(Widget::Fixed);
     }
-
-    m_indicator = indicator;
 }
 /*!
-    Toggles the expanded state of the foldout when the indicator is clicked.
+    Toggles the expanded state of the foldout when the header is clicked.
 */
 void Foldout::onExpand() {
     setExpanded(!isExpanded());
+    headerClicked();
+}
+/*!
+    Notifies listeners that the expanded state has changed.
+*/
+void Foldout::expandedChanged(bool expanded) {
+    emitSignal(_SIGNAL(expandedChanged(bool)), Variant(expanded));
+}
+/*!
+    Notifies listeners that a drag-and-drop operation targets this foldout.
+*/
+void Foldout::dropped(const TString &mimeType, const TString &data) {
+    emitSignal(_SIGNAL(dropped(TString,TString)), Variant(mimeType), Variant(data));
+}
+/*!
+    Notifies listeners that the foldout header has been clicked.
+*/
+void Foldout::headerClicked() {
+    emitSignal(_SIGNAL(headerClicked()));
 }
 /*!
     \internal
 */
 void Foldout::childAdded(Widget *widget) {
-    if(widget && widget != m_indicator && widget != m_contentArea) {
-        insertRect(-1, widget);
+    if(widget && widget != m_header && widget != m_contentArea) {
+        insertWidget(-1, widget);
     }
 }
 /*!
     \internal
 */
-void Foldout::insertRect(int index, Widget *content) {
-    content->setHorizontalPolicy(Widget::Expanding);
-    content->setVerticalPolicy(Widget::Fixed);
-
-    m_contentArea->layout()->addWidget(content);
-    repaint();
+bool Foldout::onDrop(const TString &mimeType, const TString &data, int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    dropped(mimeType, data);
+    return true;
 }
-/*!
-    \internal
-*/
 void Foldout::composeComponent() {
-    // Fold button
-    Widget *indicatorActor = Widget::createWidget<CheckBox>(gIndicator, this);
-    CheckBox *indicator = dynamic_cast<CheckBox *>(indicatorActor);
+    CheckBox *header = Widget::createWidget<CheckBox>(gHeader, this);
 
-    indicator->setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
-    indicator->setIndicatorSize(Vector2(16.0f, 8.0f));
-    indicator->setFoldMode(true);
-    setIndicator(indicator);
+    header->setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+    header->setIndicatorSize(Vector2(16.0f, 8.0f));
+    header->setFoldMode(true);
+    setHeader(header);
 
-    Object::connect(indicator, _SIGNAL(clicked()), this, _SLOT(onExpand()));
+    Object::connect(header, _SIGNAL(clicked()), this, _SLOT(onExpand()));
 
     // Content container
     Widget *containerActor = Widget::createWidget<Frame>(gContainer, this);
     setContainer(dynamic_cast<Frame *>(containerActor));
+    if(m_contentArea == nullptr) {
+        return;
+    }
 
     // Need to call it after sub widgets creation
     Widget::composeComponent();
@@ -183,7 +250,7 @@ void Foldout::composeComponent() {
     setLayout(mainLayout);
     setVerticalPolicy(Widget::Preferred);
 
-    mainLayout->addWidget(indicator);
+    mainLayout->addWidget(m_header);
     mainLayout->addWidget(m_contentArea);
 
     setSize(Vector2(100.0f, 20.0f));

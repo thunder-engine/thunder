@@ -743,7 +743,7 @@ void Menu::updateSize() {
         }
     }
 
-    this->setSize(Vector2(width, height));
+    setSize(Vector2(width, height));
     repaint();
 }
 
@@ -786,7 +786,7 @@ void Menu::updateIconInstances(Sprite *sprite, MaterialInstance *material, ByteA
         return;
     }
 
-    const Vector2 iconSize = checkedIcons ? Vector2(24.0f, 12.0f) : Vector2(16.0f);
+    const Vector2 iconSize(16.0f);
     const float scale = checkedIcons ? 0.0f : iconSize.x / MAX(spriteWidth, spriteHeight);
     const uint32_t stride = material->instanceSize();
     const uint32_t uniformSize = material->material()->uniformSize();
@@ -804,15 +804,11 @@ void Menu::updateIconInstances(Sprite *sprite, MaterialInstance *material, ByteA
                 item.type == MenuItem::Submenu;
         if(hasIcon) {
             Matrix4 iconTransform;
+            iconTransform[0] = iconSize.x / spriteWidth;
+            iconTransform[5] = iconSize.y / spriteHeight;
             if(checkedIcons) {
-                iconTransform[0] = iconSize.x / spriteWidth;
-                iconTransform[5] = iconSize.y / spriteHeight;
                 iconTransform[12] = 12.0f;
             } else {
-                iconTransform[0] = 0.0f;
-                iconTransform[1] = scale;
-                iconTransform[4] = -scale;
-                iconTransform[5] = 0.0f;
                 iconTransform[12] = size().x - 12.0f;
             }
             iconTransform[13] = rowTop - rowHeight * 0.5f;
@@ -830,7 +826,7 @@ void Menu::updateIconInstances(Sprite *sprite, MaterialInstance *material, ByteA
             const size_t offset = buffer.size();
             buffer.resize(offset + stride);
             std::memcpy(buffer.data() + offset, uniform.data(), uniformSize);
-            Matrix4 worldTransform = this->worldTransform() * iconTransform;
+            Matrix4 worldTransform = Menu::worldTransform() * iconTransform;
             std::memcpy(buffer.data() + offset, &worldTransform, sizeof(Matrix4));
         }
         rowTop -= rowHeight;
@@ -854,14 +850,14 @@ void Menu::composeComponent() {
     Frame::composeComponent();
 
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
-    m_checkSprite = Engine::loadResource<Sprite>(".embedded/ui.png/Check");
+    m_checkSprite = Engine::loadResource<Sprite>(".embedded/generic.png/Check");
     if(m_checkSprite) {
         m_checkSprite->subscribe(&Menu::checkSpriteUpdated, this);
         if(m_checkMaterial) {
             m_checkMaterial->setTexture(gTexture, m_checkSprite->texture());
         }
     }
-    m_arrowSprite = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
+    m_arrowSprite = Engine::loadResource<Sprite>(".embedded/generic.png/Menu");
     if(m_arrowSprite) {
         m_arrowSprite->subscribe(&Menu::arrowSpriteUpdated, this);
         if(m_arrowMaterial) {
