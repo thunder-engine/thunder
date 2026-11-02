@@ -231,12 +231,11 @@ void Viewport::screenshot(const ByteArray &pixels, int width, int height) {
 void Viewport::update(const Vector2 &position) {
     Canvas::update(position);
 
-    Widget *root = this;
-    if(m_controller && !m_gameView && root) {
-        Vector2 size = root->size();
+    if(m_controller && !m_gameView) {
+        Vector2 size = Viewport::size();
         if(size.x > 0.0f && size.y > 0.0f) {
             m_controller->resize(static_cast<int32_t>(size.x), static_cast<int32_t>(size.y));
-            if(root->isHovered(position)) {
+            if(isHovered(position)) {
                 m_controller->update();
             }
         }
