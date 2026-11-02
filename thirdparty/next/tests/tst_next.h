@@ -6,3 +6,4 @@
 #include "tst_objectsystem.h"
 #include "tst_metaobject.h"
 #include "tst_animation.h"
+#include "tst_sortfilterproxymodel.h"

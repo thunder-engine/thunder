@@ -22,6 +22,7 @@
 
 ModelIndex::ModelIndex() :
     m_model(nullptr),
+    m_parentIndex(nullptr),
     m_row(-1),
     m_column(0),
     m_uuid(0) {
@@ -44,6 +45,9 @@ const AbstractItemModel *ModelIndex::model() const {
 }
 
 ModelIndex ModelIndex::parent() const {
+    if(m_parentIndex) {
+        return *m_parentIndex;
+    }
     return m_model ? m_model->parent(*this) : ModelIndex();
 }
 

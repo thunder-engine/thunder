@@ -42,6 +42,7 @@ public:
 
 protected:
     ModelIndex createIndex(int row, int column, uint32_t uuid) const;
+    ModelIndex createIndex(int row, int column, uint32_t uuid, const ModelIndex &parent) const;
 
 };
 

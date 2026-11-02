@@ -27,3 +27,9 @@ ModelIndex AbstractItemModel::createIndex(int row, int column, uint32_t uuid) co
 
     return result;
 }
+
+ModelIndex AbstractItemModel::createIndex(int row, int column, uint32_t uuid, const ModelIndex &parent) const {
+    ModelIndex result = createIndex(row, column, uuid);
+    result.m_parentIndex = std::make_shared<ModelIndex>(parent);
+    return result;
+}
