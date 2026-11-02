@@ -214,7 +214,7 @@ Vector2 Layout::sizeHint() {
 */
 void Layout::invalidate() {
     if(m_widget) {
-        m_widget->setDirty();
+        m_widget->markSizeDirty();
         m_widget->repaint();
 
         Layout *layout = m_widget->m_attachedLayout;
@@ -235,9 +235,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.x = availableSpace - (margin.w + margin.y);
-                    it->blockSignals(true);
-                    it->setSize(size);
-                    it->blockSignals(false);
+                    it->setLayoutSize(size);
                 }
             }
             return;
@@ -250,9 +248,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
                     Vector4 margin(it->margin());
                     Vector2 size(it->size());
                     size.y = availableSpace - (margin.x + margin.z);
-                    it->blockSignals(true);
-                    it->setSize(size);
-                    it->blockSignals(false);
+                    it->setLayoutSize(size);
                 }
             }
             return;
@@ -335,9 +331,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
                         } else {
                             size.y = remainingSpace * (*weight) - (margin.x + margin.z);
                         }
-                        it->blockSignals(true);
-                        it->setSize(size);
-                        it->blockSignals(false);
+                        it->setLayoutSize(size);
                         ++weight;
                     }
                 }
@@ -358,9 +352,7 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
                         } else {
                             size.y += extraSize;
                         }
-                        it->blockSignals(true);
-                        it->setSize(size);
-                        it->blockSignals(false);
+                        it->setLayoutSize(size);
                     }
                     ++weight;
                 }
@@ -393,7 +385,7 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
                 it->m_position.y = offset.y - size.y * (1.0f - pivot.y) - margin.z;
                 shift += size.x * (1.0f - pivot.x) + margin.y;
             }
-            it->setDirty();
+            it->markDirty();
 
             first = false;
         }

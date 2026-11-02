@@ -45,7 +45,9 @@ public:
     ~TabWidget();
 
     int addTab(const TString &title, Widget *content);
+    int addTab(const TString &title, Sprite *icon, Widget *content);
     int insertTab(int index, const TString &title, Widget *content);
+    int insertTab(int index, const TString &title, Sprite *icon, Widget *content);
     void removeTab(int index);
     Widget *takeTab(int index);
 

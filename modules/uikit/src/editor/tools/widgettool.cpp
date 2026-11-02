@@ -237,6 +237,10 @@ void WidgetTool::drawAnchors(const Vector3 &center, const Vector3 &size, const V
 }
 
 TString WidgetTool::icon() const {
+    return ".embedded/composer.png/Transform";
+}
+
+TString WidgetTool::image() const {
     return ":/Images/editor/Transform.png";
 }
 

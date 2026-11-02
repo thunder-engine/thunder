@@ -177,7 +177,7 @@ void TreeView::composeComponent() {
 
     setRowHeight(m_rowHeight);
 
-    m_arrowSprite = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
+    m_arrowSprite = Engine::loadResource<Sprite>(".embedded/generic.png/Down");
     if(m_arrowSprite) {
         m_arrowSprite->subscribe(&TreeView::arrowUpdated, this);
         m_arrowMesh = m_arrowSprite->mesh();
@@ -256,29 +256,6 @@ const TreeView::ItemData* TreeView::getItemData(int row) const {
     return &m_itemsData[row];
 }
 
-float TreeView::getArrowSize() const {
-    return static_cast<float>(m_rowHeight) * 0.5f;
-}
-
-float TreeView::getArrowWidth() const {
-    if(!m_arrowSprite) return getArrowSize();
-
-    Vector4 bounds = m_arrowSprite->bounds();
-    float spriteWidth = bounds.z - bounds.x;
-    float spriteHeight = bounds.w - bounds.y;
-    float aspectRatio = spriteWidth / spriteHeight;
-
-    return getArrowSize() * aspectRatio;
-}
-
-float TreeView::getArrowHeight() const {
-    return getArrowSize();
-}
-
-float TreeView::getArrowOffset() const {
-    return m_rowHeight * 0.5f;
-}
-
 void TreeView::arrowUpdated(int state, void *ptr) {
     TreeView *treeView = static_cast<TreeView *>(ptr);
     if(!treeView) {
@@ -352,8 +329,6 @@ void TreeView::rebuildItems() {
     int visibleCount = std::max(1, static_cast<int>(viewportSize().y / m_rowHeight) + 2);
 
     int delegateIndex = 0;
-    float arrowWidth = getArrowWidth();
-
     for(int row = m_firstVisibleIndex; row < m_firstVisibleIndex + visibleCount && row < static_cast<int>(m_itemsData.size()); ++row) {
         ItemData &data = m_itemsData[row];
 
@@ -377,7 +352,7 @@ void TreeView::rebuildItems() {
             delegate->setAnchors(Vector2(0, 1), Vector2(0, 1));
             delegate->setPivot(Vector2(0, 1));
 
-            float leftPadding = data.depth * m_indentation + arrowWidth;
+            float leftPadding = data.depth * m_indentation + m_rowHeight;
             delegate->setSize(Vector2(viewportSize().x - leftPadding, m_rowHeight));
             delegate->setPosition(Vector3(positionAtIndex(row) + Vector2(leftPadding, 0), 0));
         }
@@ -420,9 +395,6 @@ void TreeView::buildArrowInstances() {
         return;
     }
 
-    float arrowWidth = getArrowWidth();
-    float arrowHeight = getArrowHeight();
-
     Vector4 bounds = m_arrowSprite->bounds();
     float spriteWidth = bounds.z - bounds.x;
     float spriteHeight = bounds.w - bounds.y;
@@ -462,6 +434,8 @@ void TreeView::buildArrowInstances() {
     uint8_t *data = m_instanceBuffer.data();
     int instanceIndex = 0;
 
+    float arrowSize = m_rowHeight - 8;
+
     Vector4 color(1.0f);
     for(auto &itemData : m_itemsData) {
         if(!itemData.delegate || !itemData.delegate->isEnabled()) continue;
@@ -476,8 +450,8 @@ void TreeView::buildArrowInstances() {
         transform[12] += offsetX;
         transform[13] += offsetY;
 
-        transform[0] = (arrowWidth / spriteWidth) * scale.x;
-        transform[5] = (arrowHeight / spriteHeight) * scale.y;
+        transform[0] = (arrowSize / spriteWidth) * scale.x;
+        transform[5] = (arrowSize / spriteHeight) * scale.y;
 
         if(!isExpanded(itemData.index)) {
             transform = transform * rotation;

@@ -108,11 +108,6 @@ private:
     ItemData *getItemData(int row);
     const ItemData *getItemData(int row) const;
 
-    float getArrowSize() const;
-    float getArrowWidth() const;
-    float getArrowHeight() const;
-    float getArrowOffset() const;
-
     static void arrowUpdated(int state, void *ptr);
     static void materialUpdated(int state, void *ptr);
 

@@ -502,7 +502,7 @@ void GraphController::cameraZoom(float delta) {
 
         m_activeCamera->setOrthoSize(m_screenSize.y / scale);
 
-        t->setScale(Vector3(scale, scale, 1.0f));
+        t->setScale(scale);
         t->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
     } else {
         m_zoom = CLAMP(m_zoom, 1, 10);

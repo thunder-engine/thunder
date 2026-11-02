@@ -26,6 +26,9 @@
 
 namespace {
     const char *gCssTabCornerRadius("tab-corner-radius");
+    const char *gCssTabBackgroundColor("tab-background-color");
+    const char *gCssTabPressedColor("tab-pressed-color");
+    const char *gCssTabHighlightedColor("tab-highlighted-color");
     const float gCloseButtonTextSpacing(12.0f);
 };
 
@@ -42,6 +45,9 @@ namespace {
 TabBar::TabBar() :
         m_tabCornerRadius(4.0f, 4.0f, 0.0f, 0.0f),
         m_tabPadding(3.0f, 8.0f, 3.0f, 8.0f),
+        m_tabBackgroundColor(0.49f, 0.49f, 0.49f, 1.0f),
+        m_tabPressedColor(0.32f, 0.32f, 0.32f, 1.0f),
+        m_tabHighlightedColor(0.38f, 0.38f, 0.38f, 1.0f),
         m_frontButton(nullptr),
         m_backButton(nullptr),
         m_currentIndex(-1),
@@ -58,12 +64,24 @@ TabBar::~TabBar() {
     Adds a new tab with the specified \a title and returns its index.
 */
 int TabBar::addTab(const TString &title) {
-    return insertTab(-1, title);
+    return insertTab(-1, title, nullptr);
+}
+/*!
+    Adds a new tab with the specified \a title, \a icon and returns its index.
+*/
+int TabBar::addTab(const TString &title, Sprite *icon) {
+    return insertTab(-1, title, icon);
 }
 /*!
     Inserts a new tab at the specified \a index with the given \a title.
 */
 int TabBar::insertTab(int index, const TString &title) {
+    return insertTab(index, title, nullptr);
+}
+/*!
+    Inserts a new tab at the specified \a index with the given \a title and \a icon.
+*/
+int TabBar::insertTab(int index, const TString &title, Sprite *icon) {
     Button *button = Widget::createWidget<Button>(title, this);
     if(button) {
         setSubWidget(button);
@@ -71,6 +89,10 @@ int TabBar::insertTab(int index, const TString &title) {
         button->setText(title);
         button->setCorners(m_tabCornerRadius);
         button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+        button->setIcon(icon);
+        button->setBackgroundColor(tabBackgroundColor());
+        button->setPressedColor(tabPressedColor());
+        button->setHighlightedColor(tabHighlightedColor());
 
         if(m_showClose) {
             createCloseButton(button);
@@ -90,7 +112,7 @@ int TabBar::insertTab(int index, const TString &title) {
         }
 
         button->setPivot(Vector2(0.0f, 1.0f));
-        button->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
+        button->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
 
         // If this is the first tab, select it
         if(m_currentIndex == -1) {
@@ -273,6 +295,12 @@ int TabBar::indexOf(Button *button) const {
     return -1;
 }
 /*!
+    Returns the corner radius for tabs.
+*/
+Vector4 TabBar::tabCornerRadius() const {
+    return m_tabCornerRadius;
+}
+/*!
     Sets the corner \a radius for tabs.
 */
 void TabBar::setTabCornerRadius(const Vector4 &radius) {
@@ -287,11 +315,66 @@ void TabBar::setTabCornerRadius(const Vector4 &radius) {
 #endif
 }
 /*!
-    Returns the corner radius for tabs.
+    Returns the tab background color.
 */
-Vector4 TabBar::tabCornerRadius() const {
-    return m_tabCornerRadius;
+Vector4 TabBar::tabBackgroundColor() const {
+    return m_tabBackgroundColor;
 }
+/*!
+    Sets the background \a color.
+*/
+void TabBar::setTabBackgroundColor(const Vector4 &color) {
+    m_tabBackgroundColor = color;
+    for(auto it : m_tabs) {
+        it->setBackgroundColor(m_tabBackgroundColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabBackgroundColor, m_tabBackgroundColor.v, 4);
+    }
+#endif
+}
+/*!
+    Returns the color used when the button is pressed.
+*/
+Vector4 TabBar::tabPressedColor() const {
+    return m_tabPressedColor;
+}
+/*!
+    Sets the \a color used when the button is pressed.
+*/
+void TabBar::setTabPressedColor(const Vector4 &color) {
+    m_tabPressedColor = color;
+    for(auto it : m_tabs) {
+        it->setPressedColor(m_tabPressedColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabPressedColor, m_tabPressedColor.v, 4);
+    }
+#endif
+}
+/*!
+    Returns the color used when the button is highlighted.
+*/
+Vector4 TabBar::tabHighlightedColor() const {
+    return m_tabHighlightedColor;
+}
+/*!
+    Sets the \a color used when the button is highlighted.
+*/
+void TabBar::setTabHighlightedColor(const Vector4 &color) {
+    m_tabHighlightedColor = color;
+    for(auto it : m_tabs) {
+        it->setHighlightedColor(m_tabHighlightedColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabHighlightedColor, m_tabHighlightedColor.v, 4);
+    }
+#endif
+}
+
 /*!
     \internal
 */
@@ -461,6 +544,7 @@ void TabBar::createCloseButton(Widget *parent) {
         closeBtn->setPivot(Vector2(1.0f, 0.5f));
         closeBtn->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
         closeBtn->setSize(Vector2(16));
+        closeBtn->setIcon(Engine::loadResource<Sprite>(".embedded/generic.png/Close"));
         closeBtn->blockSignals(false);
         repaint();
 

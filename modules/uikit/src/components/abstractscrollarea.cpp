@@ -111,10 +111,10 @@ void AbstractScrollArea::drawSub() {
 
     Vector4 clip = clipRegion();
     if(m_vScroll && m_vScroll->isVisible()) {
-        clip.z -= m_vScroll->size().x * m_vScroll->worldScale().x;
+        clip.z -= m_vScroll->size().x * m_vScroll->worldScale();
     }
     if(m_hScroll && m_hScroll->isVisible()) {
-        const float height = m_hScroll->size().y * m_hScroll->worldScale().y;
+        const float height = m_hScroll->size().y * m_hScroll->worldScale();
         clip.y += height;
         clip.w -= height;
     }

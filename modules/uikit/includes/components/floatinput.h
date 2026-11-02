@@ -19,9 +19,8 @@
 #define FLOATINPUT_H
 
 #include <widget.h>
-
-class LineEdit;
-class Button;
+#include <lineedit.h>
+#include <button.h>
 
 class UIKIT_EXPORT FloatInput : public Widget {
     A_OBJECT(FloatInput, Widget, UI)

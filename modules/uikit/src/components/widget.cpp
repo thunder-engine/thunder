@@ -37,6 +37,17 @@ namespace {
     const char *gCssMargin("margin");
     const char *gCssPadding("padding");
     const char *gCssDisplay("display");
+
+    enum {
+        FLAG_ENABLED = 0x1,
+        FLAG_VISIBLE = 0x2,
+        FLAG_SUB_WIDGET = 0x4,
+        FLAG_DIRTY = 0x8,
+        FLAG_VPOLICY_SHIFT = 4,
+        FLAG_HPOLICY_SHIFT = 6,
+        FLAG_VPOLICY_MASK = 0x3 << FLAG_VPOLICY_SHIFT,
+        FLAG_HPOLICY_MASK = 0x3 << FLAG_HPOLICY_SHIFT
+    };
 }
 
 Widget *Widget::m_focusWidget = nullptr;
@@ -85,8 +96,6 @@ bool KeyEvent::isAltPressed() const {
 */
 
 Widget::Widget() :
-        m_subWidget(false),
-        m_canvas(nullptr),
         m_position(0.0f),
         m_rotation(0.0f),
         m_scale(1.0f),
@@ -94,20 +103,17 @@ Widget::Widget() :
         m_worldRotation(0.0f),
         m_worldScale(1.0f),
         m_hash(0),
-        m_dirty(true),
         m_size(0.0f),
         m_pivot(0.5f),
-        m_minAnchors(0.5f),
-        m_maxAnchors(0.5f),
+        m_anchors(0.5f),
         m_margin(0.0f),
         m_border(0.0f),
         m_padding(0.0f),
+        m_icon(nullptr),
+        m_canvas(nullptr),
         m_layout(nullptr),
         m_attachedLayout(nullptr),
-        m_verticalPolicy(Fixed),
-        m_horizontalPolicy(Fixed),
-        m_enabled(true),
-        m_visible(true) {
+        m_flags(FLAG_ENABLED | FLAG_VISIBLE | FLAG_DIRTY) {
 
 }
 
@@ -165,7 +171,7 @@ void Widget::draw() {
     drawSub();
 
     for(auto it : m_childWidgets) {
-        if(!it->m_subWidget && it->isVisible()) {
+        if(!it->isSubWidget() && it->isVisible()) {
             it->draw();
         }
     }
@@ -198,23 +204,76 @@ void Widget::repaint() {
         canvas->markDirty();
     }
 }
+
+bool Widget::onMouseDown(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    return false;
+}
+
+bool Widget::onMouseUp(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    return false;
+}
+
+bool Widget::onMouseMove(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    return false;
+}
+
+bool Widget::onMouseDoubleClick(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    return false;
+}
+
+bool Widget::onMouseWheel(int delta, bool horizontal) {
+    A_UNUSED(delta);
+    A_UNUSED(horizontal);
+    return false;
+}
+
+bool Widget::onDrop(const TString &mimeType, const TString &data, int x, int y) {
+    A_UNUSED(mimeType);
+    A_UNUSED(data);
+    A_UNUSED(x);
+    A_UNUSED(y);
+    return false;
+}
+
+bool Widget::onKeyPress(KeyEvent *event) {
+    A_UNUSED(event);
+    return false;
+}
+
+bool Widget::onKeyRelease(KeyEvent *event) {
+    A_UNUSED(event);
+    return false;
+}
+
 /*!
     Sets current state of widget to \a enabled or disabled.
 */
 void Widget::setEnabled(bool enabled) {
-    if(m_enabled != enabled) {
-        m_enabled = enabled;
+    if(isEnabled() != enabled) {
+        m_flags = (m_flags & ~FLAG_ENABLED) | (enabled ? FLAG_ENABLED : 0);
     }
     repaint();
 }
 
-bool Widget::isEnabled() const { return m_enabled; }
+bool Widget::isEnabled() const {
+    return (m_flags & FLAG_ENABLED) != 0;
+}
 
-bool Widget::isVisible() const { return m_visible; }
+bool Widget::isVisible() const {
+    return (m_flags & FLAG_VISIBLE) != 0;
+}
 
 void Widget::setVisible(bool visible) {
-    if(m_visible != visible) {
-        m_visible = visible;
+    if(isVisible() != visible) {
+        m_flags = (m_flags & ~FLAG_VISIBLE) | (visible ? FLAG_VISIBLE : 0);
         if(m_attachedLayout) {
             Layout *layout = m_attachedLayout;
             layout->invalidate();
@@ -224,6 +283,14 @@ void Widget::setVisible(bool visible) {
         }
         repaint();
     }
+}
+
+Sprite *Widget::icon() const {
+    return m_icon;
+}
+
+void Widget::setIcon(Sprite *icon) {
+    m_icon = icon;
 }
 
 Widget *Widget::createWidget(const TString &type, const TString &name, Object *parent) {
@@ -239,7 +306,7 @@ Widget *Widget::createWidget(const TString &type, const TString &name, Object *p
 */
 void Widget::drawSub() {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget && it->isVisible()) {
+        if(it->isSubWidget() && it->isVisible()) {
             it->draw();
         }
     }
@@ -316,7 +383,7 @@ Canvas *Widget::canvas() {
     Returns true if widget is a part of complex widget; otherwise returns false.
 */
 bool Widget::isSubWidget() const {
-    return m_subWidget;
+    return (m_flags & FLAG_SUB_WIDGET) != 0;
 }
 /*!
     Returns the application widget that has the keyboard input focus, or nullptr if no widget in this application has the focus.
@@ -337,22 +404,6 @@ bool Widget::setDragCandidate(Widget *source, const TString &mimeType, const TSt
     m_dragStartPosition = m_mousePosition;
     m_dragCandidate = true;
     return true;
-}
-
-bool Widget::isDragActive() {
-    return m_dragActive;
-}
-
-Widget *Widget::dragSource() {
-    return m_dragSource;
-}
-
-const TString &Widget::dragMimeType() {
-    return m_dragMimeType;
-}
-
-const TString &Widget::dragData() {
-    return m_dragData;
 }
 
 Vector2 Widget::mousePosition() {
@@ -388,7 +439,7 @@ void Widget::cancelDragCandidate(Widget *source) {
 */
 Widget *Widget::subWidget(const TString &name) const {
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget) {
+        if(it->isSubWidget()) {
             if(it->name() == name) {
                 return it;
             } else {
@@ -418,12 +469,18 @@ void Widget::setSubWidget(Widget *widget) {
     }
     Widget *current = subWidget(widget->name());
     if(current != widget) {
-        widget->m_subWidget = true;
+        widget->makeSubWidget(true);
 
         if(current) {
-            current->m_subWidget = false;
+            current->makeSubWidget(false);
         }
     }
+}
+/*!
+    \internal
+*/
+void Widget::makeSubWidget(bool enable) {
+    m_flags = (m_flags & ~FLAG_SUB_WIDGET) | (enable ? FLAG_SUB_WIDGET : 0);
 }
 /*!
     \internal
@@ -457,7 +514,7 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     Widget *newParent = dynamic_cast<Widget *>(parent);
     Vector3 worldPos;
     float worldRot = 0.0f;
-    Vector3 worldScale;
+    float worldScale = 1.0f;
     const bool preserveWorldTransform = oldParent != newParent && newParent && !force;
     if(preserveWorldTransform) {
         worldPos = worldPosition();
@@ -480,17 +537,14 @@ void Widget::setParent(Object *parent, int32_t position, bool force) {
     }
 
     if(preserveWorldTransform) {
-        Vector3 parentScale = newParent->worldScale();
-        parentScale = Vector3(1.0f / parentScale.x, 1.0f / parentScale.y, 1.0f / parentScale.z);
+        float parentScale = 1.0f / newParent->worldScale();
         Matrix4 parentRotation;
         parentRotation.rotate(Vector3(0.0f, 0.0f, -newParent->worldRotation()));
         m_position = (parentRotation * (worldPos - newParent->worldPosition())) * parentScale;
         m_rotation = worldRot - newParent->worldRotation();
         m_scale = worldScale * parentScale;
-        setDirty();
-    } else {
-        setDirty();
     }
+    markSizeDirty();
     if(newParent && newParent->layout()) {
         if(m_attachedLayout != newParent->layout()) {
             newParent->layout()->addWidget(this);
@@ -541,7 +595,7 @@ void Widget::addStyleRules(const std::map<TString, TString> &rules, uint32_t wei
     }
 
     for(auto it : m_childWidgets) {
-        if(it->m_subWidget) {
+        if(it->isSubWidget()) {
             it->addStyleRules(rules, weight);
         }
     }
@@ -626,7 +680,7 @@ Vector4 Widget::styleBlock4Length(const TString &property, const Vector4 &value,
     \internal
 */
 void Widget::updateStyleProperty(const TString &name, const float *v, int32_t size) {
-    if(!isSignalsBlocked() && !m_subWidget) {
+    if(!isSignalsBlocked() && !isSubWidget()) {
         TString data;
         for(uint32_t i = 0; i < size; i++) {
             data += TString::number((int)v[i]) + "px ";
@@ -662,7 +716,7 @@ bool Widget::dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizon
         const bool subWidget = pass != 0;
         for(auto it = m_childWidgets.rbegin(); it != m_childWidgets.rend(); ++it) {
             Widget *child = *it;
-            if(child && child->m_subWidget == subWidget && child->isEnabled() &&
+            if(child && child->isSubWidget() == subWidget && child->isEnabled() &&
                child->isVisible() && child->isHovered(pos)) {
                 if(child->dispatchMouseWheelEvent(pos, delta, horizontal)) {
                     return true;
@@ -699,7 +753,7 @@ bool Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button
         const bool subWidget = pass != 0;
         for(auto it = m_childWidgets.rbegin(); it != m_childWidgets.rend(); ++it) {
             Widget *child = *it;
-            if(child && child->m_subWidget == subWidget && child->isEnabled() &&
+            if(child && child->isSubWidget() == subWidget && child->isEnabled() &&
                child->isVisible() && child->isHovered(pos)) {
                 if(child->dispatchMouseEvent(pos, type, button)) {
                     return true;
@@ -770,7 +824,7 @@ void Widget::contextMenuRequested(const Vector2 &position) {
 void Widget::setPosition(const Vector3 &position) {
     if(m_position != position) {
         m_position = position;
-        setDirty();
+        markDirty();
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) {
             updateStyleProperty(gCssPosition, position.v, 2);
@@ -783,15 +837,23 @@ void Widget::setPosition(const Vector3 &position) {
 /*!
     Returns the position of the Widget in local space.
 */
-Vector3 Widget::position() const { return m_position; }
+Vector3 Widget::position() const {
+    return m_position;
+}
+
 /*!
     Returns the rotation of the Widget in local space.
 */
-float Widget::rotation() const { return m_rotation; }
+float Widget::rotation() const {
+    return m_rotation;
+}
+
 /*!
     Returns the scale of the Widget in local space.
 */
-Vector3 Widget::scale() const { return m_scale; }
+float Widget::scale() const {
+    return m_scale;
+}
 
 /*!
     Changes the \a rotation of the Widget in local space.
@@ -799,7 +861,7 @@ Vector3 Widget::scale() const { return m_scale; }
 void Widget::setRotation(float rotation) {
     if(m_rotation != rotation) {
         m_rotation = rotation;
-        setDirty();
+        markDirty();
         repaint();
     }
 }
@@ -807,10 +869,10 @@ void Widget::setRotation(float rotation) {
 /*!
     Changes \a scale of the Transform in local space.
 */
-void Widget::setScale(const Vector3 &scale) {
+void Widget::setScale(float scale) {
     if(m_scale != scale) {
         m_scale = scale;
-        setDirty();
+        markDirty();
         repaint();
     }
 }
@@ -822,11 +884,15 @@ Vector3 Widget::worldPosition() const { cleanDirty(); return m_worldTransform.po
 /*!
     Returns the world rotation of the Widget.
 */
-float Widget::worldRotation() const { cleanDirty(); return m_worldRotation; }
+float Widget::worldRotation() const {
+    cleanDirty(); return m_worldRotation;
+}
 /*!
     Returns the world scale of the Widget.
 */
-Vector3 Widget::worldScale() const { cleanDirty(); return m_worldScale; }
+float Widget::worldScale() const {
+    cleanDirty(); return m_worldScale;
+}
 /*!
     Returns the world transform of the Widget.
 */
@@ -844,10 +910,10 @@ Vector2 Widget::size() const { return m_size; }
 */
 void Widget::setSize(const Vector2 &size) {
     if(m_size != size) {
-        if(m_attachedLayout || abs(m_minAnchors.x - m_maxAnchors.x) <= EPSILON) {
+        if(m_attachedLayout || abs(m_anchors.x - m_anchors.z) <= EPSILON) {
             m_size.x = size.x;
         }
-        if(m_attachedLayout || abs(m_minAnchors.y - m_maxAnchors.y) <= EPSILON) {
+        if(m_attachedLayout || abs(m_anchors.y - m_anchors.w) <= EPSILON) {
             m_size.y = size.y;
         }
         if(m_attachedLayout) {
@@ -855,16 +921,16 @@ void Widget::setSize(const Vector2 &size) {
         }
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) {
-            if(m_horizontalPolicy == Fixed && m_verticalPolicy == Fixed) {
+            if(horizontalPolicy() == Fixed && verticalPolicy() == Fixed) {
                 updateStyleProperty(gCssSize, m_size.v, 2);
-            } else if(m_horizontalPolicy == Fixed) {
+            } else if(horizontalPolicy() == Fixed) {
                 updateStyleProperty(gCssWidth, &m_size.x, 1);
-            } else if(m_verticalPolicy == Fixed) {
+            } else if(verticalPolicy() == Fixed) {
                 updateStyleProperty(gCssHeight, &m_size.y, 1);
             }
         }
 #endif
-        setDirty();
+        markSizeDirty();
         boundChanged(m_size);
         repaint();
     }
@@ -873,20 +939,32 @@ void Widget::setSize(const Vector2 &size) {
 /*!
     Returns the pivot point of the Widget.
 */
-Vector2 Widget::pivot() const { return m_pivot; }
+Vector2 Widget::pivot() const {
+    return m_pivot;
+}
+
 /*!
     Returns the minimum anchors of the Widget.
 */
-Vector2 Widget::minAnchors() const { return m_minAnchors; }
+Vector2 Widget::minAnchors() const {
+    return Vector2(m_anchors.x, m_anchors.y);
+}
+
 /*!
     Returns the maximum anchors of the Widget.
 */
-Vector2 Widget::maxAnchors() const { return m_maxAnchors; }
+Vector2 Widget::maxAnchors() const {
+    return Vector2(m_anchors.z, m_anchors.w);
+}
+
 /*!
     Returns the margin offsets of the Widget.
     The Vector4 contains offsets in top, right, bottom and left order.
 */
-Vector4 Widget::margin() const { return m_margin; }
+Vector4 Widget::margin() const {
+    return m_margin;
+}
+
 /*!
     Returns the border width of the Widget.
     The Vector4 contains border widths in top, right, bottom and left order.
@@ -905,7 +983,7 @@ void Widget::setPivot(const Vector2 &pivot) {
     if(m_pivot != pivot) {
         m_pivot = pivot;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markDirty();
         repaint();
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) updateStyleProperty(gCssPivot, m_pivot.v, 2);
@@ -917,13 +995,14 @@ void Widget::setPivot(const Vector2 &pivot) {
     Sets the minimum \a anchors of the Widget.
 */
 void Widget::setMinAnchors(const Vector2 &anchors) {
-    if(m_minAnchors != anchors) {
-        m_minAnchors = anchors;
+    if(minAnchors() != anchors) {
+        m_anchors.x = anchors.x;
+        m_anchors.y = anchors.y;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
 #ifdef SHARED_DEFINE
-        if(!isSignalsBlocked()) updateStyleProperty(gCssMinAnchors, m_minAnchors.v, 2);
+        if(!isSignalsBlocked()) updateStyleProperty(gCssMinAnchors, m_anchors.v, 2);
 #endif
     }
 }
@@ -932,13 +1011,14 @@ void Widget::setMinAnchors(const Vector2 &anchors) {
     Sets the maximum \a anchors of the Widget.
 */
 void Widget::setMaxAnchors(const Vector2 &anchors) {
-    if(m_maxAnchors != anchors) {
-        m_maxAnchors = anchors;
+    if(maxAnchors() != anchors) {
+        m_anchors.z = anchors.x;
+        m_anchors.w = anchors.y;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
 #ifdef SHARED_DEFINE
-        if(!isSignalsBlocked()) updateStyleProperty(gCssMaxAnchors, m_maxAnchors.v, 2);
+        if(!isSignalsBlocked()) updateStyleProperty(gCssMaxAnchors, &m_anchors.v[2], 2);
 #endif
     }
 }
@@ -947,8 +1027,23 @@ void Widget::setMaxAnchors(const Vector2 &anchors) {
     Sets both the \a minimum and \a maximum anchors of the Widget.
 */
 void Widget::setAnchors(const Vector2 &minimum, const Vector2 &maximum) {
-    setMinAnchors(minimum);
-    setMaxAnchors(maximum);
+    const bool minChanged = minAnchors() != minimum;
+    const bool maxChanged = maxAnchors() != maximum;
+    if(minChanged || maxChanged) {
+        m_anchors.x = minimum.x;
+        m_anchors.y = minimum.y;
+        m_anchors.z = maximum.x;
+        m_anchors.w = maximum.y;
+        if(m_attachedLayout) m_attachedLayout->invalidate();
+        markSizeDirty();
+        repaint();
+#ifdef SHARED_DEFINE
+        if(!isSignalsBlocked()) {
+            if(minChanged) updateStyleProperty(gCssMinAnchors, m_anchors.v, 2);
+            if(maxChanged) updateStyleProperty(gCssMaxAnchors, &m_anchors.v[2], 2);
+        }
+#endif
+    }
 }
 /*!
     Sets the top, right, bottom and left \a margin offsets of the Widget.
@@ -957,7 +1052,7 @@ void Widget::setMargin(const Vector4 &margin) {
     if(m_margin != margin) {
         m_margin = margin;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) updateStyleProperty(gCssMargin, m_margin.v, 4);
@@ -972,7 +1067,7 @@ void Widget::setBorder(const Vector4 &border) {
     if(m_border != border) {
         m_border = border;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) updateStyleProperty(gCssBorder, m_border.v, 4);
@@ -987,7 +1082,7 @@ void Widget::setPadding(const Vector4 &padding) {
     if(m_padding != padding) {
         m_padding = padding;
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
 #ifdef SHARED_DEFINE
         if(!isSignalsBlocked()) updateStyleProperty(gCssPadding, m_padding.v, 4);
@@ -1026,7 +1121,7 @@ void Widget::setLayout(Layout *layout) {
         cleanDirty();
     } else {
         if(m_attachedLayout) m_attachedLayout->invalidate();
-        setDirty();
+        markSizeDirty();
         repaint();
     }
 }
@@ -1045,24 +1140,34 @@ AABBox Widget::bound() const {
 /*!
     Returns vertical size policy.
 */
-int Widget::verticalPolicy() const { return m_verticalPolicy; }
+int Widget::verticalPolicy() const {
+    return (m_flags & FLAG_VPOLICY_MASK) >> FLAG_VPOLICY_SHIFT;
+}
+
 /*!
     Returns horizontal size policy.
 */
-int Widget::horizontalPolicy() const { return m_horizontalPolicy; }
+int Widget::horizontalPolicy() const {
+    return (m_flags & FLAG_HPOLICY_MASK) >> FLAG_HPOLICY_SHIFT;
+}
+
 /*!
     Sets vertical size \a policy.
 */
 void Widget::setVerticalPolicy(SizePolicy policy) {
-    m_verticalPolicy = policy;
+    m_flags = (m_flags & ~FLAG_VPOLICY_MASK) | ((policy & 0x3) << FLAG_VPOLICY_SHIFT);
     if(m_attachedLayout) m_attachedLayout->invalidate();
+    markSizeDirty();
+    repaint();
 }
 /*!
     Sets horizontal size \a policy.
 */
 void Widget::setHorizontalPolicy(SizePolicy policy) {
-    m_horizontalPolicy = policy;
+    m_flags = (m_flags & ~FLAG_HPOLICY_MASK) | ((policy & 0x3) << FLAG_HPOLICY_SHIFT);
     if(m_attachedLayout) m_attachedLayout->invalidate();
+    markSizeDirty();
+    repaint();
 }
 
 /*!
@@ -1078,53 +1183,28 @@ Vector4 Widget::clipRegion() const {
     Vector4 offsets(m_border + m_padding);
     return Vector4(m_worldTransform[12] + offsets.w,
                    m_worldTransform[13] + offsets.z,
-                   (m_size.x - offsets.y - offsets.w) * m_worldScale.x,
-                   (m_size.y - offsets.x - offsets.z) * m_worldScale.y);
+                   (m_size.x - offsets.y - offsets.w) * m_worldScale,
+                   (m_size.y - offsets.x - offsets.z) * m_worldScale);
 }
 
-void Widget::setDirty() {
-    m_dirty = true;
+bool Widget::isDirty() const {
+    return (m_flags & FLAG_DIRTY) != 0;
+}
+
+void Widget::setDirty(bool dirty) const {
+    m_flags = (m_flags & ~FLAG_DIRTY) | (dirty ? FLAG_DIRTY : 0);
+}
+
+void Widget::markDirty() {
+    setDirty(true);
     for(Widget *child : m_childWidgets) {
-        child->setDirty();
+        child->markDirty();
     }
 }
 
-void Widget::cleanDirtySize() const {
-    if(m_attachedLayout == nullptr) {
-        const bool fitWidth = abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON;
-        const bool fitHeight = abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON;
-        if(m_layout && ((!fitWidth && m_horizontalPolicy == Preferred) ||
-                        (!fitHeight && m_verticalPolicy == Preferred))) {
-            Vector2 hint(m_layout->sizeHint());
-            if(!fitWidth && m_horizontalPolicy == Preferred) {
-                m_size.x = hint.x;
-            }
-            if(!fitHeight && m_verticalPolicy == Preferred) {
-                m_size.y = hint.y;
-            }
-        }
-        if(fitWidth || fitHeight) {
-            Vector2 parentSize;
-            if(Widget *parent = parentWidget()) {
-                parentSize = parent->size();
-                Vector4 parentBorder(parent->border());
-                parentSize -= Vector2(parentBorder.y + parentBorder.w,
-                                      parentBorder.x + parentBorder.z);
-            }
-            if(fitWidth) {
-                m_size.x = parentSize.x * (m_maxAnchors.x - m_minAnchors.x) -
-                           (m_margin[1] + m_margin[3]);
-            }
-            if(fitHeight) {
-                m_size.y = parentSize.y * (m_maxAnchors.y - m_minAnchors.y) -
-                           (m_margin[0] + m_margin[2]);
-            }
-        }
-    }
-}
-
-void Widget::cleanDirty() const {
-    if(!m_dirty) return;
+void Widget::markSizeDirty() {
+    setDirty(true);
+    const Vector2 oldSize(m_size);
     cleanDirtySize();
     if(m_layout) {
         const Vector4 inset(m_padding + m_border);
@@ -1132,9 +1212,60 @@ void Widget::cleanDirty() const {
                                     MAX(0.0f, m_size.y - inset.x - inset.z));
         m_layout->solveItemsDimension(availableSize.x, true, false);
         m_layout->solveItemsDimension(availableSize.y, false, false);
-        m_layout->solveItemsPosition(m_size.y,
-                                    Vector2(inset.w, inset.z));
+        m_layout->solveItemsPosition(m_size.y, Vector2(inset.w, inset.z));
     }
+    if(m_size != oldSize) {
+        boundChanged(m_size);
+        repaint();
+    }
+    for(Widget *child : m_childWidgets) {
+        child->markSizeDirty();
+    }
+}
+
+void Widget::setLayoutSize(const Vector2 &size) {
+    if(m_size != size) {
+        m_size = size;
+        markSizeDirty();
+        boundChanged(m_size);
+        repaint();
+    }
+}
+
+void Widget::cleanDirtySize() {
+    const bool fitWidth = abs(minAnchors().x - maxAnchors().x) > EPSILON;
+    const bool fitHeight = abs(minAnchors().y - maxAnchors().y) > EPSILON;
+    if(m_layout && ((!fitWidth && horizontalPolicy() == Preferred) ||
+                    (!fitHeight && verticalPolicy() == Preferred))) {
+        Vector2 hint(m_layout->sizeHint());
+        if(!fitWidth && horizontalPolicy() == Preferred) {
+            m_size.x = hint.x;
+        }
+        if(!fitHeight && verticalPolicy() == Preferred) {
+            m_size.y = hint.y;
+        }
+    }
+    if(m_attachedLayout == nullptr && (fitWidth || fitHeight)) {
+        Vector2 parentSize;
+        if(Widget *parent = parentWidget()) {
+            parentSize = parent->size();
+            Vector4 parentBorder(parent->border());
+            parentSize -= Vector2(parentBorder.y + parentBorder.w,
+                                  parentBorder.x + parentBorder.z);
+        }
+        if(fitWidth) {
+            m_size.x = parentSize.x * (maxAnchors().x - minAnchors().x) -
+                       (m_margin[1] + m_margin[3]);
+        }
+        if(fitHeight) {
+            m_size.y = parentSize.y * (maxAnchors().y - minAnchors().y) -
+                       (m_margin[0] + m_margin[2]);
+        }
+    }
+}
+
+void Widget::cleanDirty() const {
+    if(!isDirty()) return;
     Matrix4 transform;
     transform.translate(m_position);
     Matrix4 rotation;
@@ -1154,21 +1285,21 @@ void Widget::cleanDirty() const {
     }
 
     if(m_attachedLayout == nullptr && parent) {
-        Vector2 anchors(m_minAnchors + m_maxAnchors);
+        Vector2 anchors(minAnchors() + maxAnchors());
         Vector2 parentCenter(anchors * parent->m_size * 0.5f);
-        float x = abs(m_minAnchors.x - m_maxAnchors.x) > EPSILON ?
-            parent->m_size.x * m_minAnchors.x + m_margin[3] :
-            parentCenter.x / parent->m_scale.x - m_size.x * m_pivot.x + m_margin[3];
-        float y = abs(m_minAnchors.y - m_maxAnchors.y) > EPSILON ?
-            parent->m_size.y * m_minAnchors.y + m_margin[2] :
-            parentCenter.y / parent->m_scale.y - m_size.y * m_pivot.y + m_margin[2];
+        float x = abs(minAnchors().x - maxAnchors().x) > EPSILON ?
+            parent->m_size.x * minAnchors().x + m_margin[3] :
+            parentCenter.x / parent->m_scale - m_size.x * m_pivot.x + m_margin[3];
+        float y = abs(minAnchors().y - maxAnchors().y) > EPSILON ?
+            parent->m_size.y * minAnchors().y + m_margin[2] :
+            parentCenter.y / parent->m_scale - m_size.y * m_pivot.y + m_margin[2];
         transform[12] += x;
         transform[13] += y;
         m_worldTransform = parent->worldTransform() * transform;
     }
     m_hash = 16;
     for(int i = 0; i < 16; ++i) Mathf::hashCombine(m_hash, m_worldTransform[i]);
-    m_dirty = false;
+    setDirty(false);
 }
 
 void Widget::applyGeometryStyle() {
@@ -1184,8 +1315,8 @@ void Widget::applyGeometryStyle() {
     sizeValue.y = styleLength(gCssHeight, sizeValue.y, pixels);
     setSize(sizeValue);
     setPivot(styleBlock2Length(gCssPivot, m_pivot, pixels));
-    setMinAnchors(styleBlock2Length(gCssMinAnchors, m_minAnchors, pixels));
-    setMaxAnchors(styleBlock2Length(gCssMaxAnchors, m_maxAnchors, pixels));
+    setMinAnchors(styleBlock2Length(gCssMinAnchors, minAnchors(), pixels));
+    setMaxAnchors(styleBlock2Length(gCssMaxAnchors, maxAnchors(), pixels));
 
     Vector4 borderValue = styleBlock4Length(gCssBorder, m_border, pixels);
     borderValue.x = styleLength("border-top-width", borderValue.x, pixels);

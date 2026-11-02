@@ -102,6 +102,8 @@ void ItemViewDelegate::updateData(AbstractItemView *view) {
     float iconExtent = cellSize.x > 0.0f ? cellSize.x : 32.0f;
     if(iconMode) {
         iconExtent = std::max(1.0f, std::min(cellSize.x - 8.0f, cellSize.y - 28.0f));
+    } else {
+        iconExtent -= 4.0f;
     }
     Vector2 iconSize(iconExtent);
 

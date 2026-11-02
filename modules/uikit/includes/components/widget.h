@@ -22,10 +22,10 @@
 #include <uikit.h>
 #include <astring.h>
 
-class CommandBuffer;
 class StyleSheet;
 
 class Canvas;
+class Sprite;
 
 class KeyEvent {
 public:
@@ -55,7 +55,7 @@ class UIKIT_EXPORT Widget : public Object {
         A_PROPERTY(bool, visible, Widget::isVisible, Widget::setVisible),
         A_PROPERTY(Vector3, position, Widget::position, Widget::setPosition),
         A_PROPERTY(float, rotation, Widget::rotation, Widget::setRotation),
-        A_PROPERTY(Vector3, scale, Widget::scale, Widget::setScale),
+        A_PROPERTY(float, scale, Widget::scale, Widget::setScale),
         A_PROPERTY(Vector2, size, Widget::size, Widget::setSize),
         A_PROPERTY(Vector2, minAnchors, Widget::minAnchors, Widget::setMinAnchors),
         A_PROPERTY(Vector2, maxAnchors, Widget::maxAnchors, Widget::setMaxAnchors),
@@ -87,7 +87,6 @@ public:
         Expanding
     };
 
-public:
     Widget();
     ~Widget() override;
 
@@ -110,15 +109,18 @@ public:
     bool isVisible() const;
     void setVisible(bool visible);
 
+    Sprite *icon() const;
+    void setIcon(Sprite *icon);
+
     Vector3 position() const;
     void setPosition(const Vector3 &position);
     float rotation() const;
     void setRotation(float rotation);
-    Vector3 scale() const;
-    void setScale(const Vector3 &scale);
+    float scale() const;
+    void setScale(float scale);
     Vector3 worldPosition() const;
     float worldRotation() const;
-    Vector3 worldScale() const;
+    float worldScale() const;
     const Matrix4 &worldTransform() const;
     const std::list<Widget *> &children() const;
 
@@ -160,27 +162,21 @@ public:
 
     static Widget *focusWidget();
 
-    static bool setDragCandidate(Widget *source, const TString &mimeType, const TString &data);
-    static bool isDragActive();
-    static Widget *dragSource();
-    static const TString &dragMimeType();
-    static const TString &dragData();
     static Vector2 mousePosition();
+    static bool setDragCandidate(Widget *source, const TString &mimeType, const TString &data);
     static void finishDrag(bool dropped);
     static void cancelDragCandidate(Widget *source = nullptr);
 
     void repaint();
 
-    virtual bool onMouseDown(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
-    virtual bool onMouseUp(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
-    virtual bool onMouseMove(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
-    virtual bool onMouseDoubleClick(int x, int y) { A_UNUSED(x); A_UNUSED(y); return false; }
-    virtual bool onMouseWheel(int delta, bool horizontal) { A_UNUSED(delta); A_UNUSED(horizontal); return false; }
-    virtual bool onDrop(const TString &mimeType, const TString &data, int x, int y) {
-        A_UNUSED(mimeType); A_UNUSED(data); A_UNUSED(x); A_UNUSED(y); return false;
-    }
-    virtual bool onKeyPress(KeyEvent *event) { A_UNUSED(event); return false; }
-    virtual bool onKeyRelease(KeyEvent *event) { A_UNUSED(event); return false; }
+    virtual bool onMouseDown(int x, int y);
+    virtual bool onMouseUp(int x, int y);
+    virtual bool onMouseMove(int x, int y);
+    virtual bool onMouseDoubleClick(int x, int y);
+    virtual bool onMouseWheel(int delta, bool horizontal);
+    virtual bool onDrop(const TString &mimeType, const TString &data, int x, int y);
+    virtual bool onKeyPress(KeyEvent *event);
+    virtual bool onKeyRelease(KeyEvent *event);
 
     Widget *subWidget(const TString &name) const;
     void setSubWidget(Widget *widget);
@@ -235,9 +231,14 @@ protected:
 private:
     void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
     void applyGeometryStyle();
-    void setDirty();
+    bool isDirty() const;
+    void setDirty(bool dirty) const;
+    void markDirty();
+    void markSizeDirty();
+    void setLayoutSize(const Vector2 &size);
     void cleanDirty() const;
-    void cleanDirtySize() const;
+    void cleanDirtySize();
+    void makeSubWidget(bool enable);
 
 private:
     friend class Canvas;
@@ -246,31 +247,26 @@ private:
 
     StringList m_classes;
 
-    Canvas *m_canvas;
-
+    mutable Matrix4 m_worldTransform;
     Vector3 m_position;
     float m_rotation;
-    Vector3 m_scale;
-    mutable Matrix4 m_worldTransform;
+    float m_scale;
     mutable float m_worldRotation;
-    mutable Vector3 m_worldScale;
-    mutable uint32_t m_hash;
-    mutable bool m_dirty;
+    mutable float m_worldScale;
 
     Vector2 m_pivot;
-    Vector2 m_minAnchors;
-    Vector2 m_maxAnchors;
+    Vector4 m_anchors;
     Vector4 m_margin;
     Vector4 m_border;
     Vector4 m_padding;
+
+    Sprite *m_icon;
+    Canvas *m_canvas;
     Layout *m_layout;
     Layout *m_attachedLayout;
-    int m_verticalPolicy;
-    int m_horizontalPolicy;
-    bool m_enabled;
-    bool m_visible;
 
-    bool m_subWidget;
+    mutable uint32_t m_hash;
+    mutable int m_flags;
 
     static Widget *m_focusWidget;
     static Widget *m_dragSource;
@@ -280,7 +276,6 @@ private:
     static Vector2 m_dragStartPosition;
     static bool m_dragCandidate;
     static bool m_dragActive;
-
 };
 
 #endif // WIDGET_H

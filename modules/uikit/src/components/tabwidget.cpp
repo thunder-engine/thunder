@@ -36,7 +36,7 @@ TabWidget::TabWidget() :
         m_currentIndex(-1),
         m_tabBar(nullptr),
         m_contentArea(nullptr),
-        m_tabBarHeight(30.0f),
+        m_tabBarHeight(22.0f),
         m_closeOnRequest(true),
         m_composingComponent(false) {
 
@@ -60,6 +60,13 @@ TabWidget::~TabWidget() {
 */
 int TabWidget::addTab(const TString &title, Widget *content) {
     return insertTab(-1, title, content);
+}
+/*!
+    Adds a new tab with the specified \a title, \a icon and returns its index.
+    The \a content widget will be displayed when this tab is selected.
+*/
+int TabWidget::addTab(const TString &title, Sprite *icon, Widget *content) {
+    return insertTab(-1, title, icon, content);
 }
 /*!
     Removes the tab at the specified \a index.
@@ -96,12 +103,12 @@ Widget *TabWidget::takeTab(int index) {
     std::advance(it, index);
 
     // Remove content from layout
-    Widget *rect = *it;
+    Widget *widget = *it;
     m_tabs.erase(it);
 
-    if(rect) {
-        m_contentArea->layout()->removeWidget(rect);
-        rect->setParent(nullptr);
+    if(widget) {
+        m_contentArea->layout()->removeWidget(widget);
+        widget->setParent(nullptr);
     }
 
     int nextIndex = -1;
@@ -120,7 +127,7 @@ Widget *TabWidget::takeTab(int index) {
     m_currentIndex = -1;
     setCurrentIndex(nextIndex);
 
-    return rect;
+    return widget;
 }
 /*!
     Returns the number of tabs.
@@ -218,10 +225,9 @@ void TabWidget::setTabBar(TabBar *bar) {
 
     m_tabBar = bar;
     if(m_tabBar) {
-        Widget *rect = m_tabBar;
-        rect->setSize(Vector2(rect->size().x, m_tabBarHeight));
-        rect->setHorizontalPolicy(Widget::Expanding);
-        rect->setVerticalPolicy(Widget::Fixed);
+        m_tabBar->setSize(Vector2(m_tabBar->size().x, m_tabBarHeight));
+        m_tabBar->setHorizontalPolicy(Widget::Expanding);
+        m_tabBar->setVerticalPolicy(Widget::Fixed);
 
         connect(m_tabBar, _SIGNAL(currentChanged(int)), this, _SLOT(setCurrentIndex(int)));
         connect(m_tabBar, _SIGNAL(tabCloseRequested(int)), this, _SLOT(onTabCloseRequested(int)));
@@ -282,36 +288,39 @@ void TabWidget::composeComponent() {
     Layout *mainLayout = new Layout();
     mainLayout->setOrientation(Widget::Vertical);
 
-    Widget *rect = this;
-    rect->setLayout(mainLayout);
+    setLayout(mainLayout);
 
     mainLayout->addWidget(m_tabBar);
     mainLayout->addWidget(m_contentArea);
 
-    rect->setSize(Vector2(200.0f, 200.0f));
+    setSize(Vector2(200.0f, 200.0f));
     m_composingComponent = false;
 }
 /*!
     \internal
 */
-void TabWidget::childAdded(Widget *rect) {
-    if(!rect || m_composingComponent || rect == m_tabBar || rect == m_contentArea ||
-       rect->isSubWidget() || dynamic_cast<TabBar *>(rect)) {
+void TabWidget::childAdded(Widget *widget) {
+    if(!widget || m_composingComponent || widget == m_tabBar || widget == m_contentArea ||
+       widget->isSubWidget() || dynamic_cast<TabBar *>(widget)) {
         return;
     }
 
     for(auto it : m_tabs) {
-        if(it == rect) {
+        if(it == widget) {
             return;
         }
     }
 
-    insertTab(-1, rect->name(), rect);
+    insertTab(-1, widget->name(), widget);
 }
 /*!
     Inserts a new tab at the specified \a index with the given \a title and \a content.
 */
 int TabWidget::insertTab(int index, const TString &title, Widget *content) {
+    return insertTab(index, title, nullptr, content);
+}
+
+int TabWidget::insertTab(int index, const TString &title, Sprite *icon, Widget *content) {
     if(!content) {
         return -1;
     }
@@ -322,7 +331,7 @@ int TabWidget::insertTab(int index, const TString &title, Widget *content) {
         content->setVisible(false);
     }
 
-    m_tabBar->insertTab(index, title);
+    m_tabBar->insertTab(index, title, icon);
 
     // Calculate insertion position
     auto it = m_tabs.begin();
@@ -346,6 +355,7 @@ int TabWidget::insertTab(int index, const TString &title, Widget *content) {
 
     return index;
 }
+
 /*!
     \internal
 */
