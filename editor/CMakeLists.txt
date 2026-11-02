@@ -52,7 +52,6 @@ if(desktop)
     file(GLOB EDITOR_SOURCES
         "src/coverters/*.cpp"
         "src/editor/*.cpp"
-        "src/viewport/*.cpp"
         "src/*.cpp"
     )
 
@@ -138,6 +137,11 @@ if(desktop)
         DESTINATION "${INC_PATH}/editor"
         FILES_MATCHING PATTERN "*.h"
         PATTERN "converters" EXCLUDE
+    )
+
+    install(DIRECTORY includes/viewport/
+        DESTINATION "${INC_PATH}/viewport"
+        FILES_MATCHING PATTERN "*.h"
     )
 
 endif()
