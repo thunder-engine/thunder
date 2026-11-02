@@ -5,6 +5,7 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "*.h",
+        "*.qrc",
         "converter/*.cpp",
         "converter/*.h",
         "editor/*.cpp",
@@ -45,7 +46,11 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE"]
+        cpp.defines: {
+            var result = motiontools.defines
+            result.push("SHARED_DEFINE")
+            return result
+        }
         cpp.includePaths: motiontools.incPaths
         cpp.cxxLanguageVersion: motiontools.languageVersion
         cpp.cxxStandardLibrary: motiontools.standardLibrary

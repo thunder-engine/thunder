@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="icons/states.png">editor/icons/states.png</file>
+    </qresource>
+</RCC>

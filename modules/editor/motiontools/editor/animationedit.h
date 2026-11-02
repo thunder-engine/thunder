@@ -5,11 +5,13 @@
 
 #include <editor/legacyasseteditor.h>
 
+class AnimationControllerBuilder;
 class AnimationControllerGraph;
 class AnimationStateMachine;
-class AssetConverter;
 
-class UndoCommand;
+class LegacyCameraController;
+class Armature;
+class Animator;
 
 class AnimationProxy;
 
@@ -25,6 +27,8 @@ class AnimationEdit : public LegacyAssetEditor {
 public:
     AnimationEdit();
     ~AnimationEdit();
+
+    void onGraphUpdated();
 
 private slots:
     void onCutAction() override;
@@ -43,6 +47,9 @@ private slots:
     void onDeleteVariable();
 
 private:
+    void readSettings();
+    void writeSettings();
+
     QWidget *propertiesWidget() override;
 
     QMenu *propertyContextMenu(Object *object, const TString &property) override;
@@ -57,6 +64,7 @@ private:
     TString assetType() const override;
 
     void changeEvent(QEvent *event) override;
+    void timerEvent(QTimerEvent *) override;
 
     Object::ObjectList selected() const override;
 
@@ -66,7 +74,15 @@ private:
     Ui::AnimationEdit *ui;
 
     AnimationControllerGraph *m_graph;
-    AssetConverter *m_assetConverter;
+    AnimationControllerBuilder *m_builder;
+
+    LegacyCameraController *m_controller;
+
+    Actor *m_light;
+
+    Animator *m_animator;
+
+    Armature *m_armature;
 
     AnimationStateMachine *m_stateMachine;
 
