@@ -86,7 +86,7 @@ public:
         }
     }
 
-    void setController(LegacyCameraController *controller) {
+    void setController(CameraControllerCore *controller) {
         m_controller = controller;
     }
 
@@ -154,7 +154,7 @@ protected:
 
     MaterialInstance *m_combineMaterial;
 
-    LegacyCameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     float m_width;
 
