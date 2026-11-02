@@ -22,12 +22,17 @@
 #include "pluginmanager.h"
 
 #include "legacydocumentmodel.h"
-
 #include "editor/legacyeditorgadget.h"
 #include "editor/legacyasseteditor.h"
+
+#include "editor/editorgadget.h"
+#include "editor/asseteditor.h"
+#include "editor/documentmodel.h"
 #include "editor/assetmanager.h"
 
 #include <url.h>
+
+#include <algorithm>
 
 /*!
     \module Editor
@@ -46,16 +51,18 @@
     opened asset editors.
 */
 
-std::list<LegacyEditorGadget *> Editor::s_gadgets;
+std::list<LegacyEditorGadget *> Editor::s_legacyGadgets;
+std::list<EditorGadget *> Editor::s_gadgets;
 
-LegacyAssetEditor *Editor::s_currentEditor = nullptr;
+LegacyAssetEditor *Editor::s_legacyCurrentEditor = nullptr;
+LegacyDocumentModel *Editor::s_legacyDocumentModel = nullptr;
+AssetEditor *Editor::s_currentEditor = nullptr;
+DocumentModel *Editor::s_documentModel = nullptr;
 
 EditorSettings *Editor::s_editorSettings = nullptr;
 ProjectSettings *Editor::s_projectSettings = nullptr;
 AssetManager *Editor::s_assetManager = nullptr;
 PluginManager *Editor::s_pluginManager = nullptr;
-
-LegacyDocumentModel *Editor::s_documentModel = nullptr;
 
 TString Editor::m_binPath;
 
@@ -76,17 +83,29 @@ void Editor::init(int argc, char *argv[]) {
     Editor::plugins()->init(&Engine::instance());
 }
 
-void Editor::initDocumentSystem() {
-    s_documentModel = new LegacyDocumentModel;
+void Editor::initDocumentSystem(bool useLegacy) {
+    if(useLegacy) {
+        s_legacyDocumentModel = new LegacyDocumentModel;
 
-    for(auto &it : Editor::plugins()->extensions("gadget")) {
-        addGadget(reinterpret_cast<LegacyEditorGadget *>(Editor::plugins()->getPluginObject(it)));
+        for(auto &it : Editor::plugins()->extensions("legacygadget")) {
+            addGadget(reinterpret_cast<LegacyEditorGadget *>(Editor::plugins()->getPluginObject(it)));
+        }
+    } else {
+        s_documentModel = new DocumentModel;
+        for(auto &it : Editor::plugins()->extensions("gadget")) {
+            addGadget(reinterpret_cast<EditorGadget *>(Editor::plugins()->getPluginObject(it)));
+        }
     }
 }
 
 void Editor::backup() {
     if(s_documentModel) {
-        for(auto it : s_documentModel->documents()) {
+        for(AssetEditor *editor : s_documentModel->documents()) {
+            editor->backup();
+        }
+    }
+    if(s_legacyDocumentModel) {
+        for(auto it : s_legacyDocumentModel->documents()) {
             it->backup();
         }
     }
@@ -94,75 +113,122 @@ void Editor::backup() {
 
 void Editor::restore() {
     if(s_documentModel) {
-        for(auto it : s_documentModel->documents()) {
+        for(AssetEditor *editor : s_documentModel->documents()) {
+            editor->restore();
+        }
+    }
+    if(s_legacyDocumentModel) {
+        for(auto it : s_legacyDocumentModel->documents()) {
             it->restore();
         }
     }
 }
 
-void Editor::addEditor(LegacyAssetEditor *editor) {
+void Editor::addEditor(AssetEditor *editor) {
     if(s_documentModel) {
         s_documentModel->addEditor(editor);
     }
 }
 
-void Editor::closeEditor(LegacyAssetEditor *editor) {
-    if(s_documentModel) {
-        s_documentModel->closeFile(editor);
+void Editor::addEditor(LegacyAssetEditor *editor) {
+    if(s_legacyDocumentModel) {
+        s_legacyDocumentModel->addEditor(editor);
     }
 }
 
-LegacyAssetEditor *Editor::openFile(const TString &path) {
-    if(s_documentModel) {
-        return s_documentModel->openFile(path);
+bool Editor::closeEditor(AssetEditor *editor) {
+    if(!s_documentModel || !s_documentModel->closeFile(editor)) {
+        return false;
+    }
+    if(s_currentEditor == editor) {
+        setCurrentEditor(static_cast<LegacyAssetEditor *>(nullptr));
+        setCurrentEditor(static_cast<AssetEditor *>(nullptr));
+    }
+    return true;
+}
+
+void Editor::closeEditor(LegacyAssetEditor *editor) {
+    if(s_legacyDocumentModel) {
+        s_legacyDocumentModel->closeFile(editor);
+    }
+}
+
+AssetEditor *Editor::openAssetFile(const TString &path) {
+    AssetEditor *editor = s_documentModel ? s_documentModel->openFile(path) : nullptr;
+    if(editor) {
+        setCurrentEditor(editor);
+    }
+    return editor;
+}
+
+LegacyAssetEditor *Editor::legacyOpenFile(const TString &path) {
+    if(s_legacyDocumentModel) {
+        return s_legacyDocumentModel->openFile(path);
     }
     return nullptr;
 }
 
-LegacyAssetEditor *Editor::currentEditor() {
-    return s_currentEditor;
+AssetEditor *Editor::currentEditor() {
+    return s_documentModel ? s_documentModel->currentEditor() : s_currentEditor;
+}
+
+void Editor::setCurrentEditor(AssetEditor *editor) {
+    s_currentEditor = editor;
+    if(s_documentModel) {
+        s_documentModel->setCurrentEditor(editor);
+    }
+    for(EditorGadget *gadget : s_gadgets) {
+        gadget->setCurrentEditor(editor);
+    }
+}
+
+LegacyAssetEditor *Editor::legacyCurrentEditor() {
+    return s_legacyCurrentEditor;
 }
 
 void Editor::setCurrentEditor(LegacyAssetEditor *editor) {
-    foreach(auto it, s_gadgets) {
-        if(s_currentEditor) {
-            QObject::disconnect(it, &LegacyEditorGadget::updated, s_currentEditor, &LegacyAssetEditor::onUpdated);
-            QObject::disconnect(it, &LegacyEditorGadget::objectsSelected, s_currentEditor, &LegacyAssetEditor::onObjectsSelected);
-
-            QObject::disconnect(s_currentEditor, &LegacyAssetEditor::objectsChanged, it, &LegacyEditorGadget::onObjectsChanged);
-        }
-
-        QObject::connect(it, &LegacyEditorGadget::updated, editor, &LegacyAssetEditor::onUpdated);
-        QObject::connect(it, &LegacyEditorGadget::objectsSelected, editor, &LegacyAssetEditor::onObjectsSelected);
-
-        QObject::connect(editor, &LegacyAssetEditor::objectsChanged, it, &LegacyEditorGadget::onObjectsChanged);
-
+    s_legacyCurrentEditor = editor;
+    foreach(LegacyEditorGadget *it, s_legacyGadgets) {
         it->setCurrentEditor(editor);
     }
-
-    s_currentEditor = editor;
 }
 
-std::list<LegacyAssetEditor *> Editor::documents() {
-    if(s_documentModel) {
-        return s_documentModel->documents();
+std::list<AssetEditor *> Editor::documents() {
+    return s_documentModel ? s_documentModel->documents() : std::list<AssetEditor *>();
+}
+
+std::list<LegacyAssetEditor *> Editor::legacyDocuments() {
+    if(s_legacyDocumentModel) {
+        return s_legacyDocumentModel->documents();
     }
     return std::list<LegacyAssetEditor *>();
 }
 
-void Editor::addGadget(LegacyEditorGadget *gadget) {
-    if(gadget) {
+void Editor::addGadget(EditorGadget *gadget) {
+    if(gadget && std::find(s_gadgets.begin(), s_gadgets.end(), gadget) == s_gadgets.end()) {
         s_gadgets.push_back(gadget);
+        gadget->setCurrentEditor(s_currentEditor);
 
-        QObject::connect(s_documentModel, &LegacyDocumentModel::updated, gadget, &LegacyEditorGadget::onUpdated);
-        QObject::connect(s_documentModel, &LegacyDocumentModel::selectionChanaged, gadget, &LegacyEditorGadget::onSelectionChanged);
-
-        QObject::connect(gadget, &LegacyEditorGadget::objectsSelected, s_documentModel, &LegacyDocumentModel::selectionChanaged);
+        if(s_documentModel) {
+            connect(s_documentModel, _SIGNAL(updated()), gadget, _SLOT(onUpdated()));
+            connect(s_documentModel, _SIGNAL(selectionChanged()), gadget, _SLOT(onSelectionChanged()));
+        }
     }
 }
 
-std::list<LegacyEditorGadget *> Editor::gadgets() {
-    return s_gadgets;
+void Editor::addGadget(LegacyEditorGadget *gadget) {
+    if(gadget) {
+        s_legacyGadgets.push_back(gadget);
+
+        QObject::connect(s_legacyDocumentModel, &LegacyDocumentModel::updated, gadget, &LegacyEditorGadget::onUpdated);
+        QObject::connect(s_legacyDocumentModel, &LegacyDocumentModel::selectionChanaged, gadget, &LegacyEditorGadget::onSelectionChanged);
+
+        QObject::connect(gadget, &LegacyEditorGadget::objectsSelected, s_legacyDocumentModel, &LegacyDocumentModel::selectionChanaged);
+    }
+}
+
+std::list<LegacyEditorGadget *> Editor::legacyGadgets() {
+    return s_legacyGadgets;
 }
 
 EditorSettings *Editor::settings() {

@@ -132,6 +132,10 @@ void SelectTool::cancelControl() {
 }
 
 TString SelectTool::icon() const {
+    return TString();
+}
+
+TString SelectTool::image() const {
     return ":/Images/editor/Select.png";
 }
 

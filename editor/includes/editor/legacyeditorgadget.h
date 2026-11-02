@@ -30,7 +30,8 @@ class EDITOR_EXPORT LegacyEditorGadget : public QWidget {
 public:
     explicit LegacyEditorGadget(QWidget *parent = nullptr);
 
-    virtual void setCurrentEditor(LegacyAssetEditor *editor) {};
+    LegacyAssetEditor *currentEditor();
+    virtual void setCurrentEditor(LegacyAssetEditor *editor);
 
 signals:
     void updated();
@@ -43,6 +44,9 @@ public slots:
 
     virtual void onSelectionChanged() = 0;
     virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) = 0;
+
+protected:
+    LegacyAssetEditor *m_currentEditor;
 
 };
 

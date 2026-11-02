@@ -64,7 +64,7 @@ class EDITOR_EXPORT AssetConverterSettings : public Object {
     struct SubItem {
         ResourceSystem::ResourceInfo info;
 
-        QImage icon;
+        QImage image;
 
         bool dirty = true;
     };
@@ -97,7 +97,7 @@ public:
     TString absoluteDestination() const;
 
     void resetIcon(const TString &uuid);
-    QImage icon(const TString &uuid);
+    QImage image(const TString &uuid);
 
     TString hash() const;
 
@@ -129,7 +129,7 @@ public:
 
     void setDirectory();
 
-    static QImage documentIcon(const TString &type);
+    static QImage documentImage(const TString &type);
     static void setDefaultIconPath(const TString &type, const TString &path);
 
     // signals
@@ -149,7 +149,7 @@ protected:
 
     void setVersion(uint32_t version);
 
-    static QImage renderDocumentIcon(const TString &path, const TString &color = TString("#0277bd"));
+    static QImage renderDocumentImage(const TString &path, const TString &color = TString("#0277bd"));
 
 protected:
     bool m_valid;
@@ -164,7 +164,7 @@ protected:
     TString m_source;
     TString m_suffix;
 
-    QImage m_icon;
+    QImage m_image;
 
     std::map<TString, SubItem> m_subItems;
 

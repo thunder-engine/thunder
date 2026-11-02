@@ -38,7 +38,7 @@
 */
 
 LegacyDocumentModel::LegacyDocumentModel() {
-    for(auto &it : Editor::plugins()->extensions("editor")) {
+    for(auto &it : Editor::plugins()->extensions("legacyeditor")) {
         addEditor(reinterpret_cast<LegacyAssetEditor *>(Editor::plugins()->getPluginObject(it)));
     }
 }

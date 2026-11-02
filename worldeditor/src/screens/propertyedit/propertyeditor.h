@@ -47,7 +47,6 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    LegacyAssetEditor *currentEditor() const;
     void setCurrentEditor(LegacyAssetEditor *editor) override;
 
 public slots:
@@ -74,8 +73,6 @@ private:
     Ui::PropertyEditor *ui;
 
     PropertyFilter *m_filter;
-
-    LegacyAssetEditor *m_editor;
 
     QWidget *m_topWidget;
 

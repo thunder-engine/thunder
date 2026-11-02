@@ -139,12 +139,12 @@ MainWindow::~MainWindow() {
 }
 
 LegacyAssetEditor *MainWindow::openEditor(const TString &path) {
-    LegacyAssetEditor *editor = Editor::openFile(path);
+    LegacyAssetEditor *editor = Editor::legacyOpenFile(path);
     if(editor) {
         if(ui->toolWidget->areaFor(editor) == nullptr) {
             ui->toolWidget->removeToolWindow(editor);
             editor->setParent(this);
-            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
+            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::legacyCurrentEditor()));
         } else {
             ui->toolWidget->activateToolWindow(editor);
         }
@@ -167,7 +167,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         // Save status for open editors
         VariantList editors;
 
-        for(auto &it : Editor::documents()) {
+        for(auto &it : Editor::legacyDocuments()) {
             VariantMap editorState = it->saveState();
 
             VariantList documents;
@@ -198,7 +198,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    LegacyAssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onNewAsset();
@@ -206,7 +206,7 @@ void MainWindow::on_actionNew_triggered() {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    LegacyAssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onOpenAsset();
@@ -215,7 +215,7 @@ void MainWindow::on_actionOpen_triggered() {
 
 void MainWindow::on_actionSave_triggered() {
     if(!Engine::isGameMode()) {
-        Editor::currentEditor()->onSave();
+        Editor::legacyCurrentEditor()->onSave();
     } else {
         QApplication::beep();
     }
@@ -223,7 +223,7 @@ void MainWindow::on_actionSave_triggered() {
 
 void MainWindow::on_actionSave_As_triggered() {
     if(!Engine::isGameMode()) {
-        LegacyAssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor && editor->allowSaveAs()) {
             editor->onSaveAs();
         }
@@ -232,7 +232,7 @@ void MainWindow::on_actionSave_As_triggered() {
 
 void MainWindow::on_actionUndo_triggered() {
     if(!Engine::isGameMode()) {
-        LegacyAssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor) {
             editor->undoRedo()->undo();
         }
@@ -241,7 +241,7 @@ void MainWindow::on_actionUndo_triggered() {
 
 void MainWindow::on_actionRedo_triggered() {
     if(!Engine::isGameMode()) {
-        LegacyAssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor) {
             editor->undoRedo()->redo();
         }
@@ -264,13 +264,13 @@ void MainWindow::setGameMode(bool mode) {
     if(m_preview) {
         if(mode) {
             if(m_preview->parent() == nullptr) {
-                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
+                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::legacyCurrentEditor()));
             }
             Editor::backup();
             ui->toolWidget->activateToolWindow(m_preview);
             m_preview->onActivate();
         } else {
-            ui->toolWidget->activateToolWindow(Editor::currentEditor());
+            ui->toolWidget->activateToolWindow(Editor::legacyCurrentEditor());
             Editor::restore();
 
             m_preview->setPaused(false);
@@ -337,7 +337,7 @@ void MainWindow::onImportFinished() {
     Editor::addGadget(property);
     Editor::addGadget(new HierarchyBrowser(this));
 
-    for(auto it : Editor::gadgets()) {
+    for(auto it : Editor::legacyGadgets()) {
         ui->toolWidget->addToolWindow(it, QToolWindowManager::NoArea);
     }
 
@@ -529,12 +529,12 @@ void MainWindow::onBuildProject() {
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
     LegacyAssetEditor *editor = dynamic_cast<LegacyAssetEditor *>(toolWindow);
-    if(editor == Editor::currentEditor()) {
+    if(editor == Editor::legacyCurrentEditor()) {
         return;
     }
 
     if(editor) {
-        LegacyAssetEditor *currentEditor = Editor::currentEditor();
+        LegacyAssetEditor *currentEditor = Editor::legacyCurrentEditor();
         if(currentEditor) {
             disconnect(ui->actionCut, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCutAction);
             disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCopyAction);
@@ -566,7 +566,7 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 }
 
 void MainWindow::onCopyPasteChanged() {
-    LegacyAssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     ui->actionCut->setEnabled(editor->isCopyActionAvailable());
     ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
     ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
@@ -575,7 +575,7 @@ void MainWindow::onCopyPasteChanged() {
 void MainWindow::on_menuFile_aboutToShow() {
     TString name;
     TString type;
-    LegacyAssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor) {
         type = TString(" %1").arg(editor->assetType());
         if(!editor->openedDocuments().empty()) {
@@ -595,7 +595,7 @@ void MainWindow::on_menuFile_aboutToShow() {
 }
 
 void MainWindow::on_menuEdit_aboutToShow() {
-    UndoStack *stack = Editor::currentEditor()->undoRedo();
+    UndoStack *stack = Editor::legacyCurrentEditor()->undoRedo();
     ui->actionUndo->setText(tr("Undo %1").arg(stack->undoText().data()));
 
     ui->actionRedo->setText(tr("Redo %1").arg(stack->redoText().data()));

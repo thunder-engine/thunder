@@ -9,6 +9,8 @@ set(${PROJECT_NAME}_incPaths
     "../engine/includes"
     "../engine/includes/components"
     "../engine/includes/resources"
+    "../modules/uikit/includes"
+    "../modules/uikit/includes/components"
     "../thirdparty/next/inc"
     "../thirdparty/next/inc/math"
     "../thirdparty/next/inc/core"
@@ -72,6 +74,7 @@ if(desktop)
         assimp
         next-editor
         engine-editor
+        uikit-editor
         zlib-editor
         Qt::Core
         Qt::Gui

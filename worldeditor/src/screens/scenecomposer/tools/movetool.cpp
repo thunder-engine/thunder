@@ -94,7 +94,7 @@ QLineEdit *MoveTool::snapWidget() {
     return m_snapEditor;
 }
 
-TString MoveTool::icon() const {
+TString MoveTool::image() const {
     return ":/Images/editor/Move.png";
 }
 

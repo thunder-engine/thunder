@@ -184,7 +184,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
         btn->setProperty("checkred", true);
         btn->setCheckable(true);
         btn->setAutoExclusive(true);
-        btn->setIcon(QIcon(it->icon().data()));
+        btn->setIcon(QIcon(it->image().data()));
         btn->setObjectName(it->name().data());
         btn->setProperty(gComponent, it->component().data());
         QString cut = it->shortcut().data();

@@ -202,7 +202,7 @@ void SplineTool::cancelControl() {
     }
 }
 
-TString SplineTool::icon() const {
+TString SplineTool::image() const {
     return ":/Images/editor/Spline.png";
 }
 

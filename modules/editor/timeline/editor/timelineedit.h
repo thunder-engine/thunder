@@ -29,11 +29,7 @@ public:
     explicit TimelineEdit(QWidget *parent = nullptr);
     ~TimelineEdit();
 
-    void setCurrentEditor(LegacyAssetEditor *editor) override {
-        m_editor = editor;
-    }
-
-    UndoStack *undoRedo() const { return m_editor->undoRedo(); }
+    UndoStack *undoRedo() const { return m_currentEditor->undoRedo(); }
 
 private slots:
     void onUpdated() override;
@@ -103,8 +99,6 @@ private:
     Animator *m_animator = nullptr;
 
     TimelineController *m_model = nullptr;
-
-    LegacyAssetEditor *m_editor = nullptr;
 
     int32_t m_timerId = 0;
 

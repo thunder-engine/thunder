@@ -107,7 +107,6 @@ public:
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
         LegacyEditorGadget(parent),
         ui(new Ui::HierarchyBrowser),
-        m_currentEditor(nullptr),
         m_components(new ComponentBrowser(this)),
         m_rect(nullptr),
         m_line(nullptr),
@@ -168,7 +167,8 @@ void HierarchyBrowser::setCurrentEditor(LegacyAssetEditor *editor) {
         disconnect(m_currentEditor, &LegacyAssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged);
     }
 
-    m_currentEditor = editor;
+    LegacyEditorGadget::setCurrentEditor(editor);
+
     if(m_currentEditor) {
         m_components->setGroups(m_currentEditor->componentGroups());
     }
