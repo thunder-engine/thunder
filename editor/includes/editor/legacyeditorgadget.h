@@ -35,6 +35,9 @@ public:
 
     virtual Object::ObjectList selected();
 
+    static TString propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property);
+    static Object::ObjectList objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name);
+
 signals:
     void updated();
 

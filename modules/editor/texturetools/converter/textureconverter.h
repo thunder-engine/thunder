@@ -57,6 +57,7 @@ public:
 
 public:
     TextureImportSettings();
+    ~TextureImportSettings() override;
 
     int assetType() const;
     void setAssetType(int type);
@@ -90,6 +91,7 @@ private:
     void loadUserData(const VariantMap &data) override;
 
     TString findFreeElementName(const TString &name);
+    void clearElements();
 
     StringList typeNames() const override;
     TString typeName() const override;

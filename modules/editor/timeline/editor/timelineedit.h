@@ -30,6 +30,7 @@ public:
     ~TimelineEdit();
 
     UndoStack *undoRedo() const { return m_currentEditor->undoRedo(); }
+    Object::ObjectList selected() override;
 
 private slots:
     void onUpdated() override;

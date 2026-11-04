@@ -417,3 +417,7 @@ void LegacyAssetEditor::restoreState(const VariantMap &data) {
 Object::ObjectList LegacyAssetEditor::selected() const {
     return Object::ObjectList();
 }
+
+bool LegacyAssetEditor::maskPropertyType() const {
+    return false;
+}

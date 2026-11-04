@@ -686,11 +686,17 @@ void SceneComposer::onObjectsChanged(const TString &property, const Variant &val
     QObject *s = sender();
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
-        TString capital = property;
+        TString propertyName;
+        Object::ObjectList objects = LegacyEditorGadget::objectsForProperty(gadget->selected(), property, propertyName);
+        if(objects.empty()) {
+            return;
+        }
+
+        TString capital = propertyName;
         capital[0] = std::toupper(capital.at(0));
         TString name = TString("Change %1").arg(capital);
 
-        m_undoRedo->push(new ChangeObjectProperty(gadget->selected(), property, value, m_controller, name));
+        m_undoRedo->push(new ChangeObjectProperty(objects, propertyName, value, m_controller, name));
     }
 }
 

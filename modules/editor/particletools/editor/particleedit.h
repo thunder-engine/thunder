@@ -65,6 +65,7 @@ private:
     void changeEvent(QEvent *event) override;
 
     Object::ObjectList selected() const override;
+    bool maskPropertyType() const override { return true; }
 
     Ui::ParticleEdit *ui;
 

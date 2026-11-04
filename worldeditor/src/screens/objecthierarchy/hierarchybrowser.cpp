@@ -373,7 +373,8 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
 }
 
 void HierarchyBrowser::onModelSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    if(selected.indexes().isEmpty()) {
+    if(selected.indexes().isEmpty() && !signalsBlocked()) {
+        m_selectedObjects.clear();
         emit objectsSelected(false);
     }
 }

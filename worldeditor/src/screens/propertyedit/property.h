@@ -43,6 +43,7 @@ public:
 
     bool isRoot() const;
     bool isReadOnly() const;
+    void setMaskPropertyType(bool mask);
 
     Variant value() const;
     void setValue(const Variant &value);
@@ -54,6 +55,7 @@ public:
     bool isCheckable() const;
     bool isChecked() const;
     void setChecked(bool value);
+    void setMaskPropertyType(bool mask);
 
     static TString editorName(const TString &hints, const TString &typeName);
 
@@ -87,6 +89,7 @@ protected:
     bool m_checkable;
 
     bool m_readOnly;
+    bool m_maskPropertyType = false;
 };
 
 #endif // PROPERTY_H

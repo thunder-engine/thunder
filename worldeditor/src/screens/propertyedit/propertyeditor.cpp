@@ -123,11 +123,13 @@ void PropertyEditor::updateAndExpand() {
 
 void PropertyEditor::onSelectionChanged() {
     m_selectedObjects = m_currentEditor->selected();
+    const Object::ObjectList selectedObjects = m_selectedObjects;
+    bool maskPropertyType = m_currentEditor->maskPropertyType();
     if(!m_selectedObjects.empty()) {
         m_nextModel->clear();
         Object *item = m_selectedObjects.front();
         setTopWidget(m_currentEditor->propertiesWidget());
-        m_nextModel->addObjects(m_selectedObjects);
+        m_nextModel->addObjects(m_selectedObjects, maskPropertyType);
 
         Actor *firstActor = dynamic_cast<Actor *>(m_selectedObjects.front());
         if(firstActor && m_selectedObjects.size() > 1) {
@@ -140,9 +142,9 @@ void PropertyEditor::onSelectionChanged() {
                 Object::ObjectList components = {child};
                 bool presentOnAllActors = true;
 
-                auto object = m_selectedObjects.begin();
+                auto object = selectedObjects.begin();
                 ++object;
-                for(; object != m_selectedObjects.end(); ++object) {
+                for(; object != selectedObjects.end(); ++object) {
                     Actor *actor = dynamic_cast<Actor *>(*object);
                     Component *component = actor ? actor->component(type) : nullptr;
                     if(component == nullptr) {
@@ -153,7 +155,7 @@ void PropertyEditor::onSelectionChanged() {
                 }
 
                 if(presentOnAllActors) {
-                    m_nextModel->addObjects(components);
+                    m_nextModel->addObjects(components, maskPropertyType);
 
                     m_selectedObjects.insert(m_selectedObjects.end(), components.begin(), components.end());
                 }
@@ -161,7 +163,7 @@ void PropertyEditor::onSelectionChanged() {
         } else {
             for(auto it : item->getChildren()) {
                 if(dynamic_cast<Actor *>(it) == nullptr) {
-                    m_nextModel->addObject(it);
+                    m_nextModel->addObject(it, maskPropertyType);
                     m_selectedObjects.push_back(it);
                 }
             }

@@ -58,6 +58,10 @@ TimelineEdit::~TimelineEdit() {
     delete ui;
 }
 
+Object::ObjectList TimelineEdit::selected() {
+    return m_selectedObjects;
+}
+
 void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
@@ -263,9 +267,7 @@ void TimelineEdit::onRowsSelected(QStringList list) {
             }
         }
     }
-    if(!m_selectedObjects.empty()) {
-        emit objectsSelected(false);
-    }
+    emit objectsSelected(false);
 }
 
 void TimelineEdit::onClipChanged(const QString &clip) {

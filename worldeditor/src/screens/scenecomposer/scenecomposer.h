@@ -126,6 +126,7 @@ private:
     TString assetType() const override;
 
     Object::ObjectList selected() const override;
+    bool maskPropertyType() const override { return true; }
 
     void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
 

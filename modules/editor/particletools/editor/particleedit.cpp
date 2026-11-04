@@ -188,7 +188,9 @@ void ParticleEdit::onAddModule(QAction *action) {
 void ParticleEdit::onObjectsChanged(const TString &property, const Variant &value) {
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
-        ui->graph->onObjectsChanged(gadget->selected(), property, value);
+        TString propertyName;
+        Object::ObjectList objects = LegacyEditorGadget::objectsForProperty(gadget->selected(), property, propertyName);
+        ui->graph->onObjectsChanged(objects, propertyName, value);
     }
 }
 

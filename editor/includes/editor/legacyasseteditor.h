@@ -67,6 +67,7 @@ public:
     virtual void restoreState(const VariantMap &data);
 
     virtual Object::ObjectList selected() const;
+    virtual bool maskPropertyType() const;
 
     bool checkSave();
 

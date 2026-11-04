@@ -19,6 +19,8 @@
 
 #include <editor/projectsettings.h>
 
+#include <set>
+
 #define FORMAT_VERSION 11
 
 TextureImportSettings::TextureImportSettings() :
@@ -30,6 +32,21 @@ TextureImportSettings::TextureImportSettings() :
         m_compressed(false) {
 
     setVersion(FORMAT_VERSION);
+}
+
+TextureImportSettings::~TextureImportSettings() {
+    clearElements();
+}
+
+void TextureImportSettings::clearElements() {
+    std::set<Sprite *> elements;
+    for(const auto &it : m_elements) {
+        elements.insert(it.second);
+    }
+    for(Sprite *element : elements) {
+        delete element;
+    }
+    m_elements.clear();
 }
 
 int TextureImportSettings::assetType() const {
@@ -128,6 +145,11 @@ TString TextureImportSettings::setElement(Sprite *element, const TString &key) {
     }
 
     ResourceSystem::ResourceInfo resInfo = subItem(path, MetaType::name<Mesh>());
+
+    auto it = m_elements.find(path);
+    if(it != m_elements.end() && it->second != element) {
+        delete it->second;
+    }
     m_elements[path] = element;
     element->setName(path);
 
@@ -203,6 +225,8 @@ VariantMap TextureImportSettings::saveUserData() const {
 }
 
 void TextureImportSettings::loadUserData(const VariantMap &data) {
+    clearElements();
+
     for(auto &it : data) {
         if(it.second.type() == MetaType::VARIANTMAP) {
             VariantMap fields = it.second.toMap();
