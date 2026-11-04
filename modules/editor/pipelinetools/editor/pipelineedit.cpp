@@ -21,6 +21,7 @@
 
 #include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <global.h>
 #include <json.h>
@@ -159,8 +160,11 @@ void PipelineEdit::onGraphUpdated() {
     emit updated();
 }
 
-void PipelineEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->schemeWidget->onObjectsChanged(objects, property, value);
+void PipelineEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
+    }
 }
 
 void PipelineEdit::changeEvent(QEvent *event) {

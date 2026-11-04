@@ -67,6 +67,7 @@ public:
     virtual void restoreState(const VariantMap &data);
 
     virtual Object::ObjectList selected() const;
+    virtual bool maskPropertyType() const;
 
     bool checkSave();
 
@@ -84,7 +85,7 @@ signals:
 
     void selectionChanged();
 
-    void objectsChanged(const Object::ObjectList &objects, TString property, const Variant &value);
+    void objectsChanged(const TString &property, const Variant &value);
 
     void copyPasteChanged();
 
@@ -106,7 +107,7 @@ public slots:
     virtual void onUpdated();
 
     virtual void onObjectCreate(const TString &type);
-    virtual void onObjectsSelected(Object::ObjectList objects, bool force);
+    virtual void onObjectsSelected(bool force);
     virtual void onSelectionDeleted();
 
     virtual void onDrop(QDropEvent *event);
@@ -114,7 +115,7 @@ public slots:
     virtual void onDragMove(QDragMoveEvent *event);
     virtual void onDragLeave(QDragLeaveEvent *event);
 
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+    virtual void onObjectsChanged(const TString &property, const Variant &value);
 
 protected:
     virtual void cleanModified() const;

@@ -58,6 +58,10 @@ TimelineEdit::~TimelineEdit() {
     delete ui;
 }
 
+Object::ObjectList TimelineEdit::selected() {
+    return m_selectedObjects;
+}
+
 void TimelineEdit::saveClip() {
     AnimationClip *clip = m_model->clip();
     if(clip) {
@@ -204,9 +208,11 @@ void TimelineEdit::setAnimator(Animator *animator) {
     }
 }
 
-void TimelineEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
-    for(auto it : objects) {
-        onPropertyUpdated(it, property);
+void TimelineEdit::onObjectsChanged(const TString &property, Variant value) {
+    if(m_currentEditor) {
+        for(auto it : m_currentEditor->selected()) {
+            onPropertyUpdated(it, property);
+        }
     }
 }
 
@@ -249,21 +255,19 @@ void TimelineEdit::onSelectKey(int row, int index) {
 }
 
 void TimelineEdit::onRowsSelected(QStringList list) {
-    Object::ObjectList result;
+    m_selectedObjects.clear();
     if(m_animator) {
         for(auto &it : list) {
             Object *object = m_animator->actor()->find(it.toStdString());
             if(object) {
                 Component *component = dynamic_cast<Component *>(object);
                 if(component) {
-                    result.push_back(component->actor());
+                    m_selectedObjects.push_back(component->actor());
                 }
             }
         }
     }
-    if(!result.empty()) {
-        emit objectsSelected(result, false);
-    }
+    emit objectsSelected(false);
 }
 
 void TimelineEdit::onClipChanged(const QString &clip) {

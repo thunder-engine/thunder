@@ -8,15 +8,14 @@ class SpriteController;
 
 class CreateSprite : public UndoCommand {
 public:
-    CreateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
+    CreateSprite(const Vector2 &min, const Vector2 &max, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    TextureImportSettings::Element m_element;
-
-    TString m_uuid;
+    TString m_previous;
     TString m_key;
+    Vector4 m_bounds;
 
     SpriteController *m_controller;
 

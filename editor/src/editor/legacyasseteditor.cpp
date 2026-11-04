@@ -294,8 +294,7 @@ void LegacyAssetEditor::onObjectCreate(const TString &type) {
 /*!
     Updates the editor selection with the supplied objects.
 */
-void LegacyAssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
-    A_UNUSED(objects);
+void LegacyAssetEditor::onObjectsSelected(bool force) {
     A_UNUSED(force);
 }
 
@@ -344,8 +343,7 @@ void LegacyAssetEditor::onDragLeave(QDragLeaveEvent *event) {
 /*!
     Notifies the editor that properties changed on the supplied objects.
 */
-void LegacyAssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    A_UNUSED(objects);
+void LegacyAssetEditor::onObjectsChanged(const TString &property, const Variant &value) {
     A_UNUSED(property);
     A_UNUSED(value);
 }
@@ -418,4 +416,8 @@ void LegacyAssetEditor::restoreState(const VariantMap &data) {
 */
 Object::ObjectList LegacyAssetEditor::selected() const {
     return Object::ObjectList();
+}
+
+bool LegacyAssetEditor::maskPropertyType() const {
+    return false;
 }

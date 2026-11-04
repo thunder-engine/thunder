@@ -42,7 +42,7 @@ private slots:
 
     void onAddModule(QAction *action);
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
+    void onObjectsChanged(const TString &property, const Variant &value) override;
 
 private:
     bool isCopyActionAvailable() const override;
@@ -65,6 +65,7 @@ private:
     void changeEvent(QEvent *event) override;
 
     Object::ObjectList selected() const override;
+    bool maskPropertyType() const override { return true; }
 
     Ui::ParticleEdit *ui;
 

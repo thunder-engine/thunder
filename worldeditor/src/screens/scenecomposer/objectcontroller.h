@@ -111,7 +111,7 @@ signals:
     void copied();
     void sceneUpdated(Object *object);
     void objectsSelected(Object::ObjectList objects);
-    void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
+    void propertyChanged(const TString &property, Variant value);
 
     void dropMap(QString map, bool additive);
 

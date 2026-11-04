@@ -33,17 +33,22 @@ public:
     LegacyAssetEditor *currentEditor();
     virtual void setCurrentEditor(LegacyAssetEditor *editor);
 
+    virtual Object::ObjectList selected();
+
+    static TString propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property);
+    static Object::ObjectList objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name);
+
 signals:
     void updated();
 
-    void objectsSelected(const Object::ObjectList &objects, bool force);
-    void objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value);
+    void objectsSelected(bool force);
+    void objectsChanged(const TString &property, Variant value);
 
 public slots:
     virtual void onUpdated() = 0;
 
     virtual void onSelectionChanged() = 0;
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) = 0;
+    virtual void onObjectsChanged(const TString &property, Variant value) {}
 
 protected:
     LegacyAssetEditor *m_currentEditor;

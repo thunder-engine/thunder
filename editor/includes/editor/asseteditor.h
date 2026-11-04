@@ -18,7 +18,7 @@
 #ifndef ASSETEDITOR_H
 #define ASSETEDITOR_H
 
-#include <components/widget.h>
+#include <widget.h>
 
 #include <editor/assetconverter.h>
 #include <editor/undostack.h>
@@ -50,6 +50,7 @@ public:
     virtual bool checkSave();
     virtual StringList componentGroups() const;
     virtual Object::ObjectList selected() const;
+    virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
@@ -57,26 +58,27 @@ public:
     virtual void backup();
     virtual void restore();
 
+public: // slots
     virtual void onActivated();
     virtual void onNewAsset();
     virtual void onOpenAsset();
     virtual void onSave();
     virtual void onSaveAs();
     virtual void onObjectCreate(const TString &type);
-    virtual void onObjectsSelected(Object::ObjectList objects, bool force);
-    virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
+    virtual void onObjectsSelected(bool force);
     virtual void onDropAsset(const TString &path, bool additive);
     virtual void onSelectionDeleted();
     virtual void onUpdated();
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+    virtual void onObjectsChanged(const TString &property, const Variant &value);
 
     std::list<AssetConverterSettings *> &openedDocuments();
     UndoStack *undoRedo() const;
 
+public: // signals
     void updated();
     void objectsHierarchyChanged(Object *root);
     void selectionChanged();
-    void objectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+    void objectsChanged(const TString &property, const Variant &value);
     void copyPasteChanged();
     void dropAsset(const TString &path);
     void editorClosing();

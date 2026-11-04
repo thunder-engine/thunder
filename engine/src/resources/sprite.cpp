@@ -346,7 +346,7 @@ void Sprite::recalcMesh() const {
 /*!
     \internal
 */
-Mesh *Sprite::composeMesh(Mesh *mesh, Mode mode, Vector2 &size) {
+Mesh *Sprite::composeMesh(Mesh *mesh, SpriteMode mode, Vector2 &size) {
     if(m_mesh) {
         if(m_dirtyMesh && m_mode != Complex) {
             recalcMesh();

@@ -77,7 +77,7 @@ Image::~Image() {
 void Image::draw() {
     if(m_dirtyMesh) {
         if(m_sprite) {
-            Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
+            Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::SpriteMode>(m_drawMode), m_size);
             if(mesh != m_mesh) {
                 if(mesh) {
                     m_mesh->setVertices(mesh->vertices());

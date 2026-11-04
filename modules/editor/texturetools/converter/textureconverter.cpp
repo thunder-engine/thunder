@@ -19,6 +19,8 @@
 
 #include <editor/projectsettings.h>
 
+#include <set>
+
 #define FORMAT_VERSION 11
 
 TextureImportSettings::TextureImportSettings() :
@@ -30,6 +32,21 @@ TextureImportSettings::TextureImportSettings() :
         m_compressed(false) {
 
     setVersion(FORMAT_VERSION);
+}
+
+TextureImportSettings::~TextureImportSettings() {
+    clearElements();
+}
+
+void TextureImportSettings::clearElements() {
+    std::set<Sprite *> elements;
+    for(const auto &it : m_elements) {
+        elements.insert(it.second);
+    }
+    for(Sprite *element : elements) {
+        delete element;
+    }
+    m_elements.clear();
 }
 
 int TextureImportSettings::assetType() const {
@@ -111,7 +128,15 @@ TextureImportSettings::ElementMap &TextureImportSettings::elements() {
     return m_elements;
 }
 
-TString TextureImportSettings::setElement(const Element &element, const TString &key) {
+Sprite *TextureImportSettings::element(const TString &key) {
+    auto it = m_elements.find(key);
+    if(it != m_elements.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+TString TextureImportSettings::setElement(Sprite *element, const TString &key) {
     Url info(source());
 
     TString path = key;
@@ -120,7 +145,13 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
     }
 
     ResourceSystem::ResourceInfo resInfo = subItem(path, MetaType::name<Mesh>());
+
+    auto it = m_elements.find(path);
+    if(it != m_elements.end() && it->second != element) {
+        delete it->second;
+    }
     m_elements[path] = element;
+    element->setName(path);
 
     setSubItem(path, resInfo, 0);
 
@@ -128,7 +159,12 @@ TString TextureImportSettings::setElement(const Element &element, const TString 
     return path;
 }
 
-void TextureImportSettings::removeElement(const TString &key) {
+void TextureImportSettings::removeElement(const TString &key, bool force) {
+    if(force) {
+        Sprite *sprite = element(key);
+        delete sprite;
+    }
+
     m_elements.erase(key);
 
     m_subItems.erase(key);
@@ -157,7 +193,7 @@ StringList TextureImportSettings::typeNames() const {
 }
 
 TString TextureImportSettings::typeName() const {
-    if(assetType() == TextureImportSettings::AssetType::Sprite) {
+    if(assetType() == TextureImportSettings::AssetType::SpriteSheet) {
         return typeNames().back();
     }
     return typeNames().front();
@@ -167,17 +203,20 @@ VariantMap TextureImportSettings::saveUserData() const {
     VariantMap result;
 
     for(auto &it : m_elements) {
-        TextureImportSettings::Element element = it.second;
-
         VariantMap data;
 
-        data["min"] = element.min;
-        data["max"] = element.max;
+        Sprite *element = it.second;
+        Vector4 bb = element->bounds();
 
-        data["borderMin"] = element.borderMin;
-        data["borderMax"] = element.borderMax;
+        data["min"] = Vector2(bb.x, bb.y);
+        data["max"] = Vector2(bb.z, bb.w);
 
-        data["pivot"] = element.pivot;
+        bb = element->border();
+
+        data["borderMin"] = Vector2(bb.x, bb.y);
+        data["borderMax"] = Vector2(bb.z, bb.w);
+
+        data["pivot"] = element->pivot();
 
         result[it.first] = data;
     }
@@ -186,55 +225,35 @@ VariantMap TextureImportSettings::saveUserData() const {
 }
 
 void TextureImportSettings::loadUserData(const VariantMap &data) {
+    clearElements();
+
     for(auto &it : data) {
         if(it.second.type() == MetaType::VARIANTMAP) {
             VariantMap fields = it.second.toMap();
 
-            TextureImportSettings::Element element;
+            Sprite *element = new Sprite;
 
-            element.min = fields["min"].toVector2();
-            element.max = fields["max"].toVector2();
-
-            element.borderMin = fields["borderMin"].toVector2();
-            element.borderMax = fields["borderMax"].toVector2();
-
-            element.pivot = fields["pivot"].toVector2();
+            element->setBounds(Vector4(fields["min"].toVector2(), fields["max"].toVector2()));
+            element->setBorder(Vector4(fields["borderMin"].toVector2(), fields["borderMax"].toVector2()));
+            element->setPivot(fields["pivot"].toVector2());
+            element->setName(it.first);
 
             m_elements[it.first] = element;
         }
     }
 }
 
-void TextureImportSettings::setSubItemData(const TString &name, const Variant &data) {
-    VariantMap map = data.toMap();
-
-    VariantMap d = map["data"].toMap();
-
-    TextureImportSettings::Element element;
-
-    element.min.x = d["x"].toInt();
-    element.min.y = d["y"].toInt();
-    element.max.x = element.min.x + d["w"].toInt();
-    element.max.y = element.min.y + d["h"].toInt();
-
-    element.borderMin.x = d["l"].toInt();
-    element.borderMax.x = d["r"].toInt();
-    element.borderMax.y = d["t"].toInt();
-    element.borderMin.y = d["b"].toInt();
-
-    element.pivot = Vector2(d["pivotX"].toFloat(), d["pivotY"].toFloat());
-
-    m_elements[name] = element;
-}
-
 bool TextureImportSettings::toVersion11(int height) {
     for(auto &it : m_elements) {
-        Element &e = it.second;
+        Sprite *e = it.second;
 
-        float newMinY = height - e.max.y;
-        float newMaxY = height - e.min.y;
-        e.min.y = newMinY;
-        e.max.y = newMaxY;
+        Vector4 bb = e->bounds();
+        float newMinY = height - bb.w;
+        float newMaxY = height - bb.y;
+        bb.y = newMinY;
+        bb.w = newMaxY;
+
+        e->setBounds(bb);
     }
 
     return true;
@@ -258,7 +277,7 @@ AssetConverter::ReturnCode TextureConverter::convertFile(AssetConverterSettings 
     if(s) {
         texture = convertTexture(s);
 
-        if(s->assetType() == TextureImportSettings::AssetType::Sprite) {
+        if(s->assetType() == TextureImportSettings::AssetType::SpriteSheet) {
             convertSprite(texture, s);
         }
 
@@ -495,9 +514,9 @@ void TextureConverter::convertSprite(Texture *texture, TextureImportSettings *se
 
         auto value = it.second;
 
-        sprite->setBounds(Vector4(value.min.x, value.min.y, value.max.x, value.max.y));
-        sprite->setBorder(Vector4(value.borderMin.x, value.borderMin.y, value.borderMax.x, value.borderMax.y));
-        sprite->setPivot(value.pivot);
+        sprite->setBounds(value->bounds());
+        sprite->setBorder(value->border());
+        sprite->setPivot(value->pivot());
         sprite->setMode(Sprite::Sliced);
 
         AssetConverter::ReturnCode result = settings->saveBinary(sprite, dst.absoluteDir() + "/" + info.uuid);

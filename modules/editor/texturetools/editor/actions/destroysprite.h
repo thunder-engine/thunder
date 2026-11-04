@@ -13,7 +13,7 @@ public:
 protected:
     TString m_key;
 
-    TextureImportSettings::Element m_element;
+    VariantMap m_back;
 
     SpriteController *m_controller;
 

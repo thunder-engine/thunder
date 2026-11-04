@@ -14,6 +14,7 @@ Project {
     ]
 
     property stringList incPaths: [
+        "converter",
         "editor",
         "../../../engine/includes",
         "../../../engine/includes/components",

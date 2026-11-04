@@ -82,7 +82,7 @@ void EditorSettingsBrowser::init() {
     ui->groups->setCurrentIndex(m_groupModel->index(0, 0));
 }
 
-void EditorSettingsBrowser::onSettingsUpdated(const Object::ObjectList &objects, const TString &property, Variant value) {
+void EditorSettingsBrowser::onSettingsUpdated(const TString &property, Variant value) {
     Editor::settings()->setValue(property, value);
 }
 

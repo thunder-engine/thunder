@@ -62,6 +62,9 @@ public:
     static void loadResourceData(Resource *resource, const VariantMap &data);
     static VariantMap saveResourceData(Resource *resource);
 
+    static void loadResourceProperties(Resource *resource, const VariantMap &data);
+    static VariantMap saveResourceProperties(Resource *resource);
+
 private:
     void update(World *) override;
 

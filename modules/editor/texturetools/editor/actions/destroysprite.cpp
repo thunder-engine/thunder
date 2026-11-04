@@ -8,19 +8,22 @@ DestroySprite::DestroySprite(SpriteController *ctrl, UndoCommand *group) :
 void DestroySprite::undo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        settings->setElement(m_element, m_key);
+        Sprite *sprite = new Sprite;
+        ResourceSystem::loadResourceProperties(sprite, m_back);
+        settings->setElement(sprite, m_key);
 
         m_controller->selectElement(m_key);
     }
 }
+
 void DestroySprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        auto element = settings->elements().find(m_key);
-        if(element != settings->elements().end()) {
-            m_element = element->second;
+        Sprite *sprite = settings->element(m_key);
+        if(sprite) {
+            m_back = ResourceSystem::saveResourceProperties(sprite);
         }
-        settings->removeElement(m_key);
+        settings->removeElement(m_key, true);
 
         m_controller->selectElement({});
     }

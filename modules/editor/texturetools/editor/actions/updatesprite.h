@@ -6,14 +6,14 @@
 
 class UpdateSprite : public UndoCommand {
 public:
-    UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group = nullptr);
+    UpdateSprite(const VariantMap &data, SpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
     TString m_key;
 
-    TextureImportSettings::Element m_element;
+    VariantMap m_data;
 
     SpriteController *m_controller;
 

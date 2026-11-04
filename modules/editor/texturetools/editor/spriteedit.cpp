@@ -16,7 +16,6 @@
 #include "../converter/textureconverter.h"
 
 #include "spritecontroller.h"
-#include "spriteelement.h"
 
 namespace {
     const char *gSpriteRender("SpriteRender");

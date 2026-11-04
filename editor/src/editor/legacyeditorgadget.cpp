@@ -19,6 +19,9 @@
 
 #include "editor/legacyasseteditor.h"
 
+#include <algorithm>
+#include <set>
+
 /*!
     \class LegacyEditorGadget
     \brief Provides the base interface for dockable editor gadgets.
@@ -84,4 +87,52 @@ void LegacyEditorGadget::setCurrentEditor(LegacyAssetEditor *editor) {
     QObject::connect(editor, &LegacyAssetEditor::objectsChanged, this, &LegacyEditorGadget::onObjectsChanged);
 
     m_currentEditor = editor;
+}
+
+Object::ObjectList LegacyEditorGadget::selected() {
+    return Object::ObjectList();
+}
+
+TString LegacyEditorGadget::propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property) {
+    std::set<TString> types;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            types.insert(object->metaObject()->name());
+        }
+    }
+
+    if(types.empty()) {
+        return property;
+    }
+
+    StringList names(types.begin(), types.end());
+    return TString::join(names, "|") + "::" + property;
+}
+
+Object::ObjectList LegacyEditorGadget::objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name) {
+    name = property;
+
+    int separator = property.indexOf("::");
+    if(separator < 0) {
+        return objects;
+    }
+
+    StringList types = property.left(separator).split('|');
+    if(types.empty()) {
+        return objects;
+    }
+
+    name = property.mid(separator + 2, property.length() - separator - 2);
+
+    Object::ObjectList result;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            TString type = object->metaObject()->name();
+            if(std::find(types.begin(), types.end(), type) != types.end()) {
+                result.push_back(object);
+            }
+        }
+    }
+
+    return result;
 }

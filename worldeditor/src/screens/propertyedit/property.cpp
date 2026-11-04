@@ -20,6 +20,8 @@
 #include <system.h>
 #include <invalid.h>
 #include <editor/assetconverter.h>
+#include <editor/legacyeditorgadget.h>
+#include <editor/legacyeditorgadget.h>
 #include <editor/legacypropertyedit.h>
 
 #include "custom/component/actions.h"
@@ -137,7 +139,11 @@ void Property::setValue(const Variant &value) {
                     object->setProperty(m_name.data(), value);
                 }
             } else {
-                emit propertyChanged(m_nextObjects, objectName().toStdString(), value);
+                TString property(objectName().toStdString());
+                if(m_maskPropertyType) {
+                    property = LegacyEditorGadget::propertyWithObjectTypes(m_nextObjects, property);
+                }
+                emit propertyChanged(property, value);
             }
         }
     }
@@ -250,6 +256,10 @@ void Property::updateEditor() {
 
 bool Property::isCheckable() const {
     return m_checkable;
+}
+
+void Property::setMaskPropertyType(bool mask) {
+    m_maskPropertyType = mask;
 }
 
 bool Property::isChecked() const {

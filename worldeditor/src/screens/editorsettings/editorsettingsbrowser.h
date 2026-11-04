@@ -37,7 +37,7 @@ public:
     void init();
 
 private slots:
-    void onSettingsUpdated(const Object::ObjectList &objects, const TString &property, Variant value);
+    void onSettingsUpdated(const TString &property, Variant value);
 
     void on_groups_clicked(const QModelIndex &index);
 

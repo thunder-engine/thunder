@@ -43,6 +43,7 @@ public:
 
     bool isRoot() const;
     bool isReadOnly() const;
+    void setMaskPropertyType(bool mask);
 
     Variant value() const;
     void setValue(const Variant &value);
@@ -63,7 +64,7 @@ public:
     static void trimmType(TString &type, bool &isArray);
 
 signals:
-    void propertyChanged(const Object::ObjectList &objects, const TString &property, Variant value);
+    void propertyChanged(const TString &property, Variant value);
 
 protected slots:
     void onDataChanged();
@@ -87,6 +88,7 @@ protected:
     bool m_checkable;
 
     bool m_readOnly;
+    bool m_maskPropertyType = false;
 };
 
 #endif // PROPERTY_H

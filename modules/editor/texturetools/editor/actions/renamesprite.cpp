@@ -16,11 +16,11 @@ void RenameSprite::undo() {
 void RenameSprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        auto element = settings->elements().find(m_oldKey);
-        if(element != settings->elements().end()) {
-            TextureImportSettings::Element temp = element->second;
+        Sprite *element = settings->element(m_oldKey);
+        if(element) {
             settings->removeElement(m_oldKey);
-            settings->setElement(temp, m_newKey);
+            element->setName(m_newKey);
+            settings->setElement(element, m_newKey);
 
             m_controller->selectElement(m_newKey);
 
