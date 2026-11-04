@@ -55,7 +55,6 @@ public:
     bool isCheckable() const;
     bool isChecked() const;
     void setChecked(bool value);
-    void setMaskPropertyType(bool mask);
 
     static TString editorName(const TString &hints, const TString &typeName);
 
