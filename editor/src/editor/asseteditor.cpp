@@ -24,8 +24,6 @@
 #include <editor/assetmanager.h>
 #include <editor/projectsettings.h>
 
-
-
 AssetEditor::AssetEditor() :
         m_undoRedo(new UndoStack) {
 }
@@ -109,8 +107,7 @@ void AssetEditor::onObjectCreate(const TString &type) {
     A_UNUSED(type);
 }
 
-void AssetEditor::onObjectsSelected(Object::ObjectList objects, bool force) {
-    A_UNUSED(objects);
+void AssetEditor::onObjectsSelected(bool force) {
     A_UNUSED(force);
 }
 
@@ -132,8 +129,7 @@ void AssetEditor::onUpdated() {
     updated();
 }
 
-void AssetEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    A_UNUSED(objects);
+void AssetEditor::onObjectsChanged(const TString &property, const Variant &value) {
     A_UNUSED(property);
     A_UNUSED(value);
 }
@@ -196,8 +192,8 @@ void AssetEditor::selectionChanged() {
     emitSignal(_SIGNAL(selectionChanged()));
 }
 
-void AssetEditor::objectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    //emitSignal(_SIGNAL(objectsChanged(Object::ObjectList,TString,Variant)), objects, property, value);
+void AssetEditor::objectsChanged(const TString &property, const Variant &value) {
+    emitSignal(_SIGNAL(objectsChanged(TString, Variant)), property, value);
 }
 
 void AssetEditor::copyPasteChanged() {

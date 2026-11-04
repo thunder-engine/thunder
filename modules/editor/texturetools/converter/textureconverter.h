@@ -20,7 +20,7 @@ class TextureImportSettings : public AssetConverterSettings {
     A_ENUMS(
         A_ENUM(AssetType,
                A_VALUE(Texture2D),
-               A_VALUE(Sprite),
+               A_VALUE(SpriteSheet),
                A_VALUE(Cubemap),
                A_VALUE(Texture3D)),
         A_ENUM(FilteringType,
@@ -36,7 +36,7 @@ class TextureImportSettings : public AssetConverterSettings {
 public:
     enum AssetType {
         Texture2D = 1,
-        Sprite,
+        SpriteSheet,
         Cubemap,
         Texture3D
     };
@@ -53,16 +53,7 @@ public:
         Mirrored
     };
 
-    struct Element {
-        Vector2 min;
-        Vector2 max;
-
-        Vector2 borderMin;
-        Vector2 borderMax;
-
-        Vector2 pivot = Vector2(0.5f);
-    };
-    typedef std::map<TString, Element> ElementMap;
+    typedef std::map<TString, Sprite *> ElementMap;
 
 public:
     TextureImportSettings();
@@ -86,8 +77,9 @@ public:
     void setPixels(int pixels);
 
     ElementMap &elements();
-    TString setElement(const Element &element, const TString &key = TString());
-    void removeElement(const TString &key);
+    Sprite *element(const TString &key);
+    TString setElement(Sprite *element, const TString &key = TString());
+    void removeElement(const TString &key, bool force = false);
 
     TString propertyAllias(const TString &name) const override;
 
@@ -96,8 +88,6 @@ public:
 private:
     VariantMap saveUserData() const override;
     void loadUserData(const VariantMap &data) override;
-
-    void setSubItemData(const TString &name, const Variant &data) override;
 
     TString findFreeElementName(const TString &name);
 

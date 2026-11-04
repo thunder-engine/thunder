@@ -875,7 +875,22 @@ void Object::loadUserData(const VariantMap &data) {
     Returns serialized data as VariantList.
 */
 VariantList Object::saveData() const {
-    return serializeData(metaObject());
+    PROFILE_FUNCTION()
+
+    VariantList result;
+
+    const MetaObject *meta = metaObject();
+    result.push_back(meta->name());
+    result.push_back(static_cast<int32_t>(uuid()));
+    Object *p = parent();
+    result.push_back(static_cast<int32_t>(((p) ? p->uuid() : 0)));
+    result.push_back(name());
+
+    result.push_back(serializeProperties(meta));
+    result.push_back(serializeLinks(meta));
+    result.push_back(saveUserData());
+
+    return result;
 }
 /*!
     This method allows to SERIALIZE data which not present as A_PROPERTY() in object.
@@ -1067,17 +1082,19 @@ void Object::setSystem(ObjectSystem *system) {
 /*!
     \internal
 */
-VariantList Object::serializeData(const MetaObject *meta) const {
-    PROFILE_FUNCTION()
-
-    VariantList result;
-
-    result.push_back(meta->name());
-    result.push_back(static_cast<int32_t>(uuid()));
-    Object *p = parent();
-    result.push_back(static_cast<int32_t>(((p) ? p->uuid() : 0)));
-    result.push_back(name());
-
+void Object::deserializeProperties(const VariantMap &data) {
+    for(const auto &prop : data) {
+        Variant v = prop.second;
+        uint32_t type = v.type();
+        if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
+            setProperty(prop.first.data(), v);
+        }
+    }
+}
+/*!
+    \internal
+*/
+VariantMap Object::serializeProperties(const MetaObject *meta) const {
     // Save base properties
     StringList propertyNames;
     for(int i = 0; i < meta->propertyCount(); i++) {
@@ -1097,8 +1114,12 @@ VariantList Object::serializeData(const MetaObject *meta) const {
             properties[it] = v;
         }
     }
-
-    // Save links
+    return properties;
+}
+/*!
+    \internal
+*/
+VariantList Object::serializeLinks(const MetaObject *meta) const {
     VariantList links;
     for(const auto &l : getReceivers()) {
         VariantList link;
@@ -1115,11 +1136,7 @@ VariantList Object::serializeData(const MetaObject *meta) const {
 
         links.push_back(link);
     }
-    result.push_back(properties);
-    result.push_back(links);
-    result.push_back(saveUserData());
-
-    return result;
+    return links;
 }
 /*!
     \internal

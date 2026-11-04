@@ -375,15 +375,8 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
                 return nullptr;
             }
 
-            // Load base properties
-            VariantMap &properties = *(reinterpret_cast<VariantMap *>((*i).data()));
-            for(const auto &prop : properties) {
-                Variant v = prop.second;
-                uint32_t type = v.type();
-                if(type < MetaType::USERTYPE && type != MetaType::VARIANTLIST && type != MetaType::VARIANTMAP) {
-                    object->setProperty(prop.first.data(), v);
-                }
-            }
+            // Load properties
+            object->deserializeProperties(*(reinterpret_cast<VariantMap *>((*i).data())));
             i++;
             // Restore connections
             VariantList &links = *(reinterpret_cast<VariantList *>((*i).data()));
@@ -424,18 +417,7 @@ Object *ObjectSystem::toObject(const Variant &variant, Object *parent, const TSt
 
             i++;
             // Load user data
-            VariantMap &user = *(reinterpret_cast<VariantMap *>((*i).data()));
-            object->loadUserData(user);
-            i++;
-            // Load dynamic properties
-            if(i != o.end()) {
-                VariantList &dynamic = *(reinterpret_cast<VariantList *>((*i).data()));
-                for(auto &property : dynamic) {
-                    VariantList &pair = *(reinterpret_cast<VariantList *>(property.data()));
-                    TString name(pair.front().toString());
-                    object->setProperty(name.data(), pair.back());
-                }
-            }
+            object->loadUserData(*(reinterpret_cast<VariantMap *>((*i).data())));
         }
     }
 

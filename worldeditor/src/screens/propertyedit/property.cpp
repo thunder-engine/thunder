@@ -137,7 +137,7 @@ void Property::setValue(const Variant &value) {
                     object->setProperty(m_name.data(), value);
                 }
             } else {
-                emit propertyChanged(m_nextObjects, objectName().toStdString(), value);
+                emit propertyChanged(objectName().toStdString(), value);
             }
         }
     }

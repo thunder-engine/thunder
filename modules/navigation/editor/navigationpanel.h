@@ -48,7 +48,7 @@ private:
     void onUpdated() override {}
 
     void onSelectionChanged() override {}
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override {}
+    void onObjectsChanged(const TString &property, Variant value) override {}
 
 private:
     Ui::NavigationPanel *ui;

@@ -67,11 +67,12 @@ public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
+    Object::ObjectList selected() override;
+
 public slots:
     void onUpdated() override;
 
     void onSelectionChanged() override;
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override {}
 
     void onItemRename();
 
@@ -102,6 +103,8 @@ private:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
+    Object::ObjectList m_selectedObjects;
+
     Ui::HierarchyBrowser *ui;
 
     ComponentBrowser *m_components;

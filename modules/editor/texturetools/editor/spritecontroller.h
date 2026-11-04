@@ -33,6 +33,8 @@ public:
 
     UndoStack *undoRedo() const { return m_editor->undoRedo(); }
 
+    Object::ObjectList selected() override;
+
 signals:
     void selectionChanged();
 

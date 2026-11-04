@@ -38,7 +38,7 @@ public:
     void clear();
 
 signals:
-    void propertyChanged(const Object::ObjectList &objects, const TString property, Variant value);
+    void propertyChanged(const TString property, Variant value);
 
 private:
     void updateDynamicProperties(Property *parent, Object *propertyObject);

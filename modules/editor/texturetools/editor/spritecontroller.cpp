@@ -20,12 +20,25 @@ SpriteController::SpriteController(SpriteEdit *editor) :
 
 }
 
+Object::ObjectList SpriteController::selected() {
+    if(m_settings && !m_key.isEmpty()) {
+        TextureImportSettings::ElementMap &lements = m_settings->elements();
+        auto it = lements.find(m_key);
+        if(it != lements.end()) {
+            return {it->second};
+        }
+    }
+    return Object::ObjectList();
+}
+
 void SpriteController::setSettings(TextureImportSettings *settings) {
-    m_settings = settings;
+    if(m_settings != settings) {
+        m_settings = settings;
 
-    static_cast<SpriteTool *>(m_spriteTool)->setSettings(m_settings);
+        static_cast<SpriteTool *>(m_spriteTool)->setSettings(m_settings);
 
-    m_key.clear();
+        m_key.clear();
+    }
 }
 
 void SpriteController::setSize(uint32_t width, uint32_t height) {
@@ -39,6 +52,7 @@ bool SpriteController::isSelected(const TString &key) const {
 
 void SpriteController::selectElement(const TString &key) {
     m_key = key;
+    selectionChanged();
 }
 
 TString SpriteController::selectedElement() {

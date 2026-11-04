@@ -10,6 +10,7 @@
 #include <animationstatemachine.h>
 
 #include <viewport/legacycameracontroller.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <QToolButton>
 #include <QSettings>
@@ -185,8 +186,11 @@ void AnimationEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
-void AnimationEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->schemeWidget->onObjectsChanged(objects, property, value);
+void AnimationEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
+    }
 }
 
 void AnimationEdit::onCutAction() {

@@ -36,7 +36,7 @@ private slots:
 
     void onSelectionChanged() override;
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override;
+    void onObjectsChanged(const TString &property, Variant value) override;
 
     void onPropertyUpdated(Object *object, const TString &property);
 
@@ -91,6 +91,8 @@ private:
     std::map<TString, AnimationClip *> m_clips;
 
     std::list<Armature *> m_armatures;
+
+    Object::ObjectList m_selectedObjects;
 
     TString m_currentClip;
 

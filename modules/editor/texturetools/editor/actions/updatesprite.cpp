@@ -1,9 +1,9 @@
 #include "updatesprite.h"
 
-UpdateSprite::UpdateSprite(const TextureImportSettings::Element &element, SpriteController *ctrl, UndoCommand *group) :
+UpdateSprite::UpdateSprite(const VariantMap &data, SpriteController *ctrl, UndoCommand *group) :
         UndoCommand(QObject::tr("Update Sprite Element").toStdString(), group),
         m_key(ctrl->selectedElement()),
-        m_element(element),
+        m_data(data),
         m_controller(ctrl) {
 }
 
@@ -14,11 +14,11 @@ void UpdateSprite::undo() {
 void UpdateSprite::redo() {
     TextureImportSettings *settings = m_controller->settings();
     if(settings) {
-        auto element = settings->elements().find(m_key);
-        if(element != settings->elements().end()) {
-            TextureImportSettings::Element temp = element->second;
-            settings->setElement(m_element, m_key);
-            m_element = temp;
+        Sprite *sprite = settings->element(m_key);
+        if(sprite) {
+            VariantMap temp = ResourceSystem::saveResourceProperties(sprite);
+            ResourceSystem::loadResourceProperties(sprite, m_data);
+            m_data = temp;
 
             m_controller->selectElement(m_key);
             m_controller->updated();

@@ -8,6 +8,7 @@
 #include <global.h>
 
 #include <viewport/legacycameracontroller.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <components/world.h>
 #include <components/scene.h>
@@ -184,8 +185,11 @@ void ParticleEdit::onAddModule(QAction *action) {
     m_undoRedo->push(new CreateModule(action->text().toStdString(), graph, tr("Create %1").arg(action->text()).toStdString()));
 }
 
-void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->graph->onObjectsChanged(objects, property, value);
+void ParticleEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        ui->graph->onObjectsChanged(gadget->selected(), property, value);
+    }
 }
 
 std::list<QWidget *> ParticleEdit::propertiesActionWidgets(Object *object, QWidget *parent) const {

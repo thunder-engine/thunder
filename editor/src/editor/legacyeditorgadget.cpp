@@ -85,3 +85,7 @@ void LegacyEditorGadget::setCurrentEditor(LegacyAssetEditor *editor) {
 
     m_currentEditor = editor;
 }
+
+Object::ObjectList LegacyEditorGadget::selected() {
+    return Object::ObjectList();
+}

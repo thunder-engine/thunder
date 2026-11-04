@@ -97,6 +97,19 @@ Vector4::Vector4(const Vector3 &vector) :
     w(0.0f) {
 }
 /*!
+    Constructs a 4D vector from the pair of specified 2D vectors.
+    The firtst \a xy vector reperesents x and y coordinates and \a zw vector reperesents z and w coordinates.
+
+    \sa Vector3::Vector3()
+*/
+Vector4::Vector4(const Vector2 &xy, const Vector2 &zw) :
+    x(xy.x),
+    y(xy.y),
+    z(zw.x),
+    w(zw.y) {
+
+}
+/*!
     Constructs a 4D vector from the specified 3D \a vector. The w
     coordinate is set to \a w.
 

@@ -61,9 +61,6 @@ private:
 
     Object *cloneStructure(Object::ObjectPairs &pairs) override;
 
-    VariantList saveData() const override;
-    void loadData(const VariantList &data) override;
-
     void setType(const TString &type) override;
 
     void scriptSlot();

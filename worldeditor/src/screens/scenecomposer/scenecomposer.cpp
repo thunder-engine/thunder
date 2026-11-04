@@ -48,6 +48,7 @@
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
+#include <editor/legacyeditorgadget.h>
 
 #include "actions/createobject.h"
 #include "actions/deleteobjects.h"
@@ -373,13 +374,17 @@ void SceneComposer::onObjectCreate(const TString &type) {
     }
 }
 
-void SceneComposer::onObjectsSelected(Object::ObjectList objects, bool force) {
-    if(force) {
-        float bottom;
-        m_controller->setFocusOn(dynamic_cast<Actor *>(objects.front()), bottom);
-    }
+void SceneComposer::onObjectsSelected(bool force) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        Object::ObjectList list = gadget->selected();
+        if(force && !list.empty()) {
+            float bottom;
+            m_controller->setFocusOn(dynamic_cast<Actor *>(list.front()), bottom);
+        }
 
-    m_controller->onSelectActor(objects);
+        m_controller->onSelectActor(list);
+    }
 }
 
 void SceneComposer::onUpdated() {
@@ -677,12 +682,16 @@ void SceneComposer::onSelectionDeleted() {
     m_controller->onRemoveActor(m_controller->selected());
 }
 
-void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    TString capital = property;
-    capital[0] = std::toupper(capital.at(0));
-    TString name = TString("Change %1").arg(capital);
+void SceneComposer::onObjectsChanged(const TString &property, const Variant &value) {
+    QObject *s = sender();
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        TString capital = property;
+        capital[0] = std::toupper(capital.at(0));
+        TString name = TString("Change %1").arg(capital);
 
-    m_undoRedo->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
+        m_undoRedo->push(new ChangeObjectProperty(gadget->selected(), property, value, m_controller, name));
+    }
 }
 
 QMenu *SceneComposer::hierarchyContextMenu(Object *object) {

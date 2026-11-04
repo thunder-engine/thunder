@@ -36,7 +36,7 @@ public:
     void init();
 
 private slots:
-    void onSettingsUpdated(const Object::ObjectList &list, const TString &property, Variant value);
+    void onSettingsUpdated(const TString &property, Variant value);
 
 private:
     void changeEvent(QEvent *event) override;

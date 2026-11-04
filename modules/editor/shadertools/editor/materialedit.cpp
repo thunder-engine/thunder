@@ -19,6 +19,7 @@
 
 #include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <global.h>
 
@@ -189,8 +190,11 @@ bool MaterialEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void MaterialEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->schemeWidget->onObjectsChanged(objects, property, value);
+void MaterialEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
+    }
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {

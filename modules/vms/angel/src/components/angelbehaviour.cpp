@@ -200,16 +200,6 @@ void AngelBehaviour::unregisterClassFactory(ObjectSystem *system) {
     system->factoryRemove<AngelBehaviour>(gGeneral);
 }
 
-VariantList AngelBehaviour::saveData() const {
-    PROFILE_FUNCTION();
-    return serializeData(metaObject());
-}
-
-void AngelBehaviour::loadData(const VariantList &data) {
-    PROFILE_FUNCTION();
-    Object::loadData(data);
-}
-
 void AngelBehaviour::setType(const TString &type) {
     PROFILE_FUNCTION();
     if(type != m_script && type != "AngelBehaviour") {

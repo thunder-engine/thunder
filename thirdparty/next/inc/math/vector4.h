@@ -31,6 +31,7 @@ public:
     Vector4(areal x, areal y, areal z, areal w);
     Vector4(const Vector2 &vector);
     Vector4(const Vector2 &vector, areal z, areal w);
+    Vector4(const Vector2 &xy, const Vector2 &zw);
     Vector4(const Vector3 &vector);
     Vector4(const Vector3 &vector, areal w);
     Vector4(const Vector4 &vector);

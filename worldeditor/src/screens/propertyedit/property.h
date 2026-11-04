@@ -63,7 +63,7 @@ public:
     static void trimmType(TString &type, bool &isArray);
 
 signals:
-    void propertyChanged(const Object::ObjectList &objects, const TString &property, Variant value);
+    void propertyChanged(const TString &property, Variant value);
 
 protected slots:
     void onDataChanged();

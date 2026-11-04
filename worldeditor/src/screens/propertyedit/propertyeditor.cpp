@@ -88,8 +88,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
         m_topWidget(nullptr),
-        m_nextModel(new NextModel(this)),
-        m_item(nullptr) {
+        m_nextModel(new NextModel(this)) {
 
     ui->setupUi(this);
 
@@ -100,7 +99,7 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     LegacyPropertyEdit::registerEditorFactory(createCustomEditor);
     LegacyPropertyEdit::registerEditorFactory(createStandardEditor);
 
-    connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
+    connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::onPropertyChanged);
 
     m_filter->setSourceModel(m_nextModel);
 }
@@ -123,15 +122,15 @@ void PropertyEditor::updateAndExpand() {
 }
 
 void PropertyEditor::onSelectionChanged() {
-    Object::ObjectList objects = m_currentEditor->selected();
-    if(!objects.empty()) {
+    m_selectedObjects = m_currentEditor->selected();
+    if(!m_selectedObjects.empty()) {
         m_nextModel->clear();
-        m_item = objects.front();
+        Object *item = m_selectedObjects.front();
         setTopWidget(m_currentEditor->propertiesWidget());
-        m_nextModel->addObjects(objects);
+        m_nextModel->addObjects(m_selectedObjects);
 
-        Actor *firstActor = dynamic_cast<Actor *>(objects.front());
-        if(firstActor && objects.size() > 1) {
+        Actor *firstActor = dynamic_cast<Actor *>(m_selectedObjects.front());
+        if(firstActor && m_selectedObjects.size() > 1) {
             for(Object *child : firstActor->getChildren()) {
                 if(dynamic_cast<Actor *>(child) != nullptr) {
                     continue;
@@ -141,9 +140,9 @@ void PropertyEditor::onSelectionChanged() {
                 Object::ObjectList components = {child};
                 bool presentOnAllActors = true;
 
-                auto object = objects.begin();
+                auto object = m_selectedObjects.begin();
                 ++object;
-                for(; object != objects.end(); ++object) {
+                for(; object != m_selectedObjects.end(); ++object) {
                     Actor *actor = dynamic_cast<Actor *>(*object);
                     Component *component = actor ? actor->component(type) : nullptr;
                     if(component == nullptr) {
@@ -155,12 +154,15 @@ void PropertyEditor::onSelectionChanged() {
 
                 if(presentOnAllActors) {
                     m_nextModel->addObjects(components);
+
+                    m_selectedObjects.insert(m_selectedObjects.end(), components.begin(), components.end());
                 }
             }
         } else {
-            for(auto it : m_item->getChildren()) {
+            for(auto it : item->getChildren()) {
                 if(dynamic_cast<Actor *>(it) == nullptr) {
                     m_nextModel->addObject(it);
+                    m_selectedObjects.push_back(it);
                 }
             }
         }
@@ -175,8 +177,6 @@ void PropertyEditor::onSelectionChanged() {
 void PropertyEditor::onObjectSelected(Object *object) {
     m_nextModel->clear();
     if(object) {
-        m_item = object;
-
         ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
         if(browser) {
             QWidget *widget = browser->commitRevert();
@@ -186,8 +186,8 @@ void PropertyEditor::onObjectSelected(Object *object) {
             setTopWidget(m_currentEditor->propertiesWidget());
         }
 
-        m_nextModel->addObject(m_item);
-        for(auto it : m_item->getChildren()) {
+        m_nextModel->addObject(object);
+        for(auto it : object->getChildren()) {
             if(dynamic_cast<Actor *>(it) == nullptr) {
                 m_nextModel->addObject(it);
             }
@@ -235,20 +235,24 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
-
+void PropertyEditor::onPropertyChanged(const TString &property, const Variant &value) {
+    emit objectsChanged(property, value);
 }
 
 void PropertyEditor::setCurrentEditor(LegacyAssetEditor *editor) {
     if(m_currentEditor != editor) {
         if(m_currentEditor) {
-            disconnect(m_nextModel, &NextModel::propertyChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
+            disconnect(this, &PropertyEditor::objectsChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
         }
 
         LegacyEditorGadget::setCurrentEditor(editor);
 
-        connect(m_nextModel, &NextModel::propertyChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
+        connect(this, &PropertyEditor::objectsChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
     }
+}
+
+Object::ObjectList PropertyEditor::selected() {
+    return m_selectedObjects;
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
@@ -297,8 +301,8 @@ void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
         QModelIndex index = ui->treeView->indexAt(pos);
 
         Property *p = static_cast<Property *>(m_filter->mapToSource(index).internalPointer());
-        if(p) {
-            QMenu *menu = m_currentEditor->propertyContextMenu(m_item, p->name());
+        if(p && !m_selectedObjects.empty()) {
+            QMenu *menu = m_currentEditor->propertyContextMenu(m_selectedObjects.front(), p->name());
             if(menu) {
                 menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
             }

@@ -61,7 +61,7 @@ Mesh *SpriteRender::meshToDraw() {
     if(m_dirtyMesh) {
         m_useCustom = false;
         if(m_sprite) {
-            Mesh *mesh = m_sprite->composeMesh(m_customMesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
+            Mesh *mesh = m_sprite->composeMesh(m_customMesh, static_cast<Sprite::SpriteMode>(m_drawMode), m_size);
             if(mesh != m_customMesh) {
                 if(mesh) {
                     m_mesh = mesh;
