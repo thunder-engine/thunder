@@ -18,6 +18,7 @@
 #include "widgetcontroller.h"
 
 #include "components/widget.h"
+#include "components/canvas.h"
 
 #include <components/camera.h>
 #include <components/transform.h>
@@ -141,7 +142,11 @@ void WidgetController::update() {
 
     LegacyCameraController::update();
 
-    Widget *focusWidget = widgetHoverHelper(m_rootObject, Vector2(mouse.x, mouse.y));
+    Vector2 mousePosition(mouse.x, mouse.y);
+    if(Canvas *canvas = dynamic_cast<Canvas *>(m_rootObject)) {
+        mousePosition = canvas->mapToContent(mousePosition);
+    }
+    Widget *focusWidget = widgetHoverHelper(m_rootObject, mousePosition);
 
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         if(!m_drag) {
@@ -194,7 +199,7 @@ void WidgetController::update() {
 void WidgetController::cameraMove(const Vector3 &delta) {
     m_rootObject->setPosition(m_rootObject->position() + Vector3(m_mouseDelta, 0.0f));
 
-    m_widgetTool->setTranslation(m_rootObject->position(), m_rootObject->scale());
+    m_widgetTool->setTranslation(m_rootObject->position());
 
     Transform *cameraTransform = m_activeCamera->transform();
     cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());
@@ -225,9 +230,11 @@ void WidgetController::cameraZoom(float delta) {
     m_lastZoom = center;
 
     m_rootObject->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
-    m_rootObject->setScale(scale);
+    if(Canvas *canvas = dynamic_cast<Canvas *>(m_rootObject)) {
+        canvas->setContentScale(scale);
+    }
 
-    m_widgetTool->setTranslation(m_rootObject->position(), m_rootObject->scale());
+    m_widgetTool->setTranslation(m_rootObject->position());
 }
 
 void WidgetController::setDrag(bool drag) {

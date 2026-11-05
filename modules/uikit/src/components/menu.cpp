@@ -534,7 +534,11 @@ void Menu::draw() {
         invalidateIconDraws();
     }
     if(m_textMaterial) {
-        m_textMaterial->setTransform(transform, 0, hash);
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(transform) : transform);
+        uint32_t textHash = hash;
+        Mathf::hashCombine(textHash, textTransform[12]);
+        Mathf::hashCombine(textHash, textTransform[13]);
+        m_textMaterial->setTransform(textTransform, 0, textHash);
     }
 
     if(m_selectionMaterial && m_hoveredIndex > -1 && m_items[m_hoveredIndex].type != MenuItem::Separator) {

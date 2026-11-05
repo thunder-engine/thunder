@@ -293,7 +293,11 @@ void Button::draw() {
         if(!vertices.empty()) {
             offset = vertices.front().x - m_iconSize.x;
         }
-        m_fontMaterial->setTransform(mat, 0, hash);
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(mat) : mat);
+        uint32_t textHash = hash;
+        Mathf::hashCombine(textHash, textTransform[12]);
+        Mathf::hashCombine(textHash, textTransform[13]);
+        m_fontMaterial->setTransform(textTransform, 0, textHash);
         canvas->drawMesh(m_textMesh, m_fontMaterial);
     }
 

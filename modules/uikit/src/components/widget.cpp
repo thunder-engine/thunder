@@ -105,6 +105,7 @@ Widget::Widget() :
         m_hash(0),
         m_size(0.0f),
         m_pivot(0.5f),
+        m_minimumSize(0.0f),
         m_anchors(0.5f),
         m_margin(0.0f),
         m_border(0.0f),
@@ -867,7 +868,7 @@ void Widget::setRotation(float rotation) {
 }
 
 /*!
-    Changes \a scale of the Transform in local space.
+    Changes the \a scale of the Widget in local space.
 */
 void Widget::setScale(float scale) {
     if(m_scale != scale) {
@@ -909,12 +910,13 @@ Vector2 Widget::size() const { return m_size; }
     Sets the \a size of the Widget.
 */
 void Widget::setSize(const Vector2 &size) {
-    if(m_size != size) {
+    Vector2 boundedSize(MAX(size.x, m_minimumSize.x), MAX(size.y, m_minimumSize.y));
+    if(m_size != boundedSize) {
         if(m_attachedLayout || abs(m_anchors.x - m_anchors.z) <= EPSILON) {
-            m_size.x = size.x;
+            m_size.x = boundedSize.x;
         }
         if(m_attachedLayout || abs(m_anchors.y - m_anchors.w) <= EPSILON) {
-            m_size.y = size.y;
+            m_size.y = boundedSize.y;
         }
         if(m_attachedLayout) {
             m_attachedLayout->invalidate();
@@ -932,6 +934,28 @@ void Widget::setSize(const Vector2 &size) {
 #endif
         markSizeDirty();
         boundChanged(m_size);
+        repaint();
+    }
+}
+
+/*!
+    Returns the minimum size of the Widget.
+*/
+Vector2 Widget::minimumSize() const {
+    return m_minimumSize;
+}
+
+/*!
+    Sets the minimum \a size of the Widget.
+*/
+void Widget::setMinimumSize(const Vector2 &size) {
+    Vector2 minimum(MAX(0.0f, size.x), MAX(0.0f, size.y));
+    if(m_minimumSize != minimum) {
+        m_minimumSize = minimum;
+        if(m_attachedLayout) {
+            m_attachedLayout->invalidate();
+        }
+        setSize(m_size);
         repaint();
     }
 }
@@ -1173,7 +1197,10 @@ void Widget::setHorizontalPolicy(SizePolicy policy) {
 /*!
     Returns the size recommended to contain all visible content.
 */
-Vector2 Widget::sizeHint() const { return m_layout ? m_layout->sizeHint() : m_size; }
+Vector2 Widget::sizeHint() const {
+    Vector2 hint(m_layout ? m_layout->sizeHint() : m_size);
+    return Vector2(MAX(hint.x, m_minimumSize.x), MAX(hint.y, m_minimumSize.y));
+}
 
 /*!
     Returns the internal scissor area. All content outside of this area will not be rendered.
@@ -1224,8 +1251,9 @@ void Widget::markSizeDirty() {
 }
 
 void Widget::setLayoutSize(const Vector2 &size) {
-    if(m_size != size) {
-        m_size = size;
+    Vector2 boundedSize(MAX(size.x, m_minimumSize.x), MAX(size.y, m_minimumSize.y));
+    if(m_size != boundedSize) {
+        m_size = boundedSize;
         markSizeDirty();
         boundChanged(m_size);
         repaint();
@@ -1262,6 +1290,8 @@ void Widget::cleanDirtySize() {
                        (m_margin[0] + m_margin[2]);
         }
     }
+    m_size.x = MAX(m_size.x, m_minimumSize.x);
+    m_size.y = MAX(m_size.y, m_minimumSize.y);
 }
 
 void Widget::cleanDirty() const {

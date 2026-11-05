@@ -338,14 +338,43 @@ void Splitter::boundChanged(const Vector2 &size) {
         return;
     }
 
-    const float scale = available / totalSize;
+    float fixedSize = 0.0f;
+    float expandingSize = 0.0f;
+    int expandingCount = 0;
     for(const auto &entry : children) {
         Widget *child = entry.first;
+        const bool expanding = horizontal ?
+            child->horizontalPolicy() == Widget::Expanding :
+            child->verticalPolicy() == Widget::Expanding;
+        if(expanding) {
+            expandingSize += (horizontal ? child->size().x : child->size().y) + entry.second;
+            ++expandingCount;
+        } else {
+            fixedSize += (horizontal ? child->size().x : child->size().y) + entry.second;
+        }
+    }
+    if(expandingCount == 0) {
+        return;
+    }
+
+    const float remaining = MAX(0.0f, available - fixedSize);
+    for(const auto &entry : children) {
+        Widget *child = entry.first;
+        const bool expanding = horizontal ?
+            child->horizontalPolicy() == Widget::Expanding :
+            child->verticalPolicy() == Widget::Expanding;
+        if(!expanding) {
+            continue;
+        }
+
+        const float current = (horizontal ? child->size().x : child->size().y) + entry.second;
+        const float share = expandingSize > 0.0f ? current / expandingSize :
+                                                   1.0f / expandingCount;
         Vector2 childSize = child->size();
         if(horizontal) {
-            childSize.x = MAX(0.0f, (childSize.x + entry.second) * scale - entry.second);
+            childSize.x = MAX(0.0f, remaining * share - entry.second);
         } else {
-            childSize.y = MAX(0.0f, (childSize.y + entry.second) * scale - entry.second);
+            childSize.y = MAX(0.0f, remaining * share - entry.second);
         }
         child->setSize(childSize);
     }

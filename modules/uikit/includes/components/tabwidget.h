@@ -29,14 +29,16 @@ class UIKIT_EXPORT TabWidget : public Widget {
     A_OBJECT(TabWidget, Widget, UI)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, tabsClosable, TabWidget::tabsClosable, TabWidget::setTabsClosable)
+        A_PROPERTY(bool, tabsClosable, TabWidget::tabsClosable, TabWidget::setTabsClosable),
+        A_PROPERTY(bool, movable, TabWidget::isMovable, TabWidget::setMovable)
     )
     A_METHODS(
         A_SLOT(TabWidget::removeTab),
         A_SLOT(TabWidget::setCurrentIndex),
         A_SLOT(TabWidget::onObjectNameChanged),
         A_SIGNAL(TabWidget::tabCloseRequested),
-        A_SLOT(TabWidget::onTabCloseRequested)
+        A_SLOT(TabWidget::onTabCloseRequested),
+        A_SLOT(TabWidget::onTabMoved)
     )
     A_NOENUMS()
 
@@ -61,6 +63,8 @@ public:
 
     bool tabsClosable() const;
     void setTabsClosable(bool closeable);
+    bool isMovable() const;
+    void setMovable(bool movable);
     void setCloseOnRequest(bool enabled);
 
     Widget *tabContent(int index) const;
@@ -81,6 +85,7 @@ protected:
 private:
     void updateContentVisibility();
     void onTabClicked(int index);
+    void onTabMoved(int from, int to);
     void onTabCloseRequested(int index);
     void updateTabStyles();
 

@@ -26,15 +26,19 @@ class UIKIT_EXPORT TabBar : public Widget {
     A_OBJECT(TabBar, Widget, UI)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, tabsClosable, TabBar::tabsClosable, TabBar::setTabsClosable)
+        A_PROPERTY(bool, tabsClosable, TabBar::tabsClosable, TabBar::setTabsClosable),
+        A_PROPERTY(bool, movable, TabBar::isMovable, TabBar::setMovable)
     )
     A_METHODS(
         A_SIGNAL(TabBar::currentChanged),
         A_SIGNAL(TabBar::tabCloseRequested),
+        A_SIGNAL(TabBar::tabMoved),
         A_SLOT(TabBar::onTabClicked),
+        A_SLOT(TabBar::onTabPressed),
         A_SLOT(TabBar::onCloseButtonClicked),
         A_SLOT(TabBar::onBackClicked),
-        A_SLOT(TabBar::onFrontClicked)
+        A_SLOT(TabBar::onFrontClicked),
+        A_SLOT(TabBar::moveTab)
     )
     A_NOENUMS()
 
@@ -56,6 +60,10 @@ public:
 
     bool tabsClosable() const;
     void setTabsClosable(bool closable);
+
+    bool isMovable() const;
+    void setMovable(bool movable);
+    void moveTab(int from, int to);
 
     TString tabTitle(int index) const;
     void setTabTitle(int index, const TString &title);
@@ -79,6 +87,7 @@ public: //signals
     void currentChanged(int index);
 
     void tabCloseRequested(int index);
+    void tabMoved(int from, int to);
 
 protected:
     bool isHovered(const Vector2 &pos) override;
@@ -96,6 +105,7 @@ protected:
     void updateTabPositions();
 
     void onTabClicked();
+    void onTabPressed();
     void onCloseButtonClicked();
 
     void onBackClicked();
@@ -124,9 +134,16 @@ private:
 
     int m_visualIndex;
 
+    Button *m_dragTab;
+    Vector2 m_dragStartPosition;
+
     float m_positionOffset;
 
     bool m_showClose;
+
+    bool m_movable;
+
+    bool m_dragActive;
 
     bool m_blockUpdates;
 

@@ -40,7 +40,8 @@ class UIKIT_EXPORT Canvas : public Widget {
 
     A_PROPERTIES(
         A_PROPERTYEX(UiDocument *, document, Canvas::document, Canvas::setDocument, "editor=Asset"),
-        A_PROPERTYEX(StyleSheet *, styleSheet, Canvas::styleSheet, Canvas::setStyleSheet, "editor=Asset")
+        A_PROPERTYEX(StyleSheet *, styleSheet, Canvas::styleSheet, Canvas::setStyleSheet, "editor=Asset"),
+        A_PROPERTY(float, contentScale, Canvas::contentScale, Canvas::setContentScale)
     )
     A_METHODS(
         A_METHOD(void, Canvas::fromBuffer),
@@ -68,6 +69,12 @@ public:
 
     void setClipRegion(const Vector4 &region);
     void disableClip();
+    // Scales the rendered content from the canvas origin without changing widget layout geometry.
+    float contentScale() const;
+    void setContentScale(float scale);
+    Vector2 mapToContent(const Vector2 &position) const;
+    Vector2 mapFromContent(const Vector2 &position) const;
+    Matrix4 snapTextTransform(const Matrix4 &transform) const;
 
     virtual Texture *texture() const;
 
@@ -128,6 +135,8 @@ private:
     bool m_dirty;
 
     bool m_skipRenderResult;
+
+    float m_contentScale;
 
     bool m_lastPositionValid;
     bool m_drawingPopups = false;

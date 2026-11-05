@@ -103,6 +103,8 @@ Vector3Vector Mathf::pointsArc(const Vector3 &center, const Quaternion &rotation
     float x = size * cosf(start * DEG2RAD);
     float y = size * sinf(start * DEG2RAD);
 
+    result.reserve(startCenter ? steps + 1 : steps);
+
     if(startCenter) {
         result.push_back(center);
     }

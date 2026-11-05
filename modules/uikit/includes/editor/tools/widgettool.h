@@ -33,7 +33,7 @@ public:
     void endControl() override;
     void cancelControl() override;
 
-    void setTranslation(const Vector3 &position, const Vector3 &scale);
+    void setTranslation(const Vector3 &position);
 
 protected:
     TString icon() const override;
@@ -57,8 +57,6 @@ protected:
     Vector3 m_position;
 
     Vector3 m_translationPosition;
-    Vector3 m_translationScale;
-
     Vector2 m_min;
     Vector2 m_max;
 

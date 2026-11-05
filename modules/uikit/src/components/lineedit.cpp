@@ -180,10 +180,12 @@ void LineEdit::draw() {
         Matrix4 m(worldTransform());
         m[12] += m_textPosition;
 
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(m) : m);
         uint32_t hash = LineEdit::hash();
-        Mathf::hashCombine(hash, m[12]);
+        Mathf::hashCombine(hash, textTransform[12]);
+        Mathf::hashCombine(hash, textTransform[13]);
 
-        m_fontMaterial->setTransform(m, 0, hash);
+        m_fontMaterial->setTransform(textTransform, 0, hash);
         canvas->drawMesh(m_textMesh, m_fontMaterial);
     }
 

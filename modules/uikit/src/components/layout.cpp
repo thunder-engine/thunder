@@ -266,7 +266,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
     for(auto it : m_items) {
         if(it->isVisible()) {
             Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
-            float pref = horizontal ? it->size().x : it->size().y;
+            Vector2 minimumSize = it->minimumSize();
+            float pref = horizontal ? MAX(it->size().x, minimumSize.x) :
+                                      MAX(it->size().y, minimumSize.y);
             Vector4 margin(it->margin());
             pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
 
@@ -308,7 +310,9 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
             if(it->isVisible()) {
                 Widget::SizePolicy policy = static_cast<Widget::SizePolicy>(horizontal ? it->horizontalPolicy() : it->verticalPolicy());
                 if(policy == Widget::Fixed || policy == Widget::Preferred) {
-                    float pref = horizontal ? it->size().x : it->size().y;
+                    Vector2 minimumSize = it->minimumSize();
+                    float pref = horizontal ? MAX(it->size().x, minimumSize.x) :
+                                              MAX(it->size().y, minimumSize.y);
                     Vector4 margin(it->margin());
                     pref += horizontal ? (margin.w + margin.y) : (margin.x + margin.z);
                     remainingSpace -= pref;

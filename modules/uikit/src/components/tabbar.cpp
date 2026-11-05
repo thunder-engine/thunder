@@ -22,6 +22,8 @@
 
 #include "stylesheet.h"
 
+#include <input.h>
+
 #define NAVI_SIZE 32
 
 namespace {
@@ -45,17 +47,32 @@ namespace {
 TabBar::TabBar() :
         m_tabCornerRadius(4.0f, 4.0f, 0.0f, 0.0f),
         m_tabPadding(3.0f, 8.0f, 3.0f, 8.0f),
-        m_tabBackgroundColor(0.49f, 0.49f, 0.49f, 1.0f),
-        m_tabPressedColor(0.32f, 0.32f, 0.32f, 1.0f),
+        m_tabBackgroundColor(0.32f, 0.32f, 0.32f, 1.0f),
+        m_tabPressedColor(0.49f, 0.49f, 0.49f, 1.0f),
         m_tabHighlightedColor(0.38f, 0.38f, 0.38f, 1.0f),
         m_frontButton(nullptr),
         m_backButton(nullptr),
         m_currentIndex(-1),
         m_visualIndex(-1),
+        m_dragTab(nullptr),
+        m_dragStartPosition(0.0f),
         m_positionOffset(0.0f),
         m_showClose(false),
+        m_movable(false),
+        m_dragActive(false),
         m_blockUpdates(false) {
 
+}
+/*!
+    Called when a tab is pressed.
+*/
+void TabBar::onTabPressed() {
+    Button *button = dynamic_cast<Button *>(sender());
+    if(button && m_movable) {
+        m_dragTab = button;
+        m_dragStartPosition = mousePosition();
+        m_dragActive = false;
+    }
 }
 
 TabBar::~TabBar() {
@@ -100,6 +117,7 @@ int TabBar::insertTab(int index, const TString &title, Sprite *icon) {
         button->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
 
         connect(button, _SIGNAL(clicked()), this, _SLOT(onTabClicked()));
+        connect(button, _SIGNAL(pressed()), this, _SLOT(onTabPressed()));
 
         // Calculate insertion position
         auto it = m_tabs.begin();
@@ -139,6 +157,10 @@ void TabBar::removeTab(int index) {
 
     Button *btn = (*it);
     m_tabs.erase(it);
+    if(m_dragTab == btn) {
+        m_dragTab = nullptr;
+        m_dragActive = false;
+    }
 
     if(btn) {
         btn->setEnabled(false);
@@ -239,6 +261,45 @@ void TabBar::setTabsClosable(bool closable) {
     }
 
     updateTabPositions();
+}
+
+bool TabBar::isMovable() const {
+    return m_movable;
+}
+
+void TabBar::setMovable(bool movable) {
+    m_movable = movable;
+    if(!m_movable) {
+        m_dragTab = nullptr;
+        m_dragActive = false;
+    }
+}
+
+void TabBar::moveTab(int from, int to) {
+    const int tabCount = static_cast<int>(m_tabs.size());
+    if(from < 0 || from >= tabCount || to < 0 || to >= tabCount || from == to) {
+        return;
+    }
+
+    Button *currentTab = tabButton(m_currentIndex);
+    auto fromIt = m_tabs.begin();
+    std::advance(fromIt, from);
+    Button *tab = *fromIt;
+    m_tabs.erase(fromIt);
+
+    auto toIt = m_tabs.begin();
+    std::advance(toIt, to);
+    m_tabs.insert(toIt, tab);
+
+    m_currentIndex = indexOf(currentTab);
+    m_visualIndex = indexOf(m_dragTab ? m_dragTab : currentTab);
+    if(m_backButton && m_backButton->isVisible()) {
+        recalcOffset();
+    } else {
+        updateTabPositions();
+    }
+    repaint();
+    tabMoved(from, to);
 }
 /*!
     Returns the title of the tab at the specified \a index.
@@ -392,6 +453,37 @@ bool TabBar::isHovered(const Vector2 &pos) {
 */
 void TabBar::update(const Vector2 &pos) {
     m_blockUpdates = false;
+    if(m_dragTab) {
+        if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
+            m_dragTab = nullptr;
+            m_dragActive = false;
+        } else if(m_movable) {
+            const float dx = pos.x - m_dragStartPosition.x;
+            const float dy = pos.y - m_dragStartPosition.y;
+            if(!m_dragActive && dx * dx + dy * dy >= 16.0f) {
+                m_dragActive = true;
+            }
+            if(m_dragActive) {
+                int insertionIndex = 0;
+                for(Button *tab : m_tabs) {
+                    if(tab == m_dragTab) {
+                        continue;
+                    }
+                    const Vector4 bounds = tab->clipRegion();
+                    const float center = bounds.x + bounds.z * 0.5f;
+                    if(pos.x < center) {
+                        break;
+                    }
+                    ++insertionIndex;
+                }
+                const int from = indexOf(m_dragTab);
+                if(from >= 0 && insertionIndex != from) {
+                    moveTab(from, insertionIndex);
+                }
+            }
+        }
+    }
+
     if(isHovered(pos)) {
         for(auto it : m_childWidgets) {
             // To protect from multiple close of tabs
@@ -581,6 +673,12 @@ void TabBar::currentChanged(int index) {
 */
 void TabBar::tabCloseRequested(int index) {
     emitSignal(_SIGNAL(tabCloseRequested(int)), index);
+}
+/*!
+    This signal is emitted when a tab is moved from one index to another.
+*/
+void TabBar::tabMoved(int from, int to) {
+    emitSignal(_SIGNAL(tabMoved(int,int)), from, to);
 }
 /*!
     Called when a tab is clicked.

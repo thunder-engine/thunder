@@ -109,16 +109,7 @@ void AbstractScrollArea::boundChanged(const Vector2 &size) {
 void AbstractScrollArea::drawSub() {
     Canvas *canvas = Frame::canvas();
 
-    Vector4 clip = clipRegion();
-    if(m_vScroll && m_vScroll->isVisible()) {
-        clip.z -= m_vScroll->size().x * m_vScroll->worldScale();
-    }
-    if(m_hScroll && m_hScroll->isVisible()) {
-        const float height = m_hScroll->size().y * m_hScroll->worldScale();
-        clip.y += height;
-        clip.w -= height;
-    }
-    canvas->setClipRegion(clip);
+    canvas->setClipRegion(viewportClipRegion());
     if(m_content && m_content->isVisible()) {
         m_content->draw();
     }
@@ -136,6 +127,19 @@ void AbstractScrollArea::drawSub() {
             child->draw();
         }
     }
+}
+
+Vector4 AbstractScrollArea::viewportClipRegion() const {
+    Vector4 clip = clipRegion();
+    if(m_vScroll && m_vScroll->isVisible()) {
+        clip.z -= m_vScroll->size().x * m_vScroll->worldScale();
+    }
+    if(m_hScroll && m_hScroll->isVisible()) {
+        const float height = m_hScroll->size().y * m_hScroll->worldScale();
+        clip.y += height;
+        clip.w -= height;
+    }
+    return clip;
 }
 
 void AbstractScrollArea::onVScrollChanged(int value) {
