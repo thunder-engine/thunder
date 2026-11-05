@@ -17,21 +17,93 @@
 */
 #include "editor/editorgadget.h"
 
+#include "editor/asseteditor.h"
+
+#include <algorithm>
+#include <set>
+
 EditorGadget::EditorGadget() :
-        Widget() {
+        Widget(),
+        m_currentEditor(nullptr) {
+}
+
+AssetEditor *EditorGadget::currentEditor() const {
+    return m_currentEditor;
+}
+
+void EditorGadget::setCurrentEditor(AssetEditor *editor) {
+    if(m_currentEditor) {
+        disconnect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
+        disconnect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
+        disconnect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
+    }
+
+    m_currentEditor = editor;
+    if(m_currentEditor) {
+        connect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
+        connect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
+        connect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
+    }
+}
+
+Object::ObjectList EditorGadget::selected() {
+    return Object::ObjectList();
+}
+
+TString EditorGadget::propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property) {
+    std::set<TString> types;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            types.insert(object->metaObject()->name());
+        }
+    }
+
+    if(types.empty()) {
+        return property;
+    }
+
+    StringList names(types.begin(), types.end());
+    return TString::join(names, "|") + "::" + property;
+}
+
+Object::ObjectList EditorGadget::objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name) {
+    name = property;
+
+    int separator = property.indexOf("::");
+    if(separator < 0) {
+        return objects;
+    }
+
+    StringList types = property.left(separator).split('|');
+    if(types.empty()) {
+        return objects;
+    }
+
+    name = property.mid(separator + 2, property.length() - separator - 2);
+
+    Object::ObjectList result;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            TString type = object->metaObject()->name();
+            if(std::find(types.begin(), types.end(), type) != types.end()) {
+                result.push_back(object);
+            }
+        }
+    }
+
+    return result;
 }
 
 void EditorGadget::updated() {
     emitSignal(_SIGNAL(updated()));
 }
 
-void EditorGadget::objectsSelected(const Object::ObjectList &objects, bool force) {
-    //emitSignal(_SIGNAL(objectsSelected(Object::ObjectList,bool)), Variant(objects), Variant(force));
+void EditorGadget::objectsSelected(bool force) {
+    emitSignal(_SIGNAL(objectsSelected(bool)), force);
 }
 
-void EditorGadget::objectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    //emitSignal(_SIGNAL(objectsChanged(Object::ObjectList,TString,Variant)),
-    //           Variant(objects), Variant(property), value);
+void EditorGadget::objectsChanged(const TString &property, Variant value) {
+    emitSignal(_SIGNAL(objectsChanged(TString, Variant)), property, value);
 }
 
 void EditorGadget::onUpdated() {
@@ -42,6 +114,7 @@ void EditorGadget::onSelectionChanged() {
 
 }
 
-void EditorGadget::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-
+void EditorGadget::onObjectsChanged(const TString &property, Variant value) {
+    A_UNUSED(property);
+    A_UNUSED(value);
 }

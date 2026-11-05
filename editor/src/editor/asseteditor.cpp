@@ -41,6 +41,10 @@ Object::ObjectList AssetEditor::selected() const {
     return Object::ObjectList();
 }
 
+bool AssetEditor::maskPropertyType() const {
+    return false;
+}
+
 VariantMap AssetEditor::saveState() {
     return VariantMap();
 }
