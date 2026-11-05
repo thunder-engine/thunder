@@ -15,7 +15,6 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "tst_abstractbutton.h"
 #include "tst_canvas.h"
 #include "tst_foldout.h"
 #include "tst_layout.h"
