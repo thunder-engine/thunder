@@ -40,17 +40,24 @@ class EDITOR_EXPORT EditorGadget : public Widget {
 public:
     EditorGadget();
 
-    virtual void setCurrentEditor(AssetEditor *editor) {
-        A_UNUSED(editor);
-    }
+    AssetEditor *currentEditor() const;
+    virtual void setCurrentEditor(AssetEditor *editor);
+
+    virtual Object::ObjectList selected();
+
+    static TString propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property);
+    static Object::ObjectList objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name);
 
     void updated();
-    void objectsSelected(const Object::ObjectList &objects, bool force);
-    void objectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+    void objectsSelected(bool force);
+    void objectsChanged(const TString &property, Variant value);
 
     virtual void onUpdated();
     virtual void onSelectionChanged();
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+    virtual void onObjectsChanged(const TString &property, Variant value);
+
+protected:
+    AssetEditor *m_currentEditor;
 };
 
 #endif // EDITORGADGET_H

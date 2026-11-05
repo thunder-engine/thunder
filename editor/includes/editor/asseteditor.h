@@ -33,7 +33,18 @@ class EDITOR_EXPORT AssetEditor : public Widget {
         A_SIGNAL(AssetEditor::objectsChanged),
         A_SIGNAL(AssetEditor::copyPasteChanged),
         A_SIGNAL(AssetEditor::dropAsset),
-        A_SIGNAL(AssetEditor::editorClosing)
+        A_SIGNAL(AssetEditor::editorClosing),
+        A_SLOT(AssetEditor::onActivated),
+        A_SLOT(AssetEditor::onNewAsset),
+        A_SLOT(AssetEditor::onOpenAsset),
+        A_SLOT(AssetEditor::onSave),
+        A_SLOT(AssetEditor::onSaveAs),
+        A_SLOT(AssetEditor::onObjectCreate),
+        A_SLOT(AssetEditor::onObjectsSelected),
+        A_SLOT(AssetEditor::onDropAsset),
+        A_SLOT(AssetEditor::onSelectionDeleted),
+        A_SLOT(AssetEditor::onUpdated),
+        A_SLOT(AssetEditor::onObjectsChanged)
     )
     A_NOENUMS()
     A_NOPROPERTIES()
@@ -50,6 +61,7 @@ public:
     virtual bool checkSave();
     virtual StringList componentGroups() const;
     virtual Object::ObjectList selected() const;
+    virtual bool maskPropertyType() const;
     virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
 
     virtual VariantMap saveState();
