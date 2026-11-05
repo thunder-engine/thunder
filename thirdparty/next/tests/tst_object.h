@@ -25,7 +25,46 @@ namespace NextSuite {
         void processEvents(Object& obj) {
             obj.processEvents();
         }
+
+    public:
+        static bool canLockMutex(Object *object) {
+            if(!object->m_mutex.try_lock()) {
+                return false;
+            }
+            object->m_mutex.unlock();
+            return true;
+        }
     };
+
+    class LockProbe : public TestObject {
+        A_OBJECT(LockProbe, TestObject, Test)
+
+        A_METHODS(
+            A_SLOT(LockProbe::checkSenderLock)
+        )
+        A_NOPROPERTIES()
+
+    public:
+        void checkSenderLock(int) {
+            senderLockAvailable = ObjectTest::canLockMutex(sender());
+        }
+
+        bool senderLockAvailable = false;
+    };
+
+    TEST_F(ObjectTest, Emit_mutually_connected_objects_without_sender_lock) {
+        LockProbe obj1;
+        LockProbe obj2;
+
+        ASSERT_TRUE(Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(checkSenderLock(int))));
+        ASSERT_TRUE(Object::connect(&obj2, _SIGNAL(signal(int)), &obj1, _SLOT(checkSenderLock(int))));
+
+        obj1.signal(1);
+        EXPECT_TRUE(obj2.senderLockAvailable);
+
+        obj2.signal(1);
+        EXPECT_TRUE(obj1.senderLockAvailable);
+    }
 
     TEST_F(ObjectTest, Disconnect_base) {
         TestObject obj1;
