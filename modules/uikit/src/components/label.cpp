@@ -103,11 +103,12 @@ void Label::draw() {
 
         mat[12] += padding().w;
 
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(mat) : mat);
         uint32_t hash = Label::hash();
-        Mathf::hashCombine(hash, mat[12]);
-        Mathf::hashCombine(hash, mat[13]);
+        Mathf::hashCombine(hash, textTransform[12]);
+        Mathf::hashCombine(hash, textTransform[13]);
 
-        m_material->setTransform(mat, 0, hash);
+        m_material->setTransform(textTransform, 0, hash);
 
         canvas->drawMesh(m_mesh, m_material);
     }

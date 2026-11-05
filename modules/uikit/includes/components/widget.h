@@ -57,6 +57,7 @@ class UIKIT_EXPORT Widget : public Object {
         A_PROPERTY(float, rotation, Widget::rotation, Widget::setRotation),
         A_PROPERTY(float, scale, Widget::scale, Widget::setScale),
         A_PROPERTY(Vector2, size, Widget::size, Widget::setSize),
+        A_PROPERTY(Vector2, minimumSize, Widget::minimumSize, Widget::setMinimumSize),
         A_PROPERTY(Vector2, minAnchors, Widget::minAnchors, Widget::setMinAnchors),
         A_PROPERTY(Vector2, maxAnchors, Widget::maxAnchors, Widget::setMaxAnchors),
         A_PROPERTY(Vector2, pivot, Widget::pivot, Widget::setPivot),
@@ -126,6 +127,8 @@ public:
 
     Vector2 size() const;
     void setSize(const Vector2 &size);
+    Vector2 minimumSize() const;
+    void setMinimumSize(const Vector2 &size);
     Vector2 pivot() const;
     void setPivot(const Vector2 &pivot);
     Vector2 minAnchors() const;
@@ -255,6 +258,7 @@ private:
     mutable float m_worldScale;
 
     Vector2 m_pivot;
+    Vector2 m_minimumSize;
     Vector4 m_anchors;
     Vector4 m_margin;
     Vector4 m_border;

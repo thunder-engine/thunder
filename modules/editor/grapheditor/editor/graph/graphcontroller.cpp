@@ -12,6 +12,7 @@
 
 #include <input.h>
 #include <components/camera.h>
+#include <canvas.h>
 
 #include <viewport/handletools.h>
 
@@ -338,12 +339,15 @@ void GraphController::update() {
 
     Widget *parentRect = &m_view->view();
     Vector2 parentSize(parentRect->size());
-    Vector2 parentScale(parentRect->scale());
-    Vector2 localPos(parentRect->worldTransform().inverse() * Vector3(mousePosition.x, mousePosition.y, 0.0f));
-    Vector2 pos(localPos.x - (parentSize.x / parentScale.x) * 0.5f,
-                localPos.y - (parentSize.y / parentScale.y) * 0.5f);
+    Vector2 contentMouse(mousePosition.x, mousePosition.y);
+    if(Canvas *canvas = parentRect->canvas()) {
+        contentMouse = canvas->mapToContent(contentMouse);
+    }
+    Vector2 localPos(parentRect->worldTransform().inverse() * Vector3(contentMouse, 0.0f));
+    Vector2 pos(localPos.x - parentSize.x * 0.5f,
+                localPos.y - parentSize.y * 0.5f);
 
-    NodeWidget *hovered = hoveredNode(mousePosition);
+    NodeWidget *hovered = hoveredNode(contentMouse);
 
     if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
         if(hovered == nullptr && !m_view->isCreationLink()) {
@@ -502,7 +506,9 @@ void GraphController::cameraZoom(float delta) {
 
         m_activeCamera->setOrthoSize(m_screenSize.y / scale);
 
-        t->setScale(scale);
+        if(Canvas *canvas = t->canvas()) {
+            canvas->setContentScale(scale);
+        }
         t->setPosition(Vector3(m_activeCamera->project(world), 0.0f));
     } else {
         m_zoom = CLAMP(m_zoom, 1, 10);

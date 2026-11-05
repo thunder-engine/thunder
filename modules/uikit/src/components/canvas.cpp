@@ -29,9 +29,11 @@
 #include <pipelinecontext.h>
 #include <commandbuffer.h>
 #include <input.h>
+#include <log.h>
 #include <pugixml.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 
 namespace {
@@ -126,6 +128,7 @@ Canvas::Canvas() :
         m_styleSheet(nullptr),
         m_dirty(true),
         m_skipRenderResult(false),
+        m_contentScale(1.0f),
         m_lastPositionValid(false) {
 
     m_texture->setFormat(Texture::RGBA8);
@@ -171,11 +174,11 @@ void Canvas::markDirty() {
 */
 void Canvas::update(const Vector2 &position) {
     if(parentWidget()) {
-        Widget::update(position);
+        Widget::update(mapToContent(position));
         return;
     }
 
-    Vector2 globalPos(position);
+    Vector2 globalPos(mapToContent(position));
     Menu *popupUnderCursor = nullptr;
     for(auto it = m_popupMenus.rbegin(); it != m_popupMenus.rend(); ++it) {
         Menu *menu = *it;
@@ -262,7 +265,7 @@ void Canvas::update(const Vector2 &position) {
         }
     }
 
-    Widget::update(position);
+    Widget::update(globalPos);
     if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
         Widget::finishDrag(false);
     }
@@ -392,9 +395,12 @@ void Canvas::draw(CommandBuffer *buffer) {
     Matrix4 view;
     view[14] = -50.0f;
     Matrix4 projection = Matrix4::ortho(0, m_texture->width(), 0, m_texture->height(), 0.0f, 100.0f);
+    Matrix4 contentTransform;
+    contentTransform[0] = m_contentScale;
+    contentTransform[5] = m_contentScale;
 
     /*if(m_dirty)*/ {
-        m_buffer->setViewProjection(view * worldTransform().inverse(), projection);
+        m_buffer->setViewProjection(view * contentTransform * worldTransform().inverse(), projection);
         RenderTarget *canvasTarget = renderTarget();
         if(m_buffer->renderTarget() != canvasTarget) {
             m_buffer->setRenderTarget(canvasTarget);
@@ -497,7 +503,15 @@ void Canvas::resizeTexture(int width, int height) {
     Coordinates are in screen space.
 */
 void Canvas::setClipRegion(const Vector4 &region) {
-    m_buffer->enableScissor(region.x, region.y, region.z, region.w);
+    if(m_buffer->renderTarget() == m_target) {
+        Vector3 local(worldTransform().inverse() * Vector3(region.x, region.y, 0.0f));
+        local.x *= m_contentScale;
+        local.y *= m_contentScale;
+        m_buffer->enableScissor(local.x, local.y,
+                                region.z * m_contentScale, region.w * m_contentScale);
+    } else {
+        m_buffer->enableScissor(region.x, region.y, region.z, region.w);
+    }
 }
 /*!
     Disables the clip region.
@@ -506,6 +520,44 @@ void Canvas::setClipRegion(const Vector4 &region) {
 */
 void Canvas::disableClip() {
     m_buffer->disableScissor();
+}
+
+float Canvas::contentScale() const {
+    return m_contentScale;
+}
+
+void Canvas::setContentScale(float scale) {
+    if(!(scale > 0.0f) || !std::isfinite(scale)) {
+        Log(Log::ERR) << "Canvas content scale must be a positive finite value.";
+        return;
+    }
+    if(m_contentScale == scale) return;
+
+    m_contentScale = scale;
+    m_lastPositionValid = false;
+    markDirty();
+    repaint();
+}
+
+Vector2 Canvas::mapToContent(const Vector2 &position) const {
+    Vector3 local(worldTransform().inverse() * Vector3(position, 0.0f));
+    local.x /= m_contentScale;
+    local.y /= m_contentScale;
+    return worldTransform() * local;
+}
+
+Vector2 Canvas::mapFromContent(const Vector2 &position) const {
+    Vector3 local(worldTransform().inverse() * Vector3(position, 0.0f));
+    local.x *= m_contentScale;
+    local.y *= m_contentScale;
+    return worldTransform() * local;
+}
+
+Matrix4 Canvas::snapTextTransform(const Matrix4 &transform) const {
+    Matrix4 local(worldTransform().inverse() * transform);
+    local[12] = std::round(local[12] * m_contentScale) / m_contentScale;
+    local[13] = std::round(local[13] * m_contentScale) / m_contentScale;
+    return worldTransform() * local;
 }
 
 /*!

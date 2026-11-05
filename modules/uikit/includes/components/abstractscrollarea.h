@@ -53,6 +53,8 @@ protected:
 
     void drawSub() override;
 
+    Vector4 viewportClipRegion() const;
+
     virtual void onVScrollChanged(int value);
     virtual void onHScrollChanged(int value);
 

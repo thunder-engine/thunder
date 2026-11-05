@@ -442,8 +442,8 @@ void TreeView::buildArrowInstances() {
         if(m_model->rowCount(itemData.index) == 0) continue;
 
         Matrix4 transform = itemData.delegate->worldTransform();
-        Vector2 scale = itemData.delegate->worldScale();
 
+        Vector2 scale(itemData.delegate->worldScale());
         float offsetX = -(m_rowHeight * 0.5f) * scale.x;
         float offsetY = m_rowHeight * 0.5f * scale.y;
 
@@ -496,7 +496,7 @@ void TreeView::drawSub() {
 
     Canvas *canvas = TreeView::canvas();
     if(canvas && m_arrowMaterial && m_arrowMesh) {
-        canvas->setClipRegion(clipRegion());
+        canvas->setClipRegion(viewportClipRegion());
         canvas->drawMesh(m_arrowMesh, m_arrowMaterial);
         canvas->disableClip();
 

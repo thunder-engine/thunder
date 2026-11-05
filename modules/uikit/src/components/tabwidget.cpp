@@ -203,6 +203,16 @@ void TabWidget::setTabsClosable(bool closeable) {
     m_tabBar->setTabsClosable(closeable);
 }
 
+bool TabWidget::isMovable() const {
+    return m_tabBar && m_tabBar->isMovable();
+}
+
+void TabWidget::setMovable(bool movable) {
+    if(m_tabBar) {
+        m_tabBar->setMovable(movable);
+    }
+}
+
 void TabWidget::setCloseOnRequest(bool enabled) {
     m_closeOnRequest = enabled;
 }
@@ -231,6 +241,7 @@ void TabWidget::setTabBar(TabBar *bar) {
 
         connect(m_tabBar, _SIGNAL(currentChanged(int)), this, _SLOT(setCurrentIndex(int)));
         connect(m_tabBar, _SIGNAL(tabCloseRequested(int)), this, _SLOT(onTabCloseRequested(int)));
+        connect(m_tabBar, _SIGNAL(tabMoved(int,int)), this, _SLOT(onTabMoved(int,int)));
     }
 }
 /*!
@@ -265,6 +276,38 @@ void TabWidget::onTabClicked(int index) {
     if(m_currentIndex != index) {
         setCurrentIndex(index);
     }
+}
+
+void TabWidget::onTabMoved(int from, int to) {
+    const int tabCount = static_cast<int>(m_tabs.size());
+    if(from < 0 || from >= tabCount || to < 0 || to >= tabCount || from == to) {
+        return;
+    }
+
+    Widget *currentContent = tabContent(m_currentIndex);
+    auto fromIt = m_tabs.begin();
+    std::advance(fromIt, from);
+    Widget *content = *fromIt;
+    m_tabs.erase(fromIt);
+
+    auto toIt = m_tabs.begin();
+    std::advance(toIt, to);
+    m_tabs.insert(toIt, content);
+
+    m_currentIndex = -1;
+    int index = 0;
+    for(Widget *tab : m_tabs) {
+        if(tab == currentContent) {
+            m_currentIndex = index;
+        }
+        tab->setEnabled(tab == currentContent);
+        tab->setVisible(tab == currentContent);
+        ++index;
+    }
+    if(m_contentArea && m_contentArea->layout()) {
+        m_contentArea->layout()->invalidate();
+    }
+    repaint();
 }
 /*!
     \internal

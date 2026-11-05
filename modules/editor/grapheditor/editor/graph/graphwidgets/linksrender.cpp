@@ -40,11 +40,7 @@ void LinksRender::update(const Vector2 &pos) {
         if(!parent) {
             return;
         }
-        Vector2 parentScale(parent->scale());
         Vector2 parentSize(parent->size());
-
-        parentSize.x /= parentScale.x;
-        parentSize.y /= parentScale.y;
 
         Matrix4 worlToView(parent->worldTransform().inverse());
 
@@ -148,11 +144,7 @@ void LinksRender::composeLinks() {
     if(!parent) {
         return;
     }
-    Vector2 parentScale(parent->scale());
     Vector2 parentSize(parent->size());
-
-    parentSize.x /= parentScale.x;
-    parentSize.y /= parentScale.y;
 
     Matrix4 worlToView(parent->worldTransform().inverse());
 

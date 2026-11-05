@@ -228,10 +228,13 @@ bool AbstractButton::onMouseUp(int x, int y) {
 */
 void AbstractButton::checkStateSet() {
     if(m_exclusive && m_checked) {
-        for(Widget *child : childWidgets()) {
-            AbstractButton *btn = dynamic_cast<AbstractButton *>(child);
-            if(btn && btn != this) {
-                btn->setChecked(false);
+        Widget *parent = parentWidget();
+        if(parent) {
+            for(Widget *sibling : parent->childWidgets()) {
+                AbstractButton *button = dynamic_cast<AbstractButton *>(sibling);
+                if(button && button != this && button->isExclusive()) {
+                    button->setChecked(false);
+                }
             }
         }
     }

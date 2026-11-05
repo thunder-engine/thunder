@@ -27,6 +27,7 @@
 #include <viewport/handles.h>
 
 #include "components/widget.h"
+#include "components/canvas.h"
 
 #include "../widgetcontroller.h"
 #include "../actions/changeproperty.h"
@@ -108,9 +109,8 @@ void WidgetTool::cancelControl() {
     }
 }
 
-void WidgetTool::setTranslation(const Vector3 &position, const Vector3 &scale) {
+void WidgetTool::setTranslation(const Vector3 &position) {
     m_translationPosition = position;
-    m_translationScale = scale;
 }
 
 void WidgetTool::update(bool pivot, bool local, bool snap) {
@@ -130,11 +130,13 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     Vector4 area(rect->clipRegion());
     Vector3 size(area.z, area.w, 0.0f);
     Vector3 center(area.x + area.z * 0.5f, area.y + area.w * 0.5f, 0.0f);
+    if(Canvas *canvas = rect->canvas()) {
+        center = Vector3(canvas->mapFromContent(Vector2(center.x, center.y)), 0.0f);
+        size *= canvas->contentScale();
+    }
     Handles::s_Color = Handles::s_Normal;
 
     center -= m_translationPosition;
-    size.x /= m_translationScale.x;
-    size.y /= m_translationScale.y;
 
     if(parent->layout()) {
         Gizmos::drawWireRectangle(center, size, Vector4(0.9f));
