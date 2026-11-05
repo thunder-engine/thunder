@@ -762,9 +762,18 @@ void Object::emitSignal(const char *signal, const Variant &args) {
         return;
     }
 
+    LinkList recievers;
+    {
+        std::lock_guard<std::mutex> locker(m_mutex);
+        recievers = m_recievers;
+    }
+    if(recievers.empty()) {
+        return;
+    }
+
     int32_t index = metaObject()->indexOfSignal(&signal[1]);
-    std::lock_guard<std::mutex> locker(m_mutex);
-    for(auto &it : m_recievers) {
+
+    for(auto &it : recievers) {
         Link *link = &(it);
         if(link->signal == index) {
             const MetaMethod &method = link->receiver->metaObject()->method(link->method);
