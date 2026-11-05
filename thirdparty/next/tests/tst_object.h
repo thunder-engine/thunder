@@ -37,7 +37,7 @@ namespace NextSuite {
     };
 
     class LockProbe : public TestObject {
-        A_OBJECT_OVERRIDE(LockProbe, TestObject, Test)
+        A_OBJECT(LockProbe, TestObject, Test)
 
         A_METHODS(
             A_SLOT(LockProbe::checkSenderLock)
@@ -45,7 +45,7 @@ namespace NextSuite {
         A_NOPROPERTIES()
 
     public:
-        void checkSenderLock() {
+        void checkSenderLock(int) {
             senderLockAvailable = ObjectTest::canLockMutex(sender());
         }
 
@@ -56,8 +56,8 @@ namespace NextSuite {
         LockProbe obj1;
         LockProbe obj2;
 
-        ASSERT_TRUE(Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(checkSenderLock())));
-        ASSERT_TRUE(Object::connect(&obj2, _SIGNAL(signal(int)), &obj1, _SLOT(checkSenderLock())));
+        ASSERT_TRUE(Object::connect(&obj1, _SIGNAL(signal(int)), &obj2, _SLOT(checkSenderLock(int))));
+        ASSERT_TRUE(Object::connect(&obj2, _SIGNAL(signal(int)), &obj1, _SLOT(checkSenderLock(int))));
 
         obj1.signal(1);
         EXPECT_TRUE(obj2.senderLockAvailable);
