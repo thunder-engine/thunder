@@ -29,7 +29,7 @@
     \code
         class MoveTool : public EditorTool {
         public:
-            TString icon() const override {
+            TString image() const override {
                 return ":/Images/editor/Move.png";
             }
 
@@ -60,6 +60,12 @@ EditorTool::EditorTool() {
 
 EditorTool::~EditorTool() {
 
+}
+/*!
+    Returns the tool icon path.
+*/
+TString EditorTool::icon() const {
+    return TString();
 }
 /*!
     Returns the tooltip text for the tool (default implementation returns empty string).

@@ -14,7 +14,7 @@
    <string>Timeline</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../timeline.qrc">
+   <iconset>
     <normaloff>:/icons/clocks.png</normaloff>:/icons/clocks.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -68,7 +68,7 @@
         <item>
          <widget class="QToolButton" name="record">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/record.png</normaloff>:/Images/fontawesome/record.png</iconset>
           </property>
           <property name="iconSize">
@@ -85,7 +85,7 @@
         <item>
          <widget class="QToolButton" name="begin">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/fast-backward.png</normaloff>:/Images/fontawesome/fast-backward.png</iconset>
           </property>
           <property name="iconSize">
@@ -99,7 +99,7 @@
         <item>
          <widget class="QToolButton" name="previous">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/back.png</normaloff>:/Images/fontawesome/back.png</iconset>
           </property>
           <property name="iconSize">
@@ -113,7 +113,7 @@
         <item>
          <widget class="QToolButton" name="play">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/play.png</normaloff>:/Images/fontawesome/play.png</iconset>
           </property>
           <property name="iconSize">
@@ -130,7 +130,7 @@
         <item>
          <widget class="QToolButton" name="pause">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/pause.png</normaloff>:/Images/fontawesome/pause.png</iconset>
           </property>
           <property name="iconSize">
@@ -144,7 +144,7 @@
         <item>
          <widget class="QToolButton" name="next">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/next.png</normaloff>:/Images/fontawesome/next.png</iconset>
           </property>
           <property name="iconSize">
@@ -158,7 +158,7 @@
         <item>
          <widget class="QToolButton" name="end">
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/fast-forward.png</normaloff>:/Images/fontawesome/fast-forward.png</iconset>
           </property>
           <property name="iconSize">
@@ -192,7 +192,7 @@
            <bool>false</bool>
           </property>
           <property name="icon">
-           <iconset resource="../../../../worldeditor/res/WorldEditor.qrc">
+           <iconset>
             <normaloff>:/Images/fontawesome/curve.png</normaloff>:/Images/fontawesome/curve.png</iconset>
           </property>
           <property name="iconSize">
@@ -246,7 +246,7 @@
         <item>
          <widget class="QLabel" name="time">
           <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
+           <enum>Qt::LayoutDirection::LeftToRight</enum>
           </property>
           <property name="text">
            <string>Time</string>
@@ -283,7 +283,7 @@
         <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -318,9 +318,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../../../worldeditor/res/WorldEditor.qrc"/>
-  <include location="../timeline.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

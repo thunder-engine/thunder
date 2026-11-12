@@ -9,24 +9,13 @@
 */
 #include "propertyedit.h"
 
-#include <components/label.h>
-#include <components/layout.h>
+#include <label.h>
+#include <layout.h>
+
+#include <editor/pluginmanager.h>
 
 #include <algorithm>
 #include <cctype>
-
-namespace {
-
-TString propertyDisplayName(const TString &name) {
-    TString result = name;
-    result.replace('_', ' ');
-    if(!result.isEmpty()) {
-        result[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(result.front())));
-    }
-    return result;
-}
-
-}
 
 std::list<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
@@ -138,6 +127,16 @@ PropertyEdit *PropertyEdit::constructEditor(uint32_t userType, Widget *parent, c
             return result;
         }
     }
+
+    for(auto &it : Editor::plugins()->extensions("property")) {
+        if(it == editor) {
+            PropertyEdit *edit = reinterpret_cast<PropertyEdit *>(Editor::plugins()->getPluginObject(it));
+            if(edit) {
+                return edit;
+            }
+        }
+    }
+
     return nullptr;
 }
 
@@ -151,4 +150,40 @@ void PropertyEdit::addEditor(Widget *editor) {
 
 Layout *PropertyEdit::editorLayout() const {
     return m_editorLayout;
+}
+
+bool PropertyEdit::parseFloat(const TString &text, float &value) {
+    TString input = text.trimmed();
+    if(input.isEmpty()) {
+        return false;
+    }
+    char *end = nullptr;
+    errno = 0;
+    value = std::strtof(input.data(), &end);
+    return end != input.data() && *end == '\0' && errno != ERANGE && std::isfinite(value);
+}
+
+bool PropertyEdit::parseInteger(const TString &text, int &value) {
+    TString input = text.trimmed();
+    if(input.isEmpty()) {
+        return false;
+    }
+    char *end = nullptr;
+    errno = 0;
+    const long parsed = std::strtol(input.data(), &end, 10);
+    if(end == input.data() || *end != '\0' || errno == ERANGE ||
+        parsed < std::numeric_limits<int>::min() || parsed > std::numeric_limits<int>::max()) {
+        return false;
+    }
+    value = static_cast<int>(parsed);
+    return true;
+}
+
+TString PropertyEdit::propertyDisplayName(const TString &name) {
+    TString result = name;
+    result.replace('_', ' ');
+    if(!result.isEmpty()) {
+        result[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(result.front())));
+    }
+    return result;
 }

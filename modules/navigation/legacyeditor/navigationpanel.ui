@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NavigationPanel</class>
+ <class>LegacyNavigationPanel</class>
  <widget class="QWidget" name="NavigationPanel">
   <property name="geometry">
    <rect>

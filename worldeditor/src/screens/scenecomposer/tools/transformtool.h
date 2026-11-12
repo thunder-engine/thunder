@@ -27,7 +27,7 @@ public:
     void update(bool center, bool local, bool snap) override;
 
 protected:
-    TString icon() const override;
+    TString image() const override;
     TString name() const override;
 
     TString component() const override;

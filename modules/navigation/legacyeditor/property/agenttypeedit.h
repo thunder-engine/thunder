@@ -21,21 +21,21 @@
 #include <editor/legacypropertyedit.h>
 
 namespace Ui {
-    class AgentTypeEdit;
+    class LegacyAgentTypeEdit;
 }
 
-class AgentTypeEdit : public LegacyPropertyEdit {
+class LegacyAgentTypeEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:
-    explicit AgentTypeEdit(QWidget *parent = nullptr);
-    ~AgentTypeEdit();
+    explicit LegacyAgentTypeEdit(QWidget *parent = nullptr);
+    ~LegacyAgentTypeEdit();
 
     Variant data() const override;
     void setData(const Variant &data) override;
 
 private:
-    Ui::AgentTypeEdit *ui;
+    Ui::LegacyAgentTypeEdit *ui;
 };
 
 #endif // AGENTTYPEEDIT_H

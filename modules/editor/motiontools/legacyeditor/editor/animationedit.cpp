@@ -16,9 +16,9 @@
 #include <QSettings>
 
 #include "renamedialog.h"
-#include "actions/addvariable.h"
-#include "actions/removevariable.h"
-#include "actions/renamevariable.h"
+#include "../actions/addvariable.h"
+#include "../actions/removevariable.h"
+#include "../actions/renamevariable.h"
 #include "../converter/animationbuilder.h"
 
 #include "statelink.h"
@@ -37,7 +37,7 @@ class AnimationProxy : public Object {
         A_SLOT(AnimationProxy::onVariableChanged)
     )
 public:
-    void setEditor(AnimationEdit *editor) {
+    void setEditor(LegacyAnimationEdit *editor) {
         m_editor = editor;
     }
 
@@ -50,12 +50,12 @@ public:
     }
 
 private:
-    AnimationEdit *m_editor = nullptr;
+    LegacyAnimationEdit *m_editor = nullptr;
 
 };
 
-AnimationEdit::AnimationEdit() :
-        ui(new Ui::AnimationEdit),
+LegacyAnimationEdit::LegacyAnimationEdit() :
+        ui(new Ui::LegacyAnimationEdit),
         m_graph(new AnimationControllerGraph),
         m_builder(new AnimationControllerBuilder),
         m_controller(new LegacyCameraController),
@@ -88,7 +88,7 @@ AnimationEdit::AnimationEdit() :
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(m_graph, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
 
-    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &AnimationEdit::selectionChanged);
+    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &LegacyAnimationEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -96,17 +96,17 @@ AnimationEdit::AnimationEdit() :
     ui->schemeWidget->init();
 
     QAction *renAction = m_variablesMenu.addAction(tr("Rename Variable"));
-    connect(renAction, &QAction::triggered, this, &AnimationEdit::onRenameVariable);
+    connect(renAction, &QAction::triggered, this, &LegacyAnimationEdit::onRenameVariable);
 
     QAction *delAction = m_variablesMenu.addAction(tr("Delete Variable"));
-    connect(delAction, &QAction::triggered, this, &AnimationEdit::onDeleteVariable);
+    connect(delAction, &QAction::triggered, this, &LegacyAnimationEdit::onDeleteVariable);
 
     readSettings();
 
     startTimer(16);
 }
 
-AnimationEdit::~AnimationEdit() {
+LegacyAnimationEdit::~LegacyAnimationEdit() {
     writeSettings();
 
     delete m_graph;
@@ -132,7 +132,7 @@ AnimationEdit::~AnimationEdit() {
     delete ui;
 }
 
-void AnimationEdit::readSettings() {
+void LegacyAnimationEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant value = settings.value("animation.geometry");
     if(value.isValid()) {
@@ -140,12 +140,12 @@ void AnimationEdit::readSettings() {
     }
 }
 
-void AnimationEdit::writeSettings() {
+void LegacyAnimationEdit::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("animation.geometry", ui->splitter->saveState());
 }
 
-void AnimationEdit::timerEvent(QTimerEvent *) {
+void LegacyAnimationEdit::timerEvent(QTimerEvent *) {
     if(ui->preview->isVisible()) {
         if(m_animator) {
             m_animator->update();
@@ -157,7 +157,7 @@ void AnimationEdit::timerEvent(QTimerEvent *) {
     }
 }
 
-StringList AnimationEdit::suffixes() const {
+StringList LegacyAnimationEdit::suffixes() const {
     StringList result;
     for(auto &it : m_builder->suffixes()) {
         result.push_back(it);
@@ -165,11 +165,11 @@ StringList AnimationEdit::suffixes() const {
     return result;
 }
 
-TString AnimationEdit::assetType() const {
+TString LegacyAnimationEdit::assetType() const {
     return "Animation";
 }
 
-void AnimationEdit::onAddVariable(QAction *action) {
+void LegacyAnimationEdit::onAddVariable(QAction *action) {
     TString name;
     Variant value;
     switch(action->data().toInt()) {
@@ -182,30 +182,30 @@ void AnimationEdit::onAddVariable(QAction *action) {
     m_undoRedo->push(new AddVariable(name, value, m_graph));
 }
 
-void AnimationEdit::onActivated() {
+void LegacyAnimationEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
-void AnimationEdit::onObjectsChanged(const TString &property, const Variant &value) {
+void LegacyAnimationEdit::onObjectsChanged(const TString &property, const Variant &value) {
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
         ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
     }
 }
 
-void AnimationEdit::onCutAction() {
+void LegacyAnimationEdit::onCutAction() {
     ui->schemeWidget->onCutAction();
 }
 
-void AnimationEdit::onCopyAction() {
+void LegacyAnimationEdit::onCopyAction() {
     ui->schemeWidget->onCopyAction();
 }
 
-void AnimationEdit::onPasteAction() {
+void LegacyAnimationEdit::onPasteAction() {
     ui->schemeWidget->onPasteAction();
 }
 
-QWidget *AnimationEdit::propertiesWidget() {
+QWidget *LegacyAnimationEdit::propertiesWidget() {
     if(m_variableButton == nullptr) {
         m_variableButton = new QToolButton;
 
@@ -222,7 +222,7 @@ QWidget *AnimationEdit::propertiesWidget() {
         rootMenu->addAction("Integer")->setData(MetaType::INTEGER);
         rootMenu->addAction("Float")->setData(MetaType::FLOAT);
 
-        connect(rootMenu, &QMenu::triggered, this, &AnimationEdit::onAddVariable);
+        connect(rootMenu, &QMenu::triggered, this, &LegacyAnimationEdit::onAddVariable);
 
         m_variableButton->setMenu(rootMenu);
     }
@@ -230,7 +230,7 @@ QWidget *AnimationEdit::propertiesWidget() {
     return m_variableButton;
 }
 
-QMenu *AnimationEdit::propertyContextMenu(Object *object, const TString &property) {
+QMenu *LegacyAnimationEdit::propertyContextMenu(Object *object, const TString &property) {
     if(object == m_graph) {
         m_variablesMenu.setProperty(gProperty, property.data());
         return &m_variablesMenu;
@@ -238,7 +238,7 @@ QMenu *AnimationEdit::propertyContextMenu(Object *object, const TString &propert
     return nullptr;
 }
 
-void AnimationEdit::onSelectionChanged() {
+void LegacyAnimationEdit::onSelectionChanged() {
     Object::ObjectList objects = ui->schemeWidget->selected();
     if(!objects.empty()) {
         if(m_variableButton) {
@@ -259,7 +259,7 @@ void AnimationEdit::onSelectionChanged() {
     emit selectionChanged();
 }
 
-void AnimationEdit::onRenameVariable() {
+void LegacyAnimationEdit::onRenameVariable() {
     QString oldName = m_variablesMenu.property(gProperty).toString();
     RenameDialog dlg;
     dlg.setText(oldName);
@@ -269,19 +269,19 @@ void AnimationEdit::onRenameVariable() {
     }
 }
 
-void AnimationEdit::onDeleteVariable() {
+void LegacyAnimationEdit::onDeleteVariable() {
     m_undoRedo->push(new RemoveVariable(qPrintable(m_variablesMenu.property(gProperty).toString()), m_graph));
 }
 
-bool AnimationEdit::isCopyActionAvailable() const {
+bool LegacyAnimationEdit::isCopyActionAvailable() const {
     return ui->schemeWidget->isCopyActionAvailable();
 }
 
-bool AnimationEdit::isPasteActionAvailable() const {
+bool LegacyAnimationEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacyAnimationEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
@@ -322,13 +322,13 @@ void AnimationEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void AnimationEdit::saveAsset(const TString &path) {
+void LegacyAnimationEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
     }
 }
 
-void AnimationEdit::onGraphUpdated() {
+void LegacyAnimationEdit::onGraphUpdated() {
     if(m_builder) {
         m_stateMachine->loadUserData(m_graph->data());
     }
@@ -336,12 +336,12 @@ void AnimationEdit::onGraphUpdated() {
     emit updated();
 }
 
-void AnimationEdit::changeEvent(QEvent *event) {
+void LegacyAnimationEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-Object::ObjectList AnimationEdit::selected() const {
+Object::ObjectList LegacyAnimationEdit::selected() const {
     return ui->schemeWidget->selected();
 }

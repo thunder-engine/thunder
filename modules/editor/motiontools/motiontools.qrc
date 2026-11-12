@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file alias="icons/states.png">editor/icons/states.png</file>
+        <file alias="icons/states.png">legacyeditor/icons/states.png</file>
+		<file alias="icons/states.png">legacyeditor/icons/clocks.png</file>
     </qresource>
 </RCC>
