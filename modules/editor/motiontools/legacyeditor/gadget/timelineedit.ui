@@ -314,7 +314,7 @@
   <customwidget>
    <class>KeyFrameEditor</class>
    <extends>QScrollArea</extends>
-   <header>keyframeeditor.h</header>
+   <header>legacyeditor/gadget/keyframeeditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
