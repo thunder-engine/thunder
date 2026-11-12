@@ -5,9 +5,10 @@ project(motiontools)
 file(GLOB ${PROJECT_NAME}_srcFiles
     "*.cpp"
     "converter/*.cpp"
-    "editor/*.cpp"
-    "editor/actions/*.cpp"
-    "editor/property/*.cpp"
+    "legacyeditor/actions/*.cpp"
+    "legacyeditor/editor/*.cpp"
+	"legacyeditor/gadget/*.cpp"
+    "legacyeditor/property/*.cpp"
 )
 
 set(${PROJECT_NAME}_incPaths
@@ -33,15 +34,17 @@ if(UNIX AND NOT APPLE AND NOT LINUX)
 endif()
 
 file(GLOB ${PROJECT_NAME}_ui
-    "editor/*.ui"
-    "editor/property/*.ui"
+    "legacyeditor/editor/*.ui"
+	"legacyeditor/fadget/*.ui"
+    "legacyeditor/property/*.ui"
 )
 
 file(GLOB MOC_HEADERS
     "*.h"
     "converter/*.h"
-    "editor/*.h"
-    "editor/property/*.h"
+    "legacyeditor/editor/*.h"
+	"legacyeditor/gadget/*.h"
+    "legacyeditor/property/*.h"
 )
 
 QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
