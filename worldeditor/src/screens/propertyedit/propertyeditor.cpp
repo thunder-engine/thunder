@@ -70,7 +70,7 @@ LegacyPropertyEdit *createCustomEditor(int userType, QWidget *parent, const TStr
     else if(editor == "Color") return new ColorEdit(parent);
     else if(editor == "Asset" || editor == "Component") return new ObjectSelect(parent);
 
-    for(auto &it : Editor::plugins()->extensions("property")) {
+    for(auto &it : Editor::plugins()->extensions("legacyproperty")) {
         if(it == editor) {
             LegacyPropertyEdit *edit = reinterpret_cast<LegacyPropertyEdit *>(Editor::plugins()->getPluginObject(it));
             if(edit) {

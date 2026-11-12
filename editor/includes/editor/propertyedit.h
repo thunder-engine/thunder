@@ -54,6 +54,11 @@ public:
     static void unregisterEditorFactory(UserTypeCallback callback);
     static PropertyEdit *constructEditor(uint32_t userType, Widget *parent, const TString &editor);
 
+    static bool parseFloat(const TString &text, float &value);
+    static bool parseInteger(const TString &text, int &value);
+
+    static TString propertyDisplayName(const TString &name);
+
 protected:
     void addEditor(Widget *editor);
     Layout *editorLayout() const;

@@ -8,14 +8,14 @@ Project {
         "*.qrc",
         "converter/*.cpp",
         "converter/*.h",
-        "editor/*.cpp",
-        "editor/*.h",
-        "editor/*.ui",
-        "editor/actions/*.cpp",
-        "editor/actions/*.h",
-        "editor/property/*.cpp",
-        "editor/property/*.h",
-        "editor/property/*.ui"
+        "legacyeditor/actions/*.cpp",
+        "legacyeditor/actions/*.h",
+        "legacyeditor/editor/*.cpp",
+        "legacyeditor/editor/*.h",
+        "legacyeditor/editor/*.ui",
+        "legacyeditor/property/*.cpp",
+        "legacyeditor/property/*.h",
+        "legacyeditor/property/*.ui"
     ]
 
     property stringList incPaths: [

@@ -23,28 +23,28 @@
 
 #include <QSignalBlocker>
 
-NavigationPanel::NavigationPanel(QWidget *parent) :
+LegacyNavigationPanel::LegacyNavigationPanel(QWidget *parent) :
         LegacyEditorGadget(parent),
-        ui(new Ui::NavigationPanel) {
+        ui(new Ui::LegacyNavigationPanel) {
     ui->setupUi(this);
 
-    connect(ui->listWidget, &QListWidget::currentRowChanged, this, &NavigationPanel::onTypeSelected);
-    connect(ui->addType, &QPushButton::clicked, this, &NavigationPanel::onAddType);
-    connect(ui->removeType, &QPushButton::clicked, this, &NavigationPanel::onRemoveType);
-    connect(ui->lineName, &QLineEdit::editingFinished, this, &NavigationPanel::updateAgentType);
-    connect(ui->lineRadius, &QLineEdit::editingFinished, this, &NavigationPanel::updateAgentType);
-    connect(ui->lineHeight, &QLineEdit::editingFinished, this, &NavigationPanel::updateAgentType);
-    connect(ui->lineStep, &QLineEdit::editingFinished, this, &NavigationPanel::updateAgentType);
-    connect(ui->sliderSlope, &QSlider::valueChanged, this, &NavigationPanel::updateAgentType);
+    connect(ui->listWidget, &QListWidget::currentRowChanged, this, &LegacyNavigationPanel::onTypeSelected);
+    connect(ui->addType, &QPushButton::clicked, this, &LegacyNavigationPanel::onAddType);
+    connect(ui->removeType, &QPushButton::clicked, this, &LegacyNavigationPanel::onRemoveType);
+    connect(ui->lineName, &QLineEdit::editingFinished, this, &LegacyNavigationPanel::updateAgentType);
+    connect(ui->lineRadius, &QLineEdit::editingFinished, this, &LegacyNavigationPanel::updateAgentType);
+    connect(ui->lineHeight, &QLineEdit::editingFinished, this, &LegacyNavigationPanel::updateAgentType);
+    connect(ui->lineStep, &QLineEdit::editingFinished, this, &LegacyNavigationPanel::updateAgentType);
+    connect(ui->sliderSlope, &QSlider::valueChanged, this, &LegacyNavigationPanel::updateAgentType);
 
     loadSettings();
 }
 
-NavigationPanel::~NavigationPanel() {
+LegacyNavigationPanel::~LegacyNavigationPanel() {
     delete ui;
 }
 
-void NavigationPanel::loadSettings() {
+void LegacyNavigationPanel::loadSettings() {
     VariantMap navigation = Editor::project()->property("navigation").toMap();
     auto it = navigation.find("navmesh");
     if(it != navigation.end()) {
@@ -74,7 +74,7 @@ void NavigationPanel::loadSettings() {
     updateEditor();
 }
 
-void NavigationPanel::saveSettings() {
+void LegacyNavigationPanel::saveSettings() {
     VariantList types;
     for(const AgentType &type : m_agentTypes) {
         types.push_back(VariantMap({
@@ -96,7 +96,7 @@ void NavigationPanel::saveSettings() {
     }
 }
 
-void NavigationPanel::updateEditor() {
+void LegacyNavigationPanel::updateEditor() {
     m_updating = true;
     ui->listWidget->clear();
     for(const AgentType &type : m_agentTypes) {
@@ -111,7 +111,7 @@ void NavigationPanel::updateEditor() {
     }
 }
 
-void NavigationPanel::updateAgentType() {
+void LegacyNavigationPanel::updateAgentType() {
     if(m_updating) {
         return;
     }
@@ -131,7 +131,7 @@ void NavigationPanel::updateAgentType() {
     saveSettings();
 }
 
-void NavigationPanel::onTypeSelected(int row) {
+void LegacyNavigationPanel::onTypeSelected(int row) {
     if(m_updating || row < 0 || row >= static_cast<int>(m_agentTypes.size())) {
         return;
     }
@@ -146,7 +146,7 @@ void NavigationPanel::onTypeSelected(int row) {
     m_updating = false;
 }
 
-void NavigationPanel::onAddType() {
+void LegacyNavigationPanel::onAddType() {
     AgentType type;
     type.name = TString("Agent ") + std::to_string(m_agentTypes.size());
     m_agentTypes.push_back(type);
@@ -155,7 +155,7 @@ void NavigationPanel::onAddType() {
     saveSettings();
 }
 
-void NavigationPanel::onRemoveType() {
+void LegacyNavigationPanel::onRemoveType() {
     if(m_agentTypes.size() <= 1) {
         return;
     }

@@ -4,17 +4,17 @@
 #include <editor/legacypropertyedit.h>
 
 namespace Ui {
-    class ConditionEdit;
+    class LegacyConditionEdit;
 }
 
 class AnimationControllerGraph;
 
-class ConditionEdit : public LegacyPropertyEdit {
+class LegacyConditionEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:
-    explicit ConditionEdit(QWidget *parent = nullptr);
-    ~ConditionEdit();
+    explicit LegacyConditionEdit(QWidget *parent = nullptr);
+    ~LegacyConditionEdit();
 
 private slots:
     void on_comboName_currentIndexChanged(int index);
@@ -32,7 +32,7 @@ private:
     void setData(const Variant &data) override;
 
 private:
-    Ui::ConditionEdit *ui;
+    Ui::LegacyConditionEdit *ui;
 
     TString m_conditionName;
 

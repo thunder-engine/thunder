@@ -5,19 +5,19 @@
 
 static const QRegularExpression reg("\\.?0+$");
 
-ConditionEdit::ConditionEdit(QWidget *parent) :
+LegacyConditionEdit::LegacyConditionEdit(QWidget *parent) :
         LegacyPropertyEdit(parent),
-        ui(new Ui::ConditionEdit) {
+        ui(new Ui::LegacyConditionEdit) {
 
     ui->setupUi(this);
     ui->lineEdit->setVisible(false);
 }
 
-ConditionEdit::~ConditionEdit() {
+LegacyConditionEdit::~LegacyConditionEdit() {
     delete ui;
 }
 
-void ConditionEdit::setObject(Object *object, const TString &property) {
+void LegacyConditionEdit::setObject(Object *object, const TString &property) {
     LegacyPropertyEdit::setObject(object, property);
 
     StateLink *link = dynamic_cast<StateLink *>(m_object);
@@ -36,7 +36,7 @@ void ConditionEdit::setObject(Object *object, const TString &property) {
     }
 }
 
-Variant ConditionEdit::data() const {
+Variant LegacyConditionEdit::data() const {
     return VariantMap({
         { gName, m_conditionName },
         { gType, m_conditionRule },
@@ -44,7 +44,7 @@ Variant ConditionEdit::data() const {
     });
 }
 
-void ConditionEdit::setData(const Variant &data) {
+void LegacyConditionEdit::setData(const Variant &data) {
     VariantMap map = data.toMap();
     if(map.size() >= 3) {
         ui->comboName->setCurrentText(map[gName].toString().data());
@@ -65,7 +65,7 @@ void ConditionEdit::setData(const Variant &data) {
     }
 }
 
-void ConditionEdit::on_comboName_currentIndexChanged(int index) {
+void LegacyConditionEdit::on_comboName_currentIndexChanged(int index) {
     TString name(ui->comboName->itemText(index).toStdString());
 
     if(name != m_conditionName) {
@@ -112,7 +112,7 @@ void ConditionEdit::on_comboName_currentIndexChanged(int index) {
 }
 
 
-void ConditionEdit::on_comboRule_currentIndexChanged(int index) {
+void LegacyConditionEdit::on_comboRule_currentIndexChanged(int index) {
     int rule = ui->comboRule->itemData(index).toInt();
 
     if(rule != m_conditionRule) {
@@ -122,7 +122,7 @@ void ConditionEdit::on_comboRule_currentIndexChanged(int index) {
     }
 }
 
-void ConditionEdit::on_lineEdit_editingFinished() {
+void LegacyConditionEdit::on_lineEdit_editingFinished() {
     TString text = ui->lineEdit->text().toStdString();
     if(m_conditionValue.toString() != text) {
         if(m_conditionValue.type() == MetaType::INTEGER) {
@@ -135,7 +135,7 @@ void ConditionEdit::on_lineEdit_editingFinished() {
     }
 }
 
-void ConditionEdit::on_checkBox_toggled(bool checked) {
+void LegacyConditionEdit::on_checkBox_toggled(bool checked) {
     if(m_conditionValue.toBool() != checked) {
         m_conditionValue = checked;
 

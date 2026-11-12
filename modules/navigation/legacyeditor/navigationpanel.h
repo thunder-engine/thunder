@@ -23,15 +23,15 @@
 #include <navigationsystem.h>
 
 namespace Ui {
-    class NavigationPanel;
+    class LegacyNavigationPanel;
 }
 
-class NavigationPanel : public LegacyEditorGadget {
+class LegacyNavigationPanel : public LegacyEditorGadget {
     Q_OBJECT
 
 public:
-    explicit NavigationPanel(QWidget *parent = nullptr);
-    ~NavigationPanel();
+    explicit LegacyNavigationPanel(QWidget *parent = nullptr);
+    ~LegacyNavigationPanel();
 
 private:
     void loadSettings();
@@ -51,7 +51,7 @@ private:
     void onObjectsChanged(const TString &property, Variant value) override {}
 
 private:
-    Ui::NavigationPanel *ui;
+    Ui::LegacyNavigationPanel *ui;
     std::vector<AgentType> m_agentTypes;
     bool m_updating = false;
 

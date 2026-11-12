@@ -20,9 +20,9 @@
 
 #include <navigationsystem.h>
 
-AgentTypeEdit::AgentTypeEdit(QWidget *parent) :
+LegacyAgentTypeEdit::LegacyAgentTypeEdit(QWidget *parent) :
         LegacyPropertyEdit(parent),
-        ui(new Ui::AgentTypeEdit) {
+        ui(new Ui::LegacyAgentTypeEdit) {
     ui->setupUi(this);
 
     for(int i = 0; i < NavigationSystem::agentTypeCount(); ++i) {
@@ -36,15 +36,15 @@ AgentTypeEdit::AgentTypeEdit(QWidget *parent) :
     });
 }
 
-AgentTypeEdit::~AgentTypeEdit() {
+LegacyAgentTypeEdit::~LegacyAgentTypeEdit() {
     delete ui;
 }
 
-Variant AgentTypeEdit::data() const {
+Variant LegacyAgentTypeEdit::data() const {
     return ui->comboBox->currentIndex();
 }
 
-void AgentTypeEdit::setData(const Variant &data) {
+void LegacyAgentTypeEdit::setData(const Variant &data) {
     int index = data.toInt();
     if(index >= 0 && index < ui->comboBox->count()) {
         ui->comboBox->setCurrentIndex(index);

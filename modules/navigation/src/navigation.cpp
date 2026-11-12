@@ -22,8 +22,8 @@
 #include <cstring>
 
 #ifdef SHARED_DEFINE
-#include "navigationpanel.h"
-#include "property/agenttypeedit.h"
+#include "legacyeditor/navigationpanel.h"
+#include "legacyeditor/property/agenttypeedit.h"
 
 Module *moduleCreate(Engine *engine) {
     return new Navigation(engine);
@@ -41,8 +41,8 @@ static const char *meta = \
     "   },"
     "   \"objects\": {"
     "       \"NavigationSystem\": \"system\","
-    "       \"NavigationPanel\": \"legacygadget\","
-    "       \"AgentTypeEdit\": \"property\""
+    "       \"LegacyNavigationPanel\": \"legacygadget\","
+    "       \"LegacyAgentTypeEdit\": \"legacyproperty\""
     "   },"
     "   \"components\": ["
     "       \"NavMeshAgent\","
@@ -85,14 +85,14 @@ void *Navigation::getObject(const char *name) {
         return m_system;
     }
 #ifdef SHARED_DEFINE
-    if(strcmp(name, "NavigationPanel") == 0) {
+    if(strcmp(name, "LegacyNavigationPanel") == 0) {
         if(m_panel == nullptr) {
-            m_panel = new NavigationPanel();
+            m_panel = new LegacyNavigationPanel();
         }
         return m_panel;
     }
-    if(strcmp(name, "AgentTypeEdit") == 0) {
-        return new AgentTypeEdit();
+    if(strcmp(name, "LegacyAgentTypeEdit") == 0) {
+        return new LegacyAgentTypeEdit();
     }
 #endif
     return nullptr;

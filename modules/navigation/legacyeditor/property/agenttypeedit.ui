@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ConditionEdit</class>
- <widget class="QWidget" name="ConditionEdit">
+ <class>LegacyAgentTypeEdit</class>
+ <widget class="QWidget" name="AgentTypeEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -9,6 +9,9 @@
     <width>400</width>
     <height>24</height>
    </rect>
+  </property>
+  <property name="windowTitle">
+   <string>AgentTypeEdit</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -27,20 +30,7 @@
     <number>1</number>
    </property>
    <item>
-    <widget class="QComboBox" name="comboName"/>
-   </item>
-   <item>
-    <widget class="QComboBox" name="comboRule"/>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEdit"/>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string notr="true"/>
-     </property>
-    </widget>
+    <widget class="QComboBox" name="comboBox"/>
    </item>
   </layout>
  </widget>

@@ -15,7 +15,7 @@ Project {
     ]
 
     property stringList incPaths: [
-        "editor",
+        "./",
         "includes",
         "../physics/bullet/includes",
         "../physics/bullet/includes/components",
@@ -38,12 +38,12 @@ Project {
         name: "navigation-editor"
         condition: navigation.desktop
         files: [
-            "editor/*.cpp",
-            "editor/*.h",
-            "editor/*.ui",
-            "editor/property/*.cpp",
-            "editor/property/*.h",
-            "editor/property/*.ui"
+            "legacyeditor/*.cpp",
+            "legacyeditor/*.h",
+            "legacyeditor/*.ui",
+            "legacyeditor/property/*.cpp",
+            "legacyeditor/property/*.h",
+            "legacyeditor/property/*.ui"
         ].concat(navigation.srcFiles)
         Depends { name: "cpp" }
         Depends { name: "bundle" }

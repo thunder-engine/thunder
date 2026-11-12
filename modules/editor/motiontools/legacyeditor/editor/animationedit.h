@@ -18,15 +18,15 @@ class AnimationProxy;
 class QToolButton;
 
 namespace Ui {
-    class AnimationEdit;
+    class LegacyAnimationEdit;
 }
 
-class AnimationEdit : public LegacyAssetEditor {
+class LegacyAnimationEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
-    AnimationEdit();
-    ~AnimationEdit();
+    LegacyAnimationEdit();
+    ~LegacyAnimationEdit();
 
     void onGraphUpdated();
 
@@ -71,7 +71,7 @@ private:
 private:
     friend class AnimationProxy;
 
-    Ui::AnimationEdit *ui;
+    Ui::LegacyAnimationEdit *ui;
 
     AnimationControllerGraph *m_graph;
     AnimationControllerBuilder *m_builder;

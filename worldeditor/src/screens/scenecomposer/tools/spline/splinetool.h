@@ -50,7 +50,6 @@ private:
     void endControl() override;
     void cancelControl() override;
 
-    TString icon() const override { return TString(); }
     TString image() const override;
     TString name() const override;
 

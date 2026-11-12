@@ -107,7 +107,7 @@ void TransformTool::update(bool center, bool local, bool snap) {
     }
 }
 
-TString TransformTool::icon() const {
+TString TransformTool::image() const {
     return ":/Images/editor/Transform.png";
 }
 

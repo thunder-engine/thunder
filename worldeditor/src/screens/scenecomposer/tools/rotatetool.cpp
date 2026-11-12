@@ -123,7 +123,7 @@ QLineEdit *RotateTool::snapWidget() {
     return m_snapEditor;
 }
 
-TString RotateTool::icon() const {
+TString RotateTool::image() const {
     return ":/Images/editor/Rotate.png";
 }
 
