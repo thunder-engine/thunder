@@ -13,6 +13,11 @@ Project {
         "legacyeditor/editor/*.cpp",
         "legacyeditor/editor/*.h",
         "legacyeditor/editor/*.ui",
+        "legacyeditor/gadget/*.cpp",
+        "legacyeditor/gadget/*.h",
+        "legacyeditor/gadget/*.ui",
+        "legacyeditor/gadget/ui/*.cpp",
+        "legacyeditor/gadget/ui/*.h",
         "legacyeditor/property/*.cpp",
         "legacyeditor/property/*.h",
         "legacyeditor/property/*.ui"

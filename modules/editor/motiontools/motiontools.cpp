@@ -8,6 +8,7 @@
 
 #include "legacyeditor/editor/animationedit.h"
 #include "legacyeditor/property/conditionedit.h"
+#include "legacyeditor/gadget/timelineedit.h"
 
 static const char *meta = \
 "{"
@@ -18,7 +19,8 @@ static const char *meta = \
 "   \"objects\": {"
 "       \"AnimationBuilderSettings\": \"converter\","
 "       \"LegacyAnimationEdit\": \"legacyeditor\","
-"       \"LegacyCondition\": \"legacyproperty\""
+"       \"LegacyCondition\": \"legacyproperty\","
+"       \"TimelineEdit\": \"legacygadget\""
 "   }"
 "}";
 
@@ -42,6 +44,8 @@ void *MotionTools::getObject(const char *name) {
         return new LegacyAnimationEdit;
     } else if(strcmp(name, "LegacyCondition") == 0) {
         return new LegacyConditionEdit;
+    } else if(strcmp(name, "TimelineEdit") == 0) {
+        return new TimelineEdit;
     }
     return nullptr;
 }
