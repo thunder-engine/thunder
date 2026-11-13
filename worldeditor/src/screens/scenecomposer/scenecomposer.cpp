@@ -352,7 +352,7 @@ void SceneComposer::onObjectCreate(const TString &type) {
         parent = prefab->actor();
     }
 
-    if(parent) {
+    if(parent && !type.isEmpty()) {
         m_undoRedo->push(new CreateObject(type, parent, Vector3(), m_controller));
     }
 }

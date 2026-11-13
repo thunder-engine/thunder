@@ -155,16 +155,16 @@ void CreateObject::redo() {
 
 Object *CreateObject::createObject(Object *parent) {
     Object *object = nullptr;
-    TString type = (m_type == "Actor") ? "" : m_type;
+
     if(m_type.front() == 'c') {
-        type = m_type.right(2);
+        TString type = m_type.right(2);
         object = Engine::objectCreate(type, type, parent);
-    } else if(type.front() == '{') {
-        Prefab *prefab = Engine::loadResource<Prefab>(type);
+    } else if(m_type.front() == '{') {
+        Prefab *prefab = Engine::loadResource<Prefab>(m_type);
         if(prefab) {
             object = prefab->actor()->clone(parent);
 
-            TString path = Editor::assets()->uuidToPath(type);
+            TString path = Editor::assets()->uuidToPath(m_type);
             if(!path.isEmpty()) {
                 object->setName(m_controller->findFreeObjectName(Url(path).baseName(), parent));
             }
@@ -178,7 +178,7 @@ Object *CreateObject::createObject(Object *parent) {
             }
         }
     } else {
-        object = Engine::composeActor(type, m_controller->findFreeObjectName(m_type, parent), parent);
+        object = Engine::composeActor((m_type == "Actor") ? "" : m_type, m_controller->findFreeObjectName(m_type, parent), parent);
     }
 
     return object;
