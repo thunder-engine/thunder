@@ -561,6 +561,9 @@ void ObjectController::onUpdated(Object *object) {
 
 void ObjectController::onCreateComponent(QString type) {
     TString typeName(type.toStdString());
+    if(typeName.isEmpty()) {
+        return;
+    }
     UndoCommand *group = new UndoCommand(TString("Create Component ") + typeName);
     bool created = false;
     bool alreadyExists = false;
@@ -614,8 +617,9 @@ void ObjectController::onDrop(QDropEvent *event) {
 
         Object *parent = m_isolatedPrefab ? m_isolatedPrefab->actor() : static_cast<Object *>(Engine::world()->activeScene());
         TString ref = Engine::reference(m_dragActor->prefab());
-
-        undoRedo()->push(new CreateObject(ref, parent, m_dragActor->transform()->position(), this));
+        if(!ref.isEmpty()) {
+            undoRedo()->push(new CreateObject(ref, parent, m_dragActor->transform()->position(), this));
+        }
 
         delete m_dragActor;
         m_dragActor = nullptr;
