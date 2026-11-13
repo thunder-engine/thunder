@@ -53,35 +53,37 @@ void ChangeObjectProperty::redo() {
     for(auto it : m_objects) {
         Object *object = Engine::findObject(it);
         if(object) {
-            m_value = object->property(m_property.data());
-            object->setProperty(m_property.data(), value);
+            Variant tmp = object->property(m_property.data());
+            if(tmp.isValid()) {
+                m_value = tmp;
+                object->setProperty(m_property.data(), value);
 
-            if(m_prefab) {
-                Object::ObjectList list;
-                m_controller->getClones(list, object->uuid(), Engine::world());
-                for(auto clone : list) {
-                    if(clone->property(m_property.data()) == m_value) {
-                        clone->setProperty(m_property.data(), value);
+                if(m_prefab) {
+                    Object::ObjectList list;
+                    m_controller->getClones(list, object->uuid(), Engine::world());
+                    for(auto clone : list) {
+                        if(clone->property(m_property.data()) == m_value) {
+                            clone->setProperty(m_property.data(), value);
+                        }
                     }
                 }
-            }
+                objects.push_back(object);
 
-            objects.push_back(object);
-
-            Actor *actor = dynamic_cast<Actor *>(object);
-            if(actor) {
-                scenes.insert(actor->scene());
-            } else {
-                Component *component = dynamic_cast<Component *>(object);
-                if(component) {
-                    scenes.insert(component->scene());
+                Actor *actor = dynamic_cast<Actor *>(object);
+                if(actor) {
+                    scenes.insert(actor->scene());
+                } else {
+                    Component *component = dynamic_cast<Component *>(object);
+                    if(component) {
+                        scenes.insert(component->scene());
+                    }
                 }
             }
         }
     }
 
     if(!objects.empty()) {
-        emit m_controller->propertyChanged(objects, m_property, value);
+        emit m_controller->propertyChanged(m_property, value);
     }
 
     for(auto it : scenes) {

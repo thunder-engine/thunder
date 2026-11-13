@@ -33,12 +33,34 @@ namespace {
     const char *gName("name");
 };
 
+class AssetListProxy : public Object {
+    A_OBJECT(AssetListProxy, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(AssetListProxy::onImportFinished)
+    )
+
+    void setOrigin(AssetList *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(importFinished()), this, _SLOT(onImportFinished()));
+        //connect(Editor::assets(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
+    }
+
+    void onImportFinished() {
+        m_origin->update();
+    }
+
+private:
+    AssetList *m_origin = nullptr;
+};
+
 AssetList::AssetList() :
         BaseObjectModel(nullptr),
-        m_cellSzie(64, 64) {
+        m_cellSzie(64, 64),
+        m_assetListProxy(new AssetListProxy) {
 
-    connect(Editor::assets(), &AssetManager::importFinished, this, &AssetList::update);
-    connect(Editor::assets(), &AssetManager::iconUpdated, this, &AssetList::onRendered);
+    m_assetListProxy->setOrigin(this);
 
     update();
 }
@@ -97,7 +119,7 @@ void AssetList::onRendered(const TString &uuid) {
         item->setProperty(gType, mgr->assetTypeName(path).data());
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
-            QImage img = settings->icon(uuid);
+            QImage img = settings->image(uuid);
             if(!img.isNull()) {
                 item->setProperty(gIcon, (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height()));
             }
@@ -123,7 +145,7 @@ void AssetList::update() {
 
         AssetConverterSettings *settings = mgr->fetchSettings(path);
         if(settings) {
-            QImage img = settings->icon(it.second.uuid);
+            QImage img = settings->image(it.second.uuid);
             if(!img.isNull()) {
                 img = (img.height() < img.width()) ? img.scaledToWidth(m_cellSzie.width()) : img.scaledToHeight(m_cellSzie.height());
             }

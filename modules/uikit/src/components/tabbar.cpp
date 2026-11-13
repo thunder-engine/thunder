@@ -15,18 +15,23 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/tabbar.h"
+#include "tabbar.h"
 
-#include "components/recttransform.h"
-#include "components/button.h"
-#include "components/canvas.h"
+#include "button.h"
+#include "canvas.h"
 
-#include "resources/stylesheet.h"
+#include "stylesheet.h"
+
+#include <input.h>
 
 #define NAVI_SIZE 32
 
 namespace {
     const char *gCssTabCornerRadius("tab-corner-radius");
+    const char *gCssTabBackgroundColor("tab-background-color");
+    const char *gCssTabPressedColor("tab-pressed-color");
+    const char *gCssTabHighlightedColor("tab-highlighted-color");
+    const float gCloseButtonTextSpacing(12.0f);
 };
 
 /*!
@@ -42,14 +47,32 @@ namespace {
 TabBar::TabBar() :
         m_tabCornerRadius(4.0f, 4.0f, 0.0f, 0.0f),
         m_tabPadding(3.0f, 8.0f, 3.0f, 8.0f),
+        m_tabBackgroundColor(0.32f, 0.32f, 0.32f, 1.0f),
+        m_tabPressedColor(0.49f, 0.49f, 0.49f, 1.0f),
+        m_tabHighlightedColor(0.38f, 0.38f, 0.38f, 1.0f),
         m_frontButton(nullptr),
         m_backButton(nullptr),
         m_currentIndex(-1),
         m_visualIndex(-1),
+        m_dragTab(nullptr),
+        m_dragStartPosition(0.0f),
         m_positionOffset(0.0f),
         m_showClose(false),
+        m_movable(false),
+        m_dragActive(false),
         m_blockUpdates(false) {
 
+}
+/*!
+    Called when a tab is pressed.
+*/
+void TabBar::onTabPressed() {
+    Button *button = dynamic_cast<Button *>(sender());
+    if(button && m_movable) {
+        m_dragTab = button;
+        m_dragStartPosition = mousePosition();
+        m_dragActive = false;
+    }
 }
 
 TabBar::~TabBar() {
@@ -58,26 +81,43 @@ TabBar::~TabBar() {
     Adds a new tab with the specified \a title and returns its index.
 */
 int TabBar::addTab(const TString &title) {
-    return insertTab(-1, title);
+    return insertTab(-1, title, nullptr);
+}
+/*!
+    Adds a new tab with the specified \a title, \a icon and returns its index.
+*/
+int TabBar::addTab(const TString &title, Sprite *icon) {
+    return insertTab(-1, title, icon);
 }
 /*!
     Inserts a new tab at the specified \a index with the given \a title.
 */
 int TabBar::insertTab(int index, const TString &title) {
-    Actor *buttonActor = Engine::composeActor<Button>(title, actor());
-    Button *button = buttonActor->getComponent<Button>();
+    return insertTab(index, title, nullptr);
+}
+/*!
+    Inserts a new tab at the specified \a index with the given \a title and \a icon.
+*/
+int TabBar::insertTab(int index, const TString &title, Sprite *icon) {
+    Button *button = Widget::createWidget<Button>(title, this);
     if(button) {
         setSubWidget(button);
 
         button->setText(title);
         button->setCorners(m_tabCornerRadius);
         button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+        button->setIcon(icon);
+        button->setBackgroundColor(tabBackgroundColor());
+        button->setPressedColor(tabPressedColor());
+        button->setHighlightedColor(tabHighlightedColor());
 
         if(m_showClose) {
-            createCloseButton(buttonActor);
+            createCloseButton(button);
         }
+        button->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
 
         connect(button, _SIGNAL(clicked()), this, _SLOT(onTabClicked()));
+        connect(button, _SIGNAL(pressed()), this, _SLOT(onTabPressed()));
 
         // Calculate insertion position
         auto it = m_tabs.begin();
@@ -89,9 +129,8 @@ int TabBar::insertTab(int index, const TString &title) {
             index = m_tabs.size() - 1;
         }
 
-        RectTransform *rect = button->rectTransform();
-        rect->setPivot(Vector2(0.0f, 1.0f));
-        rect->setAnchors(Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f));
+        button->setPivot(Vector2(0.0f, 1.0f));
+        button->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f));
 
         // If this is the first tab, select it
         if(m_currentIndex == -1) {
@@ -118,11 +157,15 @@ void TabBar::removeTab(int index) {
 
     Button *btn = (*it);
     m_tabs.erase(it);
+    if(m_dragTab == btn) {
+        m_dragTab = nullptr;
+        m_dragActive = false;
+    }
 
     if(btn) {
-        Actor *actor = btn->actor();
-        actor->setEnabled(false);
-        actor->deleteLater();
+        btn->setEnabled(false);
+        btn->setVisible(false);
+        btn->deleteLater();
     }
 
     updateTabPositions();
@@ -174,7 +217,7 @@ void TabBar::setCurrentIndex(int index) {
     m_currentIndex = index;
     m_visualIndex = m_currentIndex;
 
-    if(m_backButton->isEnabled()) {
+    if(m_backButton->isVisible()) {
         recalcOffset();
     }
 
@@ -203,7 +246,7 @@ void TabBar::setTabsClosable(bool closable) {
     m_showClose = closable;
 
     for(auto tab : m_tabs) {
-        Actor *actor = tab->actor();
+        Widget *actor = tab;
         if(m_showClose) {
             createCloseButton(actor);
         } else {
@@ -214,9 +257,49 @@ void TabBar::setTabsClosable(bool closable) {
                 }
             }
         }
+        tab->setTextOffset(Vector2(m_showClose ? -gCloseButtonTextSpacing * 0.5f : 0.0f, 0.0f));
     }
 
     updateTabPositions();
+}
+
+bool TabBar::isMovable() const {
+    return m_movable;
+}
+
+void TabBar::setMovable(bool movable) {
+    m_movable = movable;
+    if(!m_movable) {
+        m_dragTab = nullptr;
+        m_dragActive = false;
+    }
+}
+
+void TabBar::moveTab(int from, int to) {
+    const int tabCount = static_cast<int>(m_tabs.size());
+    if(from < 0 || from >= tabCount || to < 0 || to >= tabCount || from == to) {
+        return;
+    }
+
+    Button *currentTab = tabButton(m_currentIndex);
+    auto fromIt = m_tabs.begin();
+    std::advance(fromIt, from);
+    Button *tab = *fromIt;
+    m_tabs.erase(fromIt);
+
+    auto toIt = m_tabs.begin();
+    std::advance(toIt, to);
+    m_tabs.insert(toIt, tab);
+
+    m_currentIndex = indexOf(currentTab);
+    m_visualIndex = indexOf(m_dragTab ? m_dragTab : currentTab);
+    if(m_backButton && m_backButton->isVisible()) {
+        recalcOffset();
+    } else {
+        updateTabPositions();
+    }
+    repaint();
+    tabMoved(from, to);
 }
 /*!
     Returns the title of the tab at the specified \a index.
@@ -273,6 +356,12 @@ int TabBar::indexOf(Button *button) const {
     return -1;
 }
 /*!
+    Returns the corner radius for tabs.
+*/
+Vector4 TabBar::tabCornerRadius() const {
+    return m_tabCornerRadius;
+}
+/*!
     Sets the corner \a radius for tabs.
 */
 void TabBar::setTabCornerRadius(const Vector4 &radius) {
@@ -287,19 +376,73 @@ void TabBar::setTabCornerRadius(const Vector4 &radius) {
 #endif
 }
 /*!
-    Returns the corner radius for tabs.
+    Returns the tab background color.
 */
-Vector4 TabBar::tabCornerRadius() const {
-    return m_tabCornerRadius;
+Vector4 TabBar::tabBackgroundColor() const {
+    return m_tabBackgroundColor;
 }
+/*!
+    Sets the background \a color.
+*/
+void TabBar::setTabBackgroundColor(const Vector4 &color) {
+    m_tabBackgroundColor = color;
+    for(auto it : m_tabs) {
+        it->setBackgroundColor(m_tabBackgroundColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabBackgroundColor, m_tabBackgroundColor.v, 4);
+    }
+#endif
+}
+/*!
+    Returns the color used when the button is pressed.
+*/
+Vector4 TabBar::tabPressedColor() const {
+    return m_tabPressedColor;
+}
+/*!
+    Sets the \a color used when the button is pressed.
+*/
+void TabBar::setTabPressedColor(const Vector4 &color) {
+    m_tabPressedColor = color;
+    for(auto it : m_tabs) {
+        it->setPressedColor(m_tabPressedColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabPressedColor, m_tabPressedColor.v, 4);
+    }
+#endif
+}
+/*!
+    Returns the color used when the button is highlighted.
+*/
+Vector4 TabBar::tabHighlightedColor() const {
+    return m_tabHighlightedColor;
+}
+/*!
+    Sets the \a color used when the button is highlighted.
+*/
+void TabBar::setTabHighlightedColor(const Vector4 &color) {
+    m_tabHighlightedColor = color;
+    for(auto it : m_tabs) {
+        it->setHighlightedColor(m_tabHighlightedColor);
+    }
+#ifdef SHARED_DEFINE
+    if(!isSubWidget() && !isSignalsBlocked()) {
+        updateStyleProperty(gCssTabHighlightedColor, m_tabHighlightedColor.v, 4);
+    }
+#endif
+}
+
 /*!
     \internal
 */
 bool TabBar::isHovered(const Vector2 &pos) {
-    RectTransform *rect = rectTransform();
-    Vector4 area(rect->clipRegion());
+    Vector4 area(clipRegion());
 
-    if(m_backButton->isEnabled()) {
+    if(m_backButton->isVisible()) {
         area.z -= NAVI_SIZE;
     }
 
@@ -310,10 +453,41 @@ bool TabBar::isHovered(const Vector2 &pos) {
 */
 void TabBar::update(const Vector2 &pos) {
     m_blockUpdates = false;
+    if(m_dragTab) {
+        if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
+            m_dragTab = nullptr;
+            m_dragActive = false;
+        } else if(m_movable) {
+            const float dx = pos.x - m_dragStartPosition.x;
+            const float dy = pos.y - m_dragStartPosition.y;
+            if(!m_dragActive && dx * dx + dy * dy >= 16.0f) {
+                m_dragActive = true;
+            }
+            if(m_dragActive) {
+                int insertionIndex = 0;
+                for(Button *tab : m_tabs) {
+                    if(tab == m_dragTab) {
+                        continue;
+                    }
+                    const Vector4 bounds = tab->clipRegion();
+                    const float center = bounds.x + bounds.z * 0.5f;
+                    if(pos.x < center) {
+                        break;
+                    }
+                    ++insertionIndex;
+                }
+                const int from = indexOf(m_dragTab);
+                if(from >= 0 && insertionIndex != from) {
+                    moveTab(from, insertionIndex);
+                }
+            }
+        }
+    }
+
     if(isHovered(pos)) {
         for(auto it : m_childWidgets) {
             // To protect from multiple close of tabs
-            if(!m_blockUpdates && it->isEnabled() && it->actor()->isEnabled()) {
+            if(!m_blockUpdates && it->isEnabled() && it->isVisible()) {
                 it->update(pos);
             }
         }
@@ -322,10 +496,10 @@ void TabBar::update(const Vector2 &pos) {
             it->setHovered(false, true);
         }
 
-        if(m_frontButton && m_frontButton->isEnabled()) {
+        if(m_frontButton && m_frontButton->isVisible()) {
             static_cast<Widget *>(m_frontButton)->update(pos);
         }
-        if(m_backButton && m_backButton->isEnabled()) {
+        if(m_backButton && m_backButton->isVisible()) {
             static_cast<Widget *>(m_backButton)->update(pos);
         }
     }
@@ -334,15 +508,14 @@ void TabBar::update(const Vector2 &pos) {
     \internal
 */
 void TabBar::draw() {
-    RectTransform *rect = rectTransform();
-    Vector4 area(rect->clipRegion());
+    Vector4 area(clipRegion());
 
-    if(m_backButton->isEnabled()) {
+    if(m_backButton->isVisible()) {
         m_backButton->draw();
         area.z -= NAVI_SIZE;
     }
 
-    if(m_frontButton->isEnabled()) {
+    if(m_frontButton->isVisible()) {
         m_frontButton->draw();
     }
 
@@ -350,7 +523,7 @@ void TabBar::draw() {
     canvas->setClipRegion(area);
 
     for(auto it : m_childWidgets) {
-        if(it->isSubWidget() && it->actor()->isEnabled() && it->isEnabled()) {
+        if(it->isSubWidget() && it->isVisible()) {
             if(it != m_frontButton && it != m_backButton) {
                 it->draw();
             }
@@ -365,37 +538,31 @@ void TabBar::draw() {
 void TabBar::composeComponent() {
     Widget::composeComponent();
 
-    Actor *frontActor = Engine::composeActor<Button>("front", actor());
-    m_frontButton = frontActor->getComponent<Button>();
+    m_frontButton = Widget::createWidget<Button>("front", this);
     if(m_frontButton) {
         setSubWidget(m_frontButton);
         m_frontButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_frontButton->setIconSize(Vector2(16.0f, 8.0f));
         m_frontButton->setIconRotation(90.0f);
-        m_frontButton->setEnabled(false);
-
-        RectTransform *rect = m_frontButton->rectTransform();
-        rect->setSize(Vector2(16));
-        rect->setPivot(Vector2(1.0f, 1.0f));
-        rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
+        m_frontButton->setVisible(false);
+        m_frontButton->setSize(Vector2(16));
+        m_frontButton->setPivot(Vector2(1.0f, 1.0f));
+        m_frontButton->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
 
         connect(m_frontButton, _SIGNAL(clicked()), this, _SLOT(onFrontClicked()));
     }
 
-    Actor *backActor = Engine::composeActor<Button>("back", actor());
-    m_backButton = backActor->getComponent<Button>();
+    m_backButton = Widget::createWidget<Button>("back", this);
     if(m_backButton) {
         setSubWidget(m_backButton);
         m_backButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
         m_backButton->setIconSize(Vector2(16.0f, 8.0f));
         m_backButton->setIconRotation(-90.0f);
-        m_backButton->setEnabled(false);
-
-        RectTransform *rect = m_backButton->rectTransform();
-        rect->setSize(Vector2(16));
-        rect->setPivot(Vector2(1.0f, 1.0f));
-        rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
-        rect->setPosition(Vector3(-16.0f, 0.0f, 0.0f));
+        m_backButton->setVisible(false);
+        m_backButton->setSize(Vector2(16));
+        m_backButton->setPivot(Vector2(1.0f, 1.0f));
+        m_backButton->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f));
+        m_backButton->setPosition(Vector3(-16.0f, 0.0f, 0.0f));
 
         connect(m_backButton, _SIGNAL(clicked()), this, _SLOT(onBackClicked()));
     }
@@ -430,52 +597,48 @@ void TabBar::updateTabPositions() {
     float position = -m_positionOffset;
     float totalWidth = 0.0f;
     for(auto it : m_tabs) {
-        RectTransform *rect = it->rectTransform();
         float width = m_tabPadding.y + m_tabPadding.w;
 
         width += it->contentWidth();
 
         if(m_showClose) {
-            width += m_tabPadding.w + 16;
+            width += 16.0f + m_tabPadding.w * 2.0f + gCloseButtonTextSpacing;
         }
 
-        rect->setSize(Vector2(width, rect->size().y));
-        rect->setPosition(Vector3(position, 0.0f, 0.0f));
+        it->setSize(Vector2(width, it->size().y));
+        it->setPosition(Vector3(position, 0.0f, 0.0f));
         position += width;
         totalWidth += width;
     }
 
-    bool showBackFront = (totalWidth > 0.0f) && (totalWidth > rectTransform()->size().x);
+    bool showBackFront = (totalWidth > 0.0f) && (totalWidth > this->size().x);
     if(m_backButton) {
-        bool enabled = m_backButton->isEnabled();
-        m_backButton->setEnabled(showBackFront);
-        if(enabled && !showBackFront) {
+        bool visible = m_backButton->isVisible();
+        m_backButton->setVisible(showBackFront);
+        if(visible && !showBackFront) {
             m_positionOffset = 0.0f;
             updateTabPositions();
         }
         repaint();
     }
     if(m_frontButton) {
-        m_frontButton->setEnabled(showBackFront);
+        m_frontButton->setVisible(showBackFront);
     }
 }
 /*!
     \internal
 */
-void TabBar::createCloseButton(Actor *parent) {
-    Actor *closeActor = Engine::composeActor<Button>("close", parent);
-    Button *closeBtn = closeActor->getComponent<Button>();
+void TabBar::createCloseButton(Widget *parent) {
+    Button *closeBtn = Widget::createWidget<Button>("close", parent);
     if(closeBtn) {
-        RectTransform *closeRect = closeBtn->rectTransform();
-        if(closeRect) {
-            closeRect->blockSignals(true);
-            closeRect->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
-            closeRect->setPivot(Vector2(1.0f, 0.5f));
-            closeRect->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
-            closeRect->setSize(Vector2(16));
-            closeRect->blockSignals(false);
-            repaint();
-        }
+        closeBtn->blockSignals(true);
+        closeBtn->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
+        closeBtn->setPivot(Vector2(1.0f, 0.5f));
+        closeBtn->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
+        closeBtn->setSize(Vector2(16));
+        closeBtn->setIcon(Engine::loadResource<Sprite>(".embedded/generic.png/Close"));
+        closeBtn->blockSignals(false);
+        repaint();
 
         connect(closeBtn, _SIGNAL(clicked()), this, _SLOT(onCloseButtonClicked()));
     }
@@ -484,12 +647,11 @@ void TabBar::createCloseButton(Actor *parent) {
     \internal
 */
 void TabBar::recalcOffset() {
-    float barWidth = rectTransform()->size().x - NAVI_SIZE;
+    float barWidth = this->size().x - NAVI_SIZE;
     float current = 0.0f;
     int idx = 0;
     for(auto it : m_tabs) {
-        RectTransform *rect = it->rectTransform();
-        current += rect->size().x;
+        current += it->size().x;
         if(idx == m_visualIndex) {
             m_positionOffset = (current > barWidth) ? (current - barWidth) : 0.0f;
             updateTabPositions();
@@ -513,6 +675,12 @@ void TabBar::tabCloseRequested(int index) {
     emitSignal(_SIGNAL(tabCloseRequested(int)), index);
 }
 /*!
+    This signal is emitted when a tab is moved from one index to another.
+*/
+void TabBar::tabMoved(int from, int to) {
+    emitSignal(_SIGNAL(tabMoved(int,int)), from, to);
+}
+/*!
     Called when a tab is clicked.
 */
 void TabBar::onTabClicked() {
@@ -530,9 +698,9 @@ void TabBar::onTabClicked() {
 void TabBar::onCloseButtonClicked() {
     Button *closeButton = dynamic_cast<Button *>(sender());
     if(closeButton) {
-        Actor *parentActor = dynamic_cast<Actor *>(closeButton->actor()->parent());
+        Widget *parentActor = closeButton->parentWidget();
         if(parentActor) {
-            Button *tab = parentActor->getComponent<Button>();
+            Button *tab = dynamic_cast<Button *>(parentActor);
             if(tab) {
                 int index = indexOf(tab);
                 if(index > -1) {

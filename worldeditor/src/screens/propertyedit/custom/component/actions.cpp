@@ -20,10 +20,10 @@
 
 #include "../../propertyeditor.h"
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 Actions::Actions(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::Actions),
         m_property(MetaProperty(nullptr)) {
 
@@ -35,7 +35,7 @@ Actions::~Actions() {
 }
 
 void Actions::setObject(Object *object, const TString &name) {
-    PropertyEdit::setObject(object, name);
+    LegacyPropertyEdit::setObject(object, name);
 
     if(m_object == nullptr) {
         return;
@@ -49,7 +49,7 @@ void Actions::setObject(Object *object, const TString &name) {
 
     PropertyEditor *editor = findEditor(parentWidget());
     if(editor) {
-        AssetEditor *assetEditor = editor->currentEditor();
+        LegacyAssetEditor *assetEditor = editor->currentEditor();
         if(assetEditor) {
             for(auto it : assetEditor->propertiesActionWidgets(m_object, this)) {
                 ui->horizontalLayout->addWidget(it);

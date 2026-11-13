@@ -18,25 +18,30 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
-#include "widget.h"
+#include <widget.h>
 
 class UIKIT_EXPORT Layout {
 public:
     Layout();
     ~Layout();
 
-    void addTransform(RectTransform *transform);
+    void addWidget(Widget *widget);
 
-    void insertTransform(int index, RectTransform *transform);
+    void insertWidget(int index, Widget *widget);
 
-    void removeTransform(RectTransform *transform);
+    void removeWidget(Widget *widget);
 
-    int indexOf(const RectTransform *transform) const;
+    int indexOf(const Widget *widget) const;
 
-    RectTransform *transformAt(int index);
+    Widget *widgetAt(int index);
 
-    RectTransform *rectTransform();
-    void setRectTransform(RectTransform *transform);
+    Widget *widget() const;
+    void setWidget(Widget *widget);
+
+    void addTransform(Widget *widget) { addWidget(widget); }
+    void insertTransform(int index, Widget *widget) { insertWidget(index, widget); }
+    void removeTransform(Widget *widget) { removeWidget(widget); }
+    Widget *transformAt(int index) { return widgetAt(index); }
 
     int count() const;
 
@@ -54,9 +59,9 @@ public:
     void solveItemsPosition(float height, const Vector2 &offset);
 
 protected:
-    std::list<RectTransform *> m_items;
+    std::list<Widget *> m_items;
 
-    RectTransform *m_rectTransform;
+    Widget *m_widget;
 
     int m_spacing;
 

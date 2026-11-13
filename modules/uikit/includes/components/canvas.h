@@ -18,62 +18,130 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <component.h>
 #include <uikit.h>
 
+#include <widget.h>
+#include <uidocument.h>
+#include <stylesheet.h>
+
+#include <vector>
+
 class CommandBuffer;
-class RectTransform;
+class Widget;
 class RenderTarget;
 class Texture;
 class Mesh;
 class MaterialInstance;
+class Menu;
+class Action;
 
-class UIKIT_EXPORT Canvas : public Component {
-    A_OBJECT(Canvas, Component, Components/UI)
+class UIKIT_EXPORT Canvas : public Widget {
+    A_OBJECT(Canvas, Widget, UI)
 
-    A_NOPROPERTIES()
-    A_NOMETHODS()
+    A_PROPERTIES(
+        A_PROPERTYEX(UiDocument *, document, Canvas::document, Canvas::setDocument, "editor=Asset"),
+        A_PROPERTYEX(StyleSheet *, styleSheet, Canvas::styleSheet, Canvas::setStyleSheet, "editor=Asset"),
+        A_PROPERTY(float, contentScale, Canvas::contentScale, Canvas::setContentScale)
+    )
+    A_METHODS(
+        A_METHOD(void, Canvas::fromBuffer),
+        A_SIGNAL(Canvas::documentLoaded)
+    )
     A_NOENUMS()
 
 public:
     Canvas();
+    ~Canvas();
 
     void markDirty();
 
-    void update(const Vector2 &position);
+    void update(const Vector2 &position) override;
 
-    void draw(CommandBuffer *buffer);
+    void draw() override;
+    virtual void draw(CommandBuffer *buffer);
 
-    void drawRect(MaterialInstance *material, RectTransform *transform);
+    void drawRect(MaterialInstance *material, Widget *transform);
 
     void drawMesh(Mesh *mesh, MaterialInstance *material);
 
-    void setSize(int width, int height);
-
-    RectTransform *rectTransform();
-    void setRectTransform(RectTransform *transform);
+    using Widget::setSize;
+    virtual void setSize(int width, int height);
 
     void setClipRegion(const Vector4 &region);
     void disableClip();
+    // Scales the rendered content from the canvas origin without changing widget layout geometry.
+    float contentScale() const;
+    void setContentScale(float scale);
+    Vector2 mapToContent(const Vector2 &position) const;
+    Vector2 mapFromContent(const Vector2 &position) const;
+    Matrix4 snapTextTransform(const Matrix4 &transform) const;
+
+    virtual Texture *texture() const;
+
+    Canvas *canvas() override;
+
+    void skipRenderResult(bool skip);
+
+    UiDocument *document() const;
+    void setDocument(UiDocument *document);
+
+    StyleSheet *styleSheet() const;
+    void setStyleSheet(StyleSheet *style);
+
+    TString documentStyle() const;
+    void fromBuffer(const TString &buffer);
+    void documentLoaded();
+
+protected:
+    RenderTarget *renderTarget() const;
 
 private:
-    void composeComponent() override;
+    struct ShortcutEntry {
+        Menu *menu;
+        Action *action;
+    };
+
+    void resizeTexture(int width, int height);
+
+    void resolveStyleSheet(Widget *widget);
+    void cleanHierarchy(Widget *widget);
+    Canvas *shortcutManager();
+    void registerShortcut(Menu *menu, Action *action);
+    void unregisterShortcuts(Menu *menu);
+    void refreshShortcuts();
+    bool triggerShortcut(int keyCode);
+
+    static void materialUpdated(int state, void *ptr);
 
 private:
+    friend class Menu;
+
+    Vector2 m_lastPosition;
+
+    TString m_documentStyle;
+
     RenderTarget *m_target;
 
     Texture *m_texture;
-
-    RectTransform *m_transform;
 
     CommandBuffer *m_buffer;
 
     MaterialInstance *m_finalMaterial;
 
+    UiDocument *m_document;
+
+    StyleSheet *m_styleSheet;
+
     bool m_dirty;
 
+    bool m_skipRenderResult;
+
+    float m_contentScale;
+
     bool m_lastPositionValid;
-    Vector2 m_lastPosition;
+    bool m_drawingPopups = false;
+    std::vector<Menu *> m_popupMenus;
+    std::vector<ShortcutEntry> m_shortcuts;
 
 };
 

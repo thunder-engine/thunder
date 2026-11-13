@@ -42,6 +42,10 @@ Project {
         files: {
             var sources = srcFiles
             sources.push("src/os/*.cpp")
+            if(qbs.targetOS.contains("darwin")) {
+                sources.push("src/os/*.mm")
+            }
+
             return sources
         }
         Depends { name: "cpp" }
@@ -69,6 +73,7 @@ Project {
             cpp.sonamePrefix: "@executable_path"
             cpp.dynamicLibraries: outer.concat(["objc"])
             cpp.libraryPaths: [ "/opt/homebrew/opt/openssl/lib" ]
+            cpp.weakFrameworks: ["Foundation", "AppKit"]
         }
 
         Properties {
@@ -116,15 +121,32 @@ Project {
 
         Properties {
             condition: next.desktop
-            files: outer.concat([
-                "src/os/*.cpp"
-            ])
+            files: {
+                var sources = outer.concat(["src/os/*.cpp"])
+                if(qbs.targetOS.contains("darwin")) {
+                    sources.push("src/os/*.mm")
+                }
+                return sources
+            }
         }
 
         Properties {
             condition: qbs.targetOS.contains("android")
             Android.ndk.appStl: next.ANDROID_STL
             Android.ndk.platform: next.ANDROID
+        }
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.dynamicLibraries: ["gtk-3"]
+        }
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.dynamicLibraries: ["User32"]
+        }
+        Properties {
+            condition: qbs.targetOS.contains("darwin")
+            cpp.dynamicLibraries: ["objc"]
+            cpp.weakFrameworks: ["Foundation", "AppKit"]
         }
 
         Group {

@@ -17,48 +17,104 @@
 */
 #include "editor/editorgadget.h"
 
-/*!
-    \class EditorGadget
-    \brief Provides the base interface for dockable editor gadgets.
-    \inmodule Editor
+#include "editor/asseteditor.h"
 
-    EditorGadget receives editor updates and selection changes and can publish
-    object selection and property change notifications.
+#include <algorithm>
+#include <set>
 
-    \fn void EditorGadget::setCurrentEditor(AssetEditor *editor)
+EditorGadget::EditorGadget() :
+        Widget(),
+        m_currentEditor(nullptr) {
+}
 
-    Assigns the current asset editor to the gadget.
+AssetEditor *EditorGadget::currentEditor() const {
+    return m_currentEditor;
+}
 
-    \fn void EditorGadget::updated()
+void EditorGadget::setCurrentEditor(AssetEditor *editor) {
+    if(m_currentEditor) {
+        disconnect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
+        disconnect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
+        disconnect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
+    }
 
-    Emitted when the gadget's displayed data has been updated.
+    m_currentEditor = editor;
+    if(m_currentEditor) {
+        connect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
+        connect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
+        connect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
+    }
+}
 
-    \fn void EditorGadget::objectsSelected(const Object::ObjectList &objects, bool force)
+Object::ObjectList EditorGadget::selected() {
+    return Object::ObjectList();
+}
 
-    Emitted when the gadget selects \a objects. If \a force is true, the selection
-    is applied even when it matches the current selection.
+TString EditorGadget::propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property) {
+    std::set<TString> types;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            types.insert(object->metaObject()->name());
+        }
+    }
 
-    \fn void EditorGadget::objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+    if(types.empty()) {
+        return property;
+    }
 
-    Emitted when \a property changes it's \a value on the supplied \a objects.
+    StringList names(types.begin(), types.end());
+    return TString::join(names, "|") + "::" + property;
+}
 
-    \fn void EditorGadget::onUpdated()
+Object::ObjectList EditorGadget::objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name) {
+    name = property;
 
-    Handles an update notification from the editor.
+    int separator = property.indexOf("::");
+    if(separator < 0) {
+        return objects;
+    }
 
-    \fn void EditorGadget::onSelectionChanged()
+    StringList types = property.left(separator).split('|');
+    if(types.empty()) {
+        return objects;
+    }
 
-    Handles a change to the editor selection.
+    name = property.mid(separator + 2, property.length() - separator - 2);
 
-    \fn void EditorGadget::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value)
+    Object::ObjectList result;
+    for(Object *object : objects) {
+        if(object && object->metaObject()) {
+            TString type = object->metaObject()->name();
+            if(std::find(types.begin(), types.end(), type) != types.end()) {
+                result.push_back(object);
+            }
+        }
+    }
 
-    Handles changes of \a value to \a property on the supplied \a objects.
-*/
+    return result;
+}
 
-/*!
-    Constructs an editor gadget with the specified Qt \a parent.
-*/
-EditorGadget::EditorGadget(QWidget *parent) :
-    QWidget(parent) {
+void EditorGadget::updated() {
+    emitSignal(_SIGNAL(updated()));
+}
 
+void EditorGadget::objectsSelected(bool force) {
+    emitSignal(_SIGNAL(objectsSelected(bool)), force);
+}
+
+void EditorGadget::objectsChanged(const TString &property, Variant value) {
+    emitSignal(_SIGNAL(objectsChanged(TString, Variant)), property, value);
+}
+
+void EditorGadget::onUpdated() {
+
+}
+
+void EditorGadget::onSelectionChanged() {
+
+}
+
+void EditorGadget::onObjectsChanged(const TString &property, Variant value) {
+    A_UNUSED(property);
+    A_UNUSED(value);
 }

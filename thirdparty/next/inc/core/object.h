@@ -126,6 +126,8 @@ public:
     bool isSignalsBlocked() const;
 
     void emitSignal(const char *signal, const Variant &args = Variant());
+    void emitSignal(const char *signal, const Variant &first, const Variant &second);
+    void emitSignal(const char *signal, const Variant &first, const Variant &second, const Variant &third);
 
     static void enumObjects(Object *object, Object::ObjectList &list);
 
@@ -181,7 +183,10 @@ protected:
 
     void postEvent(Event *event);
 
-    VariantList serializeData(const MetaObject *meta) const;
+    void deserializeProperties(const VariantMap &data);
+
+    VariantMap serializeProperties(const MetaObject *meta) const;
+    VariantList serializeLinks(const MetaObject *meta) const;
 
     virtual void addChild(Object *child, int32_t position = -1);
     void removeChild(Object *child);

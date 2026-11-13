@@ -8,16 +8,23 @@ class ENGINE_EXPORT Sprite : public Resource {
     A_OBJECT(Sprite, Resource, Resources)
 
     A_PROPERTIES(
-        A_PROPERTY(float, pixelsPerUnit, Sprite::pixelsPerUnit, Sprite::setPixelsPerUnit),
+        A_PROPERTY(TString, name, Sprite::name, Sprite::setName),
         A_PROPERTY(Vector4, bounds, Sprite::bounds, Sprite::setBounds),
         A_PROPERTY(Vector4, border, Sprite::border, Sprite::setBorder),
         A_PROPERTY(Vector2, pivot, Sprite::pivot, Sprite::setPivot),
-        A_PROPERTY(Texture *, texture, Sprite::texture, Sprite::setTexture),
-        A_PROPERTY(int, mode, Sprite::mode, Sprite::setMode)
+        A_PROPERTYEX(int, mode, Sprite::mode, Sprite::setMode, "enum=SpriteMode"),
+        A_PROPERTY(float, pixelsPerUnit, Sprite::pixelsPerUnit, Sprite::setPixelsPerUnit)
+    )
+    A_ENUMS(
+        A_ENUM(SpriteMode,
+            A_VALUE(Simple),
+            A_VALUE(Sliced),
+            A_VALUE(Tiled),
+            A_VALUE(Complex))
     )
 
 public:
-    enum Mode {
+    enum SpriteMode {
         Simple = 0,
         Sliced,
         Tiled,
@@ -28,7 +35,7 @@ public:
     Sprite();
     ~Sprite();
 
-    Mesh *mesh() const;
+    Mesh *mesh();
 
     float pixelsPerUnit() const;
     void setPixelsPerUnit(float pixels);
@@ -48,7 +55,7 @@ public:
     int mode() const;
     void setMode(int mode);
 
-    Mesh *composeMesh(Mesh *mesh, Mode mode, Vector2 &size);
+    Mesh *composeMesh(Mesh *mesh, SpriteMode mode, Vector2 &size);
 
 private:
     void loadUserData(const VariantMap &data) override;

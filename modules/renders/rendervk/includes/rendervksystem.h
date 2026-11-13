@@ -25,7 +25,7 @@
 #include "surfacevk.h"
 
 class Engine;
-class Viewport;
+class LegacyViewport;
 
 class RenderVkSystem : public RenderSystem {
 public:
@@ -41,7 +41,7 @@ public:
     static int32_t swapChainImageCount();
 
 #ifdef SHARED_DEFINE
-    QWindow *createRhiWindow(Viewport *viewport) override;
+    QWindow *createRhiWindow(LegacyViewport *viewport) override;
 
 #endif
 

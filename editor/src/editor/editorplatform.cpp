@@ -17,13 +17,13 @@
 */
 #include <editor/editorplatform.h>
 
-#include <QStandardPaths>
 #include <QMouseEvent>
 #include <QGuiApplication>
 #include <QDateTime>
 
 #include <engine.h>
 #include <json.h>
+#include <standardpaths.h>
 
 #include <editor/projectsettings.h>
 #include <adapters/handlers/defaultfilehandler.h>
@@ -396,7 +396,7 @@ void EditorPlatform::mouseSetCursor(Input::CursorShape shape) {
 }
 
 TString EditorPlatform::locationLocalDir() const {
-    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation).toStdString();
+    return StandardPaths::writableLocation(StandardPaths::ConfigLocation);
 }
 
 void EditorPlatform::syncConfiguration(VariantMap &map) const {

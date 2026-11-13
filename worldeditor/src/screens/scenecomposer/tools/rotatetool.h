@@ -33,7 +33,7 @@ protected:
 
     QLineEdit *snapWidget() override;
 
-    TString icon() const override;
+    TString image() const override;
     TString name() const override;
 
     TString toolTip() const override;

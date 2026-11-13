@@ -22,7 +22,7 @@
 #include <astring.h>
 #include <variant.h>
 
-class PropertyEdit;
+class LegacyPropertyEdit;
 
 namespace Ui {
     class ArrayElement;
@@ -50,7 +50,7 @@ private:
 
     TString m_tag;
 
-    PropertyEdit *m_editor;
+    LegacyPropertyEdit *m_editor;
 
     int32_t m_index;
 

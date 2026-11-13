@@ -18,11 +18,11 @@
 #ifndef ABSTRACTSCROLLAREA_H
 #define ABSTRACTSCROLLAREA_H
 
-#include "frame.h"
-#include "scrollbar.h"
+#include <frame.h>
+#include <scrollbar.h>
 
 class UIKIT_EXPORT AbstractScrollArea : public Frame {
-    A_OBJECT(AbstractScrollArea, Frame, Components/UI)
+    A_OBJECT(AbstractScrollArea, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(ScrollBar *, verticalScrollBar, AbstractScrollArea::verticalScrollBar, AbstractScrollArea::setVerticalScrollBar, "editor=Component"),
@@ -52,6 +52,8 @@ protected:
     void boundChanged(const Vector2 &size) override;
 
     void drawSub() override;
+
+    Vector4 viewportClipRegion() const;
 
     virtual void onVScrollChanged(int value);
     virtual void onHScrollChanged(int value);

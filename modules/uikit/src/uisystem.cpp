@@ -20,6 +20,7 @@
 #include <systems/resourcesystem.h>
 
 #include "components/button.h"
+#include "components/action.h"
 #include "components/canvas.h"
 #include "components/checkbox.h"
 #include "components/floatinput.h"
@@ -32,8 +33,8 @@
 #include "components/treeview.h"
 #include "components/itemviewdelegate.h"
 #include "components/menu.h"
+#include "components/menubar.h"
 #include "components/progressbar.h"
-#include "components/recttransform.h"
 #include "components/scrollbar.h"
 #include "components/slider.h"
 #include "components/splitter.h"
@@ -41,7 +42,6 @@
 #include "components/tabbar.h"
 #include "components/tabwidget.h"
 #include "components/toolbutton.h"
-#include "components/uiloader.h"
 #include "components/widget.h"
 
 #include "pipelinetasks/guilayer.h"
@@ -54,16 +54,14 @@ UiSystem::UiSystem() :
     StyleSheet::registerClassFactory(Engine::resourceSystem());
     UiDocument::registerClassFactory(Engine::resourceSystem());
 
-    RectTransform::registerClassFactory(this);
-
-    Canvas::registerClassFactory(this);
-
     Widget::registerClassFactory(this);
+    Canvas::registerClassFactory(this);
     Image::registerClassFactory(this);
     Frame::registerClassFactory(this);
     Label::registerClassFactory(this);
 
     AbstractButton::registerClassFactory(this);
+    Action::registerClassFactory(this);
     Button::registerClassFactory(this);
     Switch::registerClassFactory(this);
     CheckBox::registerClassFactory(this);
@@ -76,6 +74,7 @@ UiSystem::UiSystem() :
     Splitter::registerClassFactory(this);
 
     Menu::registerClassFactory(this);
+    MenuBar::registerClassFactory(this);
 
     LineEdit::registerClassFactory(this);
     FloatInput::registerClassFactory(this);
@@ -94,15 +93,11 @@ UiSystem::UiSystem() :
 
     GuiLayer::registerClassFactory(this);
 
-    UiLoader::registerClassFactory(this);
-
     setName("UiSystem");
 }
 
 UiSystem::~UiSystem() {
     PROFILE_FUNCTION();
-
-    RectTransform::unregisterClassFactory(this);
 
     Canvas::unregisterClassFactory(this);
 
@@ -112,6 +107,7 @@ UiSystem::~UiSystem() {
     Label::unregisterClassFactory(this);
 
     AbstractButton::unregisterClassFactory(this);
+    Action::unregisterClassFactory(this);
     Button::unregisterClassFactory(this);
     Switch::unregisterClassFactory(this);
 
@@ -123,6 +119,7 @@ UiSystem::~UiSystem() {
     Splitter::unregisterClassFactory(this);
 
     Menu::unregisterClassFactory(this);
+    MenuBar::unregisterClassFactory(this);
 
     LineEdit::unregisterClassFactory(this);
     FloatInput::unregisterClassFactory(this);
@@ -140,8 +137,6 @@ UiSystem::~UiSystem() {
     ItemViewDelegate::unregisterClassFactory(this);
 
     GuiLayer::unregisterClassFactory(this);
-
-    UiLoader::unregisterClassFactory(this);
 
     StyleSheet::unregisterClassFactory(Engine::resourceSystem());
     UiDocument::unregisterClassFactory(Engine::resourceSystem());

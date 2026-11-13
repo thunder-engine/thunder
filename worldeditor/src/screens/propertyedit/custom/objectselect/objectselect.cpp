@@ -34,7 +34,7 @@
 static ObjectSelectBrowser *sBrowser = nullptr;
 
 ObjectSelect::ObjectSelect(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::ObjectSelect),
         m_scene(nullptr),
         m_icon(nullptr) {
@@ -79,7 +79,7 @@ void ObjectSelect::setType(const TString &type) {
 }
 
 void ObjectSelect::setObject(Object *object, const TString &name) {
-    PropertyEdit::setObject(object, name);
+    LegacyPropertyEdit::setObject(object, name);
 
     auto factory = System::metaFactory(m_type);
     if(factory && !factory->first->canCastTo("Resource")) {
@@ -132,7 +132,7 @@ void ObjectSelect::setTemplateData(const Variant &data) {
         name = Url(path).baseName().data();
         AssetConverterSettings *settings = Editor::assets()->fetchSettings(path);
         if(settings) {
-            m_icon->setIcon(QPixmap::fromImage(settings->icon(uuid)));
+            m_icon->setIcon(QPixmap::fromImage(settings->image(uuid)));
         }
     } else {
         m_icon->setIcon(QIcon());

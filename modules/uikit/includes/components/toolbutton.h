@@ -18,12 +18,12 @@
 #ifndef TOOLBUTTON_H
 #define TOOLBUTTON_H
 
-#include "button.h"
+#include <button.h>
 
 class Menu;
 
 class UIKIT_EXPORT ToolButton : public Button {
-    A_OBJECT(ToolButton, Button, Components/UI)
+    A_OBJECT(ToolButton, Button, UI)
 
     A_NOPROPERTIES()
     A_METHODS(

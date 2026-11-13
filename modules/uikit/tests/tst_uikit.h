@@ -15,4 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "tst_recttransform.h"
+#include "tst_canvas.h"
+#include "tst_foldout.h"
+#include "tst_layout.h"
+#include "tst_tabwidget.h"
+#include "tst_widget.h"

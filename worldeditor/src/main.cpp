@@ -25,9 +25,6 @@
 
 #include "screens/projectbrowser/projectbrowser.h"
 
-#include <editor/assetmanager.h>
-#include <editor/pluginmanager.h>
-#include <editor/editorsettings.h>
 #include <editor/editorplatform.h>
 
 #include <engine.h>
@@ -67,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     TString project;
     if(argc > 1) {
-        project = QApplication::arguments().at(1).toStdString();
+        project = argv[1];
     } else {
         ProjectBrowser browser;
         if(browser.exec() == QDialog::Accepted) {
@@ -83,6 +80,8 @@ int main(int argc, char *argv[]) {
     QSplashScreen splash(pixmap);
     splash.show();
     app.processEvents();
+
+    Editor::init(argc, argv);
 
     MainWindow window;
 

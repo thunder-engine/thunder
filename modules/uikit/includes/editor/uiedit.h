@@ -20,11 +20,10 @@
 
 #include <QMenu>
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <pugixml.hpp>
 
-class UiLoader;
 class WidgetController;
 
 class Widget;
@@ -35,7 +34,7 @@ namespace Ui {
     class UiEdit;
 }
 
-class UiEdit : public AssetEditor {
+class UiEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:
@@ -96,8 +95,6 @@ private:
     Scene *m_scene;
 
     Canvas *m_canvas;
-
-    UiLoader *m_loader;
 
     WidgetController *m_controller;
 

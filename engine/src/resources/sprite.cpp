@@ -68,8 +68,13 @@ VariantMap Sprite::saveUserData() const {
 /*!
     Returns a mesh which represents the sprite.
 */
-Mesh *Sprite::mesh() const {
+Mesh *Sprite::mesh() {
     PROFILE_FUNCTION();
+
+    if(m_dirtyMesh) {
+        recalcMesh();
+        m_dirtyMesh = false;
+    }
 
     return m_mesh;
 }
@@ -321,10 +326,10 @@ void Sprite::recalcMesh() const {
         float x2 = (m_bounds.z - m_border[1]) / width;
         float x3 = m_bounds.z / width;
 
-        float y0 = m_bounds.y / height;
-        float y1 = (m_bounds.y + m_border[2]) / height;
-        float y2 = (m_bounds.w - m_border[0]) / height;
-        float y3 = m_bounds.w / height;
+        float y0 = 1.0f - m_bounds.w / height;
+        float y1 = 1.0f - (m_bounds.w - m_border[2]) / height;
+        float y2 = 1.0f - (m_bounds.y + m_border[0]) / height;
+        float y3 = 1.0f - m_bounds.y / height;
 
         m_mesh->setUv0({
             Vector2(x0, y0), Vector2(x1, y0), Vector2(x2, y0), Vector2(x3, y0),
@@ -341,7 +346,7 @@ void Sprite::recalcMesh() const {
 /*!
     \internal
 */
-Mesh *Sprite::composeMesh(Mesh *mesh, Mode mode, Vector2 &size) {
+Mesh *Sprite::composeMesh(Mesh *mesh, SpriteMode mode, Vector2 &size) {
     if(m_mesh) {
         if(m_dirtyMesh && m_mode != Complex) {
             recalcMesh();

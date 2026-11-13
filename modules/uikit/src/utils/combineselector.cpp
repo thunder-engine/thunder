@@ -227,53 +227,43 @@ int CombineSelector::weight() {
 }
 
 Selector* CombineSelector::before() {
-    std::list<Selector *>::iterator before;
     do {
         if(m_normalInhericalList.size() == 2) {
-            before = m_normalInhericalList.begin();
-            break;
+            return *m_normalInhericalList.begin();
         }
 
         if(m_instanceInhericalList.size() == 2) {
-            before = m_instanceInhericalList.begin();
-            break;
+            return *m_instanceInhericalList.begin();
         }
 
         if(m_normalSiblingList.size() == 2) {
-            before = m_normalSiblingList.begin();
-            break;
+            return *m_normalSiblingList.begin();
         }
 
         if(m_instanceSiblingList.size() == 2) {
-            before = m_instanceSiblingList.begin();
-            break;
+            return *m_instanceSiblingList.begin();
         }
     } while (0);
-    return *before;
+    return nullptr;
 }
 
-Selector* CombineSelector::after() {
-    std::list<Selector *>::iterator after;
+Selector *CombineSelector::after() {
     do {
         if(m_normalInhericalList.size() == 2) {
-            after = --m_normalInhericalList.end();
-            break;
+            return *(--m_normalInhericalList.end());
         }
 
         if(m_instanceInhericalList.size() == 2) {
-            after = --m_instanceInhericalList.end();
-            break;
+            return *(--m_instanceInhericalList.end());
         }
 
         if(m_normalSiblingList.size() == 2) {
-            after = --m_normalSiblingList.end();
-            break;
+            return *(--m_normalSiblingList.end());
         }
 
         if(m_instanceSiblingList.size() == 2) {
-            after = --m_instanceSiblingList.end();
-            break;
+            return *(--m_instanceSiblingList.end());
         }
     } while (0);
-    return *after;
+    return nullptr;
 }

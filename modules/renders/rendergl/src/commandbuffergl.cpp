@@ -138,23 +138,24 @@ void CommandBufferGL::setViewport(int32_t x, int32_t y, int32_t width, int32_t h
 }
 
 void CommandBufferGL::enableScissor(int32_t x, int32_t y, int32_t width, int32_t height) {
+    CommandBuffer::enableScissor(x, y, width, height);
+    applyScissorState();
+}
+
+void CommandBufferGL::applyScissorState() {
     if(m_scissorStack.empty()) {
-        glEnable(GL_SCISSOR_TEST);
+        glDisable(GL_SCISSOR_TEST);
+        return;
     }
 
-    CommandBuffer::enableScissor(x, y, width, height);
+    glEnable(GL_SCISSOR_TEST);
     ScissorRect rect = m_scissorStack.top();
     glScissor(rect.x, rect.y, rect.width, rect.height);
 }
 
 void CommandBufferGL::disableScissor() {
     CommandBuffer::disableScissor();
-    if(m_scissorStack.empty()) {
-        glDisable(GL_SCISSOR_TEST);
-    } else {
-        ScissorRect rect = m_scissorStack.top(); // Get previous
-        glScissor(rect.x, rect.y, rect.width, rect.height);
-    }
+    applyScissorState();
 }
 
 void CommandBufferGL::beginDebugMarker(const TString &name) {

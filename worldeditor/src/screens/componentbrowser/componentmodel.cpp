@@ -17,17 +17,39 @@
 */
 #include "componentmodel.h"
 
-#include <QUrl>
-
 #include <engine.h>
+#include <url.h>
+
 #include <editor/assetmanager.h>
 
 const char *gURI("uri");
 
-ComponentModel::ComponentModel() :
-        BaseObjectModel(nullptr) {
+class ComponentModelProxy : public Object {
+    A_OBJECT(ComponentModelProxy, Object, Editor)
 
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &ComponentModel::update);
+    A_METHODS(
+        A_SLOT(ComponentModelProxy::onBuildSuccessful)
+    )
+
+    void setOrigin(ComponentModel *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+    }
+
+    void onBuildSuccessful(bool flag) {
+        m_origin->update();
+    }
+
+private:
+    ComponentModel *m_origin = nullptr;
+};
+
+ComponentModel::ComponentModel() :
+        BaseObjectModel(nullptr),
+        m_componentModelProxy(new ComponentModelProxy) {
+
+    m_componentModelProxy->setOrigin(this);
 }
 
 ComponentModel *ComponentModel::instance() {
@@ -74,23 +96,23 @@ void ComponentModel::update() {
 
     // Iterate all components
     for(const auto &it : ObjectSystem::factories()) {
-        QUrl url(it.second.data());
+        Url url(it.second);
 
         QObject *item = m_rootItem;
-        QStringList list = url.path().split("/", Qt::SkipEmptyParts);
+        StringList list = url.filePath().split("/");
         int i = 0;
         foreach(const auto &part, list) {
             QObject *p = item;
             item = nullptr;
             foreach(QObject *it, p->children()) {
-                if(part == it->objectName()) {
+                if(part == it->objectName().toStdString()) {
                     item = it;
                     break;
                 }
             }
             if(!item) {
                 item = new QObject(p);
-                item->setObjectName(part);
+                item->setObjectName(part.data());
                 item->setProperty(gURI, it.second.data());
                 addItem(item);
             }

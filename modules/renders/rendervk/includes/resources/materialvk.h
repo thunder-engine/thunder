@@ -94,8 +94,6 @@ public:
 
     void loadUserData(const VariantMap &data) override;
 
-    VariantMap saveUserData() const override;
-
     void switchState(State state) override;
 
     bool bind(VkCommandBuffer buffer, RenderTargetVk *target, uint32_t layer, uint16_t vertex, uint32_t topology);

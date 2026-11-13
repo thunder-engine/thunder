@@ -1,7 +1,7 @@
 #ifndef MATERIALEDIT_H
 #define MATERIALEDIT_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <components/meshrender.h>
 
@@ -9,7 +9,7 @@
 
 class ShaderBuilder;
 class ShaderGraph;
-class CameraController;
+class LegacyCameraController;
 
 class MaterialProxy;
 
@@ -17,7 +17,7 @@ namespace Ui {
     class MaterialEdit;
 }
 
-class MaterialEdit : public AssetEditor {
+class MaterialEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:
@@ -33,7 +33,7 @@ private slots:
 
     void onActivated() override;
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
+    void onObjectsChanged(const TString &property, const Variant &value) override;
 
     void on_actionPlane_triggered();
     void on_actionCube_triggered();
@@ -72,7 +72,7 @@ private:
     ShaderGraph *m_graph;
     ShaderBuilder *m_builder;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     MaterialProxy *m_proxy;
 

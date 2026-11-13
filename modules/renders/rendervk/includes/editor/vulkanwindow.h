@@ -33,7 +33,7 @@ class ThunderVulkanWindow : public QWindow {
     };
 
 public:
-    explicit ThunderVulkanWindow(Viewport *viewport, RenderVkSystem *system);
+    explicit ThunderVulkanWindow(LegacyViewport *viewport, RenderVkSystem *system);
 
 private:
     void exposeEvent(QExposeEvent *) override;
@@ -42,7 +42,7 @@ private:
     void ensureStarted();
 
 private:
-    Viewport *m_viewport;
+    LegacyViewport *m_viewport;
 
     RenderVkSystem *m_system;
 

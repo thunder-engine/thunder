@@ -27,7 +27,7 @@
 #include <viewport/handles.h>
 
 #include "components/widget.h"
-#include "components/recttransform.h"
+#include "components/canvas.h"
 
 #include "../widgetcontroller.h"
 #include "../actions/changeproperty.h"
@@ -43,21 +43,16 @@ void WidgetTool::beginControl() {
 
     m_propertiesCache.clear();
 
-    Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
-    RectTransform *rect = static_cast<RectTransform *>(actor->transform());
+    Widget *rect = dynamic_cast<Widget *>(Engine::findObject(m_controller->selectedUuid()));
+    if(!rect) {
+        return;
+    }
 
     VariantMap components;
-    for(auto &child : actor->getChildren()) {
-        Component *component = dynamic_cast<Component *>(child);
-        if(component) {
-            VariantMap properies;
-            const MetaObject *meta = component->metaObject();
-            for(int i = 0; i < meta->propertyCount(); i++) {
-                MetaProperty property = meta->property(i);
-                properies[property.name()] = property.read(component);
-            }
-            components[std::to_string(component->uuid())] = properies;
-        }
+    const MetaObject *meta = rect->metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        MetaProperty property = meta->property(i);
+        components[property.name()] = property.read(rect);
     }
     m_propertiesCache.push_back(components);
 
@@ -74,26 +69,20 @@ void WidgetTool::endControl() {
 
     auto cache = m_propertiesCache.begin();
 
-    Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
+    Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_controller->selectedUuid()));
+    if(!widget) {
+        return;
+    }
 
-    VariantMap components = (*cache).toMap();
-    for(auto &child : actor->getChildren()) {
-
-        Component *component = dynamic_cast<Component *>(child);
-        if(component) {
-            VariantMap properties = components[std::to_string(component->uuid())].toMap();
-            const MetaObject *meta = component->metaObject();
-            for(int i = 0; i < meta->propertyCount(); i++) {
-                MetaProperty property = meta->property(i);
-
-                Variant value = property.read(component);
-                Variant data = properties[property.name()];
-                if(value != data) {
-                    property.write(component, data);
-
-                    new ChangeProperty({component}, property.name(), value, m_controller, "", group);
-                }
-            }
+    VariantMap properties = (*cache).toMap();
+    const MetaObject *meta = widget->metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        MetaProperty property = meta->property(i);
+        Variant value = property.read(widget);
+        Variant data = properties[property.name()];
+        if(value != data) {
+            property.write(widget, data);
+            new ChangeProperty({widget}, property.name(), value, m_controller, "", group);
         }
     }
 
@@ -105,37 +94,35 @@ void WidgetTool::endControl() {
 void WidgetTool::cancelControl() {
     auto cache = m_propertiesCache.begin();
 
-    Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
+    Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_controller->selectedUuid()));
+    if(!widget) {
+        return;
+    }
 
-    VariantMap components = (*cache).toMap();
-    for(auto &child : actor->getChildren()) {
-        Component *component = dynamic_cast<Component *>(child);
-        if(component) {
-            VariantMap properties = components[std::to_string(component->uuid())].toMap();
-            const MetaObject *meta = component->metaObject();
-            for(int i = 0; i < meta->propertyCount(); i++) {
-                MetaProperty property = meta->property(i);
-                component->blockSignals(true);
-                property.write(component, properties[property.name()]);
-                component->blockSignals(false);
-            }
-        }
+    VariantMap properties = (*cache).toMap();
+    const MetaObject *meta = widget->metaObject();
+    for(int i = 0; i < meta->propertyCount(); i++) {
+        MetaProperty property = meta->property(i);
+        widget->blockSignals(true);
+        property.write(widget, properties[property.name()]);
+        widget->blockSignals(false);
     }
 }
 
-void WidgetTool::setTranslation(const Vector3 &position, const Vector3 &scale) {
+void WidgetTool::setTranslation(const Vector3 &position) {
     m_translationPosition = position;
-    m_translationScale = scale;
 }
 
 void WidgetTool::update(bool pivot, bool local, bool snap) {
     EditorTool::update(pivot, local, snap);
 
-    Actor *actor = static_cast<Actor *>(Engine::findObject(m_controller->selectedUuid()));
-    RectTransform *rect = static_cast<RectTransform *>(actor->transform());
+    Widget *rect = dynamic_cast<Widget *>(Engine::findObject(m_controller->selectedUuid()));
+    if(!rect) {
+        return;
+    }
 
     // Anchor cross
-    RectTransform *parent = dynamic_cast<RectTransform *>(rect->parentTransform());
+    Widget *parent = rect->parentWidget();
     if(parent == nullptr) {
         return;
     }
@@ -143,11 +130,13 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
     Vector4 area(rect->clipRegion());
     Vector3 size(area.z, area.w, 0.0f);
     Vector3 center(area.x + area.z * 0.5f, area.y + area.w * 0.5f, 0.0f);
+    if(Canvas *canvas = rect->canvas()) {
+        center = Vector3(canvas->mapFromContent(Vector2(center.x, center.y)), 0.0f);
+        size *= canvas->contentScale();
+    }
     Handles::s_Color = Handles::s_Normal;
 
     center -= m_translationPosition;
-    size.x /= m_translationScale.x;
-    size.y /= m_translationScale.y;
 
     if(parent->layout()) {
         Gizmos::drawWireRectangle(center, size, Vector4(0.9f));
@@ -183,14 +172,14 @@ void WidgetTool::update(bool pivot, bool local, bool snap) {
                 snapSolver(min, max, minAnchor, parent, parent, center);
                 for(auto it : parent->children()) {
                     if(it != rect) {
-                        snapSolver(min, max, minAnchor, dynamic_cast<RectTransform *>(it), parent, center);
+                        snapSolver(min, max, minAnchor, dynamic_cast<Widget *>(it), parent, center);
                     }
                 }
 
                 Vector2 size(max - min);
                 rect->setSize(size);
 
-                if(rect->parentTransform()) {
+                if(rect->parentWidget()) {
                     rect->setPosition(Vector3(min + size * rect->pivot(), m_position.z));
                 }
 
@@ -250,6 +239,10 @@ void WidgetTool::drawAnchors(const Vector3 &center, const Vector3 &size, const V
 }
 
 TString WidgetTool::icon() const {
+    return ".embedded/composer.png/Transform";
+}
+
+TString WidgetTool::image() const {
     return ":/Images/editor/Transform.png";
 }
 
@@ -319,7 +312,7 @@ bool WidgetTool::snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, b
     return false;
 }
 
-void WidgetTool::snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, RectTransform *rect, RectTransform *parent, const Vector2 &translation) const {
+void WidgetTool::snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, Widget *rect, Widget *parent, const Vector2 &translation) const {
     if(rect) {
         Vector2 rectPosition(rect->position());
         rectPosition -= parent->position();

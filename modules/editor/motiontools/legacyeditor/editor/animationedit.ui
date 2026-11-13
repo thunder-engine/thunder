@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LegacyAnimationEdit</class>
+ <widget class="QWidget" name="AnimationEdit">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Animation Editor</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../motiontools.qrc">
+    <normaloff>:/icons/states.png</normaloff>:/icons/states.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="LegacyViewport" name="preview" native="true"/>
+     <widget class="GraphView" name="schemeWidget" native="true"/>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string notr="true">Ctrl+S</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphView</class>
+   <extends>QWidget</extends>
+   <header>graph/graphview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LegacyViewport</class>
+   <extends>QWidget</extends>
+   <header>viewport/legacyviewport.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../motiontools.qrc"/>
+ </resources>
+ <connections/>
+</ui>

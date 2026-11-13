@@ -18,24 +18,27 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <list>
 
-class RectTransform;
 class Frame;
 class TabBar;
 
 class UIKIT_EXPORT TabWidget : public Widget {
-    A_OBJECT(TabWidget, Widget, Components/UI)
+    A_OBJECT(TabWidget, Widget, UI)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, tabsClosable, TabWidget::tabsClosable, TabWidget::setTabsClosable)
+        A_PROPERTY(bool, tabsClosable, TabWidget::tabsClosable, TabWidget::setTabsClosable),
+        A_PROPERTY(bool, movable, TabWidget::isMovable, TabWidget::setMovable)
     )
     A_METHODS(
         A_SLOT(TabWidget::removeTab),
         A_SLOT(TabWidget::setCurrentIndex),
-        A_SLOT(TabWidget::onObjectNameChanged)
+        A_SLOT(TabWidget::onObjectNameChanged),
+        A_SIGNAL(TabWidget::tabCloseRequested),
+        A_SLOT(TabWidget::onTabCloseRequested),
+        A_SLOT(TabWidget::onTabMoved)
     )
     A_NOENUMS()
 
@@ -44,8 +47,11 @@ public:
     ~TabWidget();
 
     int addTab(const TString &title, Widget *content);
+    int addTab(const TString &title, Sprite *icon, Widget *content);
     int insertTab(int index, const TString &title, Widget *content);
+    int insertTab(int index, const TString &title, Sprite *icon, Widget *content);
     void removeTab(int index);
+    Widget *takeTab(int index);
 
     int count() const;
 
@@ -57,34 +63,42 @@ public:
 
     bool tabsClosable() const;
     void setTabsClosable(bool closeable);
+    bool isMovable() const;
+    void setMovable(bool movable);
+    void setCloseOnRequest(bool enabled);
 
     Widget *tabContent(int index) const;
 
     void setTabBar(TabBar *bar);
     void setContentArea(Frame *area);
 
+public: // signals
+    void tabCloseRequested(int index);
+
 protected:
     void composeComponent() override;
 
-    void childAdded(RectTransform *rect) override;
-
-    int insertTab(int index, const TString &title, RectTransform *content);
+    void childAdded(Widget *rect) override;
 
     void onObjectNameChanged(const TString &objectName);
 
 private:
     void updateContentVisibility();
     void onTabClicked(int index);
+    void onTabMoved(int from, int to);
+    void onTabCloseRequested(int index);
     void updateTabStyles();
 
-    std::list<RectTransform *> m_tabs;
+    std::list<Widget *> m_tabs;
 
     TabBar *m_tabBar;
-    RectTransform *m_contentArea;
+    Widget *m_contentArea;
 
     int m_currentIndex;
 
     float m_tabBarHeight;
+    bool m_closeOnRequest;
+    bool m_composingComponent;
 };
 
 #endif // TABWIDGET_H

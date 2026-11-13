@@ -18,7 +18,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "widget.h"
+#include <widget.h>
 
 #include <font.h>
 
@@ -92,13 +92,12 @@ private:
     void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 private:
     TString m_text;
 
     Vector4 m_color;
-
-    Vector2 m_boundaries;
 
     Font *m_font;
 
@@ -106,7 +105,7 @@ private:
 
     Mesh *m_mesh;
 
-    int32_t m_size;
+    int32_t m_fontSize;
 
     int m_alignment;
 

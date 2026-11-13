@@ -37,7 +37,9 @@ public:
 
     void trackBuffer(const std::string &buffer, bool visible) {
         if(visible) {
-            m_buffers[buffer] = m_material->createInstance();
+            MaterialInstance *instance = m_material->createInstance();
+            instance->setTexture("mainTexture", m_context->textureBuffer(Mathf::hashString(buffer)));
+            m_buffers[buffer] = instance;
         } else {
             auto it = m_buffers.find(buffer);
             if(it != m_buffers.end()) {
@@ -60,19 +62,14 @@ private:
 
             int i = 0;
             for(auto &it : m_buffers) {
-                it.second->setTexture("mainTexture", m_context->textureBuffer(it.first));
-
-                float width = 1.0f;
-                float height = 1.0f;
-
                 Matrix4 m;
-                m.scale(Vector3(width, height, 1.0f));
+                m.scale(Vector3(1.0f));
                 if(i < 4) {
-                    m.mat[12] = width * 0.5f + i * width - 1.0f;
-                    m.mat[13] = height * 0.5f - 1.0f;
+                    m.mat[12] = 0.5f + i - 1.0f;
+                    m.mat[13] = 0.5f - 1.0f;
                 } else {
-                    m.mat[12] = width * 0.5f + (i - 4) * width - 1.0f;
-                    m.mat[13] = 1.0f - height * 0.5f;
+                    m.mat[12] = 0.5f + (i - 4) - 1.0f;
+                    m.mat[13] = 1.0f - 0.5f;
                 }
                 it.second->setTransform(m, 0, i);
 

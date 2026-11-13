@@ -15,17 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/image.h"
+#include "image.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include <resources/mesh.h>
 #include <resources/material.h>
 #include <resources/sprite.h>
-
-#include <commandbuffer.h>
-#include <pipelinecontext.h>
 
 #include <cstring>
 
@@ -58,6 +54,7 @@ Image::Image() :
     if(material) {
         m_material = material->createInstance();
         m_material->setVector4(gColor, &m_color);
+        material->subscribe(&Image::materialUpdated, this);
     }
 
     m_mesh->makeDynamic();
@@ -68,6 +65,10 @@ Image::~Image() {
         m_sprite->unsubscribe(this);
     }
 
+    if(m_material) {
+        m_material->material()->unsubscribe(this);
+    }
+
     delete m_material;
 }
 /*!
@@ -76,7 +77,7 @@ Image::~Image() {
 void Image::draw() {
     if(m_dirtyMesh) {
         if(m_sprite) {
-            Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::Mode>(m_drawMode), m_size);
+            Mesh *mesh = m_sprite->composeMesh(m_mesh, static_cast<Sprite::SpriteMode>(m_drawMode), m_size);
             if(mesh != m_mesh) {
                 if(mesh) {
                     m_mesh->setVertices(mesh->vertices());
@@ -107,15 +108,14 @@ void Image::draw() {
     }
 
     if(m_material) {
-        RectTransform *rect = rectTransform();
-        Matrix4 mat(rect->worldTransform());
+        Matrix4 mat(Image::worldTransform());
 
         const Vector3Vector &verts(m_mesh->vertices());
-        Vector2 scl(rect->worldScale());
+        Vector2 scl(Image::worldScale());
         mat[12] -= verts[0].x * scl.x;
         mat[13] -= verts[0].y * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = Image::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
@@ -128,6 +128,7 @@ void Image::draw() {
             } else {
                 m_material->setTexture(gOverride, m_texture);
             }
+            m_dirtyMaterial = false;
         }
 
         Canvas *canvas = Image::canvas();
@@ -151,13 +152,16 @@ Material *Image::material() const {
 void Image::setMaterial(Material *material) {
     if(!m_material || m_material->material() != material) {
         if(m_material) {
+            m_material->material()->unsubscribe(this);
             delete m_material;
             m_material = nullptr;
         }
 
         if(material) {
             m_material = material->createInstance();
+            material->subscribe(&Image::materialUpdated, this);
         }
+        m_dirtyMaterial = true;
         repaint();
     }
 }
@@ -171,10 +175,6 @@ Sprite *Image::sprite() const {
     Replaces the current \a sprite with a new one.
 */
 void Image::setSprite(Sprite *sprite) {
-    if(rectTransform() == nullptr) {
-        return;
-    }
-
     if(m_sprite != sprite) {
         if(m_sprite) {
             m_sprite->unsubscribe(this);
@@ -249,11 +249,8 @@ void Image::setDrawMode(int mode) {
 void Image::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    if(m_size != size) {
-        m_size = size;
-        m_dirtyMesh = true;
-        repaint();
-    }
+    m_dirtyMesh = true;
+    repaint();
 }
 /*!
     \internal
@@ -293,10 +290,30 @@ void Image::spriteUpdated(int state, void *ptr) {
             p->repaint();
         } break;
         case Resource::ToBeDeleted: {
+            if(p->m_sprite) {
+                p->m_sprite->unsubscribe(p);
+            }
             p->m_sprite = nullptr;
             p->m_dirtyMesh = p->m_dirtyMaterial = true;
             p->repaint();
         } break;
         default: break;
     }
+}
+
+void Image::materialUpdated(int state, void *ptr) {
+    Image *image = static_cast<Image *>(ptr);
+    if(!image) {
+        return;
+    }
+
+    if(state == Material::ToBeDeleted) {
+        if(image->m_material) {
+            delete image->m_material;
+            image->m_material = nullptr;
+        }
+    }
+
+    image->m_dirtyMaterial = true;
+    image->repaint();
 }

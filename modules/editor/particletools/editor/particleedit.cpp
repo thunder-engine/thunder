@@ -7,7 +7,8 @@
 
 #include <global.h>
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <components/world.h>
 #include <components/scene.h>
@@ -65,7 +66,7 @@ protected:
 ParticleEdit::ParticleEdit() :
         ui(new Ui::ParticleEdit),
         m_builder(new EffectBuilder),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_light(nullptr),
         m_render(nullptr),
         m_moduleButton(nullptr),
@@ -184,8 +185,13 @@ void ParticleEdit::onAddModule(QAction *action) {
     m_undoRedo->push(new CreateModule(action->text().toStdString(), graph, tr("Create %1").arg(action->text()).toStdString()));
 }
 
-void ParticleEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->graph->onObjectsChanged(objects, property, value);
+void ParticleEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        TString propertyName;
+        Object::ObjectList objects = LegacyEditorGadget::objectsForProperty(gadget->selected(), property, propertyName);
+        ui->graph->onObjectsChanged(objects, propertyName, value);
+    }
 }
 
 std::list<QWidget *> ParticleEdit::propertiesActionWidgets(Object *object, QWidget *parent) const {
@@ -252,7 +258,7 @@ QWidget *ParticleEdit::propertiesWidget() {
 
 void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         VisualEffect *effect = Engine::loadResource<VisualEffect>(settings->destination());
         m_render->setEffect(effect);

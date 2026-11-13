@@ -5,9 +5,10 @@
 #include <cstring>
 
 #include "converter/animationbuilder.h"
-#include "editor/animationedit.h"
 
-#include "editor/property/conditionedit.h"
+#include "legacyeditor/editor/animationedit.h"
+#include "legacyeditor/property/conditionedit.h"
+#include "legacyeditor/gadget/timelineedit.h"
 
 static const char *meta = \
 "{"
@@ -17,8 +18,9 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"AnimationBuilderSettings\": \"converter\","
-"       \"AnimationEdit\": \"editor\","
-"       \"Condition\": \"property\""
+"       \"LegacyAnimationEdit\": \"legacyeditor\","
+"       \"LegacyCondition\": \"legacyproperty\","
+"       \"TimelineEdit\": \"legacygadget\""
 "   }"
 "}";
 
@@ -38,10 +40,12 @@ const char *MotionTools::metaInfo() const {
 void *MotionTools::getObject(const char *name) {
     if(strcmp(name, "AnimationBuilderSettings") == 0) {
         return new AnimationControllerBuilder;
-    } else if(strcmp(name, "AnimationEdit") == 0) {
-        return new AnimationEdit;
-    } else if(strcmp(name, "Condition") == 0) {
-        return new ConditionEdit;
+    } else if(strcmp(name, "LegacyAnimationEdit") == 0) {
+        return new LegacyAnimationEdit;
+    } else if(strcmp(name, "LegacyCondition") == 0) {
+        return new LegacyConditionEdit;
+    } else if(strcmp(name, "TimelineEdit") == 0) {
+        return new TimelineEdit;
     }
     return nullptr;
 }

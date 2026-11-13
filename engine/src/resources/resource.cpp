@@ -1,7 +1,5 @@
 #include "resources/resource.h"
 
-#include "systems/resourcesystem.h"
-
 #include <assert.h>
 
 /*!

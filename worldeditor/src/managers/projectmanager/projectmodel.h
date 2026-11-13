@@ -37,7 +37,7 @@ public:
 protected:
     static StringList s_list;
 
-    mutable std::map<QString, QImage> m_iconCache;
+    mutable std::map<TString, QImage> m_iconCache;
 };
 
 #endif // PROJECTMODEL_H

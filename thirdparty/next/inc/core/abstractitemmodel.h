@@ -9,11 +9,18 @@ public:
         DisplayRole	= 0,
         DecorationRole,
         EditRole,
-        ToolTipRole
+        ToolTipRole,
+        UserRole = 0x100
+    };
+
+    enum ItemFlag {
+        NoItemFlags = 0,
+        ItemIsSelectable = 1 << 0,
+        ItemIsEditable = 1 << 1
     };
 
 public:
-    virtual ~AbstractItemModel() {};
+    virtual ~AbstractItemModel() {}
 
     virtual int rowCount(const ModelIndex &parent = ModelIndex()) const = 0;
     virtual int columnCount(const ModelIndex &parent = ModelIndex()) const = 0;
@@ -22,9 +29,20 @@ public:
     virtual ModelIndex parent(const ModelIndex &index) const = 0;
 
     virtual Variant data(const ModelIndex &index, int role = 0) const = 0;
+    virtual bool setData(const ModelIndex &index, const Variant &value, int role = EditRole) {
+        A_UNUSED(index);
+        A_UNUSED(value);
+        A_UNUSED(role);
+        return false;
+    }
+    virtual int flags(const ModelIndex &index) const {
+        A_UNUSED(index);
+        return ItemIsSelectable;
+    }
 
 protected:
     ModelIndex createIndex(int row, int column, uint32_t uuid) const;
+    ModelIndex createIndex(int row, int column, uint32_t uuid, const ModelIndex &parent) const;
 
 };
 

@@ -105,9 +105,8 @@ public:
 };
 
 HierarchyBrowser::HierarchyBrowser(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::HierarchyBrowser),
-        m_currentEditor(nullptr),
         m_components(new ComponentBrowser(this)),
         m_rect(nullptr),
         m_line(nullptr),
@@ -163,19 +162,24 @@ HierarchyBrowser::~HierarchyBrowser() {
     delete ui;
 }
 
-void HierarchyBrowser::setCurrentEditor(AssetEditor *editor) {
+Object::ObjectList HierarchyBrowser::selected() {
+    return m_selectedObjects;
+}
+
+void HierarchyBrowser::setCurrentEditor(LegacyAssetEditor *editor) {
     if(m_currentEditor) {
-        disconnect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged);
+        disconnect(m_currentEditor, &LegacyAssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged);
     }
 
-    m_currentEditor = editor;
+    LegacyEditorGadget::setCurrentEditor(editor);
+
     if(m_currentEditor) {
         m_components->setGroups(m_currentEditor->componentGroups());
     }
 
     onObjectsHierarchyChanged(nullptr);
 
-    connect(m_currentEditor, &AssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
+    connect(m_currentEditor, &LegacyAssetEditor::objectsHierarchyChanged, this, &HierarchyBrowser::onObjectsHierarchyChanged, Qt::DirectConnection);
 }
 
 void HierarchyBrowser::onObjectsHierarchyChanged(Object *object) {
@@ -369,8 +373,9 @@ void HierarchyBrowser::onDragStarted(Qt::DropActions supportedActions) {
 }
 
 void HierarchyBrowser::onModelSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    if(selected.indexes().isEmpty()) {
-        emit objectsSelected({}, false);
+    if(selected.indexes().isEmpty() && !signalsBlocked()) {
+        m_selectedObjects.clear();
+        emit objectsSelected(false);
     }
 }
 
@@ -388,7 +393,9 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
                 }
             }
 
-            emit objectsSelected(Object::ObjectList(set.begin(), set.end()), false);
+            m_selectedObjects = Object::ObjectList(set.begin(), set.end());
+
+            emit objectsSelected(false);
         } else if(index.column() == 2) {
             actor->setFlags(actor->flags() ^ Actor::Enable);
             onUpdated();
@@ -402,7 +409,8 @@ void HierarchyBrowser::on_treeView_clicked(const QModelIndex &index) {
 void HierarchyBrowser::on_treeView_doubleClicked(const QModelIndex &index) {
     Object *object = Engine::findObject(m_filter->mapToSource(index).internalId());
     if(object) {
-        emit objectsSelected({object}, true);
+        m_selectedObjects = {object};
+        emit objectsSelected(true);
     }
 }
 
@@ -413,16 +421,16 @@ void HierarchyBrowser::on_lineEdit_textChanged(const QString &arg1) {
 void HierarchyBrowser::on_treeView_customContextMenuRequested(const QPoint &pos) {
     QItemSelectionModel *select = ui->treeView->selectionModel();
 
-    std::list<Object *> list;
+    m_selectedObjects.clear();
     foreach(QModelIndex it, select->selectedRows()) {
         Object *object = Engine::findObject(m_filter->mapToSource(it).internalId());
         Actor *actor = dynamic_cast<Actor *>(object);
         if(actor) {
-            list.push_back(actor);
+            m_selectedObjects.push_back(actor);
         }
     }
-    if(!list.empty()) {
-        emit objectsSelected(list, false);
+    if(!m_selectedObjects.empty()) {
+        emit objectsSelected(false);
     }
 
     QModelIndex index = ui->treeView->indexAt(pos);

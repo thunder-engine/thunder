@@ -25,7 +25,7 @@
 #include <editor/projectsettings.h>
 
 PathEdit::PathEdit(bool file, QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::PathEdit),
         m_file(file) {
 

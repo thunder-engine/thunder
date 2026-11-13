@@ -18,10 +18,12 @@
 #ifndef PROGRESSBAR_H
 #define PROGRESSBAR_H
 
-#include "frame.h"
+#include <frame.h>
+
+class Material;
 
 class UIKIT_EXPORT ProgressBar : public Frame {
-    A_OBJECT(ProgressBar, Frame, Components/UI)
+    A_OBJECT(ProgressBar, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Orientation, orientation, ProgressBar::orientation, ProgressBar::setOrientation, "enum=Orientation"),
@@ -60,6 +62,7 @@ private:
     void draw() override;
 
     void composeComponent() override;
+    static void materialUpdated(int state, void *ptr);
 
 private:
     Vector4 m_progressColor;

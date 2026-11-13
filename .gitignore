@@ -5,3 +5,4 @@
 /Tools
 /build/*-Release
 /build/*-Debug
+/.continue/*

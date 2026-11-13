@@ -18,10 +18,10 @@
 #ifndef SWITCH_H
 #define SWITCH_H
 
-#include "checkbox.h"
+#include <checkbox.h>
 
 class UIKIT_EXPORT Switch : public CheckBox {
-    A_OBJECT(Switch, AbstractButton, Components/UI)
+    A_OBJECT(Switch, AbstractButton, UI)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

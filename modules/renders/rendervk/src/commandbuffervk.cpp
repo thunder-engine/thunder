@@ -52,14 +52,6 @@ void CommandBufferVk::begin(VkCommandBuffer buffer) {
 
     VkDevice device = WrapperVk::device();
 
-    for(auto &it : m_textures) {
-        if(it.texture && it.texture->state() == Resource::ToBeUpdated) {
-            TextureVk *texture = static_cast<TextureVk *>(it.texture);
-            VkDescriptorImageInfo info = {};
-            texture->attributes(info);
-        }
-    }
-
     for(auto it : m_suspended) {
         vkDestroyBuffer(device, it.first, nullptr);
         vkFreeMemory(device, it.second, nullptr);
@@ -208,9 +200,12 @@ void CommandBufferVk::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 void CommandBufferVk::disableScissor() {
     PROFILE_FUNCTION();
 
-    VkRect2D scissor = {};
-
     CommandBuffer::disableScissor();
+    applyScissorState();
+}
+
+void CommandBufferVk::applyScissorState() {
+    VkRect2D scissor = {};
     if(m_scissorStack.empty()) {
         scissor.offset = {(int32_t)m_viewport.x, (int32_t)m_viewport.y};
         scissor.extent = {(uint32_t)m_viewport.width, (uint32_t)m_viewport.height};
@@ -243,9 +238,10 @@ void CommandBufferVk::beginDebugMarker(const TString &name) {
     label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
     label.pNext = nullptr;
     label.pLabelName = name.data();
-    label.color[0] = colors[index].x;
-    label.color[1] = colors[index].y;
-    label.color[2] = colors[index].z;
+    uint32_t current = index % colors.size();
+    label.color[0] = colors[current].x;
+    label.color[1] = colors[current].y;
+    label.color[2] = colors[current].z;
     label.color[3] = 1.0f;
 
     index++;

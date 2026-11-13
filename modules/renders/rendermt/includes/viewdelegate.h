@@ -21,11 +21,11 @@
 #include "wrappermt.h"
 
 class RenderMtSystem;
-class Viewport;
+class LegacyViewport;
 
 class ViewDelegate : public MTK::ViewDelegate {
 public:
-    explicit ViewDelegate(RenderMtSystem *system, Viewport *viewport);
+    explicit ViewDelegate(RenderMtSystem *system, LegacyViewport *viewport);
 
 private:
     void drawInMTKView(MTK::View *view) override;
@@ -33,7 +33,7 @@ private:
 private:
     RenderMtSystem *m_render;
 
-    Viewport *m_viewport;
+    LegacyViewport *m_viewport;
 
     bool m_captureInprogress = false;
 

@@ -28,11 +28,63 @@
 
 #include <compat/zip.h>
 
-#include <QCoreApplication>
+#include <chrono>
+#include <iostream>
+#include <thread>
 
-Builder::Builder() {
-    connect(Editor::assets(), &AssetManager::importFinished, this, &Builder::onImportFinished, Qt::QueuedConnection);
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &Builder::onBuildSuccessful, Qt::QueuedConnection);
+Builder::Builder() :
+        m_exitCode(0),
+        m_finished(false),
+        m_assetsOnly(false),
+        m_packageAssets(true) {
+
+    connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+}
+
+void Builder::pollImport() {
+    AssetManager *manager = Editor::assets();
+    while(manager->pendingImportCount()) {
+        manager->importNext();
+    }
+    if(manager->finishImport()) {
+        if(m_exitCode != 0) {
+            return;
+        }
+        if(m_assetsOnly) {
+            packageAssets();
+        } else {
+            startNativeBuild();
+        }
+    }
+}
+
+int Builder::run() {
+    while(m_exitCode == 0 && !m_finished) {
+        pollImport();
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+    return m_exitCode;
+}
+
+void Builder::abort() {
+    m_exitCode = 1;
+}
+
+void Builder::setRecord(Log::LogTypes type, const char *record) {
+    const char *level = "";
+    switch(type) {
+        case Log::CRT: level = "[ critical ]"; break;
+        case Log::ERR: level = "[ error ]"; break;
+        case Log::WRN: level = "[ warning ]"; break;
+        case Log::INF: level = "[ info ]"; break;
+        case Log::DBG: level = "[ debug ]"; break;
+        default: break;
+    }
+
+    std::cout << level << record << std::endl;
+    if(type <= Log::ERR) {
+        abort();
+    }
 }
 
 void Builder::setPlatform(const TString &platform) {
@@ -50,13 +102,52 @@ void Builder::setPlatform(const TString &platform) {
         project->setCurrentPlatform(m_platformsToBuild.top());
         m_platformsToBuild.pop();
 
-        NativeCodeBuilder *builder = project->currentBuilder();
-        if(builder) {
-            builder->convertFile(nullptr);
+        if(!m_assetsOnly) {
+            NativeCodeBuilder *builder = project->currentBuilder();
+            if(builder) {
+                builder->convertFile(nullptr);
+            }
         }
 
         Editor::assets()->rescan();
+        pollImport();
     }
+}
+
+void Builder::setAssetsOnly(bool assetsOnly) {
+    m_assetsOnly = assetsOnly;
+}
+
+void Builder::setPackageAssets(bool packageAssets) {
+    m_packageAssets = packageAssets;
+}
+
+void Builder::packageAssets() {
+    ProjectSettings *project = Editor::project();
+    TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
+
+    if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
+        aError() << "Unable to create build directory at:" << targetPath;
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
+
+    if(m_packageAssets && !package(targetPath)) {
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
+
+    if(!m_platformsToBuild.empty()) {
+        project->setCurrentPlatform(m_platformsToBuild.top());
+        m_platformsToBuild.pop();
+        Editor::assets()->rescan();
+        pollImport();
+        return;
+    }
+
+    m_finished = true;
 }
 
 bool Builder::package(const TString &target) {
@@ -102,21 +193,12 @@ bool Builder::package(const TString &target) {
     return true;
 }
 
-void Builder::onImportFinished() {
-    ProjectSettings *project = Editor::project();
-
-    NativeCodeBuilder *builder = project->currentBuilder();
-
-    if(builder) {
-        if(builder->packagingMode() == NativeCodeBuilder::Before) {
-            package(project->cachePath() + "/" + project->currentPlatformName());
-        }
-
-        builder->buildProject();
+void Builder::onBuildSuccessful(bool buildResult) {
+    if(!buildResult) {
+        m_exitCode = 1;
+        return;
     }
-}
 
-void Builder::onBuildSuccessful() {
     ProjectSettings *project = Editor::project();
     TString targetPath = project->targetPath() + "/" + project->currentPlatformName();
 
@@ -139,19 +221,39 @@ void Builder::onBuildSuccessful() {
 
         // Package after
         NativeCodeBuilder *builder = project->currentBuilder();
-        if(builder && builder->packagingMode() == NativeCodeBuilder::After) {
+        if(m_packageAssets && builder && builder->packagingMode() == NativeCodeBuilder::After) {
             // Package right to install dir
             package(targetPath);
+        }
+
+        if(m_exitCode != 0) {
+            return;
         }
 
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
             m_platformsToBuild.pop();
             Editor::assets()->rescan();
+            pollImport();
 
             return;
         }
     }
 
-    QCoreApplication::exit(0);
+    m_finished = true;
+    m_exitCode = result ? 0 : 1;
+}
+
+void Builder::startNativeBuild() {
+    ProjectSettings *project = Editor::project();
+    NativeCodeBuilder *builder = project->currentBuilder();
+    if(builder) {
+        if(m_packageAssets && builder->packagingMode() == NativeCodeBuilder::Before) {
+            package(project->cachePath() + "/" + project->currentPlatformName());
+        }
+        if(builder->buildProject()) {
+            return;
+        }
+    }
+    m_exitCode = 1;
 }

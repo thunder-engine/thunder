@@ -25,6 +25,7 @@
 #include "resources/texturevk.h"
 #include "resources/computebuffervk.h"
 
+#include <pipelinecontext.h>
 #include <log.h>
 
 ComputeShaderVk::ComputeShaderVk() :
@@ -36,11 +37,27 @@ ComputeShaderVk::ComputeShaderVk() :
 }
 
 void ComputeShaderVk::loadUserData(const VariantMap &data) {
-    ComputeShader::loadUserData(data);
+    VariantMap rhiDataStorage;
+    const VariantMap *rhiRoot = &data;
+    auto shaderBundle = data.find("Data");
+    if(shaderBundle != data.end()) {
+        rhiDataStorage = shaderBundle->second.toMap();
+        rhiRoot = &rhiDataStorage;
+    }
 
-    auto it = data.find("Shader");
-    if(it != data.end()) {
-        m_shaderSource = (*it).second.toByteArray();
+    auto rhiData = rhiRoot->find("RenderVK");
+    if(rhiData == rhiRoot->end()) {
+        aError() << "Compute shader bundle does not contain RenderVK shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
+    ComputeShader::loadUserData(shaderData);
+
+    auto it = shaderData.find("Shader");
+    if(it != shaderData.end()) {
+        VariantList fields = it->second.toList();
+        m_shaderSource = fields.front().toByteArray();
     }
 
     setState(ToBeUpdated);
@@ -131,7 +148,7 @@ TString ComputeShaderVk::textureName(int32_t index) {
             return it.name;
         }
     }
-    return std::string();
+    return TString();
 }
 
 int32_t ComputeShaderVk::textureBinding(const TString &name) {
@@ -341,7 +358,7 @@ void ComputeInstanceVk::createDescriptors(CommandBufferVk &buffer, VkDescriptorS
                 TString name = m->textureName(binding.binding);
                 TextureVk *t = static_cast<TextureVk *>(texture(name));
                 if(t == nullptr) {
-                    t = static_cast<TextureVk *>(buffer.texture(name));
+                    t = static_cast<TextureVk *>(buffer.context()->textureBuffer(Mathf::hashString(name)));
                 }
 
                 VkDescriptorImageInfo imageInfo = {};

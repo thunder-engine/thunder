@@ -411,6 +411,10 @@ bool ShaderGraph::buildGraph(GraphNode *node) {
 }
 
 VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
+    return dataForRhi(static_cast<int32_t>(ShaderBuilder::currentRhi()), editor, root);
+}
+
+VariantMap ShaderGraph::dataForRhi(int32_t rhi, bool editor, ShaderRootNode *root) {
     if(root == nullptr) {
         root = m_rootNode;
     }
@@ -424,73 +428,45 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
     blendState.destinationAlphaBlendMode = Material::BlendFactor::One;
 
     VariantMap user;
-    VariantList properties;
-    properties.push_back(root->materialType());
-    properties.push_back(root->isDoubleSided());
-    properties.push_back(root->lightModel());
-
-    user[PROPERTIES] = properties;
-    user[BLENDSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->blendState() : blendState);
-    user[DEPTHSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->depthState() : Material::DepthState());
-    user[STENCILSTATE] = ShaderBuilder::toVariant((root == m_rootNode) ? root->stencilState() : Material::StencilState());
+    ShaderBuilder::setMaterialProperties(user, root->materialType(), root->isDoubleSided(), root->lightModel());
+    ShaderBuilder::setMaterialBlendState(user, (root == m_rootNode) ? root->blendState() : blendState);
+    ShaderBuilder::setMaterialDepthState(user, (root == m_rootNode) ? root->depthState() : Material::DepthState());
+    ShaderBuilder::setMaterialStencilState(user, (root == m_rootNode) ? root->stencilState() : Material::StencilState());
 
     VariantList textures;
     uint16_t i = 0;
     uint32_t binding = UNIFORM_BIND;
     for(auto &it : m_textures) {
-        VariantList data;
-
         bool target = (it.second & ShaderRootNode::Target);
-
-        data.push_back((target) ? "" : it.first); // path
-        data.push_back((target) ? it.first : QString("texture%1").arg(i).toStdString()); // name
-        data.push_back(binding); // binding
-        data.push_back(it.second); // flags
-
-        textures.push_back(data);
+        TString path = target ? TString() : it.first;
+        TString name = target ? it.first : QString("texture%1").arg(i).toStdString();
+        textures.push_back(ShaderBuilder::materialTexture(path, name, binding, it.second));
         ++i;
         ++binding;
     }
 
     VariantList uniforms;
     for(auto &it : m_uniforms) {
-        VariantList data;
-
         uint32_t size = MetaType::size(it.value.type());
-
-        data.push_back(it.value);
-        data.push_back(uint32_t(size * it.count));
-        data.push_back(it.name);
-
-        uniforms.push_back(data);
+        uniforms.push_back(ShaderBuilder::materialUniform(it.value, size * it.count, it.name));
     }
-    user[UNIFORMS] = uniforms;
+    ShaderBuilder::setMaterialResources(user, textures, uniforms);
 
     ShaderBuilder::buildInstanceData(user, m_pragmas);
 
-    std::string define;
+    TString define = ShaderBuilder::rhiDefines(static_cast<ShaderBuilderSettings::Rhi>(rhi));
     if(root == m_rootNode) {
         define += "\n#define USE_GBUFFER";
-    }
-
-    if(ShaderBuilder::currentRhi() == ShaderBuilderSettings::Rhi::Vulkan) {
-        define += "\n#define VULKAN";
-    }
-
-    if(ShaderBuilder::currentRhi() == ShaderBuilderSettings::Rhi::Metal) {
-        define += "\n#define METAL";
     }
 
     NativeCodeBuilder *builder = Editor::project()->currentBuilder();
     if(root->materialType() == ShaderRootNode::Surface && builder && !builder->isEmbedded()) {
         define += "\n#define USE_SSBO";
     }
-
     if((root == m_rootNode) && root->lightModel() == ShaderRootNode::Lit) {
         define += "\n#define USE_TBN";
     }
 
-    // Pixel shader
     std::string file = "Shader.frag";
     {
         Variant data = ShaderBuilder::loadIncludes(file, define, m_pragmas);
@@ -502,7 +478,6 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
         user[VISIBILITY] = ShaderBuilder::loadIncludes(file, define + "\n#define VISIBILITY_BUFFER", m_pragmas);
     }
 
-    // Vertex shader
     file = "Static.vert";
     if((root != m_rootNode) || root->materialType() == ShaderRootNode::PostProcess) {
         file = "Fullscreen.vert";
@@ -519,14 +494,13 @@ VariantMap ShaderGraph::data(bool editor, ShaderRootNode *root) {
                 user[SKINNED] = data;
             }
         }
-        if(root->useWithParticles()){
+        if(root->useWithParticles()) {
             Variant data = ShaderBuilder::loadIncludes("Billboard.vert", define, m_pragmas);
             if(data.isValid()) {
                 user[PARTICLE] = data;
             }
         }
     }
-    user[TEXTURES] = textures;
 
     return user;
 }
@@ -712,18 +686,22 @@ void ShaderGraph::updatePreviews(CommandBuffer &buffer) {
             if(it.second.isDirty) {
                 if(buildGraph(it.first)) {
                     VariantMap data = ShaderGraph::data(true, &m_previewSettings);
-                    ShaderBuilder::compileData(data);
-
-                    ResourceSystem::loadResourceData(it.second.material, data);
-                    if(it.second.instance) {
-                        delete it.second.instance;
+                    if(ShaderBuilder::compileData(ShaderBuilder::currentRhi(), data)) {
+                        if(ShaderBuilder::packShaderData(data, ShaderBuilder::currentRhi())) {
+                            ResourceSystem::loadResourceData(it.second.material, data);
+                            if(it.second.instance) {
+                                delete it.second.instance;
+                            }
+                            it.second.instance = it.second.material->createInstance(Material::Static);
+                            it.second.isDirty = false;
+                        }
                     }
-                    it.second.instance = it.second.material->createInstance(Material::Static);
-                    it.second.isDirty = false;
                 }
             }
-            buffer.setRenderTarget(it.second.target);
-            buffer.drawMesh(PipelineContext::defaultPlane(), 0, Material::Translucent, *it.second.instance);
+            if(it.second.instance) {
+                buffer.setRenderTarget(it.second.target);
+                buffer.drawMesh(PipelineContext::defaultPlane(), 0, Material::Translucent, *it.second.instance);
+            }
         }
     }
 }

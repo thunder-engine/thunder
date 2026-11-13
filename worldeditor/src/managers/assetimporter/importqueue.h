@@ -19,8 +19,8 @@
 #define IMPORTQUEUE_H
 
 #include <QDialog>
+#include <QTimer>
 
-#include <stdint.h>
 #include <astring.h>
 
 namespace Ui {
@@ -34,14 +34,13 @@ public:
     explicit ImportQueue(QWidget *parent = nullptr);
     ~ImportQueue();
 
+    void startImport();
+
 signals:
     void importFinished();
 
 private slots:
-    void onProcessed();
-
-    void onStarted(int count, const TString &action);
-    void onImportFinished();
+    void pollImport();
 
 private:
     void keyPressEvent(QKeyEvent *e) override;
@@ -49,6 +48,14 @@ private:
 
 private:
     Ui::ImportQueue *ui;
+
+    QTimer m_importTimer;
+
+    int m_totalImports;
+    int m_processedImports;
+
+    bool m_started;
+    bool m_building;
 
 };
 

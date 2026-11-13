@@ -30,7 +30,7 @@
     #define NAVIGATION_EXPORT
 #endif
 
-class EditorGadget;
+class LegacyEditorGadget;
 
 class Navigation : public Module {
 public:
@@ -43,7 +43,7 @@ public:
 
 protected:
     System *m_system;
-    EditorGadget *m_panel;
+    LegacyEditorGadget *m_panel;
 
 };
 #ifdef SHARED_DEFINE

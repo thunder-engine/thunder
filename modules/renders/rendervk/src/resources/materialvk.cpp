@@ -27,6 +27,8 @@
 #include "commandbuffervk.h"
 #include "wrappervk.h"
 
+#include <log.h>
+
 MaterialVk::MaterialVk() :
         m_pipelineLayout(VK_NULL_HANDLE),
         m_localDescSetLayout(VK_NULL_HANDLE) {
@@ -35,6 +37,13 @@ MaterialVk::MaterialVk() :
 
 void MaterialVk::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
+
+    auto rhiData = m_shaderData.find("RenderVK");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderVK shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
 
     static std::map<std::string, uint32_t> pairs = {
         {"Visibility", FragmentVisibility},
@@ -46,10 +55,11 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     };
 
     m_attributes.clear();
+    m_shaderSources.clear();
 
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             auto field = fields.begin(); // Shader data
@@ -79,44 +89,6 @@ void MaterialVk::loadUserData(const VariantMap &data) {
     }
 
     setState(ToBeUpdated);
-}
-/*!
-    \internal
-*/
-VariantMap MaterialVk::saveUserData() const {
-    VariantMap result(Material::saveUserData());
-
-    static const std::map<uint16_t, const char *> names = {
-        {FragmentVisibility, "Visibility"},
-        {FragmentDefault, "Default"},
-        {VertexStatic, "Static"},
-        {VertexSkinned, "Skinned"},
-        {VertexParticle, "Particle"}
-    };
-
-    for(const auto &source : m_shaderSources) {
-        auto name = names.find(source.first);
-        if(name != names.end()) {
-            VariantList fields;
-            fields.push_back(source.second);
-            fields.push_back(VariantList());
-
-            VariantList attributes;
-            auto attributeIt = m_attributes.find(source.first);
-            if(attributeIt != m_attributes.end()) {
-                for(const Attribute &attribute : attributeIt->second) {
-                    VariantList data;
-                    data.push_back(static_cast<int32_t>(attribute.format));
-                    data.push_back(attribute.location);
-                    attributes.push_back(data);
-                }
-            }
-            fields.push_back(attributes);
-            result[name->second] = fields;
-        }
-    }
-
-    return result;
 }
 
 void MaterialVk::switchState(State state) {

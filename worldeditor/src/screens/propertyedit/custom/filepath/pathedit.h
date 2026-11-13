@@ -18,13 +18,13 @@
 #ifndef PATHEDIT_H
 #define PATHEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class PathEdit;
 }
 
-class PathEdit : public PropertyEdit {
+class PathEdit : public LegacyPropertyEdit {
     Q_OBJECT
 public:
     explicit PathEdit(bool file, QWidget *parent = nullptr);

@@ -2,8 +2,7 @@
 
 #include "graphwidgets/groupwidget.h"
 
-#include <components/recttransform.h>
-#include <components/label.h>
+#include <label.h>
 
 NodeGroup::NodeGroup() :
         m_color(Vector4(1.0f)),
@@ -49,17 +48,14 @@ Vector4 NodeGroup::color() const {
 
 Widget *NodeGroup::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor<GroupWidget>(name());
-        if(nodeActor) {
-            GroupWidget *nodeWidget = nodeActor->getComponent<GroupWidget>();
+        GroupWidget *nodeWidget = Widget::createWidget<GroupWidget>(name());
+        if(nodeWidget) {
 
             if(nodeWidget) {
                 nodeWidget->setGraphNode(this);
 
                 m_nodeWidget = nodeWidget;
-
-                RectTransform *rect = m_nodeWidget->rectTransform();
-                rect->setPosition(Vector3(position().x, -position().y - rect->size().y, 0.0f));
+                m_nodeWidget->setPosition(Vector3(position().x, -position().y - m_nodeWidget->size().y, 0.0f));
             }
         }
     }

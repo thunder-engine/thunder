@@ -18,6 +18,7 @@
 #include "pipelinetasks/guilayer.h"
 
 #include "components/world.h"
+#include "components/scene.h"
 #include "components/canvas.h"
 
 #include <commandbuffer.h>
@@ -37,16 +38,13 @@ void GuiLayer::analyze(World *world) {
         pos = Input::touchPosition(0);
     }
 
-    m_canvas.clear();
-    static uint32_t canvasHash = Mathf::hashString("canvas");
+    while(!m_canvas.empty()) {
+        m_canvas.pop();
+    }
+
     for(auto scene : world->scenes()) {
-        for(auto it : scene->getObjectsInGroupByHash(canvasHash)) {
-            Canvas *canvas = static_cast<Canvas *>(it);
-            if(canvas->isEnabledInHierarchy()) {
-                canvas->setSize(m_width, m_height);
-                canvas->update(pos);
-                m_canvas.push_back(canvas);
-            }
+        for(auto object : scene->getChildren()) {
+            collectCanvases(object, m_canvas, m_width, m_height, pos);
         }
     }
 }
@@ -55,9 +53,11 @@ void GuiLayer::exec() {
     CommandBuffer *buffer = m_context->buffer();
 
     buffer->beginDebugMarker("GuiLayer");
+    buffer->setViewport(0, 0, m_width, m_height);
 
-    for(auto it : m_canvas) {
-        it->draw(buffer);
+    while(!m_canvas.empty()) {
+        m_canvas.top()->draw(buffer);
+        m_canvas.pop();
     }
 
     buffer->endDebugMarker();
@@ -65,4 +65,23 @@ void GuiLayer::exec() {
 
 void GuiLayer::setInput(int index, Texture *source) {
     m_outputs.front().second = source;
+}
+
+void GuiLayer::collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position) {
+    Object::ObjectList children = object->getChildren();
+
+    Canvas *canvas = dynamic_cast<Canvas *>(object);
+    if(canvas && canvas->isEnabled()) {
+        if(!canvas->parentWidget()) {
+            canvas->setSize(width, height);
+        }
+        canvas->worldTransform();
+        canvas->update(position);
+        canvas->skipRenderResult(canvas->parentWidget() != nullptr);
+        canvases.push(canvas);
+    }
+
+    for(auto child : children) {
+        collectCanvases(child, canvases, width, height, position);
+    }
 }

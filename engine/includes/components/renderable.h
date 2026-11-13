@@ -38,13 +38,14 @@ public:
     ~Renderable();
 
     AABBox bound();
-    bool isCulled(const Frustum &frustum, const Matrix4 &viewProjection);
 
     Material *material() const;
     virtual void setMaterial(Material *material);
 
     int32_t materialsCount() const;
     virtual MaterialInstance *materialInstance(int index);
+
+    static void filterByFrustum(const RenderList &in, RenderList &out, const Frustum &frustum, const Matrix4 &view);
 
     static void filterByLayer(const RenderList &in, GroupList &out, int layer);
 

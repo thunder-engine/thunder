@@ -1,5 +1,13 @@
 #include <platformadaptor.h>
 
+Window *PlatformAdaptor::window() {
+    return nullptr;
+}
+
+void PlatformAdaptor::setWindow(Window *window) {
+    A_UNUSED(window);
+}
+
 void PlatformAdaptor::update() {
 
 }

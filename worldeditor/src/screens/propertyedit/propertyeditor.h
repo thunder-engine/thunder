@@ -18,7 +18,7 @@
 #ifndef PROPERTYEDITOR_H
 #define PROPERTYEDITOR_H
 
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 
 class QAbstractItemModel;
 class PropertyFilter;
@@ -31,12 +31,11 @@ namespace Ui {
     class PropertyEditor;
 }
 
-class PropertyEditor : public EditorGadget {
+class PropertyEditor : public LegacyEditorGadget {
     Q_OBJECT
 
 public:
     explicit PropertyEditor(QWidget *parent = nullptr);
-
     ~PropertyEditor();
 
     void onSelectionChanged() override;
@@ -47,8 +46,9 @@ public:
 
     void setTopWidget(QWidget *widget);
 
-    AssetEditor *currentEditor() const;
-    void setCurrentEditor(AssetEditor *editor) override;
+    void setCurrentEditor(LegacyAssetEditor *editor) override;
+
+    Object::ObjectList selected() override;
 
 public slots:
     void onObjectSelected(Object *object);
@@ -61,7 +61,7 @@ protected:
 protected slots:
     void onUpdated() override;
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override;
+    void onPropertyChanged(const TString &property, const Variant &value);
 
     void on_lineEdit_textChanged(const QString &arg1);
 
@@ -71,17 +71,15 @@ private:
     void changeEvent(QEvent *event) override;
 
 private:
+    Object::ObjectList m_selectedObjects;
+
     Ui::PropertyEditor *ui;
 
     PropertyFilter *m_filter;
 
-    AssetEditor *m_editor;
-
     QWidget *m_topWidget;
 
     NextModel *m_nextModel;
-
-    Object *m_item;
 
 };
 

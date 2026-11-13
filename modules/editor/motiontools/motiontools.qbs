@@ -5,20 +5,27 @@ Project {
     property stringList srcFiles: [
         "*.cpp",
         "*.h",
+        "*.qrc",
         "converter/*.cpp",
         "converter/*.h",
-        "editor/*.cpp",
-        "editor/*.h",
-        "editor/*.ui",
-        "editor/actions/*.cpp",
-        "editor/actions/*.h",
-        "editor/property/*.cpp",
-        "editor/property/*.h",
-        "editor/property/*.ui"
+        "legacyeditor/actions/*.cpp",
+        "legacyeditor/actions/*.h",
+        "legacyeditor/editor/*.cpp",
+        "legacyeditor/editor/*.h",
+        "legacyeditor/editor/*.ui",
+        "legacyeditor/gadget/*.cpp",
+        "legacyeditor/gadget/*.h",
+        "legacyeditor/gadget/*.ui",
+        "legacyeditor/gadget/ui/*.cpp",
+        "legacyeditor/gadget/ui/*.h",
+        "legacyeditor/property/*.cpp",
+        "legacyeditor/property/*.h",
+        "legacyeditor/property/*.ui"
     ]
 
     property stringList incPaths: [
         "converter",
+        "legacyeditor/gadget",
         "../../../engine/includes",
         "../../../engine/includes/components",
         "../../../engine/includes/resources",
@@ -45,7 +52,11 @@ Project {
         Depends { name: "Qt"; submodules: ["core", "gui", "widgets"]; }
         bundle.isBundle: false
 
-        cpp.defines: ["SHARED_DEFINE"]
+        cpp.defines: {
+            var result = motiontools.defines
+            result.push("SHARED_DEFINE")
+            return result
+        }
         cpp.includePaths: motiontools.incPaths
         cpp.cxxLanguageVersion: motiontools.languageVersion
         cpp.cxxStandardLibrary: motiontools.standardLibrary

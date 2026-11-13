@@ -2,7 +2,7 @@
 
 #include <amath.h>
 #include <engine.h>
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 #include <cstring>
 
@@ -17,7 +17,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"EffectBuilder\": \"converter\","
-"       \"ParticleEdit\": \"editor\""
+"       \"ParticleEdit\": \"legacyeditor\""
 "   }"
 "}";
 

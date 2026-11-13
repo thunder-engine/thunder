@@ -21,20 +21,19 @@
 #include <sstream>
 
 #include <engine.h>
+#include <log.h>
 
 #include <world.h>
 #include <scene.h>
-#include <actor.h>
 #include <camera.h>
 #include <sprite.h>
+#include <transform.h>
 
 #include <editor/undostack.h>
 #include <editor/assetconverter.h>
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "components/canvas.h"
-#include "components/uiloader.h"
-#include "components/recttransform.h"
 #include "components/listview.h"
 #include "components/treeview.h"
 
@@ -114,20 +113,19 @@ UiEdit::UiEdit() :
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
         m_canvas(nullptr),
-        m_loader(nullptr),
         m_controller(new WidgetController(this)) {
 
     ui->setupUi(this);
 
-    Actor *canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
-    m_canvas = canvas->getComponent<Canvas>();
+    m_canvas = Engine::objectCreate<Canvas>("Canvas", m_scene);
+    if(!m_canvas) {
+        aError() << "Unable to create the UI editor canvas.";
+        return;
+    }
 
-    Actor *loader = Engine::composeActor<UiLoader>("Loader", canvas);
-    m_loader = loader->getComponent<UiLoader>();
-
-    m_controller->setRoot(m_loader);
+    m_controller->setRoot(m_canvas);
     m_controller->activateCamera(1, true);
-    m_controller->setGridAxis(CameraController::Axis::Z);
+    m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->setZoomLimits(Vector2(300, 1500));
 
     ui->preview->setController(m_controller);
@@ -138,7 +136,7 @@ UiEdit::UiEdit() :
     Camera *camera = m_controller->camera();
     if(camera) {
         camera->setScreenSpace(true);
-        Vector2 size = m_loader->rectTransform()->size();
+        Vector2 size = m_canvas->size();
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }
 
@@ -155,12 +153,9 @@ UiEdit::UiEdit() :
     TString group = groups.back().toStdString();
     for(auto &it : Engine::factories()) {
         if(it.second.indexOf(group) != -1) {
-            Actor *actor = Engine::composeActor(it.first, it.first);
-            if(actor) {
-                Widget *widget = dynamic_cast<Widget *>(actor->component(it.first));
-                if(widget) {
-                    m_widgets[it.first] = widget;
-                }
+            Widget *widget = Widget::createWidget(it.first, it.first);
+            if(widget) {
+                m_widgets[it.first] = widget;
             }
         }
     }
@@ -211,7 +206,7 @@ void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
 void UiEdit::onSelectionDeleted() {
     Object::ObjectList objects = m_controller->selected();
     for(auto it : objects) {
-        if(it == m_controller->root()->actor()) {
+        if(it == m_controller->root()) {
             return;
         }
     }
@@ -228,7 +223,7 @@ bool UiEdit::isPasteActionAvailable() const {
 
 void UiEdit::onCutAction() {
     for(auto it : m_controller->selected()) {
-        if(it == m_controller->root()->actor()) {
+        if(it == m_controller->root()) {
             return;
         }
     }
@@ -265,7 +260,7 @@ void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &
 
 void UiEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         File loadFile(settings->source());
         if(!loadFile.open(File::Read)) {
@@ -273,20 +268,20 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
             return;
         }
 
-        m_loader->fromBuffer(loadFile.readAll());
+        m_canvas->fromBuffer(loadFile.readAll());
         loadFile.close();
 
-        Actor *actor = dynamic_cast<Actor *>(m_loader->actor()->find("ListView"));
-        if(actor) {
-            ListView *list = actor->getComponent<ListView>();
+        Widget *widget = dynamic_cast<Widget *>(m_canvas->find("ListView"));
+        if(widget) {
+            ListView *list = dynamic_cast<ListView *>(widget);
             if(list) {
                 list->setModel(new TestModel);
             }
         }
 
-        actor = dynamic_cast<Actor *>(m_loader->actor()->find("TreeView"));
-        if(actor) {
-            TreeView *list = actor->getComponent<TreeView>();
+        widget = dynamic_cast<Widget *>(m_canvas->find("TreeView"));
+        if(widget) {
+            TreeView *list = dynamic_cast<TreeView *>(widget);
             if(list) {
                 list->setModel(new TestModel);
             }
@@ -300,13 +295,13 @@ void UiEdit::saveAsset(const TString &path) {
         pugi::xml_document doc;
         pugi::xml_node root = doc.append_child(gUi);
 
-        TString style = m_loader->documentStyle();
+        TString style = m_canvas->documentStyle();
         if(!style.isEmpty()) {
             pugi::xml_node styleNode = root.append_child(gStyle);
             styleNode.text().set(style.data());
         }
 
-        saveElementHelper(root, m_loader);
+        saveElementHelper(root, m_canvas);
 
         std::stringstream ss;
         doc.save(ss);
@@ -334,7 +329,7 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
             }
 
             pugi::xml_node element = parent.append_child(it->typeName().data());
-            element.append_attribute(gName) = it->actor()->name().data();
+            element.append_attribute(gName) = it->name().data();
 
             TString style = it->style();
             if(!style.isEmpty()) {

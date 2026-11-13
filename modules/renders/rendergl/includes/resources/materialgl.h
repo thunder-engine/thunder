@@ -80,9 +80,6 @@ class MaterialGL : public Material {
 
 public:
     void loadUserData(const VariantMap &data) override;
-
-    VariantMap saveUserData() const override;
-
     uint32_t getProgram(uint32_t type, int32_t &global, int32_t &local);
 
     Textures &textures() { return m_textures; }
@@ -96,8 +93,6 @@ protected:
     bool checkProgram(uint32_t program);
 
     MaterialInstance *createInstance(SurfaceType type = SurfaceType::Static) override;
-
-    void switchState(State state) override;
 
 private:
     friend class MaterialInstanceGL;

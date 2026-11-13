@@ -18,13 +18,13 @@
 #ifndef FLOATEDIT_H
 #define FLOATEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class FloatEdit;
 }
 
-class FloatEdit : public PropertyEdit {
+class FloatEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

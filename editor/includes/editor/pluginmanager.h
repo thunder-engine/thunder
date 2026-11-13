@@ -18,13 +18,12 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
-#include <QAbstractItemModel>
-
 #include <stdint.h>
 
 #include <editor.h>
+#include <object.h>
 
-class QLibrary;
+class Library;
 
 class Object;
 class Module;
@@ -39,21 +38,24 @@ struct ComponentData {
 };
 typedef std::list<ComponentData> ComponentBackup;
 
-class EDITOR_EXPORT PluginManager : public QAbstractItemModel {
-    Q_OBJECT
+struct PluginInfo {
+    TString name;
+    TString description;
+    TString version;
+    TString author;
+    TString path;
+    StringList tags;
+    bool enabled;
+    bool beta;
+};
 
-public:
-    enum {
-        PLUGIN_NAME,
-        PLUGIN_DESCRIPTION,
-        PLUGIN_VERSION,
-        PLUGIN_AUTHOR,
-        PLUGIN_PATH,
-        PLUGIN_LAST,
-        PLUGIN_ENABLED,
-        PLUGIN_TAGS,
-        PLUGIN_BETA
-    };
+class EDITOR_EXPORT PluginManager : public Object {
+    A_OBJECT(PluginManager, Object, General)
+
+    A_METHODS(
+        A_SIGNAL(PluginManager::pluginReloaded),
+        A_SIGNAL(PluginManager::listChanged)
+    )
 
 public:
     PluginManager();
@@ -71,6 +73,12 @@ public:
 
     StringList plugins() const;
 
+    int pluginCount() const;
+
+    bool pluginInfo(int row, PluginInfo &info) const;
+
+    bool setPluginEnabled(int row, bool enabled);
+
     StringList dependencies(const TString &type, const StringList &modules = StringList()) const;
 
     StringList extensions(const TString &type) const;
@@ -81,27 +89,11 @@ public:
 
     void syncWhiteList();
 
-signals:
     void pluginReloaded();
+
     void listChanged();
 
-public slots:
     void reloadPlugin(const TString &path);
-
-private:
-    int columnCount(const QModelIndex &) const override;
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    QVariant data(const QModelIndex &index, int role) const override;
-
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-
-    QModelIndex parent(const QModelIndex &child) const override;
 
 protected:
     bool registerSystem(Module *plugin, const char *name);
@@ -132,13 +124,13 @@ private:
 
         StringList components;
 
-        QStringList tags;
+        StringList tags;
 
         std::map<TString, TString> dependencies;
 
         std::map<TString, TString> objects;
 
-        QLibrary *library;
+        Library *library;
 
         Module *module;
 
@@ -159,11 +151,7 @@ private:
     StringList m_initialWhiteList;
     StringList m_whiteList;
 
-    static PluginManager *m_instance;
-
     Engine *m_engine;
-
-    Module *m_renderFactory;
 
 };
 

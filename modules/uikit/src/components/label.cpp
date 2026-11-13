@@ -17,16 +17,10 @@
 */
 #include "components/label.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
+#include "canvas.h"
 
 #include "stylesheet.h"
 
-#include <components/actor.h>
-#include <components/textrender.h>
-#include <components/transform.h>
-
-#include <resources/resource.h>
 #include <resources/material.h>
 #include <resources/mesh.h>
 #include <resources/font.h>
@@ -57,7 +51,7 @@ Label::Label() :
         m_font(nullptr),
         m_material(nullptr),
         m_mesh(Engine::objectCreate<Mesh>()),
-        m_size(14),
+        m_fontSize(12),
         m_alignment(Alignment::Center | Alignment::Middle),
         m_flags(Font::Wrap),
         m_dirty(true),
@@ -71,6 +65,7 @@ Label::Label() :
         m_material = material->createInstance();
         int sdf = 0;
         m_material->setInteger(gUseSDF, &sdf);
+        material->subscribe(&Label::materialUpdated, this);
     }
 }
 
@@ -78,23 +73,27 @@ Label::~Label() {
     if(m_font) {
         m_font->unsubscribe(this);
     }
+    if(m_material) {
+        m_material->material()->unsubscribe(this);
+    }
     m_font = nullptr;
+    delete m_material;
+    delete m_mesh;
 }
 /*!
     \internal
 */
 void Label::draw() {
     Canvas *canvas = Label::canvas();
-    RectTransform *rect = rectTransform();
-
-    if(m_clip && canvas && rect) {
-        canvas->setClipRegion(rect->clipRegion());
+    if(m_clip && canvas) {
+        canvas->setClipRegion(clipRegion());
     }
 
+    Matrix4 mat(worldTransform());
     if(m_material && !m_text.isEmpty()) {
         if(m_dirty && m_font) {
-            m_mesh->setName(actor()->name());
-            const Font::Settings settings = {m_size, m_alignment, m_flags, m_color, m_boundaries};
+            m_mesh->setName(name());
+            const Font::Settings settings = {m_fontSize, m_alignment, m_flags, m_color, m_size};
             m_font->composeMesh(m_mesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
             m_material->setTexture(gTexture, m_font->page());
@@ -102,22 +101,21 @@ void Label::draw() {
             m_dirty = false;
         }
 
-        Matrix4 mat(rect->worldTransform());
+        mat[12] += padding().w;
 
-        mat[12] += rect->padding().w;
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(mat) : mat);
+        uint32_t hash = Label::hash();
+        Mathf::hashCombine(hash, textTransform[12]);
+        Mathf::hashCombine(hash, textTransform[13]);
 
-        uint32_t hash = rect->hash();
-        Mathf::hashCombine(hash, mat[12]);
-        Mathf::hashCombine(hash, mat[13]);
-
-        m_material->setTransform(mat, 0, hash);
+        m_material->setTransform(textTransform, 0, hash);
 
         canvas->drawMesh(m_mesh, m_material);
     }
 
     Widget::draw();
 
-    if(m_clip && canvas && rect) {
+    if(m_clip && canvas) {
         canvas->disableClip();
     }
 }
@@ -194,20 +192,20 @@ void Label::setFont(Font *font) {
     Returns the size of the font.
 */
 int Label::fontSize() const {
-    return m_size;
+    return m_fontSize;
 }
 /*!
     Changes the \a size of the font.
 */
 void Label::setFontSize(int size) {
-    if(m_size != size) {
-        m_size = size;
+    if(m_fontSize != size) {
+        m_fontSize = size;
         m_dirty = true;
         repaint();
 
 #ifdef SHARED_DEFINE
         if(!isSubWidget() && !isSignalsBlocked()) {
-            StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_size) + "px");
+            StyleSheet::setStyleProperty(this, gCssFontSize, TString::number(m_fontSize) + "px");
         }
 #endif
     }
@@ -337,7 +335,7 @@ void Label::setKerning(const bool enable) {
 */
 float Label::textWidth() const {
     if(m_font) {
-        return m_font->textWidth(m_text, m_size, m_flags);
+        return m_font->textWidth(m_text, m_fontSize, m_flags);
     }
     return 0.0f;
 }
@@ -345,7 +343,7 @@ float Label::textWidth() const {
     \internal
 */
 void Label::loadData(const VariantList &data) {
-    Component::loadData(data);
+    Widget::loadData(data);
 
     m_dirty = true;
     repaint();
@@ -366,11 +364,8 @@ bool Label::event(Event *ev) {
 void Label::boundChanged(const Vector2 &size) {
     Widget::boundChanged(size);
 
-    if(m_boundaries != size) {
-        m_boundaries = size;
-        m_dirty = true;
-        repaint();
-    }
+    m_dirty = true;
+    repaint();
 }
 /*!
     \internal
@@ -380,19 +375,31 @@ void Label::composeComponent() {
 
     setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
     setText("Text");
-
-    RectTransform *rect = rectTransform();
-    if(rect) {
-        rect->setSize(Vector2(100.0f, fontSize() + 2));
-    }
+    setSize(Vector2(100.0f, fontSize() + 2));
 }
 /*!
     \internal
 */
 void Label::fontUpdated(int state, void *ptr) {
-    if(state == Resource::Ready) {
+    if(state <= Resource::Ready) {
         Label *p = static_cast<Label *>(ptr);
         p->m_dirty = true;
         p->repaint();
+    }
+}
+/*!
+    \internal
+*/
+void Label::materialUpdated(int state, void *ptr) {
+    if(state <= Material::Ready) {
+        Label *label = static_cast<Label *>(ptr);
+        label->m_dirty = true;
+        label->repaint();
+    }
+
+    if(state == Material::ToBeDeleted) {
+        Label *label = static_cast<Label *>(ptr);
+        delete label->m_material;
+        label->m_material = nullptr;
     }
 }

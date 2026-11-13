@@ -18,9 +18,6 @@
 #ifndef ASSETMANAGER_H
 #define ASSETMANAGER_H
 
-#include <QObject>
-#include <QTimer>
-
 #include <set>
 
 #include <editor.h>
@@ -32,8 +29,15 @@ class AssetConverter;
 class AssetConverterSettings;
 class CodeBuilder;
 
-class EDITOR_EXPORT AssetManager : public QObject {
-    Q_OBJECT
+class EDITOR_EXPORT AssetManager : public Object {
+    A_OBJECT(AssetManager, Object, General)
+
+    A_METHODS(
+        A_SIGNAL(AssetManager::directoryChanged),
+        A_SIGNAL(AssetManager::importFinished),
+        A_SIGNAL(AssetManager::prefabCreated),
+        A_SIGNAL(AssetManager::buildSuccessful)
+    )
 
 public:
     AssetManager();
@@ -81,26 +85,22 @@ public:
 
     void dumpBundle();
 
-public slots:
-    void reimport();
+    int pendingImportCount() const;
+    void importNext();
+    bool finishImport();
+    bool runBuilders();
 
+public: // slots
     void onBuildSuccessful(bool flag, CodeBuilder *builder);
 
-signals:
+public: // signals
     void directoryChanged(const TString &path);
 
-    void imported();
-    void importStarted(int count, const TString &stage);
     void importFinished();
 
-    void iconUpdated(const TString &guid);
-
-    void prefabCreated(uint32_t uuid, uint32_t clone);
+    void prefabCreated(uint32_t clone);
 
     void buildSuccessful(bool flag);
-
-protected slots:
-    void onPerform();
 
 protected:
     friend class BaseAssetProvider;
@@ -120,8 +120,6 @@ protected:
     std::list<std::pair<TString, TString>> m_changedUUIDs;
 
     BaseAssetProvider *m_assetProvider;
-
-    QTimer *m_timer;
 
     bool m_force;
 

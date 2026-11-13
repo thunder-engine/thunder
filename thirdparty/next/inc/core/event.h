@@ -16,8 +16,8 @@
     limitations under the License.
 */
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef NEXT_EVENT_H
+#define NEXT_EVENT_H
 
 #include <stdint.h>
 
@@ -53,4 +53,4 @@ protected:
 
 };
 
-#endif // EVENT_H
+#endif // NEXT_EVENT_H

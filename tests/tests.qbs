@@ -24,7 +24,9 @@ Project {
         "../modules/network/includes",
         "../modules/network/includes/objects",
         "../modules/uikit/tests",
-        "../modules/uikit/includes"
+        "../modules/uikit/includes",
+        "../modules/uikit/includes/resources",
+        "../modules/uikit/includes/components"
     ]
 
     Application {

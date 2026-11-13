@@ -18,12 +18,13 @@
 #ifndef SCENECOMPOSER_H
 #define SCENECOMPOSER_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <QMenu>
 
 class ObjectController;
-class WorldObserver;
+class SceneComposerProxy;
+
 class Prefab;
 class Scene;
 
@@ -34,7 +35,7 @@ namespace Ui {
     class SceneComposer;
 }
 
-class SceneComposer : public AssetEditor {
+class SceneComposer : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
@@ -79,10 +80,10 @@ private slots:
     void onSelectionChanged(const Object::ObjectList &objects);
 
     void onObjectCreate(const TString &type) override;
-    void onObjectsSelected(Object::ObjectList objects, bool force) override;
+    void onObjectsSelected(bool force) override;
     void onSelectionDeleted() override;
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
+    void onObjectsChanged(const TString &property, const Variant &value) override;
 
     void onDrop(QDropEvent *event) override;
     void onDragEnter(QDragEnterEvent *event) override;
@@ -125,6 +126,7 @@ private:
     TString assetType() const override;
 
     Object::ObjectList selected() const override;
+    bool maskPropertyType() const override { return true; }
 
     void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1) override;
 
@@ -142,6 +144,8 @@ private:
     Scene *menuScene() const;
 
 private:
+    friend class SceneComposerProxy;
+
     Ui::SceneComposer *ui;
 
     QMenu m_actorMenu;
@@ -158,7 +162,7 @@ private:
 
     ObjectController *m_controller;
 
-    WorldObserver *m_worldObserver;
+    SceneComposerProxy *m_sceneComposerProxy;
 
     QAction *m_activeSceneAction;
 

@@ -18,13 +18,13 @@
 #ifndef STRINGEDIT_H
 #define STRINGEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class StringEdit;
 }
 
-class StringEdit : public PropertyEdit {
+class StringEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

@@ -64,7 +64,7 @@ jobs:
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
-        vulkan-query-version: latest
+        vulkan-query-version: 1.4.357.0
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
   
@@ -276,7 +276,7 @@ jobs:
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
       with:
-        vulkan-query-version: latest
+        vulkan-query-version: 1.4.357.0
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
         

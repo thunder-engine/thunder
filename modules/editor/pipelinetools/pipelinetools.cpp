@@ -16,7 +16,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"PipelineConverter\": \"converter\","
-"       \"PipelineEdit\": \"editor\""
+"       \"PipelineEdit\": \"legacyeditor\""
 "   }"
 "}";
 

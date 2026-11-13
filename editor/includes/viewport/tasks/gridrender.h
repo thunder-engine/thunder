@@ -29,7 +29,7 @@
 
 #include "editor/editorsettings.h"
 
-#include "../cameracontroller.h"
+#include "../legacycameracontroller.h"
 
 namespace {
     const char *gGridColor("Viewport/Grid/Color");
@@ -61,7 +61,7 @@ public:
         loadSettings();
     }
 
-    void setController(CameraController *ctrl) {
+    void setController(CameraControllerCore *ctrl) {
         m_controller = ctrl;
     }
 
@@ -92,9 +92,10 @@ private:
     void exec() override {
         Camera *camera = Camera::current();
 
-        Transform *t = camera->transform();
-        Vector3 cam = t->position();
+        Transform *transform = camera->transform();
+        Vector3 cam = transform->position();
         Vector3 pos(cam.x, 0.0f, cam.z);
+        uint32_t hash = transform->hash();
 
         Quaternion rot;
 
@@ -115,6 +116,7 @@ private:
         bool ortho = camera->orthographic();
         if(ortho) {
             float height = camera->orthoSize();
+            Mathf::hashCombine(hash, height);
 
             m_scale = 1.0f;
             while(m_scale < height * 0.01f) {
@@ -128,25 +130,25 @@ private:
             planeScale = Vector3(height * camera->ratio(), height, 1.0f);
 
             float depth = camera->farPlane() * 0.5f;
-            CameraController::Axis axis = CameraController::Axis::Z;
+            LegacyCameraController::Axis axis = LegacyCameraController::Axis::Z;
             if(m_controller) {
                 axis = m_controller->gridAxis();
             }
 
             switch(axis) {
-                case CameraController::Axis::X: {
+                case LegacyCameraController::Axis::X: {
                     rot = Quaternion(Vector3(0, 1, 0), 90.0f);
-                    pos = Vector3(cam.x/* + ((side == CameraController::ViewSide::VIEW_LEFT) ? depth : -depth)*/, cam.y, cam.z);
+                    pos = Vector3(cam.x/* + ((side == LegacyCameraController::ViewSide::VIEW_LEFT) ? depth : -depth)*/, cam.y, cam.z);
                     orientation = ZY;
                 } break;
-                case CameraController::Axis::Y: {
+                case LegacyCameraController::Axis::Y: {
                     rot = Quaternion(Vector3(1, 0, 0), 90.0f);
-                    pos = Vector3(cam.x, cam.y/* + ((side == CameraController::ViewSide::VIEW_TOP) ? -depth : depth)*/, cam.z);
+                    pos = Vector3(cam.x, cam.y/* + ((side == LegacyCameraController::ViewSide::VIEW_TOP) ? -depth : depth)*/, cam.z);
                     orientation = XZ;
                 } break;
-                case CameraController::Axis::Z: {
+                case LegacyCameraController::Axis::Z: {
                     rot = Quaternion();
-                    pos = Vector3(cam.x, cam.y, cam.z/* + ((side == CameraController::ViewSide::VIEW_FRONT) ? -depth : depth)*/);
+                    pos = Vector3(cam.x, cam.y, cam.z/* + ((side == LegacyCameraController::ViewSide::VIEW_FRONT) ? -depth : depth)*/);
                     orientation = XY;
                 } break;
                 default: break;
@@ -178,7 +180,7 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, t->hash());
+        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, hash);
         m_grid->setBool("ortho", &ortho);
         m_grid->setInteger("scale", &m_scale);
         m_grid->setFloat("width", &zoom);
@@ -198,7 +200,7 @@ private:
 private:
     Vector4 m_gridColor;
 
-    CameraController *m_controller;
+    CameraControllerCore *m_controller;
 
     RenderTarget *m_resultTarget;
 

@@ -116,6 +116,13 @@ inline MTL::CompareFunction convertCompareFunction(int32_t function) {
 void MaterialMt::loadUserData(const VariantMap &data) {
     Material::loadUserData(data);
 
+    auto rhiData = m_shaderData.find("RenderMT");
+    if(rhiData == m_shaderData.end()) {
+        aError() << "Material bundle does not contain RenderMT shader data.";
+        return;
+    }
+    VariantMap shaderData = rhiData->second.toMap();
+
     if(m_depthStencilState) {
         m_depthStencilState->release();
     }
@@ -170,8 +177,8 @@ void MaterialMt::loadUserData(const VariantMap &data) {
     m_pipelines.clear();
 
     for(auto &pair : pairs) {
-        auto it = data.find(pair.first);
-        if(it != data.end()) {
+        auto it = shaderData.find(pair.first);
+        if(it != shaderData.end()) {
             auto fields = (*it).second.toList();
 
             Shader shader;
@@ -204,51 +211,6 @@ void MaterialMt::loadUserData(const VariantMap &data) {
             m_pipelineFunctions[pair.second] = shader;
         }
     }
-}
-/*!
-    \internal
-*/
-VariantMap MaterialMt::saveUserData() const {
-    VariantMap result(Material::saveUserData());
-
-    static const std::map<uint16_t, const char *> names = {
-        {FragmentVisibility, "Visibility"},
-        {FragmentDefault, "Default"},
-        {VertexStatic, "Static"},
-        {VertexSkinned, "Skinned"},
-        {VertexParticle, "Particle"}
-    };
-
-    for(const auto &pipeline : m_pipelineFunctions) {
-        auto name = names.find(pipeline.first);
-        if(name != names.end()) {
-            const Shader &shader = pipeline.second;
-            VariantList fields;
-            fields.push_back(shader.source);
-
-            VariantList uniforms;
-            for(const Uniform &uniform : shader.uniforms) {
-                VariantList data;
-                data.push_back(uniform.name);
-                data.push_back(uniform.location);
-                uniforms.push_back(data);
-            }
-            fields.push_back(uniforms);
-
-            VariantList attributes;
-            for(const Attribute &attribute : shader.attributes) {
-                VariantList data;
-                data.push_back(static_cast<int32_t>(attribute.format));
-                data.push_back(attribute.location);
-                attributes.push_back(data);
-            }
-            fields.push_back(attributes);
-
-            result[name->second] = fields;
-        }
-    }
-
-    return result;
 }
 
 MTL::RenderPipelineState *MaterialMt::getPipeline(uint16_t vertex, uint16_t fragment, RenderTargetMt *target) {

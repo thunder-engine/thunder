@@ -435,6 +435,9 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
             count_i += static_cast<uint32_t>(item->mNumFaces * 3);
         }
 
+        if(mesh == nullptr) {
+            return mesh;
+        }
         IndexVector &indices = mesh->indices();
         indices.resize(count_i);
 

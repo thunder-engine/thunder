@@ -24,7 +24,7 @@
 #include <QTimer>
 
 IntegerEdit::IntegerEdit(QWidget *parent) :
-        PropertyEdit(parent),
+        LegacyPropertyEdit(parent),
         ui(new Ui::IntegerEdit) {
     ui->setupUi(this);
 

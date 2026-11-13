@@ -22,7 +22,7 @@
 
 #include <object.h>
 #include <editor/undostack.h>
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 
 #include "tools/selecttool.h"
 
@@ -35,16 +35,16 @@ class Prefab;
 
 class ViewportRaycast;
 
-class Viewport;
+class LegacyViewport;
 
-class ObjectController : public CameraController {
+class ObjectController : public LegacyCameraController {
     Q_OBJECT
 
 public:
     ObjectController(SceneComposer *editor);
     ~ObjectController();
 
-    void init(Viewport *viewport) override;
+    void init(LegacyViewport *viewport) override;
 
     void clear(bool signal = true);
 
@@ -105,11 +105,13 @@ public slots:
 
     void onApplySettings();
 
+    void onPrefabCreated(uint32_t clone);
+
 signals:
     void copied();
     void sceneUpdated(Object *object);
     void objectsSelected(Object::ObjectList objects);
-    void propertyChanged(Object::ObjectList objects, const TString &property, Variant value);
+    void propertyChanged(const TString &property, Variant value);
 
     void dropMap(QString map, bool additive);
 
@@ -123,9 +125,6 @@ protected:
     void drawHandles() override;
 
     void select(Object &object) override;
-
-private slots:
-    void onPrefabCreated(uint32_t uuid, uint32_t clone);
 
 protected:
     SelectTool::SelectList m_selected;

@@ -23,9 +23,9 @@
 #include <QMenu>
 
 #include <object.h>
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 #include <editor/undostack.h>
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 
 namespace Ui {
     class HierarchyBrowser;
@@ -60,18 +60,19 @@ protected:
 
 class ObjectsFilter;
 
-class HierarchyBrowser : public EditorGadget {
+class HierarchyBrowser : public LegacyEditorGadget {
     Q_OBJECT
 
 public:
     HierarchyBrowser(QWidget *parent = 0);
     ~HierarchyBrowser();
 
+    Object::ObjectList selected() override;
+
 public slots:
     void onUpdated() override;
 
     void onSelectionChanged() override;
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) override {}
 
     void onItemRename();
 
@@ -93,7 +94,7 @@ private slots:
     void on_lineEdit_textChanged(const QString &arg1);
 
 private:
-    void setCurrentEditor(AssetEditor *editor) override;
+    void setCurrentEditor(LegacyAssetEditor *editor) override;
 
     QAction *createAction(const QString &name, const char *member, const QKeySequence &shortcut = 0);
 
@@ -102,9 +103,9 @@ private:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-    Ui::HierarchyBrowser *ui;
+    Object::ObjectList m_selectedObjects;
 
-    AssetEditor *m_currentEditor;
+    Ui::HierarchyBrowser *ui;
 
     ComponentBrowser *m_components;
 

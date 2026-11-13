@@ -458,7 +458,7 @@ struct Invoker<void(Class::*)(Args...)> {
         sig += '(';
 
         static const MetaType::Table *staticTypes[] = {
-            getTable<std::remove_const_t<Args>>()...
+            getTable<std::remove_const_t<std::remove_reference_t<Args>>>()...
         };
 
         for(int i = 0; i < argCount(); i++) {

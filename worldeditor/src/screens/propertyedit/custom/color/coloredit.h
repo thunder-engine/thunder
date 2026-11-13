@@ -18,9 +18,9 @@
 #ifndef COLOREDIT_H
 #define COLOREDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
-class ColorEdit : public PropertyEdit {
+class ColorEdit : public LegacyPropertyEdit {
     Q_OBJECT
 public:
     explicit ColorEdit(QWidget *parent = nullptr);

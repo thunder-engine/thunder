@@ -294,12 +294,14 @@ void Camera::setCurrent(Camera *current) {
     Returns a first active camera in the \a world
 */
 Camera *Camera::findActiveCamera(World *world) {
-    static uint32_t hash = Mathf::hashString("cameras");
-    for(auto scene : world->scenes()) {
-        for(auto it : scene->getObjectsInGroupByHash(hash)) {
-            Camera *camera = static_cast<Camera *>(it);
-            if(camera->isEnabled() && camera->actor()->isEnabled()) { // Get first active Camera
-                return camera;
+    if(world) {
+        static uint32_t hash = Mathf::hashString("cameras");
+        for(auto scene : world->scenes()) {
+            for(auto it : scene->getObjectsInGroupByHash(hash)) {
+                Camera *camera = static_cast<Camera *>(it);
+                if(camera->isEnabled() && camera->actor()->isEnabled()) { // Get first active Camera
+                    return camera;
+                }
             }
         }
     }

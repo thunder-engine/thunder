@@ -19,6 +19,8 @@ public:
 
         int32_t binding;
 
+        int32_t hash;
+
         int32_t flags;
     };
 

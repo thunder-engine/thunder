@@ -19,13 +19,13 @@
 #define VECTOR4EDIT_H
 
 #include <amath.h>
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class Vector4Edit;
 }
 
-class Vector4Edit : public PropertyEdit {
+class Vector4Edit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

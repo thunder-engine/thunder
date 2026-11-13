@@ -24,6 +24,7 @@
 #include <QSortFilterProxyModel>
 
 class TString;
+class AssetListProxy;
 
 class AssetList : public BaseObjectModel {
     Q_OBJECT
@@ -52,6 +53,8 @@ public slots:
 
 private:
     QSize m_cellSzie;
+
+    AssetListProxy *m_assetListProxy;
 
 };
 

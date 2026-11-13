@@ -18,16 +18,15 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include <QWidget>
+#include <components/canvas.h>
 
 #include <editor.h>
 
-class CameraController;
-
+class Action;
 class PipelineContext;
 class PipelineTask;
+class CameraController;
 
-class Texture;
 class Camera;
 class World;
 
@@ -36,29 +35,40 @@ class GizmoRender;
 class GridRender;
 class DebugRender;
 
-class QMenu;
+class Menu;
 
-class EDITOR_EXPORT Viewport : public QWidget {
-    Q_OBJECT
+class EDITOR_EXPORT Viewport : public Canvas {
+    A_OBJECT(Viewport, Canvas, Components/UI)
+
+    A_NOPROPERTIES()
+    A_METHODS(
+        A_SIGNAL(Viewport::screenshot),
+        A_SLOT(Viewport::onRenderTaskToggled),
+        A_SLOT(Viewport::onBufferToggled)
+    )
+    A_NOENUMS()
+
 public:
-    Viewport(QWidget *parent = 0);
+    Viewport();
+    ~Viewport() override;
 
     void init();
-    virtual void onDraw();
+    void grabScreen();
+    void draw(CommandBuffer *buffer) override;
+    void update(const Vector2 &position) override;
+    void setSize(int width, int height) override;
 
-    CameraController *controller();
-    void setController(CameraController *ctrl);
-    virtual void setWorld(World *world);
+    CameraController *controller() const;
+    void setController(CameraController *controller);
 
+    void setWorld(World *world);
     void setCamera(Camera *camera);
 
-    void createMenu(QMenu *menu);
+    void createMenu(Menu *menu);
 
     PipelineContext *pipelineContext() const;
 
-    void grabScreen();
-
-    int gridCell();
+    int gridCell() const;
 
     bool isGamePaused() const;
     void setGamePaused(bool pause);
@@ -78,42 +88,16 @@ public:
 
     void addRenderTask(PipelineTask *task);
 
-    static void readPixels(void *object);
-
-    QWindow *rhiWindow() { return m_rhiWindow; }
-
-    bool isFocused();
-
-public slots:
-    void onInProgressFlag(bool flag);
-
-    void onCursorSet(const QCursor &cursor);
-    void onCursorUnset();
-
-signals:
-    void drop(QDropEvent *);
-    void dragEnter(QDragEnterEvent *);
-    void dragMove(QDragMoveEvent *);
-    void dragLeave(QDragLeaveEvent *);
-
-    void screenshot(QImage);
+    void screenshot(const ByteArray &pixels, int width, int height);
 
 protected:
-    bool event(QEvent *event) override;
-
-    bool eventFilter(QObject *object, QEvent *event) override;
-
-    bool processEvent(QEvent *event);
-
-    QAction *addAction(QMenu *menu, const TString &name);
-
-protected slots:
-    void onBufferChanged(bool checked);
-    void onPostEffectChanged(bool checked);
+    Menu *createSubmenu(Menu *parent, const TString &title);
+    Action *addAction(Menu *menu, const TString &name, bool checked, const char *slot);
+    void composeComponent() override;
+    void onRenderTaskToggled();
+    void onBufferToggled();
 
 protected:
-    QPoint m_savedMousePos;
-
     CameraController *m_controller;
 
     World *m_world;
@@ -127,17 +111,14 @@ protected:
     DebugRender *m_debugRender;
 
     PipelineContext *m_pipelineContext;
-    QWindow *m_rhiWindow;
 
-    Texture *m_color;
-
-    bool m_focusedView;
     bool m_gameView;
     bool m_gamePaused;
     bool m_liveUpdate;
     bool m_frameInProgress;
+    bool m_rendering;
+    bool m_initialized;
     bool m_screenInProgress;
-
 };
 
 #endif // VIEWPORT_H

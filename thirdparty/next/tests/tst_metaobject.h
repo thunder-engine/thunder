@@ -131,7 +131,7 @@ namespace NextSuite {
         const MetaObject* meta = obj.metaObject();
         ASSERT_TRUE(meta != nullptr);
 
-        ASSERT_EQ(meta->methodCount(), 8);
+        ASSERT_EQ(meta->methodCount(), 10);
         int index = meta->indexOfSlot("setSlot(int)");
         ASSERT_TRUE(index > -1);
 

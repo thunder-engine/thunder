@@ -18,26 +18,44 @@
 #ifndef BUILDER_H
 #define BUILDER_H
 
-#include <QObject>
+#include <objectsystem.h>
+#include <object.h>
+#include <log.h>
+
 #include <stack>
 
 #include <astring.h>
 
-class Builder : public QObject {
-    Q_OBJECT
+class Builder : public Object, public LogHandler {
+    A_OBJECT(Builder, Object, General)
+    A_METHODS(
+        A_SLOT(Builder::onBuildSuccessful)
+    )
+
 public:
     Builder();
 
     void setPlatform(const TString &platform);
+    void setAssetsOnly(bool assetsOnly);
+    void setPackageAssets(bool packageAssets);
+    void abort();
+    int run();
+    void setRecord(Log::LogTypes type, const char *record) override;
 
     bool package(const TString &target);
 
-public slots:
-    void onImportFinished();
-    void onBuildSuccessful();
+private:
+    void pollImport();
+    void onBuildSuccessful(bool result);
+    void startNativeBuild();
+    void packageAssets();
 
 private:
     std::stack<TString> m_platformsToBuild;
+    int m_exitCode;
+    bool m_finished;
+    bool m_assetsOnly;
+    bool m_packageAssets;
 };
 
 #endif // BUILDER_H

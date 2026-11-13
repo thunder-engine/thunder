@@ -22,7 +22,7 @@
 
 #include "assetconverter.h"
 
-class QAbstractItemModel;
+class AbstractItemModel;
 
 class EDITOR_EXPORT CodeBuilder : public AssetConverter {
 public:
@@ -42,7 +42,7 @@ public:
     void makeOutdated();
     bool isOutdated() const;
 
-    virtual QAbstractItemModel *classMap() const;
+    virtual AbstractItemModel *classMap() const;
 
     ReturnCode convertFile(AssetConverterSettings *) override;
 

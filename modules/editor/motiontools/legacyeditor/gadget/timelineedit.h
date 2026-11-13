@@ -1,0 +1,115 @@
+#ifndef TIMELINEEDIT_H
+#define TIMELINEEDIT_H
+
+#include "armature.h"
+#include <QMenu>
+
+#include <object.h>
+
+#include <editor/legacyeditorgadget.h>
+#include <editor/legacyasseteditor.h>
+
+#include <animationcurve.h>
+
+class Animator;
+class NativeBehaviour;
+class TimelineController;
+
+class AnimationClip;
+class UndoCommand;
+
+namespace Ui {
+    class TimelineEdit;
+}
+
+class TimelineEdit : public LegacyEditorGadget {
+    Q_OBJECT
+
+public:
+    explicit TimelineEdit(QWidget *parent = nullptr);
+    ~TimelineEdit();
+
+    UndoStack *undoRedo() const { return m_currentEditor->undoRedo(); }
+    Object::ObjectList selected() override;
+
+private slots:
+    void onUpdated() override;
+
+    void onSelectionChanged() override;
+
+    void onObjectsChanged(const TString &property, Variant value) override;
+
+    void onPropertyUpdated(Object *object, const TString &property);
+
+protected:
+    void saveClip();
+
+    Animator *findAnimator(Object *object);
+
+    void setAnimator(Animator *animator);
+
+    TString pathTo(Object *src, Object *dst);
+
+    void updateClips();
+
+    uint32_t position() const;
+
+private slots:
+    void onRebind();
+
+    void onSelectKey(int, int);
+
+    void onRowsSelected(QStringList list);
+
+    void onClipChanged(const QString &clip);
+
+    void onKeyChanged();
+
+    void setPosition(uint32_t position);
+
+    void on_play_clicked();
+
+    void on_previous_clicked();
+
+    void on_begin_clicked();
+
+    void on_next_clicked();
+
+    void on_end_clicked();
+
+    void on_flatKey_clicked();
+
+    void on_breakKey_clicked();
+
+    void on_timeEdit_editingFinished();
+
+private:
+    void timerEvent(QTimerEvent *) override;
+
+    void changeEvent(QEvent *event) override;
+
+private:
+    std::map<TString, AnimationClip *> m_clips;
+
+    std::list<Armature *> m_armatures;
+
+    Object::ObjectList m_selectedObjects;
+
+    TString m_currentClip;
+
+    Ui::TimelineEdit *ui = nullptr;
+
+    Animator *m_animator = nullptr;
+
+    TimelineController *m_model = nullptr;
+
+    int32_t m_timerId = 0;
+
+    int32_t m_row = -1;
+    int32_t m_ind = -1;
+
+    uint32_t m_position = 0;
+
+};
+
+#endif // TIMELINEEDIT_H

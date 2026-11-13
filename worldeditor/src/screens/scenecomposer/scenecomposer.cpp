@@ -19,7 +19,6 @@
 #include "ui_scenecomposer.h"
 
 #include <QMenu>
-#include <QMessageBox>
 #include <QWidgetAction>
 #include <QFormLayout>
 #include <QLineEdit>
@@ -33,6 +32,7 @@
 #include <json.h>
 #include <bson.h>
 #include <filedialog.h>
+#include <message.h>
 #include <engine.h>
 #include <components/actor.h>
 #include <components/world.h>
@@ -48,6 +48,7 @@
 #include <editor/assetmanager.h>
 #include <editor/pluginmanager.h>
 #include <editor/projectsettings.h>
+#include <editor/legacyeditorgadget.h>
 
 #include "actions/createobject.h"
 #include "actions/deleteobjects.h"
@@ -71,15 +72,18 @@ namespace {
     const char *gComponent("component");
 };
 
-class WorldObserver : public Object {
-    A_OBJECT(WorldObserver, Object, Editor)
+class SceneComposerProxy : public Object {
+    A_OBJECT(SceneComposerProxy, Object, Editor)
 
     A_METHODS(
-        A_SLOT(WorldObserver::onSceneUpdated)
+        A_SLOT(SceneComposerProxy::onSceneUpdated),
+        A_SLOT(SceneComposerProxy::onBuildSuccessful),
+        A_SLOT(SceneComposerProxy::onPrefabCreated),
+        A_SLOT(SceneComposerProxy::onPluginReloaded)
     )
 
 public:
-    WorldObserver() :
+    SceneComposerProxy() :
         m_sceneComposer(nullptr),
         m_world(nullptr) {
 
@@ -87,6 +91,10 @@ public:
 
     void setSceneComposer(SceneComposer *composer) {
         m_sceneComposer = composer;
+
+        connect(Editor::plugins(), _SIGNAL(pluginReloaded()), this, _SLOT(onPluginReloaded()));
+        connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
+        connect(Editor::assets(), _SIGNAL(prefabCreated(uint32)), this, _SLOT(onPrefabCreated(uint32)));
 
         World *world = Engine::world();
         if(m_world != world) {
@@ -107,6 +115,18 @@ private:
         m_sceneComposer->updated();
     }
 
+    void onBuildSuccessful() {
+        m_sceneComposer->selectionChanged();
+    }
+
+    void onPrefabCreated(uint32_t clone) {
+        m_sceneComposer->m_controller->onPrefabCreated(clone);
+    }
+
+    void onPluginReloaded() {
+        m_sceneComposer->m_controller->onUpdateSelected();
+    }
+
 private:
     SceneComposer *m_sceneComposer;
 
@@ -117,7 +137,7 @@ private:
 SceneComposer::SceneComposer(QWidget *parent) :
         ui(new Ui::SceneComposer),
         m_controller(new ObjectController(this)),
-        m_worldObserver(new WorldObserver),
+        m_sceneComposerProxy(new SceneComposerProxy),
         m_isolationSettings(nullptr),
         m_isolationWorld(Engine::objectCreate<World>("World")),
         m_isolationScene(Engine::objectCreate<Scene>("Isolated", m_isolationWorld)),
@@ -136,11 +156,11 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     connect(ui->isolationBack, &QPushButton::clicked, this, &SceneComposer::quitFromIsolation);
 
-    connect(ui->viewport, &Viewport::drop, this, &SceneComposer::onDrop);
-    connect(ui->viewport, &Viewport::dragEnter, this, &SceneComposer::onDragEnter);
-    connect(ui->viewport, &Viewport::dragMove, this, &SceneComposer::onDragMove);
-    connect(ui->viewport, &Viewport::dragLeave, this, &SceneComposer::onDragLeave);
-    connect(ui->viewport, &Viewport::screenshot, this, &SceneComposer::onScreenshot);
+    connect(ui->viewport, &LegacyViewport::drop, this, &SceneComposer::onDrop);
+    connect(ui->viewport, &LegacyViewport::dragEnter, this, &SceneComposer::onDragEnter);
+    connect(ui->viewport, &LegacyViewport::dragMove, this, &SceneComposer::onDragMove);
+    connect(ui->viewport, &LegacyViewport::dragLeave, this, &SceneComposer::onDragLeave);
+    connect(ui->viewport, &LegacyViewport::screenshot, this, &SceneComposer::onScreenshot);
 
     ui->viewport->setController(m_controller);
     ui->viewport->setWorld(Engine::world());
@@ -151,7 +171,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 
     ui->renderMode->menu()->addSeparator();
 
-    m_worldObserver->setSceneComposer(this);
+    m_sceneComposerProxy->setSceneComposer(this);
 
     QWidget *snapWidget = new QWidget();
 
@@ -165,7 +185,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
         btn->setProperty("checkred", true);
         btn->setCheckable(true);
         btn->setAutoExclusive(true);
-        btn->setIcon(QIcon(it->icon().data()));
+        btn->setIcon(QIcon(it->image().data()));
         btn->setObjectName(it->name().data());
         btn->setProperty(gComponent, it->component().data());
         QString cut = it->shortcut().data();
@@ -221,9 +241,6 @@ SceneComposer::SceneComposer(QWidget *parent) :
     connect(ui->camera2DButton, &QPushButton::toggled, this, &SceneComposer::onCamera2D);
     connect(ui->localButton, &QPushButton::toggled, this, &SceneComposer::onLocal);
 
-    connect(Editor::plugins(), &PluginManager::pluginReloaded, m_controller, &ObjectController::onUpdateSelected);
-    connect(Editor::assets(), &AssetManager::buildSuccessful, this, &SceneComposer::selectionChanged);
-
     ui->camera2DButton->setProperty("checkgreen", true);
 
     m_objectActions.push_back(createAction(m_actorMenu, tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
@@ -249,7 +266,7 @@ SceneComposer::SceneComposer(QWidget *parent) :
 }
 
 SceneComposer::~SceneComposer() {
-    delete m_worldObserver;
+    delete m_sceneComposerProxy;
     delete m_controller;
 
     delete ui;
@@ -357,13 +374,17 @@ void SceneComposer::onObjectCreate(const TString &type) {
     }
 }
 
-void SceneComposer::onObjectsSelected(Object::ObjectList objects, bool force) {
-    if(force) {
-        float bottom;
-        m_controller->setFocusOn(dynamic_cast<Actor *>(objects.front()), bottom);
-    }
+void SceneComposer::onObjectsSelected(bool force) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        Object::ObjectList list = gadget->selected();
+        if(force && !list.empty()) {
+            float bottom;
+            m_controller->setFocusOn(dynamic_cast<Actor *>(list.front()), bottom);
+        }
 
-    m_controller->onSelectActor(objects);
+        m_controller->onSelectActor(list);
+    }
 }
 
 void SceneComposer::onUpdated() {
@@ -565,16 +586,16 @@ void SceneComposer::onRemoveScene() {
 void SceneComposer::onDiscardChanges() {
     Scene *scene = menuScene();
     if(scene) {
-        QString text = QString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost."))
-                .arg(scene->name().data());
-        QMessageBox msgBox(nullptr);
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setText(tr("Discard Changes."));
+        TString text = TString(tr("This action will lead to discard all of your changes in the folowing scene:\n\t%1\nYour changes will be lost.").toStdString())
+                .arg(scene->name());
+        Message msgBox;
+        msgBox.setIcon(Message::Question);
+        msgBox.setText(tr("Discard Changes.").toStdString());
         msgBox.setInformativeText(text);
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
+        msgBox.setStandardButtons(Message::Yes | Message::No);
+        msgBox.setDefaultButton(Message::No);
 
-        if(msgBox.exec() == QMessageBox::Yes) {
+        if(msgBox.exec() == Message::Yes) {
             uint32_t uuid = scene->uuid();
             delete scene;
 
@@ -589,7 +610,7 @@ void SceneComposer::onDiscardChanges() {
 }
 
 void SceneComposer::onNewAsset() {
-    AssetEditor::onNewAsset();
+    LegacyAssetEditor::onNewAsset();
 
     quitFromIsolation();
 
@@ -635,10 +656,10 @@ void SceneComposer::onLocal(bool flag) {
 
 void SceneComposer::onCamera2D(bool flag) {
     if(flag) {
-        m_controller->setGridAxis(CameraController::Axis::Z);
+        m_controller->setGridAxis(LegacyCameraController::Axis::Z);
         m_controller->activateCamera(1);
     } else {
-        m_controller->setGridAxis(CameraController::Axis::Y);
+        m_controller->setGridAxis(LegacyCameraController::Axis::Y);
         m_controller->activateCamera(0);
     }
 
@@ -661,12 +682,22 @@ void SceneComposer::onSelectionDeleted() {
     m_controller->onRemoveActor(m_controller->selected());
 }
 
-void SceneComposer::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    TString capital = property;
-    capital[0] = std::toupper(capital.at(0));
-    TString name = TString("Change %1").arg(capital);
+void SceneComposer::onObjectsChanged(const TString &property, const Variant &value) {
+    QObject *s = sender();
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        TString propertyName;
+        Object::ObjectList objects = LegacyEditorGadget::objectsForProperty(gadget->selected(), property, propertyName);
+        if(objects.empty()) {
+            return;
+        }
 
-    m_undoRedo->push(new ChangeObjectProperty(objects, property, value, m_controller, name));
+        TString capital = propertyName;
+        capital[0] = std::toupper(capital.at(0));
+        TString name = TString("Change %1").arg(capital);
+
+        m_undoRedo->push(new ChangeObjectProperty(objects, propertyName, value, m_controller, name));
+    }
 }
 
 QMenu *SceneComposer::hierarchyContextMenu(Object *object) {

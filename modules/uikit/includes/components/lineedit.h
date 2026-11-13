@@ -18,7 +18,7 @@
 #ifndef LINEEDIT_H
 #define LINEEDIT_H
 
-#include "frame.h"
+#include <frame.h>
 
 #include <font.h>
 
@@ -26,17 +26,19 @@ class Label;
 class Sprite;
 
 class UIKIT_EXPORT LineEdit : public Frame {
-    A_OBJECT(LineEdit, Frame, Components/UI)
+    A_OBJECT(LineEdit, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, LineEdit::text, LineEdit::setText),
+        A_PROPERTY(TString, placeholderText, LineEdit::placeholderText, LineEdit::setPlaceholderText),
         A_PROPERTYEX(Font *, font, LineEdit::font, LineEdit::setFont, "editor=Asset"),
         A_PROPERTYEX(Vector4, textColor, LineEdit::textColor, LineEdit::setTextColor, "editor=Color")
     )
     A_METHODS(
         A_SIGNAL(LineEdit::focusIn),
         A_SIGNAL(LineEdit::focusOut),
-        A_SIGNAL(LineEdit::editingFinished)
+        A_SIGNAL(LineEdit::editingFinished),
+        A_SIGNAL(LineEdit::editingCanceled)
     )
     A_NOENUMS()
 
@@ -46,6 +48,10 @@ public:
 
     TString text() const;
     void setText(const TString &text);
+    void selectAll();
+
+    TString placeholderText() const;
+    void setPlaceholderText(const TString &text);
 
     Font *font() const;
     void setFont(Font *font);
@@ -58,29 +64,41 @@ public: // signals
     void focusOut();
 
     void editingFinished();
+    void editingCanceled();
 
 protected:
     void update(const Vector2 &pos) override;
+    bool onMouseDown(int x, int y) override;
+    bool onMouseUp(int x, int y) override;
 
     void composeComponent() override;
 
     void recalcCursor();
 
     static void fontUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
     float cursorAt(int position) const;
 
 private:
+    bool hasSelection() const;
+    int32_t cursorPositionAt(float x) const;
+    void setCursorPosition(int32_t position, bool selecting);
+    void replaceText(const std::u32string &text, int32_t cursorPosition);
+
     void draw() override;
 
 private:
     TString m_text;
+    TString m_placeholderText;
 
     Vector4 m_textColor;
+    Vector4 m_selectionColor;
 
     Matrix4 m_cursorTransform;
 
     MaterialInstance *m_cursorMaterial;
+    MaterialInstance *m_selectionMaterial;
     MaterialInstance *m_fontMaterial;
 
     Font *m_font;
@@ -88,6 +106,7 @@ private:
     Mesh *m_textMesh;
 
     int32_t m_cursorPosition;
+    int32_t m_selectionAnchor;
     int32_t m_fontSize;
 
     float m_textPosition;
@@ -98,6 +117,7 @@ private:
     bool m_hovered;
     bool m_focused;
     bool m_cursorVisible;
+    bool m_mouseSelecting;
 
     bool m_textDirty;
 

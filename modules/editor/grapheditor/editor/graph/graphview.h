@@ -1,33 +1,35 @@
 #ifndef GRAPHVIEW_H
 #define GRAPHVIEW_H
 
-#include <viewport/viewport.h>
-#include <editor/asseteditor.h>
+#include <viewport/legacyviewport.h>
+#include <editor/legacyasseteditor.h>
 
 #include <graph/abstractnodegraph.h>
 
 class QMenu;
 
 class AbstractNodeGraph;
+class Canvas;
 class GraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
 class Scene;
+class Widget;
 
-class NODEGRAPH_EXPORT GraphView : public Viewport {
+class NODEGRAPH_EXPORT GraphView : public LegacyViewport {
     Q_OBJECT
 
 public:
     explicit GraphView(QWidget *editor = nullptr);
 
-    void setEditor(AssetEditor *editor);
+    void setEditor(LegacyAssetEditor *editor);
     void setWorld(World *scene) override;
 
     AbstractNodeGraph *graph() const;
     void setGraph(AbstractNodeGraph *graph);
 
-    Actor &view() const;
+    Widget &view() const;
 
     Frame *rubberBand();
 
@@ -78,9 +80,9 @@ private:
 protected:
     Scene *m_scene;
 
-    Actor *m_view;
+    Widget *m_view;
 
-    Actor *m_canvas;
+    Canvas *m_canvas;
 
     QMenu *m_createMenu;
 
@@ -90,7 +92,7 @@ protected:
 
     Frame *m_rubberBand;
 
-    AssetEditor *m_editor;
+    LegacyAssetEditor *m_editor;
 
     bool m_updateLinks;
 

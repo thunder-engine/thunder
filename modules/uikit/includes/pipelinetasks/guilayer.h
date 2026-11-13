@@ -20,6 +20,8 @@
 
 #include <amath.h>
 
+#include <stack>
+
 #include "pipelinetask.h"
 
 class Canvas;
@@ -37,10 +39,12 @@ private:
 
     void setInput(int index, Texture *source) override;
 
+protected:
+    static void collectCanvases(Object *object, std::stack<Canvas *> &canvases, int width, int height, const Vector4 &position);
+
 private:
-    std::list<Canvas *> m_canvas;
+    std::stack<Canvas *> m_canvas;
 
 };
 
 #endif // GUILAYER_H
-

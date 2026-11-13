@@ -84,11 +84,7 @@ RenderMtSystem::~RenderMtSystem() {
 bool RenderMtSystem::init() {
     PROFILE_FUNCTION();
 
-    bool result = RenderSystem::init();
-
-    CommandBufferMt::setInited();
-
-    return result;
+    return RenderSystem::init();
 }
 /*!
     Main drawing procedure.
@@ -97,7 +93,7 @@ void RenderMtSystem::update(World *world) {
     PROFILE_FUNCTION();
 
     PipelineContext *context = pipelineContext();
-    if(context && CommandBufferMt::isInited()) {
+    if(context) {
         NS::AutoreleasePool *pool = NS::AutoreleasePool::alloc()->init();
         MTL::CommandBuffer *cmdMt = WrapperMt::queue()->commandBuffer();
         
@@ -132,7 +128,7 @@ void RenderMtSystem::setCurrentView(MTK::View *view) {
 #include <QWindow>
 #include <QVariant>
 
-QWindow *RenderMtSystem::createRhiWindow(Viewport *viewport) {
+QWindow *RenderMtSystem::createRhiWindow(LegacyViewport *viewport) {
     CGRect frame = { {0.0, 0.0}, {100.0, 100.0} };
 
     MTL::Device *device = WrapperMt::device();

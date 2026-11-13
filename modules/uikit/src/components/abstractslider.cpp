@@ -17,8 +17,6 @@
 */
 #include "components/abstractslider.h"
 
-#include "components/recttransform.h"
-
 #include <timer.h>
 #include <input.h>
 
@@ -142,8 +140,12 @@ void AbstractSlider::update(const Vector2 &pos) {
         m_hovered = hover;
     }
 
-    if(m_hovered) {
-        if(Input::isMouseButtonDown(Input::MOUSE_LEFT) || (Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN)) {
+    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+        m_mousePressed = false;
+    }
+
+    if(m_hovered || (m_mousePressed && Input::isMouseButton(Input::MOUSE_LEFT))) {
+        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN) {
             m_currentFade = 0.0f;
 
             Widget::setFocusWidget(this);
@@ -151,9 +153,9 @@ void AbstractSlider::update(const Vector2 &pos) {
             pressed();
         }
 
-        if((Input::isMouseButton(Input::MOUSE_LEFT) || Input::touchCount() > 0)) {
+        if((m_mousePressed && Input::isMouseButton(Input::MOUSE_LEFT)) || Input::touchCount() > 0) {
             Vector3 min, max;
-            rectTransform()->bound().box(min, max);
+            bound().box(min, max);
             if(m_orientation == Widget::Horizontal) {
                 min.x += m_areaGap;
                 max.x -= m_areaGap;
@@ -180,4 +182,21 @@ void AbstractSlider::update(const Vector2 &pos) {
         m_currentFade = CLAMP(m_currentFade, 0.0f, 1.0f);
         repaint();
     }
+}
+
+bool AbstractSlider::onMouseDown(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    m_mousePressed = true;
+    m_currentFade = 0.0f;
+    Widget::setFocusWidget(this);
+    pressed();
+    return true;
+}
+
+bool AbstractSlider::onMouseUp(int x, int y) {
+    A_UNUSED(x);
+    A_UNUSED(y);
+    m_mousePressed = false;
+    return true;
 }

@@ -179,13 +179,7 @@ void BaseLight::buildGroups(const Renderable::RenderList &list) {
 
     for(int i = 0; i < count; i++) {
         Renderable::RenderList culled;
-        const Frustum &frustom = m_viewFrustum[i];
-        for(auto it : list) {
-            if(!it->isCulled(frustom, m_cropMatrix[i])) {
-                culled.push_back(it);
-            }
-        }
-
+        Renderable::filterByFrustum(list, culled, m_viewFrustum[i], m_cropMatrix[i]);
         Renderable::GroupList groupList;
         Renderable::filterByLayer(culled, groupList, Material::Shadowcast);
 

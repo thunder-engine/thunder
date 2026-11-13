@@ -17,11 +17,6 @@
 */
 #include "pluginmanager.h"
 
-#include <QCoreApplication>
-#include <QLibrary>
-
-#include <log.h>
-#include <url.h>
 #include <engine.h>
 #include <module.h>
 #include <system.h>
@@ -32,8 +27,13 @@
 
 #include <bson.h>
 #include <json.h>
+#include <library.h>
+#include <log.h>
+#include <url.h>
 
 #include "config.h"
+
+#include <cstdlib>
 
 namespace {
     const char *gComponents("components");
@@ -41,8 +41,6 @@ namespace {
     const char *gObjects("objects");
     const char *gLabel("[PluginManager]");
 }
-
-PluginManager *PluginManager::m_instance = nullptr;
 
 typedef Module *(*ModuleHandler) (Engine *engine);
 
@@ -53,36 +51,35 @@ typedef Module *(*ModuleHandler) (Engine *engine);
 
     PluginManager resolves plugin dependencies and provides access to plugin
     modules, systems, components, and editor extensions.
-
-    \fn void PluginManager::pluginReloaded()
-
-    Emitted after a plugin has been reloaded.
-
-    \fn void PluginManager::listChanged()
-
-    Emitted when the plugin list or plugin state changes.
 */
 
 PluginManager::PluginManager() :
-        QAbstractItemModel(),
-        m_engine(nullptr),
-        m_renderFactory(nullptr) {
-#ifdef Q_OS_MACOS
+        m_engine(nullptr) {
+#ifdef PLATFORM_MAC
     m_renderName = TString("RenderMT"); // Default
 #else
     m_renderName = TString("RenderGL"); // Default
 #endif
 
-    if(qEnvironmentVariableIsSet(qPrintable(gRhi))) {
-        m_renderName = qEnvironmentVariable(qPrintable(gRhi)).toStdString();
+    const char *renderName = std::getenv(gRhi);
+    if(renderName) {
+        m_renderName = renderName;
     } else {
-        qputenv(qPrintable(gRhi), m_renderName.data());
+#if defined(PLATFORM_WINDOWS)
+        int result = ::_putenv_s(gRhi, m_renderName.data());
+#else
+        int result = ::setenv(gRhi, m_renderName.data(), 1);
+#endif
+        if(result != 0) {
+            aError() << gLabel << "Can't set environment variable:" << gRhi;
+        }
     }
 
     m_initialWhiteList.push_back("RenderGL");
     m_initialWhiteList.push_back("RenderVK");
     m_initialWhiteList.push_back("RenderMT");
     m_initialWhiteList.push_back("UiKit");
+    m_initialWhiteList.push_back("UiKitForms");
     m_initialWhiteList.push_back("Media");
     m_initialWhiteList.push_back("Bullet");
     m_initialWhiteList.push_back("Angel");
@@ -110,77 +107,41 @@ PluginManager::~PluginManager() {
     m_plugins.clear();
 }
 
-int PluginManager::columnCount(const QModelIndex &) const {
-    return 1;
+int PluginManager::pluginCount() const {
+    return static_cast<int>(m_plugins.size());
 }
 
-QVariant PluginManager::headerData(int section, Qt::Orientation orientation, int role) const {
-    return QVariant();
-}
-
-QVariant PluginManager::data(const QModelIndex &index, int role) const {
-    if(!index.isValid()) {
-        return QVariant();
+bool PluginManager::pluginInfo(int row, PluginInfo &info) const {
+    if(row < 0 || row >= pluginCount()) {
+        return false;
     }
 
-    switch(role) {
-        case Qt::DisplayRole: {
-            Plugin plugin = *std::next(m_plugins.begin(), index.row());
-            switch(index.column()) {
-            case PLUGIN_NAME:        return plugin.name.data();
-            case PLUGIN_DESCRIPTION: return plugin.description.data();
-            case PLUGIN_PATH:        return plugin.path.data();
-            case PLUGIN_VERSION:     return plugin.version.data();
-            case PLUGIN_AUTHOR:      return plugin.author.data();
-            case PLUGIN_ENABLED:     return plugin.enabled;
-            case PLUGIN_TAGS:        return plugin.tags;
-            default: break;
-            }
-        } break;
-        default: break;
+    const Plugin &plugin = *std::next(m_plugins.begin(), row);
+    info.name = plugin.name;
+    info.description = plugin.description;
+    info.version = plugin.version;
+    info.author = plugin.author;
+    info.path = plugin.path;
+    info.tags = plugin.tags;
+    info.enabled = plugin.enabled;
+    info.beta = plugin.beta;
+    return true;
+}
+
+bool PluginManager::setPluginEnabled(int row, bool enabled) {
+    if(row < 0 || row >= pluginCount()) {
+        return false;
     }
 
-    return QVariant();
-}
+    auto &plugin = *std::next(m_plugins.begin(), row);
+    plugin.enabled = enabled;
 
-bool PluginManager::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if(!index.isValid()) {
-        return QAbstractItemModel::setData(index, value, role);
-    }
+    auto &plugins = Editor::project()->plugins();
+    plugins[plugin.name] = plugin.enabled;
 
-    switch(index.column()) {
-        case PLUGIN_ENABLED: {
-            auto &plugin = *std::next(m_plugins.begin(), index.row());
-            plugin.enabled = value.toBool();
-
-            auto &plugins = Editor::project()->plugins();
-            plugins[plugin.name] = plugin.enabled;
-
-            syncWhiteList();
-
-            emit listChanged();
-
-            return true;
-        }
-        default: break;
-    }
-
-    return false;
-}
-
-int PluginManager::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return m_plugins.size();
-}
-
-QModelIndex PluginManager::index(int row, int column, const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return createIndex(row, column);
-}
-
-QModelIndex PluginManager::parent(const QModelIndex &child) const {
-    Q_UNUSED(child);
-    return QModelIndex();
+    syncWhiteList();
+    listChanged();
+    return true;
 }
 
 /*!
@@ -191,8 +152,8 @@ void PluginManager::init(Engine *engine) {
 
     syncWhiteList();
 
-    loadPlugin((QCoreApplication::applicationDirPath() + "/uikit-editor" + gShared).toStdString());
-    rescanPath((QCoreApplication::applicationDirPath() + "/plugins").toStdString());
+    loadPlugin((Editor::applicationDirPath() + "/uikit-editor" + gShared));
+    rescanPath((Editor::applicationDirPath() + "/plugins"));
 }
 
 /*!
@@ -209,7 +170,7 @@ bool PluginManager::rescanProject(const TString &path) {
     while replacing the loaded plugin.
 */
 bool PluginManager::loadPlugin(const TString &path, bool reload) {
-    QLibrary *lib = new QLibrary(path.data());
+    Library *lib = new Library(path);
     if(lib->load()) {
         ModuleHandler moduleCreate = reinterpret_cast<ModuleHandler>(lib->resolve("moduleCreate"));
         if(moduleCreate) {
@@ -247,7 +208,6 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
                             }
                         } else if(it.second == "render") {
                             if(it.first == m_renderName) {
-                                m_renderFactory = plugin;
                                 Engine::addModule(plugin);
                             } else {
                                 fault = true;
@@ -283,23 +243,21 @@ bool PluginManager::loadPlugin(const TString &path, bool reload) {
 
                 auto it = std::find(m_plugins.begin(), m_plugins.end(), plug);
                 if(it == m_plugins.end()) {
-                    int start = rowCount();
-                    beginInsertRows(QModelIndex(), start, start);
-                        m_plugins.push_back(plug);
-                    endInsertRows();
+                    m_plugins.push_back(plug);
                 } else {
                     int index = std::distance(m_plugins.begin(), it);
                     *std::next(m_plugins.begin(), index) = plug;
                 }
+                listChanged();
                 return true;
             } else {
-                aError() << gLabel << "Can't create plugin:" << qPrintable(lib->fileName());
+                aError() << gLabel << "Can't create plugin:" << lib->fileName();
             }
         } else {
-            aError() << gLabel << "Bad plugin:" << qPrintable(lib->fileName());
+            aError() << gLabel << "Bad plugin:" << lib->fileName();
         }
     } else {
-        aError() << gLabel << "Can't load plugin:" << qPrintable(lib->fileName()) << "With error:" << qPrintable(lib->errorString());
+        aError() << gLabel << "Can't load plugin:" << lib->fileName() << "With error:" << lib->errorString();
     }
     delete lib;
     return false;
@@ -430,7 +388,15 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
             object->setParent(it.parent, it.position);
         }
     }
-    emit pluginReloaded();
+    pluginReloaded();
+}
+
+void PluginManager::pluginReloaded() {
+    emitSignal(_SIGNAL(pluginReloaded()));
+}
+
+void PluginManager::listChanged() {
+    emitSignal(_SIGNAL(listChanged()));
 }
 
 /*!
@@ -439,6 +405,7 @@ void PluginManager::deserializeComponents(const ComponentBackup &backup) {
 void PluginManager::syncWhiteList() {
     StringList toRemove;
 
+    bool changed = false;
     auto &plugins = Editor::project()->plugins();
     for(auto &it : plugins) {
         if(it.second) {
@@ -446,12 +413,14 @@ void PluginManager::syncWhiteList() {
                 toRemove.push_back(it.first);
             } else {
                 m_whiteList.push_back(it.first);
+                changed = true;
             }
         } else {
             if(std::find(m_initialWhiteList.begin(), m_initialWhiteList.end(), it.first) != m_initialWhiteList.end()) {
                 m_whiteList.remove(it.first);
             } else {
                 toRemove.push_back(it.first);
+                changed = true;
             }
         }
     }
@@ -461,7 +430,9 @@ void PluginManager::syncWhiteList() {
             plugins.erase(it);
         }
     }
-    Editor::project()->saveSettings();
+    if(changed) {
+        Editor::project()->saveSettings();
+    }
 }
 
 /*!

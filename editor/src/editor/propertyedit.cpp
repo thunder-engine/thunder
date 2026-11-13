@@ -4,143 +4,186 @@
     Copyright 2008-2026 Evgeniy Prikazchikov
 
     Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "editor/propertyedit.h"
+#include "propertyedit.h"
 
-#include <QAbstractButton>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QLineEdit>
+#include <label.h>
+#include <layout.h>
+
+#include <editor/pluginmanager.h>
+
+#include <algorithm>
+#include <cctype>
 
 std::list<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
-/*!
-    \class PropertyEdit
-    \brief Provides a widget for editing object properties in the editor.
-    \inmodule Editor
+PropertyEdit::PropertyEdit() :
+        m_object(nullptr),
+        m_mixedValue(false),
+        m_label(nullptr),
+        m_editorLayout(nullptr) {
 
-    \fn void PropertyEdit::dataChanged()
+    setName("PropertyEditor");
+    setHorizontalPolicy(Widget::Expanding);
+    setVerticalPolicy(Widget::Preferred);
+    setSize(Vector2(0.0f, 28.0f));
 
-    Emitted when the edited data changes.
+    m_editorLayout = new Layout;
+    m_editorLayout->setOrientation(Widget::Horizontal);
+    m_editorLayout->setSpacing(4);
+    setLayout(m_editorLayout);
 
-    \fn void PropertyEdit::editFinished()
-
-    Emitted when editing is finished.
-*/
-
-/*!
-    Constructs a property editor with the specified Qt \a parent.
-*/
-PropertyEdit::PropertyEdit(QWidget *parent) :
-        QWidget(parent),
-    m_object(nullptr),
-    m_mixedValue(false) {
-
+    m_label = Widget::createWidget<Label>("PropertyName", this);
+    if(m_label) {
+        m_label->setSize(Vector2(144.0f, 24.0f));
+        m_label->setAlign(Alignment::Right | Alignment::Middle);
+        m_label->setHorizontalPolicy(Widget::Fixed);
+        m_label->setVerticalPolicy(Widget::Fixed);
+        m_editorLayout->addWidget(m_label);
+    }
 }
 
-PropertyEdit::~PropertyEdit() {
+PropertyEdit::~PropertyEdit() = default;
 
-}
-
-/*!
-    Returns the value currently displayed by the editor.
-*/
 Variant PropertyEdit::data() const {
     return Variant();
 }
 
-/*!
-    Sets the value displayed by the editor.
-*/
 void PropertyEdit::setData(const Variant &data) {
     A_UNUSED(data);
 }
 
-/*!
-    Sets whether the editor displays a mixed value from multiple objects.
-*/
-void PropertyEdit::setMixedValue(bool mixed) {
-    m_mixedValue = mixed;
-    if(!mixed) {
-        return;
-    }
-
-    for(QLineEdit *line : findChildren<QLineEdit *>()) {
-        line->clear();
-        line->setPlaceholderText("--");
-    }
-    for(QCheckBox *check : findChildren<QCheckBox *>()) {
-        check->setTristate(true);
-        check->setCheckState(Qt::PartiallyChecked);
-    }
-    for(QComboBox *combo : findChildren<QComboBox *>()) {
-        combo->setCurrentIndex(-1);
-    }
-    for(QAbstractButton *button : findChildren<QAbstractButton *>()) {
-        if(button->isCheckable() && !qobject_cast<QCheckBox *>(button)) {
-            button->setChecked(false);
-        }
-    }
-}
-
-/*!
-    Returns true if the editor currently displays a mixed value.
-*/
-bool PropertyEdit::isMixedValue() const {
-    return m_mixedValue;
-}
-
-/*!
-    Applies an editor hint that controls the property editor presentation.
-*/
 void PropertyEdit::setEditorHint(const TString &hint) {
     A_UNUSED(hint);
 }
 
-/*!
-    Assigns the object and property edited by this widget.
-*/
 void PropertyEdit::setObject(Object *object, const TString &property) {
-    A_UNUSED(property);
     m_object = object;
+    m_property = property;
+    m_objects.clear();
+    if(object) {
+        m_objects.push_back(object);
+    }
+    if(m_label) {
+        m_label->setText(propertyDisplayName(property));
+        m_label->setVisible(!property.isEmpty());
+    }
 }
 
-/*!
-    Registers a factory \a callback for custom user-type editors.
-*/
+void PropertyEdit::setObjects(const Object::ObjectList &objects, const TString &property) {
+    setObject(objects.empty() ? nullptr : objects.front(), property);
+    m_objects = objects;
+}
+
+void PropertyEdit::setMixedValue(bool mixed) {
+    m_mixedValue = mixed;
+}
+
+bool PropertyEdit::setSelectedObject(Object *object) {
+    A_UNUSED(object);
+    return false;
+}
+
+TString PropertyEdit::propertyName() const {
+    return m_property;
+}
+
+Object *PropertyEdit::editedObject() const {
+    return m_object;
+}
+
+const Object::ObjectList &PropertyEdit::editedObjects() const {
+    return m_objects;
+}
+
+void PropertyEdit::dataChanged() {
+    emitSignal(_SIGNAL(dataChanged()));
+}
+
+void PropertyEdit::editFinished() {
+    emitSignal(_SIGNAL(editFinished()));
+}
+
+void PropertyEdit::selectionRequested() {
+    emitSignal(_SIGNAL(selectionRequested()));
+}
+
 void PropertyEdit::registerEditorFactory(UserTypeCallback callback) {
-    m_userCallbacks.push_back(callback);
+    if(callback && std::find(m_userCallbacks.begin(), m_userCallbacks.end(), callback) == m_userCallbacks.end()) {
+        m_userCallbacks.push_back(callback);
+    }
 }
 
-/*!
-    Unregisters a previously registered custom editor factory \a callback.
-*/
 void PropertyEdit::unregisterEditorFactory(UserTypeCallback callback) {
     m_userCallbacks.remove(callback);
 }
 
-/*!
-    Constructs a custom \a editor for a user \a type, or returns nullptr when none
-    of the registered factories accepts it.
-*/
-PropertyEdit *PropertyEdit::constructEditor(int type, QWidget *parent, const TString &editor) {
-    PropertyEdit *result = nullptr;
-    if(!m_userCallbacks.empty()) {
-        auto iter = m_userCallbacks.begin();
-        while(result == nullptr && iter != m_userCallbacks.end() ) {
-            result = (*iter)(type, parent, editor);
-            ++iter;
+PropertyEdit *PropertyEdit::constructEditor(uint32_t userType, Widget *parent, const TString &editor) {
+    A_UNUSED(parent);
+    for(UserTypeCallback callback : m_userCallbacks) {
+        if(PropertyEdit *result = callback(userType, parent, editor)) {
+            return result;
         }
+    }
+
+    for(auto &it : Editor::plugins()->extensions("property")) {
+        if(it == editor) {
+            PropertyEdit *edit = reinterpret_cast<PropertyEdit *>(Editor::plugins()->getPluginObject(it));
+            if(edit) {
+                return edit;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void PropertyEdit::addEditor(Widget *editor) {
+    if(m_editorLayout && editor) {
+        editor->setHorizontalPolicy(Widget::Expanding);
+        editor->setVerticalPolicy(Widget::Fixed);
+        m_editorLayout->addWidget(editor);
+    }
+}
+
+Layout *PropertyEdit::editorLayout() const {
+    return m_editorLayout;
+}
+
+bool PropertyEdit::parseFloat(const TString &text, float &value) {
+    TString input = text.trimmed();
+    if(input.isEmpty()) {
+        return false;
+    }
+    char *end = nullptr;
+    errno = 0;
+    value = std::strtof(input.data(), &end);
+    return end != input.data() && *end == '\0' && errno != ERANGE && std::isfinite(value);
+}
+
+bool PropertyEdit::parseInteger(const TString &text, int &value) {
+    TString input = text.trimmed();
+    if(input.isEmpty()) {
+        return false;
+    }
+    char *end = nullptr;
+    errno = 0;
+    const long parsed = std::strtol(input.data(), &end, 10);
+    if(end == input.data() || *end != '\0' || errno == ERANGE ||
+        parsed < std::numeric_limits<int>::min() || parsed > std::numeric_limits<int>::max()) {
+        return false;
+    }
+    value = static_cast<int>(parsed);
+    return true;
+}
+
+TString PropertyEdit::propertyDisplayName(const TString &name) {
+    TString result = name;
+    result.replace('_', ' ');
+    if(!result.isEmpty()) {
+        result[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(result.front())));
     }
     return result;
 }

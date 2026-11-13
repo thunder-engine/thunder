@@ -18,13 +18,13 @@
 #ifndef BOOLEANEDIT_H
 #define BOOLEANEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class BooleanEdit;
 }
 
-class BooleanEdit : public PropertyEdit {
+class BooleanEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

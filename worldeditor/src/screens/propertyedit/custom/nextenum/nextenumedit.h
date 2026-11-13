@@ -18,7 +18,7 @@
 #ifndef NEXTENUMEDIT_H
 #define NEXTENUMEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 #include <metaenum.h>
 
@@ -26,7 +26,7 @@ namespace Ui {
     class NextEnumEdit;
 }
 
-class NextEnumEdit : public PropertyEdit {
+class NextEnumEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

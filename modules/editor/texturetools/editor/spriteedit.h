@@ -1,7 +1,7 @@
 #ifndef SPRITEEDIT_H
 #define SPRITEEDIT_H
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 #include <resource.h>
 
@@ -18,7 +18,7 @@ namespace Ui {
     class SpriteEdit;
 }
 
-class SpriteEdit : public AssetEditor {
+class SpriteEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:

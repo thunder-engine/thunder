@@ -362,6 +362,19 @@ VariantMap ResourceSystem::saveResourceData(Resource *resource) {
     return VariantMap();
 }
 
+void ResourceSystem::loadResourceProperties(Resource *resource, const VariantMap &data) {
+    if(resource) {
+        resource->deserializeProperties(data);
+    }
+}
+
+VariantMap ResourceSystem::saveResourceProperties(Resource *resource) {
+    if(resource) {
+        return resource->serializeProperties(resource->metaObject());
+    }
+    return VariantMap();
+}
+
 Resource *ResourceSystem::resource(TString &path) const {
     if(path.front() != '{') {
         path = reference(path);

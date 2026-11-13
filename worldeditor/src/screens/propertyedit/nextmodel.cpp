@@ -23,7 +23,7 @@
 #include <QRegularExpression>
 
 #include "property.h"
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 QString fromCamelCase(const TString &s) {
     static QRegularExpression regExp1 {"(.)([A-Z][a-z]+)"};
@@ -46,11 +46,11 @@ NextModel::~NextModel() {
     delete m_rootItem;
 }
 
-void NextModel::addObject(Object *propertyObject) {
-    addObjects({propertyObject});
+void NextModel::addObject(Object *propertyObject, bool maskPropertyType) {
+    addObjects({propertyObject}, maskPropertyType);
 }
 
-void NextModel::addObjects(const Object::ObjectList &propertyObjects) {
+void NextModel::addObjects(const Object::ObjectList &propertyObjects, bool maskPropertyType) {
     if(propertyObjects.empty()) {
         return;
     }
@@ -65,6 +65,7 @@ void NextModel::addObjects(const Object::ObjectList &propertyObjects) {
 
     Property *propertyItem = new Property(name, static_cast<Property *>(m_rootItem), true);
     propertyItem->setPropertyObjects(propertyObjects);
+    propertyItem->setMaskPropertyType(maskPropertyType);
     addItem(propertyItem);
 
     int count = metaObject->propertyCount();
@@ -92,6 +93,7 @@ void NextModel::addObjects(const Object::ObjectList &propertyObjects) {
                 if(type < MetaType::QUATERNION || type >= MetaType::OBJECT) {
                     Property *p = new Property(property.name(), (propertyItem) ? propertyItem : static_cast<Property *>(m_rootItem), false);
                     p->setPropertyObjects(propertyObjects);
+                    p->setMaskPropertyType(maskPropertyType);
                     addItem(p);
 
                     const char *annotation = property.table()->annotation;
@@ -105,13 +107,13 @@ void NextModel::addObjects(const Object::ObjectList &propertyObjects) {
         }
     }
 
-    updateDynamicProperties(propertyItem, propertyObject);
+    updateDynamicProperties(propertyItem, propertyObject, maskPropertyType);
 
     emit layoutAboutToBeChanged();
     emit layoutChanged();
 }
 
-void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject) {
+void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject, bool maskPropertyType) {
     // Get dynamic property names
     auto dynamicProperties = propertyObject->dynamicPropertyNames();
 
@@ -151,6 +153,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
                 } else {
                     p = new Property(path.toStdString(), it, parent == m_rootItem);
                     p->setPropertyObject(propertyObject);
+                    p->setMaskPropertyType(maskPropertyType);
                     addItem(p);
 
                     it = p;
@@ -158,6 +161,7 @@ void NextModel::updateDynamicProperties(Property *parent, Object *propertyObject
             } else if(!std::next(list.begin(), i)->isEmpty()) {
                 p = new Property(dynProp, it, false);
                 p->setPropertyObject(propertyObject);
+                p->setMaskPropertyType(maskPropertyType);
                 p->setEditorHints(propertyObject->dynamicPropertyInfo(dynProp.data()));
                 addItem(p);
 
@@ -284,4 +288,3 @@ void NextModel::clear() {
     beginResetModel();
     endResetModel();
 }
-

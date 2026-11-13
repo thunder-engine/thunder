@@ -29,10 +29,33 @@
 #include <editor/projectsettings.h>
 #include <editor/codebuilder.h>
 
+class ContentTreeProxy : public Object {
+    A_OBJECT(ContentTreeProxy, Object, Editor)
+
+    A_METHODS(
+        A_SLOT(ContentTreeProxy::onDirectoryChanged)
+    )
+
+    void setOrigin(ContentTree *origin) {
+        m_origin = origin;
+
+        connect(Editor::assets(), _SIGNAL(directoryChanged(TString)), this, _SLOT(onDirectoryChanged(TString)));
+        //connect(Editor::assets(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
+    }
+
+    void onDirectoryChanged(const TString &path) {
+        m_origin->update();
+    }
+
+private:
+    ContentTree *m_origin = nullptr;
+};
+
 ContentTree::ContentTree() :
         BaseObjectModel(nullptr),
         m_content(new QObject(m_rootItem)),
-        m_newAsset(new QObject) {
+        m_newAsset(new QObject),
+        m_contentTreeProxy(new ContentTreeProxy) {
 
     addItem(m_content);
     addItem(m_newAsset);
@@ -41,8 +64,7 @@ ContentTree::ContentTree() :
 
     m_folder = QImage(":/Style/styles/dark/images/folder.svg");
 
-    connect(Editor::assets(), &AssetManager::directoryChanged, this, &ContentTree::update);
-    connect(Editor::assets(), &AssetManager::iconUpdated, this, &ContentTree::onRendered);
+    m_contentTreeProxy->setOrigin(this);
 }
 
 int ContentTree::columnCount(const QModelIndex &) const {
@@ -151,7 +173,7 @@ void ContentTree::onRendered(const TString &uuid) {
         if(item) {
             item->setProperty(gType, asset->assetTypeName(path).data());
 
-            QImage img = settings->icon(uuid);
+            QImage img = settings->image(uuid);
             if(!img.isNull()) {
                 item->setProperty(gIcon, img);
             }
@@ -166,7 +188,6 @@ bool ContentTree::reimportResource(const QModelIndex &index) {
     QObject *item = getObject(index);
     if(item) {
         Editor::assets()->pushToImport(item->objectName().toStdString());
-        Editor::assets()->reimport();
     }
     return true;
 }
@@ -202,7 +223,7 @@ QModelIndex ContentTree::setNewAsset(const TString &name, const TString &source,
         m_newAsset->setParent(parent);
         m_newAsset->setObjectName(name.data());
         m_newAsset->setProperty(gImport, source.data());
-        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentIcon(Url(source).suffix()));
+        m_newAsset->setProperty(gIcon, (directory) ? m_folder : AssetConverterSettings::documentImage(Url(source).suffix()));
     } else {
         m_newAsset->setParent(nullptr);
     }
@@ -243,7 +264,7 @@ void ContentTree::update() {
             if(!File::isDir(path)) {
                 item->setProperty(gType, mgr->assetTypeName(path).data());
                 AssetConverterSettings *settings = mgr->fetchSettings(path);
-                item->setProperty(gIcon, settings->icon(settings->destination()));
+                item->setProperty(gIcon, settings->image(settings->destination()));
             } else {
                 item->setProperty(gIcon, m_folder);
             }

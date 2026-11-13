@@ -22,7 +22,8 @@ Project {
         "../../../thirdparty/next/inc/core",
         "../../../thirdparty/pugixml/src",
         "../../../modules/uikit/includes",
-        "../../../modules/uikit/includes/components"
+        "../../../modules/uikit/includes/components",
+        "../../../modules/uikit/includes/resources"
     ]
 
     DynamicLibrary {

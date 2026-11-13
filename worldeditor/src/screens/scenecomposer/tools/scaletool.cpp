@@ -130,7 +130,7 @@ QLineEdit *ScaleTool::snapWidget() {
     return m_snapEditor;
 }
 
-TString ScaleTool::icon() const {
+TString ScaleTool::image() const {
     return ":/Images/editor/Scale.png";
 }
 

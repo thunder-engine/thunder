@@ -81,8 +81,6 @@ class MaterialMt : public Material {
 public:
     void loadUserData(const VariantMap &data) override;
 
-    VariantMap saveUserData() const override;
-
     Shader *shader(uint16_t type);
 
     Textures &textures() { return m_textures; }

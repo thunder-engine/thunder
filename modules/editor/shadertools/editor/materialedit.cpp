@@ -17,8 +17,9 @@
 
 #include <resources/mesh.h>
 
-#include <viewport/cameracontroller.h>
+#include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
+#include <editor/legacyeditorgadget.h>
 
 #include <global.h>
 
@@ -76,7 +77,7 @@ MaterialEdit::MaterialEdit() :
         m_material(nullptr),
         m_graph(new ShaderGraph),
         m_builder(new ShaderBuilder),
-        m_controller(new CameraController),
+        m_controller(new LegacyCameraController),
         m_proxy(new MaterialProxy) {
 
     ui->setupUi(this);
@@ -189,13 +190,16 @@ bool MaterialEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void MaterialEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
-    ui->schemeWidget->onObjectsChanged(objects, property, value);
+void MaterialEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
+    }
 }
 
 void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
-        AssetEditor::loadAsset(settings);
+        LegacyAssetEditor::loadAsset(settings);
 
         m_graph->load(m_settings.front()->source());
 
@@ -221,13 +225,16 @@ void MaterialEdit::onGraphUpdated() {
         VariantMap data = m_graph->data(true);
         m_codeDlg.setData(data);
 
-        ShaderBuilder::compileData(data);
-        ResourceSystem::loadResourceData(m_material, data);
+        if(ShaderBuilder::compileData(ShaderBuilder::currentRhi(), data)) {
+            if(ShaderBuilder::packShaderData(data, ShaderBuilder::currentRhi())) {
+                ResourceSystem::loadResourceData(m_material, data);
 
-        MeshRender *mesh = m_mesh->getComponent<MeshRender>();
-        if(mesh) {
-            MaterialInstance *instance = mesh->materialInstance(0);
-            m_material->initInstance(instance);
+                MeshRender *mesh = m_mesh->getComponent<MeshRender>();
+                if(mesh) {
+                    MaterialInstance *instance = mesh->materialInstance(0);
+                    m_material->initInstance(instance);
+                }
+            }
         }
     }
 

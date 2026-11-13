@@ -25,6 +25,7 @@
 #include <vulkan/vulkan.h>
 
 class CommandBufferVk;
+class PipelineContext;
 
 class ComputeInstanceVk : public ComputeInstance {
 public:

@@ -10,7 +10,7 @@ class PostProcessVolume;
 
 #if defined(SHARED_DEFINE)
 class QWindow;
-class Viewport;
+class LegacyViewport;
 #endif
 
 class ENGINE_EXPORT RenderSystem : public System {
@@ -28,7 +28,7 @@ public:
     void setPipelineContext(PipelineContext *context);
 
 #if defined(SHARED_DEFINE)
-    virtual QWindow *createRhiWindow(Viewport *viewport);
+    virtual QWindow *createRhiWindow(LegacyViewport *viewport);
 #endif
 
     static void *windowHandle();

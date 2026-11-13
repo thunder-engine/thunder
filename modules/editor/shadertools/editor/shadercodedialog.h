@@ -5,7 +5,7 @@
 
 #include <variant.h>
 
-class AssetEditor;
+class LegacyAssetEditor;
 class QPlainTextEdit;
 
 namespace Ui {
@@ -27,7 +27,7 @@ private slots:
 private:
     Ui::ShaderCodeDialog *ui;
 
-    AssetEditor *m_codeEditor = nullptr;
+    LegacyAssetEditor *m_codeEditor = nullptr;
 
     QPlainTextEdit *m_plainText = nullptr;
 

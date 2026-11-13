@@ -18,8 +18,6 @@
 #ifndef CAMERACONTROLLER_H
 #define CAMERACONTROLLER_H
 
-#include <QObject>
-
 #include <amath.h>
 #include <object.h>
 
@@ -27,11 +25,8 @@
 
 class Actor;
 class Camera;
-class Viewport;
 
-class EDITOR_EXPORT CameraController : public QObject {
-    Q_OBJECT
-
+class EDITOR_EXPORT CameraControllerCore {
 public:
     enum class Axis {
         Y,
@@ -51,10 +46,8 @@ public:
         bool ortho = false;
     };
 
-public:
-    CameraController();
-
-    virtual void init(Viewport *view) {};
+    CameraControllerCore();
+    virtual ~CameraControllerCore() = default;
 
     virtual void drawHandles();
 
@@ -100,7 +93,7 @@ public:
 
     void resetCamera();
 
-public slots:
+public:
     virtual void onOrthographic(bool flag);
 
 protected:
@@ -142,6 +135,13 @@ protected:
     bool m_cameraFree;
     bool m_cameraInMove;
 
+};
+
+class EDITOR_EXPORT CameraController : public Object, public CameraControllerCore {
+    A_OBJECT(CameraController, Object, Editor)
+
+public:
+    CameraController();
 };
 
 #endif // CAMERACONTROLLER_H

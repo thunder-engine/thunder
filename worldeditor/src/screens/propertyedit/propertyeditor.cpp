@@ -40,10 +40,10 @@
 #include "custom/vector4/vector4edit.h"
 
 #include "screens/contentbrowser/contentbrowser.h"
-#include "editor/asseteditor.h"
+#include "editor/legacyasseteditor.h"
 #include "editor/pluginmanager.h"
 
-PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
+LegacyPropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString &editor) {
     switch(userType) {
         case MetaType::BOOLEAN: return new BooleanEdit(parent);
         case MetaType::INTEGER: return new IntegerEdit(parent);
@@ -58,7 +58,7 @@ PropertyEdit *createStandardEditor(int userType, QWidget *parent, const TString 
     return nullptr;
 }
 
-PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &editor) {
+LegacyPropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &editor) {
     if(userType == MetaType::VARIANTLIST) return new ArrayEdit(parent);
 
     if(editor == "Enum") return new NextEnumEdit(parent);
@@ -70,9 +70,9 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
     else if(editor == "Color") return new ColorEdit(parent);
     else if(editor == "Asset" || editor == "Component") return new ObjectSelect(parent);
 
-    for(auto &it : Editor::plugins()->extensions("property")) {
+    for(auto &it : Editor::plugins()->extensions("legacyproperty")) {
         if(it == editor) {
-            PropertyEdit *edit = reinterpret_cast<PropertyEdit *>(Editor::plugins()->getPluginObject(it));
+            LegacyPropertyEdit *edit = reinterpret_cast<LegacyPropertyEdit *>(Editor::plugins()->getPluginObject(it));
             if(edit) {
                 edit->setParent(parent);
                 return edit;
@@ -84,13 +84,11 @@ PropertyEdit *createCustomEditor(int userType, QWidget *parent, const TString &e
 }
 
 PropertyEditor::PropertyEditor(QWidget *parent) :
-        EditorGadget(parent),
+        LegacyEditorGadget(parent),
         ui(new Ui::PropertyEditor),
         m_filter(new PropertyFilter(this)),
-        m_editor(nullptr),
         m_topWidget(nullptr),
-        m_nextModel(new NextModel(this)),
-        m_item(nullptr) {
+        m_nextModel(new NextModel(this)) {
 
     ui->setupUi(this);
 
@@ -98,10 +96,10 @@ PropertyEditor::PropertyEditor(QWidget *parent) :
     ui->treeView->setModel(m_filter);
     ui->treeView->setItemDelegate(new PropertyDelegate(this));
 
-    PropertyEdit::registerEditorFactory(createCustomEditor);
-    PropertyEdit::registerEditorFactory(createStandardEditor);
+    LegacyPropertyEdit::registerEditorFactory(createCustomEditor);
+    LegacyPropertyEdit::registerEditorFactory(createStandardEditor);
 
-    connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::objectsChanged);
+    connect(m_nextModel, &NextModel::propertyChanged, this, &PropertyEditor::onPropertyChanged);
 
     m_filter->setSourceModel(m_nextModel);
 }
@@ -124,15 +122,17 @@ void PropertyEditor::updateAndExpand() {
 }
 
 void PropertyEditor::onSelectionChanged() {
-    Object::ObjectList objects = m_editor->selected();
-    if(!objects.empty()) {
+    m_selectedObjects = m_currentEditor->selected();
+    const Object::ObjectList selectedObjects = m_selectedObjects;
+    bool maskPropertyType = m_currentEditor->maskPropertyType();
+    if(!m_selectedObjects.empty()) {
         m_nextModel->clear();
-        m_item = objects.front();
-        setTopWidget(m_editor->propertiesWidget());
-        m_nextModel->addObjects(objects);
+        Object *item = m_selectedObjects.front();
+        setTopWidget(m_currentEditor->propertiesWidget());
+        m_nextModel->addObjects(m_selectedObjects, maskPropertyType);
 
-        Actor *firstActor = dynamic_cast<Actor *>(objects.front());
-        if(firstActor && objects.size() > 1) {
+        Actor *firstActor = dynamic_cast<Actor *>(m_selectedObjects.front());
+        if(firstActor && m_selectedObjects.size() > 1) {
             for(Object *child : firstActor->getChildren()) {
                 if(dynamic_cast<Actor *>(child) != nullptr) {
                     continue;
@@ -142,9 +142,9 @@ void PropertyEditor::onSelectionChanged() {
                 Object::ObjectList components = {child};
                 bool presentOnAllActors = true;
 
-                auto object = objects.begin();
+                auto object = selectedObjects.begin();
                 ++object;
-                for(; object != objects.end(); ++object) {
+                for(; object != selectedObjects.end(); ++object) {
                     Actor *actor = dynamic_cast<Actor *>(*object);
                     Component *component = actor ? actor->component(type) : nullptr;
                     if(component == nullptr) {
@@ -155,13 +155,16 @@ void PropertyEditor::onSelectionChanged() {
                 }
 
                 if(presentOnAllActors) {
-                    m_nextModel->addObjects(components);
+                    m_nextModel->addObjects(components, maskPropertyType);
+
+                    m_selectedObjects.insert(m_selectedObjects.end(), components.begin(), components.end());
                 }
             }
         } else {
-            for(auto it : m_item->getChildren()) {
+            for(auto it : item->getChildren()) {
                 if(dynamic_cast<Actor *>(it) == nullptr) {
-                    m_nextModel->addObject(it);
+                    m_nextModel->addObject(it, maskPropertyType);
+                    m_selectedObjects.push_back(it);
                 }
             }
         }
@@ -176,19 +179,17 @@ void PropertyEditor::onSelectionChanged() {
 void PropertyEditor::onObjectSelected(Object *object) {
     m_nextModel->clear();
     if(object) {
-        m_item = object;
-
         ContentBrowser *browser = dynamic_cast<ContentBrowser *>(sender());
         if(browser) {
             QWidget *widget = browser->commitRevert();
             connect(widget, SIGNAL(reverted()), this, SLOT(onUpdated()), Qt::UniqueConnection);
             setTopWidget(widget);
-        } else if(m_editor) {
-            setTopWidget(m_editor->propertiesWidget());
+        } else if(m_currentEditor) {
+            setTopWidget(m_currentEditor->propertiesWidget());
         }
 
-        m_nextModel->addObject(m_item);
-        for(auto it : m_item->getChildren()) {
+        m_nextModel->addObject(object);
+        for(auto it : object->getChildren()) {
             if(dynamic_cast<Actor *>(it) == nullptr) {
                 m_nextModel->addObject(it);
             }
@@ -236,24 +237,24 @@ void PropertyEditor::onUpdated() {
     }
 }
 
-void PropertyEditor::onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) {
-
+void PropertyEditor::onPropertyChanged(const TString &property, const Variant &value) {
+    emit objectsChanged(property, value);
 }
 
-AssetEditor *PropertyEditor::currentEditor() const {
-    return m_editor;
-}
-
-void PropertyEditor::setCurrentEditor(AssetEditor *editor) {
-    if(m_editor != editor) {
-        if(m_editor) {
-            disconnect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+void PropertyEditor::setCurrentEditor(LegacyAssetEditor *editor) {
+    if(m_currentEditor != editor) {
+        if(m_currentEditor) {
+            disconnect(this, &PropertyEditor::objectsChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
         }
 
-        m_editor = editor;
+        LegacyEditorGadget::setCurrentEditor(editor);
 
-        connect(m_nextModel, &NextModel::propertyChanged, m_editor, &AssetEditor::onObjectsChanged);
+        connect(this, &PropertyEditor::objectsChanged, m_currentEditor, &LegacyAssetEditor::onObjectsChanged);
     }
+}
+
+Object::ObjectList PropertyEditor::selected() {
+    return m_selectedObjects;
 }
 
 void PropertyEditor::updatePersistent(const QModelIndex &index) {
@@ -298,12 +299,12 @@ void PropertyEditor::on_lineEdit_textChanged(const QString &arg1) {
 }
 
 void PropertyEditor::on_treeView_customContextMenuRequested(const QPoint &pos) {
-    if(m_editor) {
+    if(m_currentEditor) {
         QModelIndex index = ui->treeView->indexAt(pos);
 
         Property *p = static_cast<Property *>(m_filter->mapToSource(index).internalPointer());
-        if(p) {
-            QMenu *menu = m_editor->propertyContextMenu(m_item, p->name());
+        if(p && !m_selectedObjects.empty()) {
+            QMenu *menu = m_currentEditor->propertyContextMenu(m_selectedObjects.front(), p->name());
             if(menu) {
                 menu->exec(static_cast<QWidget*>(QObject::sender())->mapToGlobal(pos));
             }

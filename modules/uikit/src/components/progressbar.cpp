@@ -15,12 +15,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/progressbar.h"
+#include "progressbar.h"
 
-#include "components/recttransform.h"
-#include "components/canvas.h"
-
-#include <components/actor.h>
+#include "canvas.h"
 
 #include <resources/material.h>
 
@@ -61,30 +58,38 @@ ProgressBar::ProgressBar() :
     Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
     if(spriteMaterial) {
         m_imageProgress = spriteMaterial->createInstance();
-        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+        m_imageProgress->setVector4(gColor, &m_progressColor);
+        spriteMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 
-    Material *frameMaterial = Engine::loadResource<Material>(gDefaultFrame);
-    if(frameMaterial) {
-        m_frameProgress = frameMaterial->createInstance();
+    Material *defaultFrameMaterial = Engine::loadResource<Material>(gDefaultFrame);
+    if(defaultFrameMaterial) {
+        m_frameProgress = defaultFrameMaterial->createInstance();
 
         Vector4 width(0.0f);
         m_frameProgress->setVector4(gBorderWidth, &width);
         m_frameProgress->setVector4(gBorderRadius, &m_borderRadius);
         m_frameProgress->setVector4(gBorderColor, &m_borderColor);
-        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
+        m_frameProgress->setVector4(gBackgroundColor, &m_progressColor);
+        defaultFrameMaterial->subscribe(&ProgressBar::materialUpdated, this);
     }
 }
 
 ProgressBar::~ProgressBar() {
-    delete m_progressImage;
-    delete m_progressMesh;
-
+    if(m_imageProgress) {
+        m_imageProgress->material()->unsubscribe(this);
+    }
     delete m_imageProgress;
     m_imageProgress = nullptr;
 
+    if(m_frameProgress) {
+        m_frameProgress->material()->unsubscribe(this);
+    }
     delete m_frameProgress;
     m_frameProgress = nullptr;
+
+    delete m_progressImage;
+    delete m_progressMesh;
 }
 /*!
     Returns the orientation of the progress bar.
@@ -163,11 +168,11 @@ void ProgressBar::setProgressColor(const Vector4 color) {
     m_progressColor = color;
 
     if(m_frameProgress) {
-        m_frameProgress->setVector4(gBackgroundColor, &m_backgroundColor);
+        m_frameProgress->setVector4(gBackgroundColor, &m_progressColor);
     }
 
     if(m_imageProgress) {
-        m_imageProgress->setVector4(gColor, &m_backgroundColor);
+        m_imageProgress->setVector4(gColor, &m_progressColor);
     }
 
     repaint();
@@ -196,14 +201,14 @@ void ProgressBar::setProgressImage(Sprite *image) {
 void ProgressBar::draw() {
     Frame::draw();
 
-    RectTransform *rect = rectTransform();
     if(m_dirtyProgress) {
-        if(m_progressImage) {
+        if(m_progressImage && m_imageProgress) {
+            delete m_progressMesh;
             m_progressMesh = Engine::objectCreate<Mesh>();
             m_progressMesh->makeDynamic();
 
-            Vector2 size(rect->size());
-            m_backgroundImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
+            Vector2 size(ProgressBar::size());
+            m_progressImage->composeMesh(m_progressMesh, Sprite::Sliced, size);
 
             m_imageProgress->setTexture(gOverride, m_progressImage->texture());
         }
@@ -212,7 +217,7 @@ void ProgressBar::draw() {
 
     Canvas *canvas = Frame::canvas();
 
-    Vector4 clip = rect->clipRegion();
+    Vector4 clip = clipRegion();
     if(m_orientation == Horizontal) {
         clip.z = clip.z / (m_to - m_from) * m_value;
     } else {
@@ -220,23 +225,23 @@ void ProgressBar::draw() {
     }
 
     canvas->setClipRegion(clip);
-    if(m_progressImage) {
-        Matrix4 mat(rect->worldTransform());
+    if(m_progressImage && m_imageProgress && m_progressMesh) {
+        Matrix4 mat(worldTransform());
 
         const Vector3Vector &verts(m_progressMesh->vertices());
-        Vector2 scl(rect->worldScale());
+        Vector2 scl(worldScale());
         mat[12] -= verts[0].x * scl.x;
         mat[13] -= verts[0].y * scl.y;
 
-        uint32_t hash = rect->hash();
+        uint32_t hash = ProgressBar::hash();
         Mathf::hashCombine(hash, mat[12]);
         Mathf::hashCombine(hash, mat[13]);
 
         m_imageProgress->setTransform(mat, 0, hash);
 
         canvas->drawMesh(m_progressMesh, m_imageProgress);
-    } else {
-        canvas->drawRect(m_frameProgress, rect);
+    } else if(m_frameProgress) {
+        canvas->drawRect(m_frameProgress, this);
     }
     canvas->disableClip();
 }
@@ -249,5 +254,26 @@ void ProgressBar::composeComponent() {
 
     setValue(0.5f);
 
-    rectTransform()->setSize(Vector2(100.0f, 20.0f));
+    setSize(Vector2(100.0f, 20.0f));
+}
+
+void ProgressBar::materialUpdated(int state, void *ptr) {
+    ProgressBar *progressBar = static_cast<ProgressBar *>(ptr);
+    if(!progressBar) {
+        return;
+    }
+
+    if(state == Material::ToBeDeleted) {
+        if(progressBar->m_imageProgress && progressBar->m_imageProgress->material()->state() == state) {
+            delete progressBar->m_imageProgress;
+            progressBar->m_imageProgress = nullptr;
+        }
+        if(progressBar->m_frameProgress && progressBar->m_frameProgress->material()->state() == state) {
+            delete progressBar->m_frameProgress;
+            progressBar->m_frameProgress = nullptr;
+        }
+    }
+
+    progressBar->m_dirtyProgress = true;
+    progressBar->repaint();
 }

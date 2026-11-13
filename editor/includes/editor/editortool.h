@@ -33,7 +33,8 @@ public:
     virtual void endControl();
     virtual void cancelControl();
 
-    virtual TString icon() const = 0;
+    virtual TString image() const = 0;
+    virtual TString icon() const;
     virtual TString name() const = 0;
     virtual TString toolTip() const;
     virtual TString shortcut() const;

@@ -21,15 +21,18 @@
 #include <QFile>
 #include <QSettings>
 #include <QApplication>
-#include <QMessageBox>
+#include <QCloseEvent>
+#include <QDirIterator>
 
 #include <json.h>
 #include <timer.h>
 #include <log.h>
 #include <url.h>
+#include <file.h>
 #include <filedialog.h>
+#include <message.h>
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 // Misc
 #include "managers/assetimporter/importqueue.h"
@@ -40,7 +43,7 @@
 #include <editor/undostack.h>
 #include <editor/pluginmanager.h>
 #include <editor/editorsettings.h>
-#include <editor/editorgadget.h>
+#include <editor/legacyeditorgadget.h>
 #include <editor/nativecodebuilder.h>
 
 // System
@@ -135,13 +138,13 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-AssetEditor *MainWindow::openEditor(const TString &path) {
-    AssetEditor *editor = Editor::openFile(path);
+LegacyAssetEditor *MainWindow::openEditor(const TString &path) {
+    LegacyAssetEditor *editor = Editor::legacyOpenFile(path);
     if(editor) {
         if(ui->toolWidget->areaFor(editor) == nullptr) {
             ui->toolWidget->removeToolWindow(editor);
             editor->setParent(this);
-            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
+            ui->toolWidget->addToolWindow(editor, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::legacyCurrentEditor()));
         } else {
             ui->toolWidget->activateToolWindow(editor);
         }
@@ -164,7 +167,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         // Save status for open editors
         VariantList editors;
 
-        for(auto &it : Editor::documents()) {
+        for(auto &it : Editor::legacyDocuments()) {
             VariantMap editorState = it->saveState();
 
             VariantList documents;
@@ -195,7 +198,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onNewAsset();
@@ -203,7 +206,7 @@ void MainWindow::on_actionNew_triggered() {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor && editor->checkSave()) {
         Editor::closeEditor(editor);
         editor->onOpenAsset();
@@ -212,7 +215,7 @@ void MainWindow::on_actionOpen_triggered() {
 
 void MainWindow::on_actionSave_triggered() {
     if(!Engine::isGameMode()) {
-        Editor::currentEditor()->onSave();
+        Editor::legacyCurrentEditor()->onSave();
     } else {
         QApplication::beep();
     }
@@ -220,7 +223,7 @@ void MainWindow::on_actionSave_triggered() {
 
 void MainWindow::on_actionSave_As_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor && editor->allowSaveAs()) {
             editor->onSaveAs();
         }
@@ -229,7 +232,7 @@ void MainWindow::on_actionSave_As_triggered() {
 
 void MainWindow::on_actionUndo_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor) {
             editor->undoRedo()->undo();
         }
@@ -238,7 +241,7 @@ void MainWindow::on_actionUndo_triggered() {
 
 void MainWindow::on_actionRedo_triggered() {
     if(!Engine::isGameMode()) {
-        AssetEditor *editor = Editor::currentEditor();
+        LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
         if(editor) {
             editor->undoRedo()->redo();
         }
@@ -261,13 +264,13 @@ void MainWindow::setGameMode(bool mode) {
     if(m_preview) {
         if(mode) {
             if(m_preview->parent() == nullptr) {
-                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::currentEditor()));
+                ui->toolWidget->moveToolWindow(m_preview, QToolWindowManager::ReferenceAddTo, ui->toolWidget->areaFor(Editor::legacyCurrentEditor()));
             }
             Editor::backup();
             ui->toolWidget->activateToolWindow(m_preview);
             m_preview->onActivate();
         } else {
-            ui->toolWidget->activateToolWindow(Editor::currentEditor());
+            ui->toolWidget->activateToolWindow(Editor::legacyCurrentEditor());
             Editor::restore();
 
             m_preview->setPaused(false);
@@ -288,15 +291,9 @@ void MainWindow::setGameMode(bool mode) {
 void MainWindow::onOpenProject(const TString &path, Engine &engine) {
     ProjectModel::addProject(path);
     Editor::project()->init(path);
-
-    Editor::plugins()->init(&engine);
-
-    m_queue = new ImportQueue;
-    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
-
+    // Strict after project initialization
     Editor::assets()->init();
 
-    Editor::project()->loadPlatforms();
     // Read settings early for converters
     Editor::settings()->loadSettings();
 
@@ -304,7 +301,10 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
         Editor::project()->currentBuilder(Editor::project()->currentPlatformName())->makeOutdated();
     }
 
+    m_queue = new ImportQueue;
+    connect(m_queue, &ImportQueue::importFinished, this, &MainWindow::onImportFinished, Qt::QueuedConnection);
     Editor::assets()->rescan();
+    m_queue->startImport();
 
     for(const TString &it : Editor::project()->platforms()) {
         QString name = it.data();
@@ -320,7 +320,7 @@ void MainWindow::onOpenProject(const TString &path, Engine &engine) {
 void MainWindow::onImportFinished() {
     Editor::plugins()->initSystems();
 
-    Editor::init();
+    Editor::initDocumentSystem();
 
     SceneComposer *composer = new SceneComposer(this);
     Editor::addEditor(composer);
@@ -337,7 +337,7 @@ void MainWindow::onImportFinished() {
     Editor::addGadget(property);
     Editor::addGadget(new HierarchyBrowser(this));
 
-    for(auto it : Editor::gadgets()) {
+    for(auto it : Editor::legacyGadgets()) {
         ui->toolWidget->addToolWindow(it, QToolWindowManager::NoArea);
     }
 
@@ -379,10 +379,10 @@ void MainWindow::onImportFinished() {
             for(auto &it : editors) {
                 VariantList params = it.toList();
                 if(params.size() == 2) {
-                    AssetEditor *editor = nullptr;
+                    LegacyAssetEditor *editor = nullptr;
                     // Documents
                     for(auto &document : params.front().toList()) {
-                        AssetEditor *e = openEditor(document.toList().front().toString());
+                        LegacyAssetEditor *e = openEditor(document.toList().front().toString());
                         if(e) {
                             editor = e;
                         }
@@ -404,7 +404,7 @@ void MainWindow::onImportFinished() {
         if(mapSettings) {
             openEditor(firstMap);
         } else {
-            static_cast<AssetEditor *>(composer)->onNewAsset();
+            static_cast<LegacyAssetEditor *>(composer)->onNewAsset();
         }
     }
 
@@ -463,8 +463,8 @@ void MainWindow::on_actionSave_Workspace_triggered() {
     if(dialog.exec()) {
         TString path = dialog.getSelectedFile();
         if(!path.isEmpty()) {
-            QFile file(path.data());
-            if(file.open(QFile::WriteOnly)) {
+            File file(path);
+            if(file.open(File::Write)) {
                 QVariantMap layout;
                 layout[gWindows] = ui->toolWidget->saveState();
 
@@ -472,7 +472,7 @@ void MainWindow::on_actionSave_Workspace_triggered() {
                 QDataStream ds(&data, QFile::WriteOnly);
                 ds << layout;
 
-                file.write(data);
+                file.write(data.data());
                 file.close();
             }
         }
@@ -528,19 +528,19 @@ void MainWindow::onBuildProject() {
 }
 
 void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
-    AssetEditor *editor = dynamic_cast<AssetEditor *>(toolWindow);
-    if(editor == Editor::currentEditor()) {
+    LegacyAssetEditor *editor = dynamic_cast<LegacyAssetEditor *>(toolWindow);
+    if(editor == Editor::legacyCurrentEditor()) {
         return;
     }
 
     if(editor) {
-        AssetEditor *currentEditor = Editor::currentEditor();
+        LegacyAssetEditor *currentEditor = Editor::legacyCurrentEditor();
         if(currentEditor) {
-            disconnect(ui->actionCut, &QAction::triggered, currentEditor, &AssetEditor::onCutAction);
-            disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &AssetEditor::onCopyAction);
-            disconnect(ui->actionPaste, &QAction::triggered, currentEditor, &AssetEditor::onPasteAction);
+            disconnect(ui->actionCut, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCutAction);
+            disconnect(ui->actionCopy, &QAction::triggered, currentEditor, &LegacyAssetEditor::onCopyAction);
+            disconnect(ui->actionPaste, &QAction::triggered, currentEditor, &LegacyAssetEditor::onPasteAction);
 
-            disconnect(currentEditor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+            disconnect(currentEditor, &LegacyAssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
 
         Editor::setCurrentEditor(editor);
@@ -551,11 +551,11 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
             ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
             ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
 
-            connect(ui->actionCut, &QAction::triggered, editor, &AssetEditor::onCutAction);
-            connect(ui->actionCopy, &QAction::triggered, editor, &AssetEditor::onCopyAction);
-            connect(ui->actionPaste, &QAction::triggered, editor, &AssetEditor::onPasteAction);
+            connect(ui->actionCut, &QAction::triggered, editor, &LegacyAssetEditor::onCutAction);
+            connect(ui->actionCopy, &QAction::triggered, editor, &LegacyAssetEditor::onCopyAction);
+            connect(ui->actionPaste, &QAction::triggered, editor, &LegacyAssetEditor::onPasteAction);
 
-            connect(editor, &AssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
+            connect(editor, &LegacyAssetEditor::copyPasteChanged, this, &MainWindow::onCopyPasteChanged);
         }
     } else {
         Preview *preview = dynamic_cast<Preview *>(toolWindow);
@@ -566,7 +566,7 @@ void MainWindow::onCurrentToolWindowChanged(QWidget *toolWindow) {
 }
 
 void MainWindow::onCopyPasteChanged() {
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     ui->actionCut->setEnabled(editor->isCopyActionAvailable());
     ui->actionCopy->setEnabled(editor->isCopyActionAvailable());
     ui->actionPaste->setEnabled(editor->isPasteActionAvailable());
@@ -575,7 +575,7 @@ void MainWindow::onCopyPasteChanged() {
 void MainWindow::on_menuFile_aboutToShow() {
     TString name;
     TString type;
-    AssetEditor *editor = Editor::currentEditor();
+    LegacyAssetEditor *editor = Editor::legacyCurrentEditor();
     if(editor) {
         type = TString(" %1").arg(editor->assetType());
         if(!editor->openedDocuments().empty()) {
@@ -595,7 +595,7 @@ void MainWindow::on_menuFile_aboutToShow() {
 }
 
 void MainWindow::on_menuEdit_aboutToShow() {
-    UndoStack *stack = Editor::currentEditor()->undoRedo();
+    UndoStack *stack = Editor::legacyCurrentEditor()->undoRedo();
     ui->actionUndo->setText(tr("Undo %1").arg(stack->undoText().data()));
 
     ui->actionRedo->setText(tr("Redo %1").arg(stack->redoText().data()));
@@ -652,15 +652,15 @@ void MainWindow::build(QString platform) {
 }
 
 void MainWindow::onBuildFinished(int exitCode, QProcess::ExitStatus) {
-    QMessageBox msg;
+    Message msg;
     if(exitCode == 0) {
-        msg.setText("Build Succeeded.");
-        msg.setIcon(QMessageBox::Information);
-        aInfo() << qPrintable(msg.text());
+        msg.setText(tr("Build Succeeded.").toStdString());
+        msg.setIcon(Message::Information);
+        aInfo() << msg.text();
     } else {
-        msg.setText("Build Failed. Please check log output for more details.");
-        msg.setIcon(QMessageBox::Critical);
-        aError() << qPrintable(msg.text());
+        msg.setText(tr("Build Failed. Please check log output for more details.").toStdString());
+        msg.setIcon(Message::Critical);
+        aError() << msg.text();
     }
     msg.exec();
 }

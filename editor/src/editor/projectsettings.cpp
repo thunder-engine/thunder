@@ -17,17 +17,12 @@
 */
 #include "projectsettings.h"
 
-#include <QDir>
-
-#include <QCoreApplication>
-#include <QStandardPaths>
-#include <QSettings>
-
 #include <log.h>
 #include <json.h>
 #include <file.h>
 #include <url.h>
-#include <os/uuid.h>
+#include <uuid.h>
+#include <standardpaths.h>
 
 #include "config.h"
 
@@ -37,7 +32,7 @@
 #include "editor/pluginmanager.h"
 
 namespace {
-    const char *gProjects("Projects");
+    const char *gProjects("projects");
     const char *gThumbnails("thumbnails");
     const char *gGenerated("generated");
     const char *gCache("cache");
@@ -52,7 +47,7 @@ namespace {
 */
 
 ProjectSettings::ProjectSettings() {
-    QDir dir(QCoreApplication::applicationDirPath());
+    Url dir(Editor::applicationDirPath());
     dir.cdUp();
     dir.cdUp();
     dir.cdUp();
@@ -62,13 +57,10 @@ ProjectSettings::ProjectSettings() {
     dir.cdUp();
 #endif
 
-    m_sdkPath = dir.absolutePath().toStdString();
+    m_sdkPath = dir.absoluteDir();
     m_resourcePath = m_sdkPath + "/resources";
     m_templatePath = m_resourcePath + "/templates";
-
-    QSettings settings(COMPANY_NAME, EDITOR_NAME);
-    QString path = settings.value(gProjects, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
-    m_myProjectsPath = path.toStdString();
+    m_myProjectsPath = Engine::value(gProjects, StandardPaths::writableLocation(StandardPaths::DocumentsLocation).data()).toString();
 }
 
 /*!
@@ -110,6 +102,7 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     Loads platforms supported by the registered code builders.
 */
 void ProjectSettings::loadPlatforms() {
+    m_supportedPlatforms.clear();
     for(auto &it : Editor::assets()->builders()) {
         for(auto &platform : it->platforms()) {
             m_supportedPlatforms[platform] = it;
@@ -189,7 +182,7 @@ void ProjectSettings::saveSettings() {
         TString name = property.name();
         Variant value = property.read(this);
 
-        if(value.type() == QMetaType::QVariantList) {
+        if(value.type() == MetaType::VARIANTLIST) {
             // Just skip the list type for now
         } else {
             TString str = value.toString();

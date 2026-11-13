@@ -18,13 +18,13 @@
 #ifndef AXISESEDIT_H
 #define AXISESEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class AxisesEdit;
 }
 
-class AxisesEdit : public PropertyEdit {
+class AxisesEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

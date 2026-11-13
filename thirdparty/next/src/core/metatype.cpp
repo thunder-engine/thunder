@@ -303,6 +303,7 @@ static MetaType::TypeMap s_Types = {
     {MetaType::MATRIX3,     DECLARE_BUILT_TYPE(Matrix3)},
     {MetaType::MATRIX4,     DECLARE_BUILT_TYPE(Matrix4)},
     {MetaType::RAY,         DECLARE_BUILT_TYPE(Ray)},
+    {MetaType::MODELINDEX,  DECLARE_BUILT_TYPE(ModelIndex)},
     {MetaType::OBJECT,      DECLARE_BUILT_TYPE(Object *)}
 };
 
@@ -371,6 +372,8 @@ static NameMap s_Names = {
     {"Quaternion", MetaType::QUATERNION},
     {"Matrix3",    MetaType::MATRIX3},
     {"Matrix4",    MetaType::MATRIX4},
+    {"Ray",        MetaType::RAY},
+    {"ModelIndex", MetaType::MODELINDEX},
     {"Object *",   MetaType::OBJECT},
 };
 /*!

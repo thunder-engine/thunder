@@ -1,11 +1,10 @@
 #include "effectmodule.h"
 
-#include <components/image.h>
-#include <components/frame.h>
-#include <components/label.h>
-#include <components/recttransform.h>
-#include <components/checkbox.h>
-#include <components/layout.h>
+#include <image.h>
+#include <frame.h>
+#include <label.h>
+#include <checkbox.h>
+#include <layout.h>
 
 #include <amath.h>
 
@@ -34,27 +33,24 @@ EffectModule::EffectModule() :
         m_groupWidget(nullptr) {
 }
 
-Widget *EffectModule::widget(Object *parent) {
+Widget *EffectModule::widget(Widget *parent) {
     if(m_groupWidget == nullptr) {
         TString moduleName = name();
 
-        Actor *group = Engine::composeActor<Widget>(moduleName, parent);
-        m_groupWidget = group->getComponent<Widget>();
+        m_groupWidget = Widget::createWidget<Widget>(moduleName, parent);
 
-        RectTransform *rect = m_groupWidget->rectTransform();
+        Widget *rect = m_groupWidget;
         Layout *layout = new Layout;
         layout->setOrientation(Widget::Horizontal);
         rect->setLayout(layout);
 
-        Actor *function = Engine::composeActor<CheckBox>(moduleName, group);
-        m_checkBoxWidget = function->getComponent<CheckBox>();
+        m_checkBoxWidget = Widget::createWidget<CheckBox>(moduleName, m_groupWidget);
         m_checkBoxWidget->setChecked(m_enabled);
 
-        Actor *label = Engine::composeActor<Label>(moduleName, group);
-        Label *labelWidget = label->getComponent<Label>();
+        Label *labelWidget = Widget::createWidget<Label>(moduleName, m_groupWidget);
         labelWidget->setText(moduleName);
 
-        rect->setSize(m_checkBoxWidget->rectTransform()->size());
+        rect->setSize(m_checkBoxWidget->size());
 
         Object::connect(m_checkBoxWidget, _SIGNAL(toggled(bool)), this, _SLOT(setEnabled(bool)));
     }

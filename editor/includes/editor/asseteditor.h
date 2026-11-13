@@ -18,116 +18,89 @@
 #ifndef ASSETEDITOR_H
 #define ASSETEDITOR_H
 
-#include <QWidget>
+#include <widget.h>
 
-#include <editor.h>
+#include <editor/assetconverter.h>
+#include <editor/undostack.h>
 
-class AssetConverterSettings;
-class QMenu;
+class EDITOR_EXPORT AssetEditor : public Widget {
+    A_OBJECT(AssetEditor, Widget, Editor)
 
-class UndoStack;
-
-class EDITOR_EXPORT AssetEditor : public QWidget {
-    Q_OBJECT
+    A_METHODS(
+        A_SIGNAL(AssetEditor::updated),
+        A_SIGNAL(AssetEditor::objectsHierarchyChanged),
+        A_SIGNAL(AssetEditor::selectionChanged),
+        A_SIGNAL(AssetEditor::objectsChanged),
+        A_SIGNAL(AssetEditor::copyPasteChanged),
+        A_SIGNAL(AssetEditor::dropAsset),
+        A_SIGNAL(AssetEditor::editorClosing),
+        A_SLOT(AssetEditor::onActivated),
+        A_SLOT(AssetEditor::onNewAsset),
+        A_SLOT(AssetEditor::onOpenAsset),
+        A_SLOT(AssetEditor::onSave),
+        A_SLOT(AssetEditor::onSaveAs),
+        A_SLOT(AssetEditor::onObjectCreate),
+        A_SLOT(AssetEditor::onObjectsSelected),
+        A_SLOT(AssetEditor::onDropAsset),
+        A_SLOT(AssetEditor::onSelectionDeleted),
+        A_SLOT(AssetEditor::onUpdated),
+        A_SLOT(AssetEditor::onObjectsChanged)
+    )
+    A_NOENUMS()
+    A_NOPROPERTIES()
 
 public:
     AssetEditor();
-    ~AssetEditor();
+    ~AssetEditor() override;
 
-    std::list<AssetConverterSettings *> &openedDocuments();
-
-    virtual void loadAsset(AssetConverterSettings *settings) = 0;
-
-    virtual void loadData(const Variant &data, const TString &suffix);
-
-    virtual bool isSingleInstance() const;
-
-    virtual bool isCopyActionAvailable() const;
-    virtual bool isPasteActionAvailable() const;
-
-    virtual AssetEditor *createInstance();
-
-    virtual StringList suffixes() const = 0;
-
-    virtual TString assetType() const = 0;
-
+    virtual void loadAsset(AssetConverterSettings *settings) {}
+    virtual StringList suffixes() const { return StringList(); }
+    virtual TString assetType() const { return TString(); }
+    virtual bool isSingleInstance() const { return true; }
+    virtual AssetEditor *createInstance() { return nullptr; }
+    virtual bool checkSave();
     virtual StringList componentGroups() const;
-
-    virtual QMenu *hierarchyContextMenu(Object *object);
-
+    virtual Object::ObjectList selected() const;
+    virtual bool maskPropertyType() const;
     virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
-
-    virtual QWidget *propertiesWidget();
-
-    virtual std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const;
-
-    virtual QMenu *propertyContextMenu(Object *object, const TString &property);
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);
 
-    virtual Object::ObjectList selected() const;
-
-    bool checkSave();
-
-    UndoStack *undoRedo() const;
-
-    virtual bool allowSaveAs() const;
-
     virtual void backup();
     virtual void restore();
 
-signals:
-    void updated();
-
-    void objectsHierarchyChanged(Object *root);
-
-    void selectionChanged();
-
-    void objectsChanged(const Object::ObjectList &objects, TString property, const Variant &value);
-
-    void copyPasteChanged();
-
-    void dropAsset(QString path);
-
-public slots:
+public: // slots
     virtual void onActivated();
-
-    virtual void onCutAction();
-    virtual void onCopyAction();
-    virtual void onPasteAction();
-
     virtual void onNewAsset();
     virtual void onOpenAsset();
-
     virtual void onSave();
     virtual void onSaveAs();
-
-    virtual void onUpdated();
-
     virtual void onObjectCreate(const TString &type);
-    virtual void onObjectsSelected(Object::ObjectList objects, bool force);
+    virtual void onObjectsSelected(bool force);
+    virtual void onDropAsset(const TString &path, bool additive);
     virtual void onSelectionDeleted();
+    virtual void onUpdated();
+    virtual void onObjectsChanged(const TString &property, const Variant &value);
 
-    virtual void onDrop(QDropEvent *event);
-    virtual void onDragEnter(QDragEnterEvent *event);
-    virtual void onDragMove(QDragMoveEvent *event);
-    virtual void onDragLeave(QDragLeaveEvent *event);
+    std::list<AssetConverterSettings *> &openedDocuments();
+    UndoStack *undoRedo() const;
 
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value);
+public: // signals
+    void updated();
+    void objectsHierarchyChanged(Object *root);
+    void selectionChanged();
+    void objectsChanged(const TString &property, const Variant &value);
+    void copyPasteChanged();
+    void dropAsset(const TString &path);
+    void editorClosing();
 
 protected:
-    virtual void cleanModified() const;
-
     virtual bool isModified() const;
-
+    virtual void cleanModified() const;
     virtual void saveAsset(const TString &path = TString());
 
-    int closeAssetDialog();
-
-protected:
     std::list<AssetConverterSettings *> m_settings;
-
     UndoStack *m_undoRedo;
 };
 

@@ -18,32 +18,46 @@
 #ifndef EDITORGADGET_H
 #define EDITORGADGET_H
 
-#include <QWidget>
-
 #include <editor.h>
+#include <components/widget.h>
+#include <object.h>
 
 class AssetEditor;
 
-class EDITOR_EXPORT EditorGadget : public QWidget {
-    Q_OBJECT
+class EDITOR_EXPORT EditorGadget : public Widget {
+    A_OBJECT(EditorGadget, Widget, Editor)
+    A_METHODS(
+        A_SIGNAL(EditorGadget::updated),
+        A_SIGNAL(EditorGadget::objectsSelected),
+        A_SIGNAL(EditorGadget::objectsChanged),
+        A_SLOT(EditorGadget::onUpdated),
+        A_SLOT(EditorGadget::onSelectionChanged),
+        A_SLOT(EditorGadget::onObjectsChanged)
+    )
+    A_NOENUMS()
+    A_NOPROPERTIES()
 
 public:
-    explicit EditorGadget(QWidget *parent = nullptr);
+    EditorGadget();
 
-    virtual void setCurrentEditor(AssetEditor *editor) {};
+    AssetEditor *currentEditor() const;
+    virtual void setCurrentEditor(AssetEditor *editor);
 
-signals:
+    virtual Object::ObjectList selected();
+
+    static TString propertyWithObjectTypes(const Object::ObjectList &objects, const TString &property);
+    static Object::ObjectList objectsForProperty(const Object::ObjectList &objects, const TString &property, TString &name);
+
     void updated();
+    void objectsSelected(bool force);
+    void objectsChanged(const TString &property, Variant value);
 
-    void objectsSelected(const Object::ObjectList &objects, bool force);
-    void objectsChanged(const Object::ObjectList &objects, const TString &property, Variant value);
+    virtual void onUpdated();
+    virtual void onSelectionChanged();
+    virtual void onObjectsChanged(const TString &property, Variant value);
 
-public slots:
-    virtual void onUpdated() = 0;
-
-    virtual void onSelectionChanged() = 0;
-    virtual void onObjectsChanged(const Object::ObjectList &objects, const TString &property, Variant value) = 0;
-
+protected:
+    AssetEditor *m_currentEditor;
 };
 
 #endif // EDITORGADGET_H

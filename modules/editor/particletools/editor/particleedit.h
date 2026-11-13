@@ -2,14 +2,14 @@
 #define PARTICLEEDIT_H
 
 
-#include <editor/asseteditor.h>
+#include <editor/legacyasseteditor.h>
 
 class Actor;
 class EffectRender;
 
 class EffectBuilder;
 
-class CameraController;
+class LegacyCameraController;
 
 class UndoCommand;
 
@@ -21,7 +21,7 @@ namespace Ui {
     class ParticleEdit;
 }
 
-class ParticleEdit : public AssetEditor {
+class ParticleEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
@@ -42,7 +42,7 @@ private slots:
 
     void onAddModule(QAction *action);
 
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) override;
+    void onObjectsChanged(const TString &property, const Variant &value) override;
 
 private:
     bool isCopyActionAvailable() const override;
@@ -65,12 +65,13 @@ private:
     void changeEvent(QEvent *event) override;
 
     Object::ObjectList selected() const override;
+    bool maskPropertyType() const override { return true; }
 
     Ui::ParticleEdit *ui;
 
     EffectBuilder *m_builder;
 
-    CameraController *m_controller;
+    LegacyCameraController *m_controller;
 
     Actor *m_light;
 

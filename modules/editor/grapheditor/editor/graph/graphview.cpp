@@ -16,20 +16,17 @@
 #include "actions/deletelinks.h"
 #include "actions/changenodeproperty.h"
 
-#include <components/actor.h>
-#include <components/scene.h>
-#include <components/world.h>
-#include <components/camera.h>
-#include <components/recttransform.h>
-#include <components/canvas.h>
+#include <scene.h>
+#include <world.h>
+#include <actor.h>
+#include <camera.h>
+#include <canvas.h>
 
-#include <pipelinecontext.h>
-#include <pipelinetask.h>
 #include <systems/rendersystem.h>
 
-#include <editor/editorplatform.h>
-
 #include <url.h>
+#include <log.h>
+#include <input.h>
 
 namespace {
     const char *gLinksRender("LinksRender");
@@ -94,7 +91,7 @@ private:
 };
 
 GraphView::GraphView(QWidget *editor) :
-        Viewport(editor),
+        LegacyViewport(editor),
         m_scene(nullptr),
         m_view(nullptr),
         m_createMenu(new QMenu(this)),
@@ -106,7 +103,7 @@ GraphView::GraphView(QWidget *editor) :
 
     m_controller = new GraphController(this);
     m_controller->activateCamera(1, true);
-    m_controller->setGridAxis(CameraController::Axis::Z);
+    m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->blockRotations(true);
 
     static bool firtCall = true;
@@ -125,28 +122,32 @@ GraphView::GraphView(QWidget *editor) :
     setLiveUpdate(true);
 }
 
-void GraphView::setEditor(AssetEditor *editor) {
+void GraphView::setEditor(LegacyAssetEditor *editor) {
     m_editor = editor;
 }
 
 void GraphView::setWorld(World *scene) {
-    Viewport::setWorld(scene);
+    LegacyViewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
-    m_canvas = Engine::composeActor<Canvas>("Canvas", m_scene);
-    m_view = Engine::composeActor<Widget>("View", m_canvas);
+    m_canvas = Engine::objectCreate<Canvas>("Canvas", m_scene);
+    if(!m_canvas) {
+        aError() << "Unable to create the graph editor canvas.";
+        return;
+    }
+    m_view = Widget::createWidget<Widget>("View", m_canvas);
+    if(!m_view) {
+        aError() << "Unable to create the graph editor widget root.";
+        return;
+    }
+    m_view->setAnchors(Vector2(0.0f), Vector2(1.0f));
 
-    Actor *actor = Engine::composeActor<LinksRender>(gLinksRender, m_view);
-    m_linksRender = actor->getComponent<LinksRender>();
+    m_linksRender = Widget::createWidget<LinksRender>(gLinksRender, m_view);
 
-    actor = Engine::composeActor<Frame>(gFrame, m_view);
-    m_rubberBand = actor->getComponent<Frame>();
+    m_rubberBand = Widget::createWidget<Frame>(gFrame, m_view);
     m_rubberBand->setBackgroundColor(Vector4(0.376f, 0.376f, 0.376f, 0.3f));
     m_rubberBand->setBorderColor(Vector4(0.6f, 0.6f, 0.6f, 1.0f));
-
-    RectTransform *rect = m_rubberBand->rectTransform();
-    rect->setPivot(Vector2(0.0f));
-
+    m_rubberBand->setPivot(Vector2(0.0f));
     m_rubberBand->setEnabled(false);
 }
 
@@ -193,7 +194,7 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
     }
 }
 
-Actor &GraphView::view() const {
+Widget &GraphView::view() const {
     return *m_view;
 }
 
@@ -330,7 +331,8 @@ void GraphView::onGraphUpdated() {
     while(it != children.end()) {
         Actor *actor = dynamic_cast<Actor *>(*it);
 
-        if(actor == nullptr || actor == m_linksRender->actor() || actor == m_rubberBand->actor()) {
+        Widget *widget = dynamic_cast<Widget *>(*it);
+        if(widget == nullptr || widget == m_linksRender || widget == m_rubberBand) {
             it = children.erase(it);
             continue;
         }
@@ -343,28 +345,23 @@ void GraphView::onGraphUpdated() {
             continue;
         }
 
-        Widget *widget = reinterpret_cast<Widget *>(node->widget());
+        Widget *widget = node->widget();
         if(widget) {
-            Actor *actor = widget->actor();
-            if(actor->parent() == nullptr) {
-                actor->setParent(m_view);
+            if(widget->parentWidget() != m_view) {
+                widget->setParent(m_view);
 
                 Object::connect(widget, _SIGNAL(portPressed(int)), m_proxy, _SLOT(onPortPressed(int)));
                 Object::connect(widget, _SIGNAL(portReleased(int)), m_proxy, _SLOT(onPortReleased(int)));
             }
 
-            RectTransform *rect = widget->rectTransform();
-            rect->setPosition(Vector3(0.0f, 0.0f, 1.0f)); // To make widget dirty
-            rect->setPosition(Vector3(node->position(), 0.0f));
+            widget->setPosition(Vector3(0.0f, 0.0f, 1.0f)); // To make widget dirty
+            widget->setPosition(Vector3(node->position(), 0.0f));
         }
 
         for(auto it : children) {
-             if(widget) {
-                Actor *actor = widget->actor();
-                if(actor == it) {
-                    children.remove(it);
-                    break;
-                }
+            if(widget == it) {
+                children.remove(it);
+                break;
             }
         }
     }
@@ -383,7 +380,7 @@ void GraphView::onGraphLoaded() {
 }
 
 void GraphView::onDraw() {
-    Viewport::onDraw();
+    LegacyViewport::onDraw();
 
     if(m_updateLinks) {
         m_updateLinks = false;
@@ -392,7 +389,7 @@ void GraphView::onDraw() {
 }
 
 void GraphView::resizeEvent(QResizeEvent *event) {
-    Viewport::resizeEvent(event);
+    LegacyViewport::resizeEvent(event);
 
     m_updateLinks = true;
 }
@@ -447,7 +444,7 @@ void GraphView::onCopyAction() {
 void GraphView::onPasteAction() {
     Vector4 pos(Input::mousePosition());
 
-    RectTransform *t = static_cast<RectTransform *>(m_view->transform());
+    Widget *t = m_view;
     Vector3 localPos(t->worldTransform().inverse() * Vector3(pos.x, pos.y, 0.0f));
 
     localPos.x -= t->size().x * 0.5f;
@@ -470,7 +467,7 @@ void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TStrin
 void GraphView::onComponentSelected() {
     AbstractNodeGraph *g = graph();
 
-    RectTransform *t = static_cast<RectTransform *>(m_view->transform());
+    Widget *t = m_view;
 
     std::string type = sender()->objectName().toStdString();
 

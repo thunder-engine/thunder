@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>LocaleEdit</class>
- <widget class="PropertyEdit" name="LocaleEdit">
+ <widget class="LegacyPropertyEdit" name="LocaleEdit">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -33,9 +33,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PropertyEdit</class>
+   <class>LegacyPropertyEdit</class>
    <extends>QWidget</extends>
-   <header>editor/propertyedit.h</header>
+   <header>editor/legacypropertyedit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -18,13 +18,13 @@
 #ifndef LOCALEEDIT_H
 #define LOCALEEDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class LocaleEdit;
 }
 
-class LocaleEdit : public PropertyEdit {
+class LocaleEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

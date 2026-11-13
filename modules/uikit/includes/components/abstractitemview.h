@@ -18,20 +18,26 @@
 #ifndef ABSTRACTITEMVIEW_H
 #define ABSTRACTITEMVIEW_H
 
-#include "abstractscrollarea.h"
-#include "abstractitemmodel.h"
+#include <abstractscrollarea.h>
+#include <abstractitemmodel.h>
+
+class LineEdit;
+class ItemViewDelegate;
 
 class UIKIT_EXPORT AbstractItemView : public AbstractScrollArea {
-    A_OBJECT(AbstractItemView, AbstractScrollArea, Components/UI)
+    A_OBJECT(AbstractItemView, AbstractScrollArea, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(int, selectionMode, AbstractItemView::selectionMode, AbstractItemView::setSelectionMode, "editor=SelectionMode")
     )
     A_METHODS(
+        A_SLOT(AbstractItemView::onEditingFinished),
+        A_SLOT(AbstractItemView::onEditingCanceled),
         A_SIGNAL(AbstractItemView::activated),
         A_SIGNAL(AbstractItemView::clicked),
         A_SIGNAL(AbstractItemView::pressed),
-        A_SIGNAL(AbstractItemView::selectionChanged)
+        A_SIGNAL(AbstractItemView::selectionChanged),
+        A_SIGNAL(AbstractItemView::dropped)
     )
     A_ENUMS(
         A_ENUM(SelectionMode,
@@ -60,6 +66,8 @@ public:
 
     virtual void setModel(AbstractItemModel *model);
     AbstractItemModel *model() const;
+    virtual void refresh();
+    virtual bool edit(const ModelIndex &index);
 
     void setRootIndex(const ModelIndex &index);
     ModelIndex rootIndex() const;
@@ -76,6 +84,13 @@ public:
     ModelIndex currentIndex() const { return m_currentIndex; }
 
     std::list<ModelIndex> selectedIndexes() const;
+    void setSelectedIndexes(const std::list<ModelIndex> &indexes);
+
+    void setDragEnabled(bool enabled);
+    void setAcceptDrops(bool enabled);
+    void setDragMimeType(const TString &mimeType);
+    void setDragDataRole(int role);
+    void setDropMimeTypes(const StringList &mimeTypes);
 
     virtual Vector2 cellSize() const;
     IconPosition iconPosition() const;
@@ -89,13 +104,30 @@ public: // signals
 
     void selectionChanged();
 
+    void dropped(const TString &mimeType, const TString &data, const ModelIndex &index);
+
 protected:
+    friend class ItemViewDelegate;
+
+    bool beginEditing(const ModelIndex &index, Widget *geometry);
+    void cancelEditing();
+    void composeComponent() override;
+    void onEditingFinished();
+    void onEditingCanceled();
+
     virtual void selectItem(const ModelIndex &index);
     virtual void activateCurrentItem();
 
     bool isIndexValid(const ModelIndex &index) const;
     void clearSelection();
     void selectItemWithModifiers(const ModelIndex &index);
+    bool dispatchContextMenuEvent(const Vector2 &pos) override;
+    void onContextMenuRequested(const Vector2 &position) override;
+    virtual void updateSelectionVisuals();
+    void prepareDrag(const ModelIndex &index);
+    bool onDrop(const TString &mimeType, const TString &data, int x, int y) override;
+    virtual ModelIndex modelIndexAtPosition(const Vector2 &position);
+    void onDragFinished(bool dropped) override;
 
 protected:
     AbstractItemModel *m_model;
@@ -108,6 +140,15 @@ protected:
     int m_selectionMode;
 
     IconPosition m_iconPosition;
+    TString m_dragMimeType;
+    StringList m_dropMimeTypes;
+    int m_dragDataRole;
+    bool m_dragEnabled;
+    bool m_acceptDrops;
+
+    LineEdit *m_editor;
+    ModelIndex m_editingIndex;
+    bool m_editing;
 
 };
 

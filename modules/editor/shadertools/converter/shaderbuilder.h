@@ -27,40 +27,19 @@
 class ShaderBuilderSettings : public AssetConverterSettings {
     A_OBJECT(ShaderBuilderSettings, AssetConverterSettings, Editor)
 
-    A_PROPERTIES(
-        A_PROPERTYEX(int, CurrentRHI, ShaderBuilderSettings::rhi, ShaderBuilderSettings::setRhi, "enum=Rhi")
-    )
-    A_ENUMS(
-        A_ENUM(Rhi,
-               A_VALUE(Invalid),
-               A_VALUE(OpenGL),
-               A_VALUE(Vulkan),
-               A_VALUE(DirectX),
-               A_VALUE(Metal))
-    )
-
 public:
     enum Rhi {
         Invalid = 0,
         OpenGL,
         Vulkan,
-        DirectX,
         Metal
     };
 
 public:
     ShaderBuilderSettings();
 
-    int rhi() const;
-    void setRhi(int rhi);
-
 private:
     StringList typeNames() const override;
-
-    bool isOutdated() const override;
-
-private:
-    int m_rhi;
 
 };
 
@@ -91,8 +70,17 @@ public:
     static TString loadIncludes(const TString &path, const TString &define, const PragmaMap &pragmas);
 
     static ShaderBuilderSettings::Rhi currentRhi();
+    static bool packShaderData(VariantMap &data, ShaderBuilderSettings::Rhi rhi);
 
     static void buildInstanceData(const VariantMap &user, PragmaMap &pragmas);
+    static TString rhiDefines(ShaderBuilderSettings::Rhi rhi);
+    static void setMaterialProperties(VariantMap &data, int materialType, bool doubleSided, int lightingModel);
+    static void setMaterialBlendState(VariantMap &data, const Material::BlendState &state);
+    static void setMaterialDepthState(VariantMap &data, const Material::DepthState &state);
+    static void setMaterialStencilState(VariantMap &data, const Material::StencilState &state);
+    static void setMaterialResources(VariantMap &data, const VariantList &textures, const VariantList &uniforms);
+    static VariantList materialTexture(const TString &path, const TString &name, int32_t binding, int32_t flags);
+    static VariantList materialUniform(const Variant &value, uint32_t size, const TString &name);
 
     static VariantList toVariant(Material::BlendState blendState);
     static VariantList toVariant(Material::DepthState depthState);
@@ -127,7 +115,7 @@ public:
     static Material::StencilState loadStencilState(const pugi::xml_node &element);
     static void saveStencilState(const Material::StencilState &state, pugi::xml_node &parent);
 
-    static void compileData(VariantMap &data);
+    static bool compileData(ShaderBuilderSettings::Rhi rhi, VariantMap &data);
 
 private:
     static Uniform uniformFromVariant(const Variant &variant);
@@ -143,12 +131,12 @@ private:
 
     static Variant compile(ShaderBuilderSettings::Rhi rhi, const TString &buff, VariantMap &data, EShLanguage stage);
 
-    bool parseShaderFormat(const TString &path, VariantMap &data, int flags = false);
+    bool parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TString &path, VariantMap &data, int flags = false);
     bool saveShaderFormat(const TString &path, const std::map<TString, TString> &shaders, const VariantMap &user);
 
     bool parseProperties(const pugi::xml_node &parent, VariantMap &user);
 
-    VariantList parsePassProperties(const pugi::xml_node &element, int &materialType, int &lightingModel);
+    bool parsePassProperties(const pugi::xml_node &element, VariantMap &user, int &materialType, int &lightingModel, int &vertexVariants);
     void parsePassV0(const pugi::xml_node &parent, VariantMap &user);
     void parsePassV11(const pugi::xml_node &parent, VariantMap &user);
 

@@ -41,8 +41,9 @@ class NEXT_LIBRARY_EXPORT Url {
         A_METHOD(TString, Url::name),
         A_METHOD(TString, Url::baseName),
         A_METHOD(TString, Url::suffix),
-        A_METHOD(TString, Url::completeSuffix)
-    )
+        A_METHOD(TString, Url::completeSuffix),
+        A_METHOD(bool,    Url::cdUp)
+        )
 
 public:
     Url();
@@ -69,7 +70,11 @@ public:
 
     bool isAbsolute() const;
 
+    bool cdUp();
+
 private:
+    void parse(const std::string &url);
+
     std::string m_url;
 
     std::smatch m_result;

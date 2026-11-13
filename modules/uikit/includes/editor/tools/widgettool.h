@@ -21,7 +21,7 @@
 #include <editor/editortool.h>
 
 class WidgetController;
-class RectTransform;
+class Widget;
 
 class WidgetTool : public EditorTool {
 public:
@@ -33,10 +33,11 @@ public:
     void endControl() override;
     void cancelControl() override;
 
-    void setTranslation(const Vector3 &position, const Vector3 &scale);
+    void setTranslation(const Vector3 &position);
 
 protected:
     TString icon() const override;
+    TString image() const override;
     TString name() const override;
 
     TString component() const override;
@@ -44,7 +45,7 @@ protected:
     bool snapHelperX(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
     bool snapHelperY(Vector2 &min, Vector2 &max, const Vector2 &point, bool isMove) const;
 
-    void snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, RectTransform *rect, RectTransform *parent, const Vector2 &translation) const;
+    void snapSolver(Vector2 &min, Vector2 &max, const Vector2 &minAnchor, Widget *rect, Widget *parent, const Vector2 &translation) const;
 
     void drawAnchors(const Vector3 &center, const Vector3 &size, const Vector2 &minAnchor, const Vector2 &maxAnchor);
 
@@ -56,8 +57,6 @@ protected:
     Vector3 m_position;
 
     Vector3 m_translationPosition;
-    Vector3 m_translationScale;
-
     Vector2 m_min;
     Vector2 m_max;
 

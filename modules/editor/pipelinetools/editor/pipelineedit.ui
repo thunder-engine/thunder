@@ -47,7 +47,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="Viewport" name="preview" native="true"/>
+     <widget class="LegacyViewport" name="preview" native="true"/>
      <widget class="GraphView" name="schemeWidget" native="true"/>
     </widget>
    </item>
@@ -55,9 +55,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Viewport</class>
+   <class>LegacyViewport</class>
    <extends>QWidget</extends>
-   <header>viewport/viewport.h</header>
+   <header>viewport/legacyviewport.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

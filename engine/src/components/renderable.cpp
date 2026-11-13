@@ -50,29 +50,6 @@ AABBox Renderable::bound() {
     return m_worldBox;
 }
 /*!
-    Returns true if current renderable fails \a frustum culling test; otherwise returns true;
-    Parameter \a viewProjection used to project bounding box to screen space for LOD calculation.
-*/
-bool Renderable::isCulled(const Frustum &frustum, const Matrix4 &viewProjection) {
-    AABBox bb(bound());
-
-    if(bb.extent.x < 0.0f || frustum.contains(bb)) {
-        Vector4 v0(viewProjection * Vector4(bb.center, 1.0f));
-        Vector2 l0(v0.x / v0.w, v0.y / v0.w);
-
-        bb.center += frustum.m_top.normal * bb.radius;
-        Vector4 v1(viewProjection * Vector4(bb.center, 1.0f));
-        Vector2 l1(v1.x / v1.w, v1.y / v1.w);
-
-        float size = (l1 - l0).length();
-        setLod(PipelineContext::lod(size));
-
-        return !(m_lod < 3);
-    }
-
-    return true;
-}
-/*!
     Returns a mesh which will be drawn.
 */
 Mesh *Renderable::meshToDraw() {
@@ -151,6 +128,34 @@ AABBox Renderable::localBound() {
 */
 void Renderable::setLod(uint32_t lod) {
     m_lod = lod;
+}
+/*!
+    Filters \a out an \a in renderable components by present in \a frustum \a view.
+*/
+void Renderable::filterByFrustum(const RenderList &in, RenderList &out, const Frustum &frustum, const Matrix4 &view) {
+    out.clear();
+    for(auto it : in) {
+        AABBox bb(it->bound());
+
+        bool result = true;
+        if(bb.extent.x < 0.0f || frustum.contains(bb)) {
+            Vector4 v0(view * Vector4(bb.center, 1.0f));
+            Vector2 l0(v0.x / v0.w, v0.y / v0.w);
+
+            bb.center += frustum.m_top.normal * bb.radius;
+            Vector4 v1(view * Vector4(bb.center, 1.0f));
+            Vector2 l1(v1.x / v1.w, v1.y / v1.w);
+
+            float size = (l1 - l0).length();
+            it->setLod(PipelineContext::lod(size));
+
+            result = !(it->m_lod < 3);
+        }
+
+        if(!result) {
+            out.push_back(it);
+        }
+    }
 }
 /*!
     Filters \a out an \a in renderable components by it's material \a layer.

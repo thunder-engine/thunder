@@ -60,6 +60,8 @@ private:
 
     void disableScissor() override;
 
+    void applyScissorState() override;
+
     void flipResult() override;
 
 protected:

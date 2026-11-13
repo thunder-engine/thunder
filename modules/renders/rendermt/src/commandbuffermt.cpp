@@ -155,6 +155,10 @@ void CommandBufferMt::enableScissor(int32_t x, int32_t y, int32_t width, int32_t
 
 void CommandBufferMt::disableScissor() {
     CommandBuffer::disableScissor();
+    applyScissorState();
+}
+
+void CommandBufferMt::applyScissorState() {
     if(m_encoder) {
         if(m_scissorStack.empty()) {
             m_encoder->setScissorRect({(uint32_t)m_viewport.originX, (uint32_t)m_viewport.originY,

@@ -18,10 +18,10 @@
 #ifndef SCROLLBAR_H
 #define SCROLLBAR_H
 
-#include "abstractslider.h"
+#include <abstractslider.h>
 
 class UIKIT_EXPORT ScrollBar : public AbstractSlider {
-    A_OBJECT(ScrollBar, AbstractSlider, Components/UI)
+    A_OBJECT(ScrollBar, AbstractSlider, UI)
 
     A_NOPROPERTIES()
     A_METHODS(

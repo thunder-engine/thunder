@@ -17,7 +17,6 @@
 */
 #include "objectcontroller.h"
 
-#include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
 
@@ -33,7 +32,7 @@
 #include <resources/texture.h>
 #include <resources/rendertarget.h>
 
-#include <viewport/viewport.h>
+#include <viewport/legacyviewport.h>
 #include <viewport/handles.h>
 
 #include <pipelinetask.h>
@@ -42,6 +41,8 @@
 #include <input.h>
 #include <log.h>
 #include <url.h>
+
+#include <message.h>
 
 #include "tools/selecttool.h"
 #include "tools/movetool.h"
@@ -199,7 +200,7 @@ private:
 };
 
 ObjectController::ObjectController(SceneComposer *editor) :
-        CameraController(),
+        LegacyCameraController(),
         m_isolatedPrefab(nullptr),
         m_dragActor(nullptr),
         m_activeTool(nullptr),
@@ -210,7 +211,6 @@ ObjectController::ObjectController(SceneComposer *editor) :
         m_canceled(false),
         m_local(false) {
 
-    connect(Editor::assets(), &AssetManager::prefabCreated, this, &ObjectController::onPrefabCreated);
     connect(this, &ObjectController::sceneUpdated, this, &ObjectController::onUpdated);
 
     Editor::settings()->registerValue(gBackgroundColor, Vector4(0.2f, 0.2f, 0.2f, 0.0f), "editor=Color");
@@ -232,7 +232,7 @@ ObjectController::~ObjectController() {
     }
 }
 
-void ObjectController::init(Viewport *viewport) {
+void ObjectController::init(LegacyViewport *viewport) {
     m_rayCast = new ViewportRaycast;
     m_rayCast->setController(this);
 
@@ -243,7 +243,7 @@ void ObjectController::init(Viewport *viewport) {
 }
 
 void ObjectController::update() {
-    CameraController::update();
+    LegacyCameraController::update();
 
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
         if(m_drag) {
@@ -331,7 +331,7 @@ void ObjectController::drawHandles() {
         setActiveRootObject(Engine::world());
     }
 
-    CameraController::drawHandles();
+    LegacyCameraController::drawHandles();
 
     if(!m_selected.empty()) {
         if(m_activeTool) {
@@ -397,13 +397,14 @@ void ObjectController::onApplySettings() {
     }
 }
 
-void ObjectController::onPrefabCreated(uint32_t uuid, uint32_t clone) {
+void ObjectController::onPrefabCreated(uint32_t clone) {
     Scene *scene = nullptr;
     bool swapped = false;
-    for(auto &it : m_selected) {
-        if(it.uuid == uuid) {
-            Object *object = Engine::findObject(clone);
-            if(object) {
+    Object *object = Engine::findObject(clone);
+    if(object) {
+        uint32_t uuid = object->clonedFrom();
+        for(auto &it : m_selected) {
+            if(it.uuid == uuid) {
                 it.object = static_cast<Actor *>(object);
                 it.uuid = object->uuid();
                 scene = it.object->scene();
@@ -584,11 +585,11 @@ void ObjectController::onCreateComponent(QString type) {
     }
 
     if(alreadyExists && !created) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText(tr("Creation Component Failed"));
-        msgBox.setInformativeText(QString(tr("Component with type \"%1\" already defined for the selected actors.")).arg(type));
-        msgBox.setStandardButtons(QMessageBox::Ok);
+        Message msgBox;
+        msgBox.setIcon(Message::Warning);
+        msgBox.setText(tr("Creation Component Failed").toStdString());
+        msgBox.setInformativeText(TString(tr("Component with type \"%1\" already defined for the selected actors.").toStdString()).arg(typeName));
+        msgBox.setStandardButtons(Message::Ok);
         msgBox.exec();
     }
 }

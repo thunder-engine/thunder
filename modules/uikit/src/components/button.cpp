@@ -15,15 +15,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/button.h"
+#include "button.h"
+
+#include "canvas.h"
+
+#include "stylesheet.h"
 
 #include <resources/material.h>
 #include <resources/font.h>
-
-#include "components/canvas.h"
-#include "components/recttransform.h"
-
-#include "stylesheet.h"
 
 namespace {
     const char *gOverride("mainTexture");
@@ -51,13 +50,14 @@ namespace {
 Button::Button() :
         m_textColor(Vector4(1.0f)),
         m_iconSize(16.0f),
+        m_textOffset(Vector2(0.0f)),
         m_icon(nullptr),
-        m_font(nullptr),
+        m_font(Engine::loadResource<Font>(".embedded/Roboto.ttf")),
         m_iconMesh(Engine::objectCreate<Mesh>()),
         m_textMesh(Engine::objectCreate<Mesh>()),
         m_fontMaterial(nullptr),
         m_iconMaterial(nullptr),
-        m_fontSize(14),
+        m_fontSize(12),
         m_rotation(0.0f),
         m_translated(false),
         m_dirtyIcon(true),
@@ -70,6 +70,7 @@ Button::Button() :
         m_fontMaterial = fontMaterial->createInstance();
         int sdf = 0;
         m_fontMaterial->setInteger(gUseSDF, &sdf);
+        fontMaterial->subscribe(&Button::materialUpdated, this);
     }
 
     Material *spriteMaterial = Engine::loadResource<Material>(gDefaultSprite);
@@ -78,12 +79,22 @@ Button::Button() :
 
         Vector4 color(1.0f);
         m_iconMaterial->setVector4(gColor, &color);
+        spriteMaterial->subscribe(&Button::materialUpdated, this);
     }
 }
 
 Button::~Button() {
     if(m_font) {
         m_font->unsubscribe(this);
+    }
+    if(m_icon) {
+        m_icon->unsubscribe(this);
+    }
+    if(m_fontMaterial) {
+        m_fontMaterial->material()->unsubscribe(this);
+    }
+    if(m_iconMaterial) {
+        m_iconMaterial->material()->unsubscribe(this);
     }
 
     delete m_textMesh;
@@ -185,7 +196,15 @@ Sprite *Button::icon() const {
 */
 void Button::setIcon(Sprite *icon) {
     if(m_icon != icon) {
+        if(m_icon) {
+            m_icon->unsubscribe(this);
+        }
+
         m_icon = icon;
+        if(m_icon) {
+            m_icon->subscribe(&Button::iconUpdated, this);
+        }
+
         m_dirtyIcon = true;
         repaint();
     }
@@ -229,22 +248,30 @@ float Button::contentWidth() const {
 
     return result;
 }
+
+void Button::setTextOffset(const Vector2 &offset) {
+    if(m_textOffset != offset) {
+        m_textOffset = offset;
+        m_dirtyText = true;
+        repaint();
+    }
+}
+
 /*!
     \internal
 */
 void Button::draw() {
     AbstractButton::draw();
 
-    RectTransform *rect = rectTransform();
-    Vector2 size(rect->size());
+    Vector2 size(Button::size());
 
-    Matrix4 mat(rect->worldTransform());
+    Matrix4 mat(worldTransform());
 
-    Vector2 scl(rect->worldScale());
+    Vector2 scl(worldScale());
     mat[12] += size.x * 0.5f * scl.x;
     mat[13] += size.y * 0.5f * scl.y;
 
-    uint32_t hash = rect->hash();
+    uint32_t hash = Button::hash();
     Mathf::hashCombine(hash, mat[12]);
     Mathf::hashCombine(hash, mat[13]);
 
@@ -252,8 +279,9 @@ void Button::draw() {
     Canvas *canvas = Button::canvas();
     if(m_fontMaterial && !m_text.isEmpty()) {
         if(m_dirtyText && m_font) {
-            m_textMesh->setName(actor()->name());
-            const Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
+            m_textMesh->setName(name());
+            Font::Settings settings = {m_fontSize, Alignment::Center | Alignment::Middle, 0, m_textColor};
+            settings.offset = m_textOffset;
             m_font->composeMesh(m_textMesh, m_translated ? Engine::translate(m_text) : m_text, settings);
 
             m_fontMaterial->setTexture(gOverride, m_font->page());
@@ -265,11 +293,15 @@ void Button::draw() {
         if(!vertices.empty()) {
             offset = vertices.front().x - m_iconSize.x;
         }
-        m_fontMaterial->setTransform(mat, 0, hash);
+        Matrix4 textTransform(canvas ? canvas->snapTextTransform(mat) : mat);
+        uint32_t textHash = hash;
+        Mathf::hashCombine(textHash, textTransform[12]);
+        Mathf::hashCombine(textHash, textTransform[13]);
+        m_fontMaterial->setTransform(textTransform, 0, textHash);
         canvas->drawMesh(m_textMesh, m_fontMaterial);
     }
 
-    if(m_icon) {
+    if(m_icon && m_iconMaterial) {
         if(m_dirtyIcon) {
             m_iconMaterial->setTexture(gOverride, m_icon->texture());
             m_icon->composeMesh(m_iconMesh, Sprite::Sliced, m_iconSize);
@@ -312,10 +344,9 @@ void Button::applyStyle() {
 void Button::composeComponent() {
     AbstractButton::composeComponent();
 
-    RectTransform *rect = rectTransform();
-    rect->blockSignals(true);
-    rect->setSize(Vector2(100.0f, 30.0f));
-    rect->blockSignals(false);
+    blockSignals(true);
+    setSize(Vector2(100.0f, 30.0f));
+    blockSignals(false);
 }
 /*!
     \internal
@@ -326,4 +357,46 @@ void Button::fontUpdated(int state, void *ptr) {
         p->m_dirtyText = true;
         p->repaint();
     }
+}
+
+void Button::iconUpdated(int state, void *ptr) {
+    Button *button = static_cast<Button *>(ptr);
+    if(!button) {
+        return;
+    }
+
+    if(state == Resource::Ready) {
+        button->m_dirtyIcon = true;
+        button->repaint();
+    } else if(state == Resource::ToBeDeleted) {
+        if(button->m_icon) {
+            button->m_icon->unsubscribe(button);
+        }
+        button->m_icon = nullptr;
+        button->m_dirtyIcon = true;
+        button->repaint();
+    }
+}
+
+void Button::materialUpdated(int state, void *ptr) {
+    Button *button = static_cast<Button *>(ptr);
+    if(!button) {
+        return;
+    }
+
+    if(state == Material::ToBeDeleted) {
+        if(button->m_fontMaterial && button->m_fontMaterial->material()->state() == state) {
+            delete button->m_fontMaterial;
+            button->m_fontMaterial = nullptr;
+        }
+        if(button->m_iconMaterial && button->m_iconMaterial->material()->state() == state) {
+            delete button->m_iconMaterial;
+            button->m_iconMaterial = nullptr;
+        }
+    }
+
+    button->m_dirtyText = true;
+    button->m_dirtyIcon = true;
+    button->repaint();
+
 }

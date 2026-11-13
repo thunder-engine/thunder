@@ -18,10 +18,10 @@
 #ifndef SPLITTER_H
 #define SPLITTER_H
 
-#include "frame.h"
+#include <frame.h>
 
 class UIKIT_EXPORT Splitter : public Frame {
-    A_OBJECT(Splitter, Frame, Components/UI)
+    A_OBJECT(Splitter, Frame, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(int, orentation, Splitter::orentation, Splitter::setOrientation, "enum=Orientation"),
@@ -38,6 +38,7 @@ public:
 
     int orentation() const;
     void setOrientation(int orientation);
+    void setInitialShare(float share);
 
     void addWidget(Widget *widget);
 
@@ -53,10 +54,13 @@ public:
 
 protected:
     void update(const Vector2 &pos) override;
+    bool onMouseDown(int x, int y) override;
+    bool onMouseUp(int x, int y) override;
+    void boundChanged(const Vector2 &size) override;
 
     void resizeWidget(int index, float delta);
 
-    void childAdded(RectTransform *rect) override;
+    void childAdded(Widget *rect) override;
 
     void composeComponent() override;
 
@@ -68,6 +72,10 @@ protected:
     int m_orientation;
 
     int m_handleWidth;
+
+    float m_initialShare;
+
+    bool m_initialSharePending;
 
 };
 

@@ -79,7 +79,7 @@ private:
     void toXml(pugi::xml_node &element) override;
     void fromXml(const pugi::xml_node &element) override;
 
-    Foldout *createFold(const TString &name, Actor *parent);
+    Foldout *createFold(const TString &name, Widget *parent);
 
     Widget *widget() override;
 

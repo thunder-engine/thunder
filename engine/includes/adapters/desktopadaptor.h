@@ -2,9 +2,8 @@
 #define DESKTOPADAPTOR_H
 
 #include "platformadaptor.h"
+#include "window.h"
 
-struct GLFWwindow;
-struct GLFWmonitor;
 struct GLFWcursor;
 
 class DesktopAdaptor : public PlatformAdaptor {
@@ -50,20 +49,22 @@ public:
     Vector4 joystickThumbs(int index) const override;
     Vector2 joystickTriggers(int index) const override;
 
+    Window *window() override;
+    void setWindow(Window *window) override;
 
     TString locationLocalDir() const override;
     void syncConfiguration(VariantMap &map) const override;
 
 protected:
-    static void windowFocusCallback(GLFWwindow *, int focused);
+    friend class Window;
 
-    static void toggleFullscreen(GLFWwindow *window);
+    static void windowFocusCallback(GLFWwindow *, int focused);
 
     static void keyCallback(GLFWwindow *, int, int, int, int);
 
     static void charCallback(GLFWwindow *, unsigned int);
 
-    static void buttonCallback(GLFWwindow*,int, int, int);
+    static void buttonCallback(GLFWwindow*window, int, int, int);
 
     static void scrollCallback(GLFWwindow *, double, double yoffset);
 
@@ -72,28 +73,24 @@ protected:
     static void errorCallback(int error, const char *description);
 
 protected:
-    GLFWwindow *m_window;
-    GLFWmonitor *m_monitor;
-
-    bool m_noOpenGL;
+    Window *m_window = nullptr;
 
     static TString s_inputString;
 
     static std::unordered_map<int32_t, int32_t> s_keys;
     static std::unordered_map<int32_t, int32_t> s_mouseButtons;
-    static std::unordered_map<int32_t, int32_t> s_mouseDoubleClick;
     static std::unordered_map<int32_t, GLFWcursor *> s_mouseCursors;
 
     static Vector4 s_mousePosition;
     static Vector4 s_oldMousePosition;
 
+    static double s_lastClickTime;
+    static int   s_lastClickButton;
+    static double s_lastClickX;
+    static double s_lastClickY;
+
     static float s_mouseScrollDelta;
 
-    static int32_t s_width;
-    static int32_t s_height;
-
-    static bool s_windowed;
-    static bool s_vSync;
     static bool s_appActive;
 };
 

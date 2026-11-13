@@ -165,35 +165,38 @@ StringList AssetConverterSettings::typeNames() const {
 TString AssetConverterSettings::typeName() const {
     return typeNames().front();
 }
+/*!
+    Resets asset icon to default for specific asset \a uuid.
+*/
 void AssetConverterSettings::resetIcon(const TString &uuid) {
     for(auto &it : m_subItems) {
         if(it.second.info.uuid == uuid) {
-            it.second.icon = QImage();
+            it.second.image = QImage();
             return;
         }
     }
 
-    m_icon = QImage();
+    m_image = QImage();
 }
 /*!
-    Returns icon assotiatited with current asset \a uuid.
+    Returns icon image assotiatited with current asset \a uuid.
 */
-QImage AssetConverterSettings::icon(const TString &uuid) {
+QImage AssetConverterSettings::image(const TString &uuid) {
     TString iconPath(Editor::project()->iconPath() + "/" + uuid + ".png");
 
     for(auto &it : m_subItems) {
         if(it.second.info.uuid == uuid) {
-            if(it.second.icon.isNull() && !it.second.icon.load(iconPath.data())) {
-                it.second.icon = documentIcon(it.second.info.type);
+            if(it.second.image.isNull() && !it.second.image.load(iconPath.data())) {
+                it.second.image = documentImage(it.second.info.type);
             }
-            return it.second.icon;
+            return it.second.image;
         }
     }
 
-    if(m_icon.isNull() && !m_icon.load(iconPath.data())) {
-        m_icon = documentIcon(m_suffix);
+    if(m_image.isNull() && !m_image.load(iconPath.data())) {
+        m_image = documentImage(m_suffix);
     }
-    return m_icon;
+    return m_image;
 }
 /*!
     Returns path to default icon for asset \a type (default returns ":/Style/styles/dark/images/unknown.svg").
@@ -262,7 +265,7 @@ void AssetConverterSettings::solveUuid(const TString &from, const TString &to) {
     }
 }
 
-QImage AssetConverterSettings::renderDocumentIcon(const TString &path, const TString &color) {
+QImage AssetConverterSettings::renderDocumentImage(const TString &path, const TString &color) {
     QFile file(":/Style/styles/dark/images/document.svg");
     if(file.open(QFile::ReadOnly)) {
         QByteArray documentSvg(file.readAll());
@@ -633,9 +636,9 @@ void AssetConverterSettings::setDirectory() {
     m_dir = true;
 }
 /*!
-    Returns icon associated with document \a type.
+    Returns icon image associated with document \a type.
 */
-QImage AssetConverterSettings::documentIcon(const TString &type) {
+QImage AssetConverterSettings::documentImage(const TString &type) {
     static std::map<TString, QImage> documents;
 
     auto it = documents.find(type);
@@ -643,7 +646,7 @@ QImage AssetConverterSettings::documentIcon(const TString &type) {
         return it->second;
     }
 
-    QImage result = renderDocumentIcon(defaultIconPath(type));
+    QImage result = renderDocumentImage(defaultIconPath(type));
     if(!result.isNull()) {
         documents[type] = result;
     }

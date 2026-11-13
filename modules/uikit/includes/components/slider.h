@@ -18,12 +18,12 @@
 #ifndef SLIDER_H
 #define SLIDER_H
 
-#include "abstractslider.h"
+#include <abstractslider.h>
 
 class ProgressBar;
 
 class UIKIT_EXPORT Slider : public AbstractSlider {
-    A_OBJECT(Slider, AbstractSlider, Components/UI)
+    A_OBJECT(Slider, AbstractSlider, UI)
 
     A_NOPROPERTIES()
     A_NOMETHODS()

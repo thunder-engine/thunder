@@ -1,0 +1,135 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+#ifndef LEGACYASSETEDITOR_H
+#define LEGACYASSETEDITOR_H
+
+#include <QWidget>
+
+#include <editor.h>
+
+class AssetConverterSettings;
+class QMenu;
+
+class UndoStack;
+
+class EDITOR_EXPORT LegacyAssetEditor : public QWidget {
+    Q_OBJECT
+
+public:
+    LegacyAssetEditor();
+    ~LegacyAssetEditor();
+
+    std::list<AssetConverterSettings *> &openedDocuments();
+
+    virtual void loadAsset(AssetConverterSettings *settings) = 0;
+
+    virtual void loadData(const Variant &data, const TString &suffix);
+
+    virtual bool isSingleInstance() const;
+
+    virtual bool isCopyActionAvailable() const;
+    virtual bool isPasteActionAvailable() const;
+
+    virtual LegacyAssetEditor *createInstance();
+
+    virtual StringList suffixes() const = 0;
+
+    virtual TString assetType() const = 0;
+
+    virtual StringList componentGroups() const;
+
+    virtual QMenu *hierarchyContextMenu(Object *object);
+
+    virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
+
+    virtual QWidget *propertiesWidget();
+
+    virtual std::list<QWidget *> propertiesActionWidgets(Object *object, QWidget *parent) const;
+
+    virtual QMenu *propertyContextMenu(Object *object, const TString &property);
+
+    virtual VariantMap saveState();
+    virtual void restoreState(const VariantMap &data);
+
+    virtual Object::ObjectList selected() const;
+    virtual bool maskPropertyType() const;
+
+    bool checkSave();
+
+    UndoStack *undoRedo() const;
+
+    virtual bool allowSaveAs() const;
+
+    virtual void backup();
+    virtual void restore();
+
+signals:
+    void updated();
+
+    void objectsHierarchyChanged(Object *root);
+
+    void selectionChanged();
+
+    void objectsChanged(const TString &property, const Variant &value);
+
+    void copyPasteChanged();
+
+    void dropAsset(QString path);
+
+public slots:
+    virtual void onActivated();
+
+    virtual void onCutAction();
+    virtual void onCopyAction();
+    virtual void onPasteAction();
+
+    virtual void onNewAsset();
+    virtual void onOpenAsset();
+
+    virtual void onSave();
+    virtual void onSaveAs();
+
+    virtual void onUpdated();
+
+    virtual void onObjectCreate(const TString &type);
+    virtual void onObjectsSelected(bool force);
+    virtual void onSelectionDeleted();
+
+    virtual void onDrop(QDropEvent *event);
+    virtual void onDragEnter(QDragEnterEvent *event);
+    virtual void onDragMove(QDragMoveEvent *event);
+    virtual void onDragLeave(QDragLeaveEvent *event);
+
+    virtual void onObjectsChanged(const TString &property, const Variant &value);
+
+protected:
+    virtual void cleanModified() const;
+
+    virtual bool isModified() const;
+
+    virtual void saveAsset(const TString &path = TString());
+
+    int closeAssetDialog();
+
+protected:
+    std::list<AssetConverterSettings *> m_settings;
+
+    UndoStack *m_undoRedo;
+};
+
+#endif // LEGACYASSETEDITOR_H

@@ -18,13 +18,13 @@
 #ifndef INTEGEREDIT_H
 #define INTEGEREDIT_H
 
-#include <editor/propertyedit.h>
+#include <editor/legacypropertyedit.h>
 
 namespace Ui {
     class IntegerEdit;
 }
 
-class IntegerEdit : public PropertyEdit {
+class IntegerEdit : public LegacyPropertyEdit {
     Q_OBJECT
 
 public:

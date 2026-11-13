@@ -18,23 +18,27 @@
 #ifndef TABBAR_H
 #define TABBAR_H
 
-#include "components/button.h"
+#include <button.h>
 
 #include <list>
 
 class UIKIT_EXPORT TabBar : public Widget {
-    A_OBJECT(TabBar, Widget, Components/UI)
+    A_OBJECT(TabBar, Widget, UI)
 
     A_PROPERTIES(
-        A_PROPERTY(bool, tabsClosable, TabBar::tabsClosable, TabBar::setTabsClosable)
+        A_PROPERTY(bool, tabsClosable, TabBar::tabsClosable, TabBar::setTabsClosable),
+        A_PROPERTY(bool, movable, TabBar::isMovable, TabBar::setMovable)
     )
     A_METHODS(
         A_SIGNAL(TabBar::currentChanged),
         A_SIGNAL(TabBar::tabCloseRequested),
+        A_SIGNAL(TabBar::tabMoved),
         A_SLOT(TabBar::onTabClicked),
+        A_SLOT(TabBar::onTabPressed),
         A_SLOT(TabBar::onCloseButtonClicked),
         A_SLOT(TabBar::onBackClicked),
-        A_SLOT(TabBar::onFrontClicked)
+        A_SLOT(TabBar::onFrontClicked),
+        A_SLOT(TabBar::moveTab)
     )
     A_NOENUMS()
 
@@ -43,7 +47,9 @@ public:
     ~TabBar();
 
     int addTab(const TString &title);
+    int addTab(const TString &title, Sprite *icon);
     int insertTab(int index, const TString &title);
+    int insertTab(int index, const TString &title, Sprite *icon);
     void removeTab(int index);
     void removeTab(Button *button);
 
@@ -55,6 +61,10 @@ public:
     bool tabsClosable() const;
     void setTabsClosable(bool closable);
 
+    bool isMovable() const;
+    void setMovable(bool movable);
+    void moveTab(int from, int to);
+
     TString tabTitle(int index) const;
     void setTabTitle(int index, const TString &title);
 
@@ -64,10 +74,20 @@ public:
     Vector4 tabCornerRadius() const;
     void setTabCornerRadius(const Vector4 &radius);
 
+    Vector4 tabBackgroundColor() const;
+    void setTabBackgroundColor(const Vector4 &color);
+
+    Vector4 tabPressedColor() const;
+    void setTabPressedColor(const Vector4 &color);
+
+    Vector4 tabHighlightedColor() const;
+    void setTabHighlightedColor(const Vector4 &color);
+
 public: //signals
     void currentChanged(int index);
 
     void tabCloseRequested(int index);
+    void tabMoved(int from, int to);
 
 protected:
     bool isHovered(const Vector2 &pos) override;
@@ -85,12 +105,13 @@ protected:
     void updateTabPositions();
 
     void onTabClicked();
+    void onTabPressed();
     void onCloseButtonClicked();
 
     void onBackClicked();
     void onFrontClicked();
 
-    void createCloseButton(Actor *parent);
+    void createCloseButton(Widget *parent);
 
     void recalcOffset();
 
@@ -101,6 +122,10 @@ private:
 
     Vector4 m_tabPadding;
 
+    Vector4 m_tabBackgroundColor;
+    Vector4 m_tabPressedColor;
+    Vector4 m_tabHighlightedColor;
+
     Button *m_frontButton;
 
     Button *m_backButton;
@@ -109,9 +134,16 @@ private:
 
     int m_visualIndex;
 
+    Button *m_dragTab;
+    Vector2 m_dragStartPosition;
+
     float m_positionOffset;
 
     bool m_showClose;
+
+    bool m_movable;
+
+    bool m_dragActive;
 
     bool m_blockUpdates;
 

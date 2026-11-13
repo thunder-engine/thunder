@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-static bool s_Inited = false;
-
 /*!
     \class CommandBuffer
     \brief Represents a command buffer used in a graphics rendering pipeline.
@@ -18,7 +16,9 @@ static bool s_Inited = false;
 */
 
 CommandBuffer::CommandBuffer() :
-        m_target(nullptr) {
+        m_viewportRect(0.0f),
+        m_target(nullptr),
+        m_context(nullptr) {
     uint32_t size = Texture::maxTextureSize();
     m_global.params.x = 1.0f / (float)size;
 }
@@ -27,6 +27,18 @@ void CommandBuffer::begin() {
     m_global.params.y = Timer::time();
     m_global.params.z = Timer::deltaTime();
     m_global.params.w = 0.0f;
+}
+/*!
+    Returns pipeline context associated with this CommandBuffer.
+*/
+PipelineContext *CommandBuffer::context() {
+    return m_context;
+}
+/*!
+    Sets pipeline \a context associated with this CommandBuffer.
+*/
+void CommandBuffer::setPipelineContext(PipelineContext *context) {
+    m_context = context;
 }
 /*!
     Dispatches a compute \a shader with the specified workgroup dimensions.
@@ -64,30 +76,6 @@ void CommandBuffer::setRenderTarget(RenderTarget *target, uint32_t level) {
     m_target = target;
 }
 /*!
-    Converts a 32-bit \a id to a Vector4 color.
-*/
-Vector4 CommandBuffer::idToColor(uint32_t id) {
-    uint8_t rgb[4];
-    rgb[0] = id;
-    rgb[1] = id >> 8;
-    rgb[2] = id >> 16;
-    rgb[3] = id >> 24;
-
-    return Vector4((float)rgb[0] / 255.0f, (float)rgb[1] / 255.0f, (float)rgb[2] / 255.0f, (float)rgb[3] / 255.0f);
-}
-/*!
-    Returns true if the CommandBuffer is initialized; otherwise, false.
-*/
-bool CommandBuffer::isInited() {
-    return s_Inited;
-}
-/*!
-    \internal
-*/
-void CommandBuffer::setInited() {
-    s_Inited = true;
-}
-/*!
     Sets the \a view and \a projection matrices.
 */
 void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projection) {
@@ -101,38 +89,6 @@ void CommandBuffer::setViewProjection(const Matrix4 &view, const Matrix4 &projec
 */
 void CommandBuffer::setViewProjection(const Matrix4 &viewProjection) {
     m_global.cameraWorldToScreen = viewProjection;
-}
-/*!
-    Sets a global \a texture based on its \a name.
-*/
-void CommandBuffer::setGlobalTexture(const TString &name, Texture *texture) {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            it.texture = texture;
-            return;
-        }
-    }
-
-    Material::TextureItem item;
-    item.name = name;
-    item.texture = texture;
-    item.binding = -1;
-    m_textures.push_back(item);
-}
-/*!
-    Retrieves a global texture based on its \a name.
-*/
-Texture *CommandBuffer::texture(const TString &name) const {
-    PROFILE_FUNCTION();
-
-    for(auto &it : m_textures) {
-        if(it.name == name) {
-            return it.texture;
-        }
-    }
-    return nullptr;
 }
 /*!
     Begins a debug marker with the specified \a name.
@@ -159,10 +115,16 @@ void CommandBuffer::flipResult() {
     Parameters \a width and \a height viewport dimensions.
 */
 void CommandBuffer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) {
-    A_UNUSED(x);
-    A_UNUSED(y);
+    m_viewportRect = Vector4(static_cast<float>(x), static_cast<float>(y),
+                             static_cast<float>(width), static_cast<float>(height));
     m_global.cameraParams.z = 1.0f / (float)width;
     m_global.cameraParams.w = 1.0f / (float)height;
+}
+/*!
+    Returns the current viewport rectangle.
+*/
+Vector4 CommandBuffer::viewport() const {
+    return m_viewportRect;
 }
 /*!
     Sets the \a camera specific global variables.
@@ -206,4 +168,29 @@ void CommandBuffer::enableScissor(int32_t x, int32_t y, int32_t width, int32_t h
 */
 void CommandBuffer::disableScissor() {
     m_scissorStack.pop();
+}
+/*!
+    Starts an isolated scissor scope.
+*/
+void CommandBuffer::beginScissorScope() {
+    m_scissorScopes.push_back(m_scissorStack);
+    m_scissorStack = std::stack<ScissorRect>();
+    applyScissorState();
+}
+/*!
+    Restores the scissor state saved by the matching beginScissorScope call.
+*/
+void CommandBuffer::endScissorScope() {
+    if(m_scissorScopes.empty()) {
+        return;
+    }
+
+    m_scissorStack = m_scissorScopes.back();
+    m_scissorScopes.pop_back();
+    applyScissorState();
+}
+/*!
+    Applies the current scissor state to the rendering backend.
+*/
+void CommandBuffer::applyScissorState() {
 }

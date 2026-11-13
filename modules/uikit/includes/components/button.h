@@ -18,12 +18,12 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "abstractbutton.h"
+#include <abstractbutton.h>
 
 #include <font.h>
 
 class UIKIT_EXPORT Button : public AbstractButton {
-    A_OBJECT(Button, AbstractButton, Components/UI)
+    A_OBJECT(Button, AbstractButton, UI)
 
     A_PROPERTIES(
         A_PROPERTY(TString, text, Button::text, Button::setText),
@@ -61,6 +61,7 @@ public:
     void setIconRotation(float angle);
 
     float contentWidth() const;
+    void setTextOffset(const Vector2 &offset);
 
     void draw() override;
 
@@ -70,12 +71,15 @@ protected:
     void composeComponent() override;
 
     static void fontUpdated(int state, void *ptr);
+    static void iconUpdated(int state, void *ptr);
+    static void materialUpdated(int state, void *ptr);
 
 protected:
     TString m_text;
 
     Vector4 m_textColor;
     Vector2 m_iconSize;
+    Vector2 m_textOffset;
 
     Sprite *m_icon;
 

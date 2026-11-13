@@ -12,6 +12,7 @@ file(GLOB ${PROJECT_NAME}_srcFiles
     "src/pipelinetasks/*.cpp"
     "src/utils/*.cpp"
     "src/adapters/platform*.cpp"
+    "src/adapters/handlers/*.cpp"
 )
 
 set(freetypeFiles
@@ -232,6 +233,11 @@ if(desktop)
 
     install(FILES ${${PROJECT_NAME}_headers}
         DESTINATION "${INC_PATH}/engine"
+    )
+
+    install(DIRECTORY "includes/adapters/handlers"
+        DESTINATION "${INC_PATH}/engine/adapters"
+        FILES_MATCHING PATTERN "*.h"
     )
 
     set(${${PROJECT_NAME}_srcFiles}

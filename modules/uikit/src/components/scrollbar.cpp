@@ -15,14 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "components/scrollbar.h"
+#include "scrollbar.h"
 
-#include "components/frame.h"
-
-#include <components/recttransform.h>
-#include <components/button.h>
-#include <components/image.h>
-#include <components/label.h>
+#include "frame.h"
+#include "button.h"
 
 namespace {
     const char *gKnob("knob");
@@ -141,7 +137,7 @@ void ScrollBar::setBackArrow(Widget *arrow) {
     setSubWidget(arrow);
 
     if(arrow) {
-        RectTransform *rect = arrow->rectTransform();
+        Widget *rect = arrow;
         if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(0.0f, 0.5f));
             rect->setAnchors(Vector2(0.0f, 0.0f), Vector2(0.0, 1.0f));
@@ -182,7 +178,7 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
     setSubWidget(arrow);
 
     if(arrow) {
-        RectTransform *rect = arrow->rectTransform();
+        Widget *rect = arrow;
         if(m_orientation == Widget::Horizontal) {
             rect->setPivot(Vector2(1.0f, 0.5f));
             rect->setAnchors(Vector2(1.0f, 0.0f), Vector2(1.0, 1.0f));
@@ -210,7 +206,7 @@ void ScrollBar::setFrontArrow(Widget *arrow) {
 void ScrollBar::recalcKnob() {
     Widget *knob = ScrollBar::knob();
     if(knob) {
-        RectTransform *rect = rectTransform();
+        Widget *rect = this;
         Vector2 size(rect->size());
 
         int scrollingRange = m_maximum - m_minimum;
@@ -223,7 +219,7 @@ void ScrollBar::recalcKnob() {
         float factor = m_value != 0 ? static_cast<float>(m_value - m_minimum) / static_cast<float>(scrollingRange) : 0.0f;
         factor = CLAMP(factor * (1.0 - pageFactor), 0.0f, 1.0f);
 
-        RectTransform *knobRect = knob->rectTransform();
+        Widget *knobRect = knob;
         if(m_orientation == Widget::Horizontal) {
             float normalGap = m_areaGap / size.x;
             float scaledFactor = normalGap + factor * (1.0f - normalGap * 2.0f);
@@ -263,12 +259,12 @@ void ScrollBar::composeComponent() {
     AbstractSlider::composeComponent();
 
     // Add knob
-    Actor *knobActor = Engine::composeActor<Frame>(gKnob, actor());
-    Frame *knob = knobActor->getComponent<Frame>();
+    Widget *knobActor = Widget::createWidget<Frame>(gKnob, this);
+    Frame *knob = dynamic_cast<Frame *>(knobActor);
     knob->setCorners(Vector4(5.0f));
     knob->setBackgroundColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 
-    RectTransform *rectKnob = knob->rectTransform();
+    Widget *rectKnob = knob;
 
     if(m_orientation == Widget::Horizontal) {
         rectKnob->setAnchors(Vector2(0.0f, 0.5f), Vector2(0.0f, 0.5f));
@@ -278,15 +274,15 @@ void ScrollBar::composeComponent() {
     setKnob(knob);
 
     // Add back arrow
-    Actor *backActor = Engine::composeActor<Button>(gBackArrow, actor());
-    Button *back = backActor->getComponent<Button>();
+    Widget *backActor = Widget::createWidget<Button>(gBackArrow, this);
+    Button *back = dynamic_cast<Button *>(backActor);
     back->setIconSize(Vector2(16.0f, 8.0f));
     back->setIcon(Engine::loadResource<Sprite>(gSpriteArrow));
     setBackArrow(back);
 
     // Add front arrow
-    Actor *frontActor = Engine::composeActor<Button>(gFrontArrow, actor());
-    Button *front = frontActor->getComponent<Button>();
+    Widget *frontActor = Widget::createWidget<Button>(gFrontArrow, this);
+    Button *front = dynamic_cast<Button *>(frontActor);
     front->setIconSize(Vector2(16.0f, 8.0f));
     front->setIcon(Engine::loadResource<Sprite>(gSpriteArrow));
     setFrontArrow(front);
@@ -294,8 +290,8 @@ void ScrollBar::composeComponent() {
     setValue(m_value);
 
     if(m_orientation == Widget::Horizontal) {
-        rectTransform()->setSize(Vector2(100.0f, 20.0f));
+        this->setSize(Vector2(100.0f, 20.0f));
     } else {
-        rectTransform()->setSize(Vector2(20.0f, 100.0f));
+        this->setSize(Vector2(20.0f, 100.0f));
     }
 }

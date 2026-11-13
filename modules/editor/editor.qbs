@@ -12,7 +12,6 @@ Project {
         "texturetools",
         "texteditor",
         "tiledimporter",
-        "timeline",
         "webtools"
     ]
 }

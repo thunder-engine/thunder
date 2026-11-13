@@ -21,6 +21,7 @@
 
 #include <global.h>
 #include <stdint.h>
+#include <memory>
 
 class AbstractItemModel;
 
@@ -47,6 +48,8 @@ private:
     friend class AbstractItemModel;
 
     const AbstractItemModel *m_model;
+
+    std::shared_ptr<ModelIndex> m_parentIndex;
 
     int m_row;
 

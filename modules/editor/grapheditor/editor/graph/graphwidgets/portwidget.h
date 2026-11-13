@@ -4,6 +4,7 @@
 #include <frame.h>
 
 class NodePort;
+class Label;
 
 class PortWidget : public Widget {
     A_OBJECT(PortWidget, Widget, Editor/Graph)
@@ -37,8 +38,8 @@ private:
 private:
     NodePort *m_port;
 
-    Actor *m_label;
-    Actor *m_editor;
+    Label *m_label;
+    Widget *m_editor;
 
     Frame *m_knob;
 

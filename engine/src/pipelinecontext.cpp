@@ -21,10 +21,9 @@
 #include "pipelinetask.h"
 #include "commandbuffer.h"
 #include "log.h"
+#include "frustum.h"
 
 #include <algorithm>
-
-#include "frustum.h"
 
 namespace {
     const char *gTexture("mainTexture");
@@ -49,6 +48,8 @@ PipelineContext::PipelineContext() :
         m_height(64),
         m_frustumCulling(true) {
 
+    m_defaultTarget->setFlags(RenderTarget::ClearColor);
+    m_defaultTarget->setClearColor(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
 PipelineContext::~PipelineContext() {
@@ -70,6 +71,21 @@ CommandBuffer *PipelineContext::buffer() const {
     Initiates the rendering process using the specified camera.
 */
 void PipelineContext::draw(Camera *camera) {
+    draw(camera, nullptr);
+}
+
+void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
+    CommandBuffer *previousBuffer = m_buffer;
+    PipelineContext *previousContext = nullptr;
+    Vector4 previousViewport;
+    if(buffer) {
+        previousContext = buffer->context();
+        previousViewport = buffer->viewport();
+        m_buffer = buffer;
+        m_buffer->beginScissorScope();
+        m_buffer->setPipelineContext(this);
+    }
+
     analizeGraph();
 
     camera->setRatio((float)m_width / (float)m_height);
@@ -78,6 +94,13 @@ void PipelineContext::draw(Camera *camera) {
     for(auto it : m_renderTasks) {
         if(it && it->isEnabled()) {
             it->exec();
+        }
+    }
+
+    if(m_finalMaterial == nullptr) {
+        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+        if(mtl) {
+            m_finalMaterial = mtl->createInstance();
         }
     }
 
@@ -92,6 +115,18 @@ void PipelineContext::draw(Camera *camera) {
 
     for(auto it : m_postObservers) {
         (*it.first)(it.second);
+    }
+
+    if(buffer) {
+        if(previousViewport.z > 0.0f && previousViewport.w > 0.0f) {
+            m_buffer->setViewport(static_cast<int32_t>(previousViewport.x),
+                                  static_cast<int32_t>(previousViewport.y),
+                                  static_cast<int32_t>(previousViewport.z),
+                                  static_cast<int32_t>(previousViewport.w));
+        }
+        m_buffer->setPipelineContext(previousContext);
+        m_buffer->endScissorScope();
+        m_buffer = previousBuffer;
     }
 }
 /*!
@@ -131,6 +166,22 @@ void PipelineContext::resize(int32_t width, int32_t height) {
             camera->setRatio(float(m_width) / float(m_height));
         }
     }
+}
+/*!
+    Returns a position offset this pipline context.
+    Most of the time returns [0, 0]. This value will be set for viewports in the editor.
+    This value can be used to recalculate mouse position.
+*/
+Vector2 PipelineContext::positionOffset() const {
+    return m_positionOffset;
+}
+/*!
+    Sets a \a position offset this pipline context.
+    This value will be set for viewports in the editor.
+    This value can be used to recalculate mouse position.
+*/
+void PipelineContext::setPositionOffset(const Vector2 &position) {
+    m_positionOffset = position;
 }
 /*!
     Invalidates all the pipeline tasks to let them to reestablish connections.
@@ -207,12 +258,7 @@ void PipelineContext::analizeGraph() {
     Frustum frustum(camera->frustum());
     Matrix4 viewProjection(camera->projectionMatrix() * camera->viewMatrix());
     if(m_frustumCulling) {
-        m_culledRenderables.clear();
-        for(auto it : m_sceneRenderables) {
-            if(!it->isCulled(frustum, viewProjection)) {
-                m_culledRenderables.push_back(it);
-            }
-        }
+        Renderable::filterByFrustum(m_sceneRenderables, m_culledRenderables, frustum, viewProjection);
     }
 
     // Add lights
@@ -282,14 +328,13 @@ void PipelineContext::setDefaultTarget(RenderTarget *target) {
     Adds a \a texture buffer to the global textures in the command buffer.
 */
 void PipelineContext::addTextureBuffer(Texture *texture) {
-    m_buffer->setGlobalTexture(texture->name(), texture);
-    m_textureBuffers[texture->name()] = texture;
+    m_textureBuffers[Mathf::hashString(texture->name())] = texture;
 }
 /*!
-    Returns a texture buffer based on its \a name.
+    Returns a texture buffer based on its \a hash of name.
 */
-Texture *PipelineContext::textureBuffer(const TString &name) {
-    auto it = m_textureBuffers.find(name);
+Texture *PipelineContext::textureBuffer(int32_t hash) {
+    auto it = m_textureBuffers.find(hash);
     if(it != m_textureBuffers.end()) {
         return it->second;
     }
@@ -356,13 +401,6 @@ int32_t PipelineContext::lod(float size) {
     Sets the rendering \a pipeline for the context, creating and linking associated rendering tasks.
 */
 void PipelineContext::setPipeline(Pipeline *pipeline) {
-    if(m_finalMaterial == nullptr) {
-        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
-        if(mtl) {
-            m_finalMaterial = mtl->createInstance();
-        }
-    }
-
     m_pipeline = pipeline;
 
     if(m_pipeline) {
@@ -385,6 +423,7 @@ void PipelineContext::setPipeline(Pipeline *pipeline) {
 void PipelineContext::insertRenderTask(PipelineTask *task, PipelineTask *before) {
     if(task) {
         task->setContext(this);
+        task->resize(m_width, m_height);
 
         for(int32_t i = 0; i < task->outputCount(); i++) {
             Texture *texture = task->output(i);
@@ -413,7 +452,7 @@ const std::list<PipelineTask *> &PipelineContext::renderTasks() const {
 StringList PipelineContext::renderTextures() const {
     StringList result;
     for(auto &it : m_textureBuffers) {
-        result.push_back(it.first);
+        result.push_back(it.second->name());
     }
 
     return result;

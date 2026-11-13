@@ -3,7 +3,7 @@
 
 #include <editor/editortool.h>
 
-#include "spriteelement.h"
+#include "textureconverter.h"
 
 class SpriteController;
 
@@ -13,8 +13,6 @@ public:
 
     void setSettings(TextureImportSettings *settings);
 
-    Object::ObjectList selected();
-
 protected:
     void update(bool pivot, bool local, bool snap) override;
 
@@ -22,18 +20,17 @@ protected:
     void cancelControl() override;
 
     TString icon() const override;
+    TString image() const override;
     TString name() const override;
 
     TString component() const override;
 
 protected:
+    VariantMap m_savedElements;
+
     SpriteController *m_controller;
 
     TextureImportSettings *m_settings;
-
-    SpriteElement m_item;
-
-    TextureImportSettings::ElementMap m_savedElements;
 
     AABBox m_savedBox;
 

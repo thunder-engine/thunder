@@ -32,16 +32,16 @@ public:
     explicit NextModel(QObject* parent = nullptr);
     ~NextModel();
 
-    void addObject(Object *propertyObject);
-    void addObjects(const Object::ObjectList &propertyObjects);
+    void addObject(Object *propertyObject, bool maskPropertyType = false);
+    void addObjects(const Object::ObjectList &propertyObjects, bool maskPropertyType = false);
 
     void clear();
 
 signals:
-    void propertyChanged(const Object::ObjectList &objects, const TString property, Variant value);
+    void propertyChanged(const TString property, Variant value);
 
 private:
-    void updateDynamicProperties(Property *parent, Object *propertyObject);
+    void updateDynamicProperties(Property *parent, Object *propertyObject, bool maskPropertyType);
 
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 

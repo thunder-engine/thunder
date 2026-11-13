@@ -39,7 +39,7 @@ void ProjectSettingsBrowser::init() {
     ui->projectWidget->onObjectSelected(Editor::project());
 }
 
-void ProjectSettingsBrowser::onSettingsUpdated(const Object::ObjectList &list, const TString &property, Variant value) {
+void ProjectSettingsBrowser::onSettingsUpdated(const TString &property, Variant value) {
     Editor::project()->setProperty(property.data(), value);
 }
 

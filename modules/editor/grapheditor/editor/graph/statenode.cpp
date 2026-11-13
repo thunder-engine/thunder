@@ -2,7 +2,6 @@
 
 #include "graphwidgets/nodewidget.h"
 
-#include <recttransform.h>
 #include <layout.h>
 
 void StateNode::updateName() {
@@ -14,22 +13,18 @@ void StateNode::updateName() {
 
 Widget *StateNode::widget() {
     if(m_nodeWidget == nullptr) {
-        Actor *nodeActor = Engine::composeActor<NodeWidget>(name());
-        if(nodeActor) {
-            NodeWidget *nodeWidget = nodeActor->getComponent<NodeWidget>();
+        NodeWidget *nodeWidget = Widget::createWidget<NodeWidget>(name());
+        if(nodeWidget) {
 
             if(nodeWidget) {
-                RectTransform *rect = nodeWidget->rectTransform();
-                rect->setVerticalPolicy(RectTransform::Fixed);
+                nodeWidget->setVerticalPolicy(NodeWidget::Fixed);
 
                 Frame *header = nodeWidget->header();
                 Vector4 corners(header->corners());
                 corners.z = corners.w = corners.x;
                 header->setCorners(corners);
-
-                RectTransform *headerRect = header->rectTransform();
-                headerRect->setVerticalPolicy(RectTransform::Expanding);
-                headerRect->setMargin(Vector4(5.0f));
+                header->setVerticalPolicy(NodeWidget::Expanding);
+                header->setMargin(Vector4(5.0f));
 
                 nodeWidget->setGraphNode(this);
 
