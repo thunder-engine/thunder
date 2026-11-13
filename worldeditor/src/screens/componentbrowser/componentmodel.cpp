@@ -102,6 +102,9 @@ void ComponentModel::update() {
         StringList list = url.filePath().split("/");
         int i = 0;
         foreach(const auto &part, list) {
+            if(part.isEmpty()) {
+                continue;
+            }
             QObject *p = item;
             item = nullptr;
             foreach(QObject *it, p->children()) {
