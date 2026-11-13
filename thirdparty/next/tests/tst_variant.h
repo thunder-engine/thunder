@@ -60,6 +60,15 @@ namespace NextSuite {
         }
     }
 
+    TEST_F(VariantTest, Get_Variant_Value) {
+        Variant value(true);
+
+        Variant result = value.value<Variant>();
+
+        ASSERT_TRUE(result.isValid());
+        ASSERT_TRUE(result == value);
+    }
+
     TEST_F(VariantTest, Set_Get_Advanced_Check) {
         {
             Vector2 vector(1.0f, 2.0f);

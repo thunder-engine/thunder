@@ -113,6 +113,10 @@ public:
 
     template<typename T>
     T value() const {
+        if constexpr(std::is_same_v<T, Variant>) {
+            return *this;
+        }
+
         uint32_t type = MetaType::type<T>();
 
         if(m_data.type < MetaType::STRING) {
