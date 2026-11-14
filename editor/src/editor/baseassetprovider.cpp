@@ -187,7 +187,10 @@ void BaseAssetProvider::removeResource(const TString &source) {
     ProjectSettings *mgr = Editor::project();
     AssetManager *asset = Editor::assets();
 
-    StringList removedFiles = File::list(source);
+    StringList removedFiles;
+    if(File::isDir(source)) {
+        removedFiles = File::list(source);
+    }
     removedFiles.push_back(source);
     for(const TString &path : removedFiles) {
         AssetConverter *converter = asset->getConverter(path);
