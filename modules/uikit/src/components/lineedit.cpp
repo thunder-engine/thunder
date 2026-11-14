@@ -144,7 +144,6 @@ void LineEdit::draw() {
     canvas->setClipRegion(clipRegion());
 
     const Vector4 insets = border() + padding();
-    const float leftInset = insets.w;
     const float contentWidth = MAX(0.0f, size().x - insets.y - insets.w);
     const float cursorPosition = cursorAt(m_cursorPosition);
     m_textScroll = 0.0f;
