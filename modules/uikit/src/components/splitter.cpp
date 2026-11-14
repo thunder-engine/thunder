@@ -18,8 +18,7 @@
 #include "splitter.h"
 
 #include "layout.h"
-
-#include <input.h>
+#include "canvas.h"
 
 #include <utility>
 #include <vector>
@@ -188,11 +187,13 @@ Widget *Splitter::widget(int index) {
     \internal
 */
 void Splitter::update(const Vector2 &pos) {
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    Canvas *uiCanvas = canvas();
+    const bool inputCaptured = uiCanvas && uiCanvas->isPopupInputCaptured();
+    if(inputCaptured || (m_index != -1 && !Widget::isMouseButtonPressed(Input::MOUSE_LEFT))) {
         m_index = -1;
     }
 
-    if(isHovered(pos)) {
+    if(!inputCaptured && isHovered(pos)) {
         Input::CursorShape shape = Input::CURSOR_ARROW;
 
         Layout *layout = Splitter::layout();
@@ -221,7 +222,7 @@ void Splitter::update(const Vector2 &pos) {
             } else {
                 shape = (m_orientation == Widget::Horizontal) ? Input::CURSOR_HORSIZE : Input::CURSOR_VERSIZE;
 
-                if(Input::isMouseButton(Input::MOUSE_LEFT)) {
+                if(Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
                     float delta = (m_orientation == Widget::Horizontal) ? (pos.x - m_savedPosition) : (m_savedPosition - pos.y);
                     if(delta != 0.0f) {
                         m_savedPosition = (m_orientation == Widget::Horizontal) ? pos.x : pos.y;
@@ -234,7 +235,11 @@ void Splitter::update(const Vector2 &pos) {
             }
         }
 
-        Input::mouseSetCursor(shape);
+        if(uiCanvas) {
+            uiCanvas->setCursorOverride(this, shape);
+        }
+    } else if(uiCanvas) {
+        uiCanvas->restoreCursorOverride(this);
     }
 
     Widget::update(pos);

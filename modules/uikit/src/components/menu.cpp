@@ -92,6 +92,7 @@ Menu::Menu() :
         m_dirtyCheckIcons(true),
         m_dirtyArrowIcons(true),
         m_visible(false) {
+    setLevel(TopMost::MenuLevel);
 
     Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
     if(material) {
@@ -128,8 +129,6 @@ Menu::Menu() :
 Menu::~Menu() {
     if(Canvas *canvas = Menu::canvas()) {
         canvas->unregisterShortcuts(this);
-        canvas->m_popupMenus.erase(std::remove(canvas->m_popupMenus.begin(), canvas->m_popupMenus.end(), this),
-                                   canvas->m_popupMenus.end());
     }
 
     if(m_font) {
@@ -291,13 +290,11 @@ void Menu::show(const Vector2 &position) {
         m_currentMenu->hide();
     }
     m_currentMenu = rootMenu;
-    if(Canvas *canvas = Menu::canvas()) {
-        if(std::find(canvas->m_popupMenus.begin(), canvas->m_popupMenus.end(), this) == canvas->m_popupMenus.end()) {
-            canvas->m_popupMenus.push_back(this);
-        }
-    }
-
+    setVisible(true);
     setEnabled(true);
+    if(Canvas *root = Menu::canvas()) {
+        root->showTopMost(this);
+    }
     if(dynamic_cast<Button *>(parentWidget())) {
         setAnchors(Vector2(0.0f), Vector2(0.0f));
         setPivot(Vector2(0.0f, 1.0f));
@@ -319,6 +316,18 @@ void Menu::show(const Vector2 &position) {
            pivot().x == 0.0f) {
             setPivot(Vector2(1.0f, pivot().y));
             menuRegion = clipRegion();
+            const Vector4 parentRegion = parent->clipRegion();
+            const float offsetX = parentRegion.x - (menuRegion.x + menuRegion.z);
+            if(offsetX != 0.0f) {
+                Matrix4 parentInverse = parent->worldTransform().inverse();
+                Vector3 localOrigin = parentInverse * Vector3(0.0f, 0.0f, 0.0f);
+                Vector3 localOffset = parentInverse * Vector3(offsetX, 0.0f, 0.0f) - localOrigin;
+                Vector3 currentPosition = Menu::position();
+                setPosition(Vector3(currentPosition.x + localOffset.x,
+                                    currentPosition.y,
+                                    currentPosition.z));
+                menuRegion = clipRegion();
+            }
         } else if(dynamic_cast<Button *>(parent) && menuRegion.y < canvasRegion.y) {
             Vector2 currentPivot = pivot();
             Vector3 currentPosition = Menu::position();
@@ -374,10 +383,7 @@ void Menu::hide() {
         m_openSubmenu->hide();
         m_openSubmenu = nullptr;
     }
-    if(Canvas *canvas = Menu::canvas()) {
-        canvas->m_popupMenus.erase(std::remove(canvas->m_popupMenus.begin(), canvas->m_popupMenus.end(), this),
-                                   canvas->m_popupMenus.end());
-    }
+    TopMost::hide();
     repaint();
 }
 
@@ -487,14 +493,11 @@ void Menu::draw() {
     }
 
     Canvas *canvas = Menu::canvas();
-    if(canvas && !canvas->m_drawingPopups) {
-        if(std::find(canvas->m_popupMenus.begin(), canvas->m_popupMenus.end(), this) == canvas->m_popupMenus.end()) {
-            canvas->m_popupMenus.push_back(this);
-        }
+    if(canvas && !canvas->isDrawingTopMost()) {
         return;
     }
 
-    Frame::draw();
+    drawBackground();
 
     Vector2 size(Menu::size());
     Matrix4 transform(worldTransform());
@@ -608,6 +611,8 @@ void Menu::draw() {
     if(arrowMesh && !m_arrowInstanceBuffer.empty() && m_arrowMaterial && m_arrowSprite->texture()) {
         canvas->drawMesh(arrowMesh, m_arrowMaterial);
     }
+
+    Widget::draw();
 }
 /*!
     \internal
@@ -669,7 +674,12 @@ void Menu::update(const Vector2 &pos) {
 }
 
 bool Menu::isHovered(const Vector2 &pos) {
-    return m_visible && Widget::isHovered(pos);
+    if(!m_visible) {
+        return false;
+    }
+    const Vector4 area = clipRegion();
+    return pos.x >= area.x && pos.x <= area.x + area.z &&
+           pos.y >= area.y && pos.y <= area.y + area.w;
 }
 
 bool Menu::onMouseDown(int x, int y) {

@@ -140,20 +140,12 @@ void AbstractSlider::update(const Vector2 &pos) {
         m_hovered = hover;
     }
 
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    if(m_mousePressed && !Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
         m_mousePressed = false;
     }
 
-    if(m_hovered || (m_mousePressed && Input::isMouseButton(Input::MOUSE_LEFT))) {
-        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN) {
-            m_currentFade = 0.0f;
-
-            Widget::setFocusWidget(this);
-
-            pressed();
-        }
-
-        if((m_mousePressed && Input::isMouseButton(Input::MOUSE_LEFT)) || Input::touchCount() > 0) {
+    if(m_hovered || m_mousePressed) {
+        if(m_mousePressed) {
             Vector3 min, max;
             bound().box(min, max);
             if(m_orientation == Widget::Horizontal) {

@@ -115,7 +115,7 @@ void Foldout::setText(const TString &text) {
         m_header->setSubWidget(label);
         label->setText(text);
         label->setAlign(Alignment::Left | Alignment::Middle);
-        label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
+        label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 25.0f));
         label->setSize(Vector2(0.0f, 20.0f));
         label->setHorizontalPolicy(Widget::Expanding);
         label->setVerticalPolicy(Widget::Fixed);
@@ -134,7 +134,7 @@ void Foldout::setLabel(Label *label) {
     if(m_header && label) {
         m_header->setSubWidget(label);
         label->setAlign(Alignment::Left | Alignment::Middle);
-        label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 20.0f));
+        label->setPadding(Vector4(0.0f, 0.0f, 0.0f, 25.0f));
         label->setSize(Vector2(0.0f, 20.0f));
         label->setHorizontalPolicy(Widget::Expanding);
         label->setVerticalPolicy(Widget::Fixed);
@@ -161,6 +161,7 @@ void Foldout::setContainer(Frame *container) {
         m_contentArea->setVerticalPolicy(Widget::Preferred);
 
         Layout *contentLayout = new Layout();
+        contentLayout->setSpacing(1);
         contentLayout->setOrientation(Widget::Vertical);
         m_contentArea->setLayout(contentLayout);
     }
@@ -173,9 +174,12 @@ void Foldout::setHeader(CheckBox *header) {
         m_header = header;
         setSubWidget(header);
         if(!header->layout()) {
-            header->setLayout(new Layout());
+            Layout *layout = new Layout();
+            layout->setOrientation(Widget::Horizontal);
+            layout->setCrossAlignment(Layout::CrossCenter);
+            layout->setSpacing(1);
+            header->setLayout(layout);
         }
-        header->layout()->setOrientation(Widget::Horizontal);
         header->setSize(Vector2(100.0f, 20.0f));
         header->setPadding(Vector4(0.0f));
         header->setHorizontalPolicy(Widget::Expanding);
@@ -227,7 +231,7 @@ bool Foldout::onDrop(const TString &mimeType, const TString &data, int x, int y)
 void Foldout::composeComponent() {
     CheckBox *header = Widget::createWidget<CheckBox>(gHeader, this);
 
-    header->setIndicator(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+    header->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
     header->setIndicatorSize(Vector2(16.0f, 8.0f));
     header->setFoldMode(true);
     setHeader(header);

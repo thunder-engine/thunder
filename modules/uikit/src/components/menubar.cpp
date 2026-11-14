@@ -24,7 +24,6 @@
 
 #include <engine.h>
 #include <font.h>
-#include <input.h>
 #include <log.h>
 #include <window.h>
 
@@ -166,24 +165,6 @@ void MenuBar::update(const Vector2 &position) {
         rebuild();
     }
     Widget::update(position);
-    int modifiers = 0;
-    if(Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT)) {
-        modifiers |= Action::Shift;
-    }
-    if(Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL)) {
-        modifiers |= Action::Control;
-    }
-    if(Input::isKey(Input::KEY_LEFT_ALT) || Input::isKey(Input::KEY_RIGHT_ALT)) {
-        modifiers |= Action::Alt;
-    }
-    if(Input::isKey(Input::KEY_LEFT_SUPER) || Input::isKey(Input::KEY_RIGHT_SUPER)) {
-        modifiers |= Action::Super;
-    }
-    for(int key = Input::KEY_SPACE; key <= Input::KEY_MENU; ++key) {
-        if(Input::isKeyDown(static_cast<Input::KeyCode>(key)) && m_menuBar->triggerShortcut(key, modifiers)) {
-            break;
-        }
-    }
 }
 
 Menu *MenuBar::buildMenu(NativeMenu *model, Widget *parent, const TString &name) {

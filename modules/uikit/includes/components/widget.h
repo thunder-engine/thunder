@@ -21,19 +21,27 @@
 #include <object.h>
 #include <uikit.h>
 #include <astring.h>
+#include <sprite.h>
 
 class StyleSheet;
 
 class Canvas;
-class Sprite;
 
 class KeyEvent {
 public:
-    KeyEvent(int keyCode, bool isPressed, bool isRepeat = false);
+    enum Modifier {
+        Shift = 0x0001,
+        Control = 0x0002,
+        Alt = 0x0004,
+        Super = 0x0008
+    };
+
+    KeyEvent(int keyCode, bool isPressed, bool isRepeat = false, int modifiers = 0);
 
     int keyCode() const;
     bool isPressed() const;
     bool isRepeat() const;
+    int modifiers() const;
 
     bool isShiftPressed() const;
     bool isControlPressed() const;
@@ -43,6 +51,7 @@ private:
     int m_keyCode;
     bool m_isPressed;
     bool m_isRepeat;
+    int m_modifiers;
 };
 
 class Layout;
@@ -51,6 +60,7 @@ class UIKIT_EXPORT Widget : public Object {
     A_OBJECT(Widget, Object, UI)
 
     A_PROPERTIES(
+        A_PROPERTYEX(Sprite *, icon, Widget::icon, Widget::setIcon, "editor=Asset"),
         A_PROPERTY(bool, enabled, Widget::isEnabled, Widget::setEnabled),
         A_PROPERTY(bool, visible, Widget::isVisible, Widget::setVisible),
         A_PROPERTY(Vector3, position, Widget::position, Widget::setPosition),
@@ -82,6 +92,7 @@ public:
         Horizontal,
         Vertical
     };
+
     enum SizePolicy {
         Fixed = 0,
         Preferred,
@@ -166,6 +177,13 @@ public:
     static Widget *focusWidget();
 
     static Vector2 mousePosition();
+    static bool isMouseButtonPressed(int button);
+    static bool isKeyPressed(int keyCode);
+    static bool isKeyDown(int keyCode);
+    static bool isKeyUp(int keyCode);
+    static bool isShiftPressed();
+    static bool isControlPressed();
+    static bool isAltPressed();
     static bool setDragCandidate(Widget *source, const TString &mimeType, const TString &data);
     static void finishDrag(bool dropped);
     static void cancelDragCandidate(Widget *source = nullptr);
@@ -180,6 +198,7 @@ public:
     virtual bool onDrop(const TString &mimeType, const TString &data, int x, int y);
     virtual bool onKeyPress(KeyEvent *event);
     virtual bool onKeyRelease(KeyEvent *event);
+    virtual void onTextInput(const TString &text);
 
     Widget *subWidget(const TString &name) const;
     void setSubWidget(Widget *widget);
@@ -207,6 +226,7 @@ protected:
     virtual void composeComponent();
 
     void dispatchKeyEvent(KeyEvent *event);
+    void dispatchTextInput(const TString &text);
     bool dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button);
     virtual bool dispatchContextMenuEvent(const Vector2 &pos);
     bool dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizontal);
@@ -223,6 +243,9 @@ protected:
 
 protected:
     virtual void childAdded(Widget *child);
+    virtual void iconChanged();
+
+    static void iconUpdated(int state, void *ptr);
 
 protected:
     std::map<TString, std::pair<uint32_t, TString>> m_styleRules;
@@ -232,6 +255,8 @@ protected:
     mutable Vector2 m_size;
 
 private:
+    static void beginInputFrame();
+
     void addStyleRules(const std::map<TString, TString> &rules, uint32_t weight);
     void applyGeometryStyle();
     bool isDirty() const;
@@ -242,6 +267,7 @@ private:
     void cleanDirty() const;
     void cleanDirtySize();
     void makeSubWidget(bool enable);
+    void clearCursorOverrides();
 
 private:
     friend class Canvas;

@@ -22,8 +22,6 @@
 
 #include "stylesheet.h"
 
-#include <input.h>
-
 #define NAVI_SIZE 32
 
 namespace {
@@ -454,7 +452,7 @@ bool TabBar::isHovered(const Vector2 &pos) {
 void TabBar::update(const Vector2 &pos) {
     m_blockUpdates = false;
     if(m_dragTab) {
-        if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
+        if(!Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
             m_dragTab = nullptr;
             m_dragActive = false;
         } else if(m_movable) {

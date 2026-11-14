@@ -23,6 +23,7 @@
 #include <widget.h>
 #include <uidocument.h>
 #include <stylesheet.h>
+#include <input.h>
 
 #include <vector>
 
@@ -34,6 +35,7 @@ class Mesh;
 class MaterialInstance;
 class Menu;
 class Action;
+class TopMost;
 
 class UIKIT_EXPORT Canvas : public Widget {
     A_OBJECT(Canvas, Widget, UI)
@@ -56,6 +58,13 @@ public:
     void markDirty();
 
     void update(const Vector2 &position) override;
+    void setCursorShape(Input::CursorShape shape);
+    void setCursorOverride(Widget *owner, Input::CursorShape shape);
+    void restoreCursorOverride(Widget *owner);
+    bool isPopupInputCaptured() const;
+    void showTopMost(TopMost *widget);
+    void hideTopMost(TopMost *widget);
+    bool isDrawingTopMost() const;
 
     void draw() override;
     virtual void draw(CommandBuffer *buffer);
@@ -101,8 +110,15 @@ private:
         Action *action;
     };
 
+    struct CursorOverride {
+        Widget *owner;
+        Input::CursorShape shape;
+    };
+
     void resizeTexture(int width, int height);
 
+    Canvas *rootCanvas();
+    std::vector<TopMost *> orderedTopMostWidgets() const;
     void resolveStyleSheet(Widget *widget);
     void cleanHierarchy(Widget *widget);
     Canvas *shortcutManager();
@@ -115,6 +131,11 @@ private:
 
 private:
     friend class Menu;
+    friend class TopMost;
+
+    std::vector<TopMost *> m_topMostWidgets;
+    Widget *m_topMostPressedWidget = nullptr;
+    bool m_topMostClickCaptured = false;
 
     Vector2 m_lastPosition;
 
@@ -139,9 +160,10 @@ private:
     float m_contentScale;
 
     bool m_lastPositionValid;
-    bool m_drawingPopups = false;
-    std::vector<Menu *> m_popupMenus;
+    bool m_drawingTopMost = false;
     std::vector<ShortcutEntry> m_shortcuts;
+    Input::CursorShape m_cursorShape = Input::CURSOR_ARROW;
+    std::vector<CursorOverride> m_cursorOverrides;
 
 };
 

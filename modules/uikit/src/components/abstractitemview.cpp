@@ -20,8 +20,6 @@
 #include "components/lineedit.h"
 
 #include <abstractitemmodel.h>
-#include <input.h>
-
 #include <algorithm>
 
 AbstractItemView::AbstractItemView() :
@@ -132,6 +130,10 @@ void AbstractItemView::composeComponent() {
     }
 }
 
+void AbstractItemView::onDelegateAreaClicked(const ModelIndex &index, const TString &area) {
+    delegateAreaClicked(index, area);
+}
+
 void AbstractItemView::setRootIndex(const ModelIndex &index) {
     cancelEditing();
     m_rootIndex = index;
@@ -192,8 +194,8 @@ void AbstractItemView::selectItemWithModifiers(const ModelIndex &index) {
         return;
     }
 
-    bool ctrlPressed = Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL);
-    bool shiftPressed = Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
+    bool ctrlPressed = Widget::isControlPressed();
+    bool shiftPressed = Widget::isShiftPressed();
 
     if(ctrlPressed) {
         toggleSelection(index);
@@ -375,6 +377,10 @@ bool AbstractItemView::dispatchContextMenuEvent(const Vector2 &pos) {
     Vector2 localPosition = mapFromGlobal(pos.x, pos.y);
     Vector2 eventPosition(localPosition.x, size().y - localPosition.y);
     onContextMenuRequested(eventPosition);
+    ModelIndex index = modelIndexAtPosition(eventPosition);
+    if(index.isValid()) {
+        setCurrentIndex(index);
+    }
     contextMenuRequested(localPosition);
     return true;
 }
@@ -430,6 +436,10 @@ void AbstractItemView::clicked(const ModelIndex &index) {
 
 void AbstractItemView::pressed(const ModelIndex &index) {
     emitSignal(_SIGNAL(pressed(ModelIndex)), index);
+}
+
+void AbstractItemView::delegateAreaClicked(const ModelIndex &index, const TString &area) {
+    emitSignal(_SIGNAL(delegateAreaClicked(ModelIndex,TString)), index, area);
 }
 
 void AbstractItemView::selectionChanged() {

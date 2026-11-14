@@ -236,25 +236,16 @@ bool ListView::onMouseDoubleClick(int x, int y) {
 }
 
 bool ListView::onMouseWheel(int delta, bool horizontal) {
-    ScrollBar *vbar = verticalScrollBar();
-    if(!vbar) {
-        return false;
-    }
-
     if(m_viewMode == IconMode && horizontal) {
         ScrollBar *hbar = horizontalScrollBar();
-        if(hbar) {
+        if(hbar && hbar->isEnabled()) {
             int newValue = hbar->value() - delta;
             hbar->setValue(std::max(hbar->minimum(), std::min(hbar->maximum(), newValue)));
             return true;
         }
         return false;
     }
-
-    int step = (m_viewMode == ListMode) ? m_rowHeight : m_gridSize.y;
-    int newValue = vbar->value() - static_cast<int>(delta * step);
-    vbar->setValue(std::max(vbar->minimum(), std::min(vbar->maximum(), newValue)));
-    return true;
+    return AbstractScrollArea::onMouseWheel(delta, horizontal);
 }
 
 bool ListView::onKeyPress(KeyEvent *event) {
@@ -376,7 +367,7 @@ bool ListView::onKeyPress(KeyEvent *event) {
 void ListView::update(const Vector2 &pos) {
     AbstractItemView::update(pos);
 
-    if(m_isPressed && Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    if(m_isPressed && !Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
         m_isPressed = false;
         Widget::cancelDragCandidate(this);
     }
@@ -429,17 +420,15 @@ void ListView::boundChanged(const Vector2 &size) {
 void ListView::onVScrollChanged(int value) {
     AbstractItemView::onVScrollChanged(value);
 
-    Vector3 pos(position());
     int visibleIndex = m_firstVisibleIndex;
 
     if(m_viewMode == ListMode) {
         int visibleStep = m_rowHeight > 0 ? m_rowHeight : 1;
-        visibleIndex = int(pos.y / visibleStep);
+        visibleIndex = value / visibleStep;
     } else {
         calculateGridParams();
         if(m_cachedColumns > 0) {
-            float scrollOffset = pos.y;
-            int row = static_cast<int>(scrollOffset / m_gridSize.y);
+            int row = static_cast<int>(value / m_gridSize.y);
             visibleIndex = std::max(0, row * m_cachedColumns);
         }
     }

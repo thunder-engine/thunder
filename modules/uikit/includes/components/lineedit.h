@@ -31,6 +31,7 @@ class UIKIT_EXPORT LineEdit : public Frame {
     A_PROPERTIES(
         A_PROPERTY(TString, text, LineEdit::text, LineEdit::setText),
         A_PROPERTY(TString, placeholderText, LineEdit::placeholderText, LineEdit::setPlaceholderText),
+        A_PROPERTY(bool, selectAllOnFocus, LineEdit::selectAllOnFocus, LineEdit::setSelectAllOnFocus),
         A_PROPERTYEX(Font *, font, LineEdit::font, LineEdit::setFont, "editor=Asset"),
         A_PROPERTYEX(Vector4, textColor, LineEdit::textColor, LineEdit::setTextColor, "editor=Color")
     )
@@ -49,6 +50,9 @@ public:
     TString text() const;
     void setText(const TString &text);
     void selectAll();
+
+    bool selectAllOnFocus() const;
+    void setSelectAllOnFocus(bool enable);
 
     TString placeholderText() const;
     void setPlaceholderText(const TString &text);
@@ -70,10 +74,12 @@ protected:
     void update(const Vector2 &pos) override;
     bool onMouseDown(int x, int y) override;
     bool onMouseUp(int x, int y) override;
+    void onTextInput(const TString &text) override;
 
+    void boundChanged(const Vector2 &size) override;
     void composeComponent() override;
 
-    void recalcCursor();
+    void recalcCursor(bool ensureCursorVisible = true);
 
     static void fontUpdated(int state, void *ptr);
     static void materialUpdated(int state, void *ptr);
@@ -85,6 +91,7 @@ private:
     int32_t cursorPositionAt(float x) const;
     void setCursorPosition(int32_t position, bool selecting);
     void replaceText(const std::u32string &text, int32_t cursorPosition);
+    float textOffset() const;
 
     void draw() override;
 
@@ -109,7 +116,7 @@ private:
     int32_t m_selectionAnchor;
     int32_t m_fontSize;
 
-    float m_textPosition;
+    float m_textScroll;
     float m_cursorBlinkRate;
     float m_cursorBlinkCurrent;
     float m_cursorRepeatHold;
@@ -118,6 +125,7 @@ private:
     bool m_focused;
     bool m_cursorVisible;
     bool m_mouseSelecting;
+    bool m_selectAllOnFocus;
 
     bool m_textDirty;
 

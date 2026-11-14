@@ -51,7 +51,6 @@ Button::Button() :
         m_textColor(Vector4(1.0f)),
         m_iconSize(16.0f),
         m_textOffset(Vector2(0.0f)),
-        m_icon(nullptr),
         m_font(Engine::loadResource<Font>(".embedded/Roboto.ttf")),
         m_iconMesh(Engine::objectCreate<Mesh>()),
         m_textMesh(Engine::objectCreate<Mesh>()),
@@ -86,9 +85,6 @@ Button::Button() :
 Button::~Button() {
     if(m_font) {
         m_font->unsubscribe(this);
-    }
-    if(m_icon) {
-        m_icon->unsubscribe(this);
     }
     if(m_fontMaterial) {
         m_fontMaterial->material()->unsubscribe(this);
@@ -186,30 +182,6 @@ void Button::setTextColor(const Vector4 &color) {
 #endif
 }
 /*!
-    Returns the icon shown on the button.
-*/
-Sprite *Button::icon() const {
-    return m_icon;
-}
-/*!
-    Sets the \a icon shown on the button.
-*/
-void Button::setIcon(Sprite *icon) {
-    if(m_icon != icon) {
-        if(m_icon) {
-            m_icon->unsubscribe(this);
-        }
-
-        m_icon = icon;
-        if(m_icon) {
-            m_icon->subscribe(&Button::iconUpdated, this);
-        }
-
-        m_dirtyIcon = true;
-        repaint();
-    }
-}
-/*!
     Returns the size of the icon.
 */
 Vector2 Button::iconSize() const {
@@ -242,7 +214,7 @@ float Button::contentWidth() const {
         result += m_font->textWidth(m_text, m_fontSize, 0);
     }
 
-    if(m_icon) {
+    if(icon()) {
         result += m_iconSize.x;
     }
 
@@ -301,10 +273,10 @@ void Button::draw() {
         canvas->drawMesh(m_textMesh, m_fontMaterial);
     }
 
-    if(m_icon && m_iconMaterial) {
+    if(icon() && m_iconMaterial) {
         if(m_dirtyIcon) {
-            m_iconMaterial->setTexture(gOverride, m_icon->texture());
-            m_icon->composeMesh(m_iconMesh, Sprite::Sliced, m_iconSize);
+            m_iconMaterial->setTexture(gOverride, icon()->texture());
+            icon()->composeMesh(m_iconMesh, Sprite::Sliced, m_iconSize);
 
             m_dirtyIcon = false;
         }
@@ -348,6 +320,11 @@ void Button::composeComponent() {
     setSize(Vector2(100.0f, 30.0f));
     blockSignals(false);
 }
+
+void Button::iconChanged() {
+    m_dirtyIcon = true;
+    Widget::iconChanged();
+}
 /*!
     \internal
 */
@@ -356,25 +333,6 @@ void Button::fontUpdated(int state, void *ptr) {
         Button *p = static_cast<Button *>(ptr);
         p->m_dirtyText = true;
         p->repaint();
-    }
-}
-
-void Button::iconUpdated(int state, void *ptr) {
-    Button *button = static_cast<Button *>(ptr);
-    if(!button) {
-        return;
-    }
-
-    if(state == Resource::Ready) {
-        button->m_dirtyIcon = true;
-        button->repaint();
-    } else if(state == Resource::ToBeDeleted) {
-        if(button->m_icon) {
-            button->m_icon->unsubscribe(button);
-        }
-        button->m_icon = nullptr;
-        button->m_dirtyIcon = true;
-        button->repaint();
     }
 }
 

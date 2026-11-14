@@ -22,7 +22,6 @@
 #include <vector>
 
 class ItemViewDelegate;
-class MaterialInstance;
 
 class UIKIT_EXPORT TreeView : public AbstractItemView {
     A_OBJECT(TreeView, AbstractItemView, UI)
@@ -50,6 +49,8 @@ public:
     void refresh() override;
     void expandToDepth(int depth);
     void expandToIndex(const ModelIndex &index);
+    void scrollToIndex(const ModelIndex &index);
+    ModelIndex modelIndexAtPosition(const Vector2 &position) override;
 
     ItemViewDelegate *delegate() const;
     void setDelegate(ItemViewDelegate *delegate);
@@ -59,35 +60,31 @@ protected:
     bool onMouseUp(int x, int y) override;
     bool onMouseMove(int x, int y) override;
     bool onMouseDoubleClick(int x, int y) override;
-    bool onMouseWheel(int delta, bool horizontal) override;
     bool onKeyPress(KeyEvent *event) override;
 
     void update(const Vector2 &pos) override;
     void updateSelectionVisuals() override;
+    void onDelegateAreaClicked(const ModelIndex &index, const TString &area) override;
     void composeComponent() override;
     void boundChanged(const Vector2 &size) override;
     void activateCurrentItem() override;
     void onVScrollChanged(int value) override;
 
-    void drawSub() override;
-
     Vector2 cellSize() const override;
-    ModelIndex modelIndexAtPosition(const Vector2 &position) override;
     void onDragFinished(bool dropped) override;
 
 private:
     struct ItemData {
         ModelIndex index;
-        int depth;
         ItemViewDelegate *delegate;
 
-        ItemData() : depth(0), delegate(nullptr) {}
-        ItemData(const ModelIndex &idx, int d)
-            : index(idx), depth(d), delegate(nullptr) {}
+        ItemData() : delegate(nullptr) {}
+        explicit ItemData(const ModelIndex &idx)
+            : index(idx), delegate(nullptr) {}
     };
 
     void rebuildItems();
-    void appendVisible(const ModelIndex &parent, int depth);
+    void appendVisible(const ModelIndex &parent);
     void updateDelegatesStates();
     void handleItemClick(int row);
     void handleItemDoubleClick(int row);
@@ -100,21 +97,14 @@ private:
     Vector2 viewportSize();
     void clearDelegates();
 
-    void buildArrowInstances();
-    bool isClickOnIndicator(int row, const Vector2 &pos) const;
-    Vector4 getArrowRect(int row) const;
-    bool isPointInRect(const Vector2 &point, const Vector4 &rect) const;
-
     ItemData *getItemData(int row);
     const ItemData *getItemData(int row) const;
-
-    static void arrowUpdated(int state, void *ptr);
-    static void materialUpdated(int state, void *ptr);
 
 private:
     std::vector<ItemData> m_itemsData;
     std::list<ModelIndex> m_expandedIndexes;
 
+    ItemViewDelegate *m_defaultDelegate;
     ItemViewDelegate *m_delegate;
 
     int m_rowHeight;
@@ -123,12 +113,6 @@ private:
 
     bool m_isPressed;
     bool m_dirtyItems;
-
-    MaterialInstance *m_arrowMaterial;
-    Sprite *m_arrowSprite;
-    Mesh *m_arrowMesh;
-
-    ByteArray m_instanceBuffer;
 
 };
 

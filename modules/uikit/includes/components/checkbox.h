@@ -24,7 +24,6 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
     A_OBJECT(CheckBox, AbstractButton, UI)
 
     A_PROPERTIES(
-        A_PROPERTYEX(Sprite *, indicator, CheckBox::indicator, CheckBox::setIndicator, "editor=Asset"),
         A_PROPERTYEX(Vector4, indicatorColor, CheckBox::indicatorColor, CheckBox::setIndicatorColor, "editor=Color"),
         A_PROPERTYEX(Vector2, iconSize, CheckBox::indicatorSize, CheckBox::setIndicatorSize, "css=indicator-size")
     )
@@ -34,9 +33,6 @@ class UIKIT_EXPORT CheckBox : public AbstractButton {
 public:
     CheckBox();
     ~CheckBox();
-
-    Sprite *indicator() const;
-    void setIndicator(Sprite *icon);
 
     Vector4 indicatorColor() const;
     void setIndicatorColor(const Vector4 &color);
@@ -54,15 +50,13 @@ protected:
     void applyStyle() override;
 
     void boundChanged(const Vector2 &size) override;
+    void iconChanged() override;
 
-    static void iconUpdated(int state, void *ptr);
     static void materialUpdated(int state, void *ptr);
 
 protected:
     Vector4 m_knobColor;
     Vector2 m_knobSize;
-
-    Sprite *m_knobIcon;
 
     Mesh *m_iconMesh;
 

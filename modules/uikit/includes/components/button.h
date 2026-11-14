@@ -30,7 +30,6 @@ class UIKIT_EXPORT Button : public AbstractButton {
         A_PROPERTYEX(Font *, font, Button::font, Button::setFont, "editor=Asset"),
         A_PROPERTYEX(int, fontSize, Button::fontSize, Button::setFontSize, "css=font-size"),
         A_PROPERTYEX(Vector4, textColor, Button::textColor, Button::setTextColor, "editor=Color, css=color"),
-        A_PROPERTYEX(Sprite *, icon, Button::icon, Button::setIcon, "editor=Asset"),
         A_PROPERTYEX(Vector2, iconSize, Button::iconSize, Button::setIconSize, "css=icon-size")
     )
     A_NOMETHODS()
@@ -52,9 +51,6 @@ public:
     Vector4 textColor() const;
     void setTextColor(const Vector4 &color);
 
-    Sprite *icon() const;
-    void setIcon(Sprite *icon);
-
     Vector2 iconSize() const;
     void setIconSize(const Vector2 &size);
 
@@ -69,9 +65,9 @@ protected:
     void applyStyle() override;
 
     void composeComponent() override;
+    void iconChanged() override;
 
     static void fontUpdated(int state, void *ptr);
-    static void iconUpdated(int state, void *ptr);
     static void materialUpdated(int state, void *ptr);
 
 protected:
@@ -80,8 +76,6 @@ protected:
     Vector4 m_textColor;
     Vector2 m_iconSize;
     Vector2 m_textOffset;
-
-    Sprite *m_icon;
 
     Font *m_font;
 

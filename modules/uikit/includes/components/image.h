@@ -19,8 +19,6 @@
 #define IMAGE_H
 
 #include <widget.h>
-
-#include <sprite.h>
 #include <material.h>
 
 class Mesh;

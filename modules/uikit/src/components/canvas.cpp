@@ -19,6 +19,7 @@
 
 #include "components/widget.h"
 #include "components/menu.h"
+#include "components/topmost.h"
 
 #include <stylesheet.h>
 
@@ -148,6 +149,7 @@ Canvas::Canvas() :
 }
 
 Canvas::~Canvas() {
+    m_topMostWidgets.clear();
     const std::list<Widget *> children(childWidgets());
     for(Widget *child : children) {
         delete child;
@@ -167,6 +169,95 @@ Canvas::~Canvas() {
 void Canvas::markDirty() {
     m_dirty = true;
 }
+
+bool Canvas::isPopupInputCaptured() const {
+    const Canvas *root = this;
+    for(Widget *parent = parentWidget(); parent; parent = parent->parentWidget()) {
+        if(Canvas *canvas = dynamic_cast<Canvas *>(parent)) {
+            root = canvas;
+        }
+    }
+
+    return root->m_topMostClickCaptured ||
+            std::any_of(root->m_topMostWidgets.begin(), root->m_topMostWidgets.end(), [](TopMost *widget) {
+        return widget && widget->isVisible() && widget->isEnabled();
+    });
+}
+
+Canvas *Canvas::rootCanvas() {
+    Canvas *root = this;
+    for(Widget *parent = parentWidget(); parent; parent = parent->parentWidget()) {
+        if(Canvas *canvas = dynamic_cast<Canvas *>(parent)) {
+            root = canvas;
+        }
+    }
+    return root;
+}
+
+void Canvas::showTopMost(TopMost *widget) {
+    if(!widget) {
+        return;
+    }
+    Canvas *root = rootCanvas();
+    if(root != this) {
+        root->showTopMost(widget);
+        return;
+    }
+
+    for(Widget *child = widget->parentWidget(); child; child = child->parentWidget()) {
+        if(Canvas *previousRoot = dynamic_cast<Canvas *>(child)) {
+            previousRoot->hideTopMost(widget);
+            if(previousRoot->m_topMostPressedWidget == widget) {
+                previousRoot->m_topMostPressedWidget = nullptr;
+                previousRoot->m_topMostClickCaptured = false;
+            }
+            break;
+        }
+    }
+
+    if(std::find(m_topMostWidgets.begin(), m_topMostWidgets.end(), widget) != m_topMostWidgets.end()) {
+        m_topMostWidgets.erase(std::remove(m_topMostWidgets.begin(), m_topMostWidgets.end(), widget),
+                               m_topMostWidgets.end());
+    }
+    m_topMostWidgets.push_back(widget);
+    markDirty();
+}
+
+void Canvas::hideTopMost(TopMost *widget) {
+    Canvas *root = rootCanvas();
+    if(root != this) {
+        root->hideTopMost(widget);
+        return;
+    }
+    if(!widget) {
+        return;
+    }
+    m_topMostWidgets.erase(std::remove(m_topMostWidgets.begin(), m_topMostWidgets.end(), widget),
+                           m_topMostWidgets.end());
+    if(m_topMostPressedWidget == widget) {
+        m_topMostPressedWidget = nullptr;
+    }
+    markDirty();
+}
+
+bool Canvas::isDrawingTopMost() const {
+    const Canvas *root = this;
+    for(Widget *parent = parentWidget(); parent; parent = parent->parentWidget()) {
+        if(Canvas *parentCanvas = dynamic_cast<Canvas *>(parent)) {
+            root = parentCanvas;
+        }
+    }
+    return root->m_drawingTopMost;
+}
+
+std::vector<TopMost *> Canvas::orderedTopMostWidgets() const {
+    std::vector<TopMost *> result(m_topMostWidgets);
+    std::stable_sort(result.begin(), result.end(), [](TopMost *left, TopMost *right) {
+        return left && right ? left->level() < right->level() : left != nullptr;
+    });
+    return result;
+}
+
 /*!
     Updates all child widgets with the given cursor/touch \a position.
 
@@ -178,30 +269,42 @@ void Canvas::update(const Vector2 &position) {
         return;
     }
 
+    beginInputFrame();
+
     Vector2 globalPos(mapToContent(position));
-    Menu *popupUnderCursor = nullptr;
-    for(auto it = m_popupMenus.rbegin(); it != m_popupMenus.rend(); ++it) {
-        Menu *menu = *it;
-        if(menu && menu->isVisible() && menu->isEnabled() && menu->isHovered(globalPos)) {
-            popupUnderCursor = menu;
+    const std::vector<TopMost *> topMostWidgets(orderedTopMostWidgets());
+    TopMost *topMostUnderCursor = nullptr;
+    for(auto it = topMostWidgets.rbegin(); it != topMostWidgets.rend(); ++it) {
+        TopMost *widget = *it;
+        if(widget && widget->isVisible() && widget->isEnabled() && widget->isHovered(globalPos)) {
+            topMostUnderCursor = widget;
             break;
         }
     }
-    const bool popupHit = popupUnderCursor != nullptr;
-    const auto closePopupsOutside = [this, &globalPos]() {
-        const std::vector<Menu *> popups(m_popupMenus);
-        for(auto it = popups.rbegin(); it != popups.rend(); ++it) {
-            Menu *menu = *it;
-            if(menu && menu->isVisible() && !menu->containsMenuAt(globalPos)) {
-                menu->hide();
+    const bool topMostHit = topMostUnderCursor != nullptr;
+    const bool topMostOpen = std::any_of(topMostWidgets.begin(), topMostWidgets.end(), [](TopMost *widget) {
+        return widget && widget->isVisible() && widget->isEnabled();
+    });
+    const auto closeTopMostOutside = [this, &globalPos, &topMostWidgets]() {
+        for(auto it = topMostWidgets.rbegin(); it != topMostWidgets.rend(); ++it) {
+            TopMost *widget = *it;
+            if(!widget || !widget->isVisible()) {
+                continue;
+            }
+            Menu *menu = dynamic_cast<Menu *>(widget);
+            const bool inside = menu ? menu->containsMenuAt(globalPos) : widget->isHovered(globalPos);
+            if(!inside) {
+                widget->hide();
             }
         }
     };
 
     if(!m_lastPositionValid || globalPos != m_lastPosition) {
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseEvent(globalPos, Event::MouseMove, 0);
-        } else {
+        if(topMostHit) {
+            topMostUnderCursor->dispatchMouseEvent(globalPos, Event::MouseMove, 0);
+        } else if(topMostOpen && m_topMostPressedWidget) {
+            m_topMostPressedWidget->dispatchMouseEvent(globalPos, Event::MouseMove, 0);
+        } else if(!topMostOpen && !m_topMostClickCaptured) {
             dispatchMouseEvent(globalPos, Event::MouseMove, 0);
         }
         m_lastPosition = globalPos;
@@ -214,9 +317,9 @@ void Canvas::update(const Vector2 &position) {
         if(delta == 0) {
             delta = wheelDelta > 0.0f ? 1 : -1;
         }
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseWheelEvent(globalPos, delta, false);
-        } else {
+        if(topMostHit) {
+            topMostUnderCursor->dispatchMouseWheelEvent(globalPos, delta, false);
+        } else if(!topMostOpen && !m_topMostClickCaptured) {
             dispatchMouseWheelEvent(globalPos, delta, false);
         }
     }
@@ -224,50 +327,103 @@ void Canvas::update(const Vector2 &position) {
     for(int key = Input::KEY_SPACE; key <= Input::KEY_MENU; ++key) {
         if(Input::isKeyDown((Input::KeyCode)key) || Input::isKeyUp((Input::KeyCode)key)) {
             const bool pressed = Input::isKeyDown((Input::KeyCode)key);
+            int modifiers = 0;
+            if(Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT)) {
+                modifiers |= KeyEvent::Shift;
+            }
+            if(Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL)) {
+                modifiers |= KeyEvent::Control;
+            }
+            if(Input::isKey(Input::KEY_LEFT_ALT) || Input::isKey(Input::KEY_RIGHT_ALT)) {
+                modifiers |= KeyEvent::Alt;
+            }
+            if(Input::isKey(Input::KEY_LEFT_SUPER) || Input::isKey(Input::KEY_RIGHT_SUPER)) {
+                modifiers |= KeyEvent::Super;
+            }
             if(pressed) {
                 refreshShortcuts();
             }
             if(!pressed || !triggerShortcut(key)) {
-                KeyEvent event(key, pressed);
+                KeyEvent event(key, pressed, false, modifiers);
                 dispatchKeyEvent(&event);
             }
         }
     }
 
-    if(Input::isMouseButtonDown(Input::MOUSE_LEFT)) {
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
+    const uint32_t touchCount = Input::touchCount();
+    const bool touchBegan = touchCount > 0 && Input::touchState(0) == Input::TOUCH_BEGAN;
+    const bool touchEnded = touchCount > 0 &&
+        (Input::touchState(0) == Input::TOUCH_ENDED || Input::touchState(0) == Input::TOUCH_CANCELLED);
+
+    const TString inputText = Input::inputString();
+    if(!inputText.isEmpty()) {
+        dispatchTextInput(inputText);
+    }
+
+    const bool leftButtonDown = Input::isMouseButtonDown(Input::MOUSE_LEFT) || touchBegan;
+    const bool leftButtonUp = Input::isMouseButtonUp(Input::MOUSE_LEFT) || touchEnded;
+    if(leftButtonDown) {
+        if(topMostOpen || m_topMostClickCaptured) {
+            m_topMostClickCaptured = true;
+            if(topMostHit) {
+                m_topMostPressedWidget = topMostUnderCursor;
+                topMostUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
+            } else {
+                closeTopMostOutside();
+            }
         } else {
-            closePopupsOutside();
             dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_LEFT);
         }
     }
     if(Input::isMouseButtonDown(Input::MOUSE_RIGHT)) {
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_RIGHT);
+        if(topMostOpen || m_topMostClickCaptured) {
+            m_topMostClickCaptured = true;
+            if(topMostHit) {
+                m_topMostPressedWidget = topMostUnderCursor;
+                topMostUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_RIGHT);
+            } else {
+                closeTopMostOutside();
+            }
         } else {
-            closePopupsOutside();
             dispatchMouseEvent(globalPos, Event::MouseDown, Input::MOUSE_RIGHT);
         }
     }
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
-        } else {
+    if(leftButtonUp) {
+        if(m_topMostClickCaptured) {
+            if(m_topMostPressedWidget && m_topMostPressedWidget->isVisible()) {
+                m_topMostPressedWidget->dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
+            }
+            m_topMostPressedWidget = nullptr;
+            m_topMostClickCaptured = false;
+        } else if(topMostHit) {
+            topMostUnderCursor->dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
+        } else if(!topMostOpen) {
             dispatchMouseEvent(globalPos, Event::MouseUp, Input::MOUSE_LEFT);
         }
     }
     if(Input::isMouseButtonDoubleClick(Input::MOUSE_LEFT)) {
-        if(popupHit) {
-            popupUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
+        if(topMostHit) {
+            topMostUnderCursor->dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
+        } else if(topMostOpen || m_topMostClickCaptured) {
+            m_topMostClickCaptured = true;
+            closeTopMostOutside();
         } else {
             dispatchMouseEvent(globalPos, Event::MouseDoubleClick, Input::MOUSE_LEFT);
         }
     }
 
+    for(TopMost *widget : topMostWidgets) {
+        if(widget && widget->isVisible() && widget->isEnabled()) {
+            widget->update(globalPos);
+        }
+    }
     Widget::update(globalPos);
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    if(leftButtonUp) {
         Widget::finishDrag(false);
+    }
+    if(Input::isMouseButtonUp(Input::MOUSE_RIGHT)) {
+        m_topMostClickCaptured = false;
+        m_topMostPressedWidget = nullptr;
     }
 }
 
@@ -409,14 +565,16 @@ void Canvas::draw(CommandBuffer *buffer) {
 
         Widget::draw();
 
-        m_drawingPopups = true;
-        for(size_t i = 0; i < m_popupMenus.size(); ++i) {
-            Menu *menu = m_popupMenus[i];
-            if(menu && menu->isVisible() && menu->isEnabled()) {
-                menu->draw();
+        if(rootCanvas() == this) {
+            m_drawingTopMost = true;
+            const std::vector<TopMost *> topMostWidgets(orderedTopMostWidgets());
+            for(TopMost *widget : topMostWidgets) {
+                if(widget && widget->isVisible() && widget->isEnabled()) {
+                    widget->draw();
+                }
             }
+            m_drawingTopMost = false;
         }
-        m_drawingPopups = false;
         m_dirty = false;
     }
 
@@ -477,6 +635,45 @@ void Canvas::drawRect(MaterialInstance *material, Widget *widget) {
 */
 void Canvas::drawMesh(Mesh *mesh, MaterialInstance *material) {
     m_buffer->drawMesh(mesh, 0, Material::Translucent, *material);
+}
+
+void Canvas::setCursorShape(Input::CursorShape shape) {
+    m_cursorShape = shape;
+    if(m_cursorOverrides.empty()) {
+        Input::mouseSetCursor(shape);
+    }
+}
+
+void Canvas::setCursorOverride(Widget *owner, Input::CursorShape shape) {
+    if(!owner) {
+        return;
+    }
+
+    auto it = std::find_if(m_cursorOverrides.begin(), m_cursorOverrides.end(),
+                           [owner](const CursorOverride &override) {
+        return override.owner == owner;
+    });
+    if(it == m_cursorOverrides.end()) {
+        m_cursorOverrides.push_back({owner, shape});
+        it = std::prev(m_cursorOverrides.end());
+    } else {
+        it->shape = shape;
+    }
+    if(std::next(it) == m_cursorOverrides.end()) {
+        Input::mouseSetCursor(shape);
+    }
+}
+
+void Canvas::restoreCursorOverride(Widget *owner) {
+    const size_t previousSize = m_cursorOverrides.size();
+    m_cursorOverrides.erase(std::remove_if(m_cursorOverrides.begin(), m_cursorOverrides.end(),
+                                           [owner](const CursorOverride &override) {
+        return override.owner == owner;
+    }), m_cursorOverrides.end());
+
+    if(m_cursorOverrides.size() != previousSize) {
+        Input::mouseSetCursor(m_cursorOverrides.empty() ? m_cursorShape : m_cursorOverrides.back().shape);
+    }
 }
 
 void Canvas::setSize(int width, int height) {
@@ -697,7 +894,7 @@ void Canvas::cleanHierarchy(Widget *widget) {
     std::list<Widget *> children = widget->childWidgets();
 
     for(auto it : children) {
-        if(!it->isSubWidget()) {
+        if(!it->isSubWidget() && !dynamic_cast<TopMost *>(it)) {
             delete it;
         }
     }
