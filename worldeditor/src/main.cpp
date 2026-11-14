@@ -24,6 +24,7 @@
 #include "main/mainwindow.h"
 
 #include "screens/projectbrowser/projectbrowser.h"
+#include "managers/projectmanager/projectmodel.h"
 
 #include <editor/editorplatform.h>
 
@@ -61,6 +62,7 @@ int main(int argc, char *argv[]) {
 
     Engine engine;
     Engine::setPlatformAdaptor(&EditorPlatform::instance());
+    ProjectModel::syncRecentProjects();
 
     TString project;
     if(argc > 1) {

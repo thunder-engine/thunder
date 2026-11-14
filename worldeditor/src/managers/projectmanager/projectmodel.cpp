@@ -20,11 +20,98 @@
 #include <QSettings>
 #include <QApplication>
 #include <QFont>
+#include <QDir>
+#include <QFile>
+#include <QSaveFile>
 
 #include <url.h>
 #include <file.h>
+#include <json.h>
+#include <log.h>
+#include <standardpaths.h>
+
+#include <algorithm>
 
 const char *gProjects("launcher.projects");
+namespace {
+    const char *gRecentProjectsFile("recent_projects.json");
+
+    void syncRecentProjectsFile(const TString &preferredProject) {
+        QSettings settings(COMPANY_NAME, EDITOR_NAME);
+        settings.sync();
+        if(settings.status() != QSettings::NoError) {
+            aWarning() << "Unable to read the World Editor project history from settings.";
+        }
+        const QStringList legacyProjects = settings.value(gProjects).toStringList();
+
+        const TString configDirectory = StandardPaths::appendOrganizationAndApp(
+                    StandardPaths::writableLocation(StandardPaths::ConfigLocation),
+                    COMPANY_NAME,
+                    EDITOR_NAME);
+        if(configDirectory.isEmpty()) {
+            aWarning() << "Unable to determine the application configuration directory.";
+            return;
+        }
+
+        const QString directory = QString::fromUtf8(configDirectory.data());
+        if(!QDir().mkpath(directory)) {
+            aWarning() << "Unable to create the application configuration directory:" << configDirectory;
+            return;
+        }
+        const QString recentProjectsPath = QDir(directory).filePath(gRecentProjectsFile);
+
+        StringList projects;
+        auto appendProject = [&projects](const TString &path) {
+            if(!path.isEmpty() && File::exists(path) &&
+               std::find(projects.begin(), projects.end(), path) == projects.end()) {
+                projects.push_back(path);
+            }
+        };
+
+        appendProject(preferredProject);
+
+        QFile recentProjectsFile(recentProjectsPath);
+        if(recentProjectsFile.exists()) {
+            if(!recentProjectsFile.open(QIODevice::ReadOnly)) {
+                aWarning() << "Unable to read recent projects from" << recentProjectsPath.data();
+                return;
+            }
+            const Variant recentProjects = Json::load(TString(recentProjectsFile.readAll().toStdString()));
+            recentProjectsFile.close();
+            if(!recentProjects.isValid() || recentProjects.type() != MetaType::VARIANTLIST) {
+                aWarning() << "Unable to parse recent projects from" << recentProjectsPath.data();
+                return;
+            }
+            for(const Variant &entry : recentProjects.toList()) {
+                appendProject(entry.toString());
+            }
+        }
+
+        for(const QString &entry : legacyProjects) {
+            appendProject(TString(entry.toStdString()));
+        }
+
+        VariantList serializedProjects;
+        for(const TString &path : projects) {
+            serializedProjects.push_back(Variant(path));
+        }
+        const TString serialized = Json::save(Variant(serializedProjects), 0);
+        const QByteArray data(serialized.data(), serialized.length());
+
+        QSaveFile output(recentProjectsPath);
+        if(!output.open(QIODevice::WriteOnly)) {
+            aWarning() << "Unable to write recent projects to" << recentProjectsPath.data();
+            return;
+        }
+        if(output.write(data) != data.size()) {
+            aWarning() << "Unable to write the complete recent projects list to" << recentProjectsPath.data();
+            return;
+        }
+        if(!output.commit()) {
+            aWarning() << "Unable to save recent projects to" << recentProjectsPath.data();
+        }
+    }
+}
 
 StringList ProjectModel::s_list;
 
@@ -109,5 +196,14 @@ void ProjectModel::addProject(const TString &path) {
     }
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue(gProjects, list);
+    settings.sync();
+    if(settings.status() != QSettings::NoError) {
+        aWarning() << "Unable to save the World Editor project history to settings.";
+    }
+    syncRecentProjectsFile(path);
+}
+
+void ProjectModel::syncRecentProjects() {
+    syncRecentProjectsFile(TString());
 
 }
