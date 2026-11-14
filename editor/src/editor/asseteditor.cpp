@@ -121,6 +121,11 @@ void AssetEditor::changeParent(const Object::ObjectList &objects, Object *parent
     A_UNUSED(position);
 }
 
+std::list<Widget *> AssetEditor::propertiesActionWidgets(Object *object) {
+    A_UNUSED(object);
+    return std::list<Widget *>();
+}
+
 void AssetEditor::onDropAsset(const TString &path, bool additive) {
     A_UNUSED(path);
     A_UNUSED(additive);
@@ -197,7 +202,7 @@ void AssetEditor::selectionChanged() {
 }
 
 void AssetEditor::objectsChanged(const TString &property, const Variant &value) {
-    emitSignal(_SIGNAL(objectsChanged(TString, Variant)), property, value);
+    emitSignal(_SIGNAL(objectsChanged(TString,Variant)), property, value);
 }
 
 void AssetEditor::copyPasteChanged() {

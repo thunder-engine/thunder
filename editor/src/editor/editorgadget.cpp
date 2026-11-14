@@ -35,14 +35,14 @@ void EditorGadget::setCurrentEditor(AssetEditor *editor) {
     if(m_currentEditor) {
         disconnect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
         disconnect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
-        disconnect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
+        disconnect(m_currentEditor, _SIGNAL(objectsChanged(TString,Variant)), this, _SLOT(onObjectsChanged(TString,Variant)));
     }
 
     m_currentEditor = editor;
     if(m_currentEditor) {
+        connect(m_currentEditor, _SIGNAL(objectsChanged(TString,Variant)), this, _SLOT(onObjectsChanged(TString,Variant)));
         connect(this, _SIGNAL(updated()), m_currentEditor, _SLOT(onUpdated()));
         connect(this, _SIGNAL(objectsSelected(bool)), m_currentEditor, _SLOT(onObjectsSelected(bool)));
-        connect(m_currentEditor, _SIGNAL(objectsChanged(TString, Variant)), this, _SLOT(onObjectsChanged(TString, Variant)));
     }
 }
 
@@ -103,7 +103,7 @@ void EditorGadget::objectsSelected(bool force) {
 }
 
 void EditorGadget::objectsChanged(const TString &property, Variant value) {
-    emitSignal(_SIGNAL(objectsChanged(TString, Variant)), property, value);
+    emitSignal(_SIGNAL(objectsChanged(TString,Variant)), property, value);
 }
 
 void EditorGadget::onUpdated() {

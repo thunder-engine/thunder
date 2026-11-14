@@ -20,7 +20,6 @@
 std::list<PropertyEdit::UserTypeCallback> PropertyEdit::m_userCallbacks;
 
 PropertyEdit::PropertyEdit() :
-        m_object(nullptr),
         m_mixedValue(false),
         m_label(nullptr),
         m_editorLayout(nullptr) {
@@ -59,31 +58,21 @@ void PropertyEdit::setEditorHint(const TString &hint) {
     A_UNUSED(hint);
 }
 
-void PropertyEdit::setObject(Object *object, const TString &property) {
-    m_object = object;
+void PropertyEdit::setObjects(const Object::ObjectList &objects, const TString &property) {
     m_property = property;
-    m_objects.clear();
-    if(object) {
-        m_objects.push_back(object);
-    }
-    if(m_label) {
-        m_label->setText(propertyDisplayName(property));
-        m_label->setVisible(!property.isEmpty());
-    }
+    m_objects = objects;
+    setPropertyDisplayName(propertyDisplayName(property));
 }
 
-void PropertyEdit::setObjects(const Object::ObjectList &objects, const TString &property) {
-    setObject(objects.empty() ? nullptr : objects.front(), property);
-    m_objects = objects;
+void PropertyEdit::setPropertyDisplayName(const TString &name) {
+    if(m_label) {
+        m_label->setText(name);
+        m_label->setVisible(!name.isEmpty());
+    }
 }
 
 void PropertyEdit::setMixedValue(bool mixed) {
     m_mixedValue = mixed;
-}
-
-bool PropertyEdit::setSelectedObject(Object *object) {
-    A_UNUSED(object);
-    return false;
 }
 
 TString PropertyEdit::propertyName() const {
@@ -91,7 +80,7 @@ TString PropertyEdit::propertyName() const {
 }
 
 Object *PropertyEdit::editedObject() const {
-    return m_object;
+    return m_objects.empty() ? nullptr : m_objects.front();
 }
 
 const Object::ObjectList &PropertyEdit::editedObjects() const {
@@ -106,10 +95,6 @@ void PropertyEdit::editFinished() {
     emitSignal(_SIGNAL(editFinished()));
 }
 
-void PropertyEdit::selectionRequested() {
-    emitSignal(_SIGNAL(selectionRequested()));
-}
-
 void PropertyEdit::registerEditorFactory(UserTypeCallback callback) {
     if(callback && std::find(m_userCallbacks.begin(), m_userCallbacks.end(), callback) == m_userCallbacks.end()) {
         m_userCallbacks.push_back(callback);
@@ -120,10 +105,9 @@ void PropertyEdit::unregisterEditorFactory(UserTypeCallback callback) {
     m_userCallbacks.remove(callback);
 }
 
-PropertyEdit *PropertyEdit::constructEditor(uint32_t userType, Widget *parent, const TString &editor) {
-    A_UNUSED(parent);
+PropertyEdit *PropertyEdit::constructEditor(uint32_t userType, const TString &editor) {
     for(UserTypeCallback callback : m_userCallbacks) {
-        if(PropertyEdit *result = callback(userType, parent, editor)) {
+        if(PropertyEdit *result = callback(userType, editor)) {
             return result;
         }
     }
@@ -138,6 +122,16 @@ PropertyEdit *PropertyEdit::constructEditor(uint32_t userType, Widget *parent, c
     }
 
     return nullptr;
+}
+
+TString PropertyEdit::propertyHint(const TString &hints, const TString &key) {
+    for(TString token : hints.split(',')) {
+        token = token.trimmed();
+        if(token.startsWith(key)) {
+            return token.mid(key.length(), token.length() - key.length()).trimmed();
+        }
+    }
+    return TString();
 }
 
 void PropertyEdit::addEditor(Widget *editor) {
