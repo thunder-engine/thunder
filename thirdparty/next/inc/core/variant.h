@@ -113,7 +113,7 @@ public:
 
     template<typename T>
     T value() const {
-        if constexpr(std::is_same<T, Variant>::value) {
+        if(std::is_same<T, Variant>::value) {
             return *this;
         }
 
