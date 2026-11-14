@@ -33,6 +33,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
 
     static void addProject(const TString &path);
+    static void syncRecentProjects();
 
 protected:
     static StringList s_list;
