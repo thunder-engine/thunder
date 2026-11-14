@@ -23,6 +23,9 @@
 #include <editor/assetconverter.h>
 #include <editor/undostack.h>
 
+class Menu;
+class ItemViewDelegate;
+
 class EDITOR_EXPORT AssetEditor : public Widget {
     A_OBJECT(AssetEditor, Widget, Editor)
 
@@ -61,8 +64,14 @@ public:
     virtual bool checkSave();
     virtual StringList componentGroups() const;
     virtual Object::ObjectList selected() const;
+    virtual Widget *propertiesWidget() { return nullptr; }
+    virtual Menu *hierarchyMenu() { return nullptr; }
+    virtual Menu *hierarchyContextMenu(Object *) { return nullptr; }
+    virtual ItemViewDelegate *hierarchyDelegate() { return nullptr; }
     virtual bool maskPropertyType() const;
     virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
+
+    virtual std::list<Widget *> propertiesActionWidgets(Object *object);
 
     virtual VariantMap saveState();
     virtual void restoreState(const VariantMap &data);

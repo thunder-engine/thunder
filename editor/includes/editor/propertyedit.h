@@ -22,14 +22,13 @@ class EDITOR_EXPORT PropertyEdit : public Widget {
     A_OBJECT(PropertyEdit, Widget, Editor)
     A_METHODS(
         A_SIGNAL(PropertyEdit::dataChanged),
-        A_SIGNAL(PropertyEdit::editFinished),
-        A_SIGNAL(PropertyEdit::selectionRequested)
+        A_SIGNAL(PropertyEdit::editFinished)
     )
     A_NOENUMS()
     A_NOPROPERTIES()
 
 public:
-    typedef PropertyEdit *(*UserTypeCallback)(uint32_t userType, Widget *parent, const TString &editor);
+    typedef PropertyEdit *(*UserTypeCallback)(uint32_t userType, const TString &editor);
 
     PropertyEdit();
     ~PropertyEdit() override;
@@ -37,10 +36,9 @@ public:
     virtual Variant data() const;
     virtual void setData(const Variant &data);
     virtual void setEditorHint(const TString &hint);
-    virtual void setObject(Object *object, const TString &property);
     virtual void setObjects(const Object::ObjectList &objects, const TString &property);
+    void setPropertyDisplayName(const TString &name);
     virtual void setMixedValue(bool mixed);
-    virtual bool setSelectedObject(Object *object);
 
     TString propertyName() const;
     Object *editedObject() const;
@@ -48,11 +46,11 @@ public:
 
     void dataChanged();
     void editFinished();
-    void selectionRequested();
 
     static void registerEditorFactory(UserTypeCallback callback);
     static void unregisterEditorFactory(UserTypeCallback callback);
-    static PropertyEdit *constructEditor(uint32_t userType, Widget *parent, const TString &editor);
+    static PropertyEdit *constructEditor(uint32_t userType, const TString &editor);
+    static TString propertyHint(const TString &hints, const TString &key);
 
     static bool parseFloat(const TString &text, float &value);
     static bool parseInteger(const TString &text, int &value);
@@ -63,7 +61,6 @@ protected:
     void addEditor(Widget *editor);
     Layout *editorLayout() const;
 
-    Object *m_object;
     TString m_property;
     Object::ObjectList m_objects;
     bool m_mixedValue;
