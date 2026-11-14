@@ -38,6 +38,7 @@ public:
         INTEGER,
         FLOAT,
         STRING,
+        VARIANT,
         VARIANTMAP,
         VARIANTLIST,
         BYTEARRAY,
