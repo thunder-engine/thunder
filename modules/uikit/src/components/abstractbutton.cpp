@@ -23,7 +23,6 @@
 
 #include <resources/material.h>
 
-#include <input.h>
 #include <timer.h>
 #include <log.h>
 
@@ -163,29 +162,14 @@ void AbstractButton::update(const Vector2 &pos) {
     Widget::update(pos);
 
     setHovered(isHovered(pos));
-    if(Input::isMouseButtonUp(Input::MOUSE_LEFT)) {
+    if(m_pressed && !Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
         m_pressed = false;
     }
 
     Vector4 color(m_checked ? m_pressedColor : m_backgroundColor);
     if(m_hovered) {
         color = m_highlightedColor;
-        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN) {
-            m_currentFade = 0.0f;
-
-            if(m_checkable) {
-                setChecked(!m_checked);
-            }
-            pressed();
-        }
-
-        if(Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_ENDED) {
-            m_currentFade = 0.0f;
-
-            clicked();
-        }
-
-        if(m_pressed || Input::touchCount() > 0) {
+        if(m_pressed) {
             color = m_pressedColor;
         }
     }

@@ -48,6 +48,7 @@ public:
     void setHorizontalScrollBar(ScrollBar *bar);
 
 protected:
+    bool onMouseWheel(int delta, bool horizontal) override;
     void composeComponent() override;
     void boundChanged(const Vector2 &size) override;
 

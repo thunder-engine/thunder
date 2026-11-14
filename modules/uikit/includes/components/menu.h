@@ -19,14 +19,14 @@
 #define MENU_H
 
 #include <font.h>
-#include <frame.h>
 #include <action.h>
+#include <components/topmost.h>
 
 class Mesh;
 class Material;
 
-class UIKIT_EXPORT Menu : public Frame {
-    A_OBJECT(Menu, Frame, UI)
+class UIKIT_EXPORT Menu : public TopMost {
+    A_OBJECT(Menu, TopMost, UI)
 
     A_PROPERTIES(
         A_PROPERTYEX(Font *, font, Menu::font, Menu::setFont, "editor=Asset")
@@ -70,7 +70,7 @@ public:
     void setItemState(int index, bool enabled, bool checkable, bool checked);
 
     void show(const Vector2 &position);
-    void hide();
+    void hide() override;
     bool isVisible() const;
 
     TString itemText(int index);

@@ -30,7 +30,8 @@
 Layout::Layout() :
         m_widget(nullptr),
         m_spacing(0),
-        m_orientation(Widget::Vertical) {
+        m_orientation(Widget::Vertical),
+        m_crossAlignment(CrossStart) {
 
 }
 
@@ -66,17 +67,6 @@ void Layout::insertWidget(int index, Widget *widget) {
         }
         if(m_widget && widget->parentWidget() != m_widget) {
             widget->setParent(m_widget, index);
-        }
-        if(widget->m_attachedLayout) {
-            Layout *attachedLayout = widget->m_attachedLayout;
-            attachedLayout->m_items.remove(widget);
-            widget->m_attachedLayout = nullptr;
-        }
-        widget->m_attachedLayout = this;
-        if(index >= 0 && index < m_items.size()) {
-            m_items.insert(std::next(m_items.begin(), index), widget);
-        } else {
-            m_items.push_back(widget);
         }
 
         invalidate();
@@ -168,6 +158,21 @@ int Layout::orientation() const {
 void Layout::setOrientation(int orientation) {
     m_orientation = orientation;
     invalidate();
+}
+/*!
+    Returns the alignment applied across the layout orientation.
+*/
+Layout::CrossAlignment Layout::crossAlignment() const {
+    return m_crossAlignment;
+}
+/*!
+    Sets the alignment applied across the layout orientation.
+*/
+void Layout::setCrossAlignment(CrossAlignment alignment) {
+    if(m_crossAlignment != alignment) {
+        m_crossAlignment = alignment;
+        invalidate();
+    }
 }
 /*!
     Returns the size hint for the layout.
@@ -370,6 +375,15 @@ void Layout::solveItemsDimension(float availableSpace, bool horizontal, bool kee
 void Layout::solveItemsPosition(float height, const Vector2 &offset) {
     bool first = true;
     float shift = ((m_orientation == Widget::Vertical) ? offset.y : offset.x);
+    float crossAvailable = 0.0f;
+    if(m_widget) {
+        const Vector2 size = m_widget->size();
+        const Vector4 padding = m_widget->padding();
+        const Vector4 border = m_widget->border();
+        crossAvailable = m_orientation == Widget::Vertical ?
+                MAX(0.0f, size.x - offset.x - padding.y - border.y) :
+                MAX(0.0f, height - offset.y - padding.x - border.x);
+    }
     for(auto it : m_items) {
         if(it->isVisible()) {
             shift += (!first) ? m_spacing : 0.0f;
@@ -377,16 +391,29 @@ void Layout::solveItemsPosition(float height, const Vector2 &offset) {
             Vector2 size(it->size());
             Vector2 pivot(it->pivot());
             Vector4 margin(it->margin());
+            float crossOffset = 0.0f;
 
             if(m_orientation == Widget::Vertical) {
+                const float remaining = MAX(0.0f, crossAvailable - size.x - margin.w - margin.y);
+                if(m_crossAlignment == CrossCenter) {
+                    crossOffset = remaining * 0.5f;
+                } else if(m_crossAlignment == CrossEnd) {
+                    crossOffset = remaining;
+                }
                 shift += size.y * pivot.y + margin.z;
-                it->m_position.x = offset.x + size.x * pivot.x + margin.w;
+                it->m_position.x = offset.x + size.x * pivot.x + margin.w + crossOffset;
                 it->m_position.y = height - shift;
                 shift += size.y * (1.0f - pivot.y) + margin.x;
             } else {
+                const float remaining = MAX(0.0f, crossAvailable - size.y - margin.x - margin.z);
+                if(m_crossAlignment == CrossCenter) {
+                    crossOffset = remaining * 0.5f;
+                } else if(m_crossAlignment == CrossStart) {
+                    crossOffset = remaining;
+                }
                 shift += size.x * pivot.x + margin.w;
                 it->m_position.x = shift;
-                it->m_position.y = offset.y - size.y * (1.0f - pivot.y) - margin.z;
+                it->m_position.y = offset.y - size.y * (1.0f - pivot.y) - margin.z + crossOffset;
                 shift += size.x * (1.0f - pivot.x) + margin.y;
             }
             it->markDirty();

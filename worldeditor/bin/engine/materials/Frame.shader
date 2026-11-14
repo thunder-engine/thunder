@@ -46,15 +46,40 @@ void main(void) {
     }
 
     vec2 radSDF = uvSDF - borderRad;
-    float innerSDF = max(0.0, min(radSDF.x, radSDF.y));
+    float borderX = rightHalf ? borderWidth.y : borderWidth.w;
+    float borderY = upperHalf ? borderWidth.x : borderWidth.z;
+
+    float innerRadiusX = max(borderRad - borderX, 0.0);
+    float innerRadiusY = max(borderRad - borderY, 0.0);
+    float innerX = uvSDF.x - borderX;
+    float innerY = uvSDF.y - borderY;
+    float innerSDF;
+    if(innerRadiusX == 0.0 || innerRadiusY == 0.0) {
+        innerSDF = min(innerX, innerY);
+    } else {
+        float innerCornerX = innerX - innerRadiusX;
+        float innerCornerY = innerY - innerRadiusY;
+        if(innerCornerX >= 0.0 || innerCornerY >= 0.0) {
+            innerSDF = min(innerX, innerY);
+        } else {
+            float cornerDistance = length(vec2(innerCornerX / innerRadiusX, innerCornerY / innerRadiusY));
+            innerSDF = (1.0 - cornerDistance) * min(innerRadiusX, innerRadiusY);
+        }
+    }
+    float innerWidth = ratio - borderWidth.y - borderWidth.w;
+    float innerHeight = 1.0 - borderWidth.x - borderWidth.z;
+    innerSDF = min(innerSDF, min(innerWidth - innerX, innerHeight - innerY));
+
+    float outerInnerSDF = max(0.0, min(radSDF.x, radSDF.y));
     float outerSDF = -length(min(radSDF, 0.0));
-    float sdf = innerSDF + outerSDF + borderRad;
+    float sdf = outerInnerSDF + outerSDF + borderRad;
 
     const float softness = 0.001;
-    float surface = smoothstep(softness, softness, sdf);
+    float surface = smoothstep(-softness, softness, sdf);
+    float innerSurface = smoothstep(-softness, softness, innerSDF);
 
     // Border
-    float border = surface - smoothstep(softness, softness, sdf - borderWidth.x);
+    float border = surface - innerSurface;
 
     rgb = mix(vec4(backgroundColor.xyz, backgroundColor.w * surface), borderColor, border);
 }

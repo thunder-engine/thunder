@@ -22,6 +22,12 @@
 
 class UIKIT_EXPORT Layout {
 public:
+    enum CrossAlignment {
+        CrossStart,
+        CrossCenter,
+        CrossEnd
+    };
+
     Layout();
     ~Layout();
 
@@ -51,6 +57,9 @@ public:
     int orientation() const;
     void setOrientation(int orientation);
 
+    CrossAlignment crossAlignment() const;
+    void setCrossAlignment(CrossAlignment alignment);
+
     Vector2 sizeHint();
 
     void invalidate();
@@ -66,6 +75,8 @@ protected:
     int m_spacing;
 
     int m_orientation;
+
+    CrossAlignment m_crossAlignment;
 };
 
 #endif // LAYOUT_H

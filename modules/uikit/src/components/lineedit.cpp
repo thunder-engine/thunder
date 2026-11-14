@@ -34,7 +34,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <iterator>
 
 #define HOLD_TIME 0.1f
@@ -68,7 +67,7 @@ LineEdit::LineEdit() :
         m_cursorPosition(0),
         m_selectionAnchor(0),
         m_fontSize(14),
-        m_textPosition(0.0f),
+        m_textScroll(0.0f),
         m_cursorBlinkRate(0.85f),
         m_cursorBlinkCurrent(0.0f),
         m_cursorRepeatHold(0.0f),
@@ -76,6 +75,7 @@ LineEdit::LineEdit() :
         m_focused(false),
         m_cursorVisible(false),
         m_mouseSelecting(false),
+        m_selectAllOnFocus(false),
         m_textDirty(true) {
 
     setBackgroundColor(Vector4(0.38f, 0.38f, 0.38f, 1.0f));
@@ -143,6 +143,17 @@ void LineEdit::draw() {
     Frame::draw();
     canvas->setClipRegion(clipRegion());
 
+    const Vector4 insets = border() + padding();
+    const float contentWidth = MAX(0.0f, size().x - insets.y - insets.w);
+    const float cursorPosition = cursorAt(m_cursorPosition);
+    m_textScroll = 0.0f;
+    if(m_focused && cursorPosition > contentWidth) {
+        m_textScroll = contentWidth - cursorPosition;
+    }
+    const float cursorX = cursorPosition + textOffset();
+    m_cursorTransform[12] = cursorX;
+    const float verticalOffset = (insets.z - insets.x) * 0.5f;
+
     const Vector3Vector &vertices = m_textMesh->vertices();
     float cursorY = size().y * 0.5f;
     if(m_font && !m_text.isEmpty() && !vertices.empty()) {
@@ -154,12 +165,13 @@ void LineEdit::draw() {
         }
         cursorY = (minY + maxY) * 0.5f;
     }
+    cursorY += verticalOffset;
 
     const int32_t selectionStart = MIN(m_cursorPosition, m_selectionAnchor);
     const int32_t selectionEnd = MAX(m_cursorPosition, m_selectionAnchor);
     if(m_focused && selectionStart != selectionEnd && m_selectionMaterial && m_font) {
-        const float start = cursorAt(selectionStart) + m_textPosition;
-        const float end = cursorAt(selectionEnd) + m_textPosition;
+        const float start = cursorAt(selectionStart) + textOffset();
+        const float end = cursorAt(selectionEnd) + textOffset();
         const float width = end - start;
         if(width > 0.0f) {
             Matrix4 selectionTransform;
@@ -178,7 +190,8 @@ void LineEdit::draw() {
     // Draw text
     if(m_fontMaterial && !displayText.isEmpty()) {
         Matrix4 m(worldTransform());
-        m[12] += m_textPosition;
+        m[12] += textOffset();
+        m[13] += verticalOffset;
 
         Matrix4 textTransform(canvas ? canvas->snapTextTransform(m) : m);
         uint32_t hash = LineEdit::hash();
@@ -193,8 +206,9 @@ void LineEdit::draw() {
     if(m_cursorVisible && m_cursorMaterial) {
         m_cursorTransform[13] = cursorY;
 
-        uint32_t hash;
-        std::memcpy(&hash, &m_cursorTransform[12], sizeof(float));
+        uint32_t hash = LineEdit::hash();
+        Mathf::hashCombine(hash, m_cursorTransform[12]);
+        Mathf::hashCombine(hash, m_cursorTransform[13]);
         m_cursorMaterial->setTransform(worldTransform() * m_cursorTransform, 0, hash);
         canvas->drawRect(m_cursorMaterial, nullptr);
     }
@@ -230,6 +244,14 @@ void LineEdit::selectAll() {
     m_cursorVisible = true;
     m_cursorBlinkCurrent = 0.0f;
     repaint();
+}
+
+bool LineEdit::selectAllOnFocus() const {
+    return m_selectAllOnFocus;
+}
+
+void LineEdit::setSelectAllOnFocus(bool enable) {
+    m_selectAllOnFocus = enable;
 }
 
 /*!
@@ -321,43 +343,39 @@ void LineEdit::update(const Vector2 &pos) {
         }
 
         bool breakCursorFlashing = false;
-        if(Input::isKeyDown(Input::KEY_ESCAPE)) {
+        if(Widget::isKeyDown(Input::KEY_ESCAPE)) {
             editingCanceled();
-        } else if(Input::isKeyDown(Input::KEY_ENTER) || Input::isKeyDown(Input::KEY_KP_ENTER)) {
+        } else if(Widget::isKeyDown(Input::KEY_ENTER) || Widget::isKeyDown(Input::KEY_KP_ENTER)) {
             editingFinished();
         } else {
-            const bool shift = Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
-            const bool control = Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL);
-            const bool alt = Input::isKey(Input::KEY_LEFT_ALT) || Input::isKey(Input::KEY_RIGHT_ALT);
-            const bool super = Input::isKey(Input::KEY_LEFT_SUPER) || Input::isKey(Input::KEY_RIGHT_SUPER);
+            const bool shift = Widget::isShiftPressed();
+            const bool control = Widget::isControlPressed();
+            const bool super = Widget::isKeyPressed(Input::KEY_LEFT_SUPER) ||
+                               Widget::isKeyPressed(Input::KEY_RIGHT_SUPER);
             const bool command = control || super;
             const int32_t textLength = static_cast<int32_t>(m_text.toUtf32().size());
 
-            bool clipboardKey = false;
-            if(command && Input::isKeyDown(Input::KEY_A)) {
+            if(command && Widget::isKeyDown(Input::KEY_A)) {
                 m_selectionAnchor = 0;
                 m_cursorPosition = textLength;
                 recalcCursor();
                 breakCursorFlashing = true;
-                clipboardKey = true;
             }
 #ifndef THUNDER_MOBILE
-            if(command && (Input::isKeyDown(Input::KEY_C) || Input::isKeyDown(Input::KEY_X))) {
-                clipboardKey = true;
+            if(command && (Widget::isKeyDown(Input::KEY_C) || Widget::isKeyDown(Input::KEY_X))) {
                 if(hasSelection()) {
                     const std::u32string text = m_text.toUtf32();
                     const int32_t start = MIN(m_cursorPosition, m_selectionAnchor);
                     const int32_t end = MAX(m_cursorPosition, m_selectionAnchor);
                     const TString selected = TString::fromUtf32(text.substr(start, end - start));
-                    if(Clipboard::setText(selected) && Input::isKeyDown(Input::KEY_X)) {
+                    if(Clipboard::setText(selected) && Widget::isKeyDown(Input::KEY_X)) {
                         std::u32string editedText = text;
                         editedText.erase(start, end - start);
                         replaceText(editedText, start);
                         breakCursorFlashing = true;
                     }
                 }
-            } else if(command && Input::isKeyDown(Input::KEY_V)) {
-                clipboardKey = true;
+            } else if(command && Widget::isKeyDown(Input::KEY_V)) {
                 const std::u32string pasted = Clipboard::text().toUtf32();
                 std::u32string inserted;
                 std::copy_if(pasted.begin(), pasted.end(), std::back_inserter(inserted),
@@ -381,10 +399,10 @@ void LineEdit::update(const Vector2 &pos) {
             }
 #endif
 
-            const bool backspace = Input::isKey(Input::KEY_BACKSPACE);
-            const bool deleteForward = Input::isKey(Input::KEY_DELETE);
-            const bool left = Input::isKey(Input::KEY_LEFT);
-            const bool right = Input::isKey(Input::KEY_RIGHT);
+            const bool backspace = Widget::isKeyPressed(Input::KEY_BACKSPACE);
+            const bool deleteForward = Widget::isKeyPressed(Input::KEY_DELETE);
+            const bool left = Widget::isKeyPressed(Input::KEY_LEFT);
+            const bool right = Widget::isKeyPressed(Input::KEY_RIGHT);
             const bool editingKeyHeld = backspace || deleteForward || left || right;
             if(editingKeyHeld) {
                 if(m_cursorRepeatHold <= 0.0f) {
@@ -418,39 +436,21 @@ void LineEdit::update(const Vector2 &pos) {
                 } else {
                     m_cursorRepeatHold -= Timer::deltaTime();
                 }
-            } else if(Input::isKeyUp(Input::KEY_BACKSPACE) || Input::isKeyUp(Input::KEY_DELETE) ||
-                      Input::isKeyUp(Input::KEY_LEFT) || Input::isKeyUp(Input::KEY_RIGHT)) {
+            } else if(Widget::isKeyUp(Input::KEY_BACKSPACE) || Widget::isKeyUp(Input::KEY_DELETE) ||
+                      Widget::isKeyUp(Input::KEY_LEFT) || Widget::isKeyUp(Input::KEY_RIGHT)) {
                 m_cursorRepeatHold = 0.0f;
             }
 
-            if(Input::isKeyDown(Input::KEY_HOME)) {
+            if(Widget::isKeyDown(Input::KEY_HOME)) {
                 setCursorPosition(0, shift);
                 breakCursorFlashing = true;
-            } else if(Input::isKeyDown(Input::KEY_END)) {
+            } else if(Widget::isKeyDown(Input::KEY_END)) {
                 setCursorPosition(textLength, shift);
                 breakCursorFlashing = true;
             }
 
-            if(!command && !alt && !editingKeyHeld && !clipboardKey &&
-               !Input::isKeyDown(Input::KEY_HOME) && !Input::isKeyDown(Input::KEY_END)) {
-                TString input = Input::inputString();
-                std::string text = input.toStdString();
-                text.erase(remove_if(text.begin(), text.end(), [](unsigned char c) { return c < 32; }), text.end());
-                input = text;
-                if(!input.isEmpty()) {
-                    std::u32string editedText = m_text.toUtf32();
-                    const int32_t start = MIN(m_cursorPosition, m_selectionAnchor);
-                    const int32_t end = MAX(m_cursorPosition, m_selectionAnchor);
-                    editedText.erase(start, end - start);
-                    std::u32string inserted = input.toUtf32();
-                    editedText.insert(start, inserted);
-                    replaceText(editedText, start + static_cast<int32_t>(inserted.size()));
-                    breakCursorFlashing = true;
-                }
-            }
-
             if(m_mouseSelecting) {
-                if(!Input::isMouseButton(Input::MOUSE_LEFT)) {
+                if(!Widget::isMouseButtonPressed(Input::MOUSE_LEFT)) {
                     m_mouseSelecting = false;
                 } else {
                     Vector2 mousePosition = Widget::mousePosition();
@@ -489,16 +489,14 @@ void LineEdit::update(const Vector2 &pos) {
         m_hovered = hover;
         repaint();
     }
-
-    if(m_hovered) {
-        if(!m_focused && Input::touchCount() > 0 && Input::touchState(0) == Input::TOUCH_BEGAN) {
-            Widget::setFocusWidget(this);
-
-            focusIn();
-            m_focused = true;
-            repaint();
+    if(Canvas *uiCanvas = canvas()) {
+        if(hover && !uiCanvas->isPopupInputCaptured()) {
+            uiCanvas->setCursorOverride(this, Input::CURSOR_IBEAM);
+        } else {
+            uiCanvas->restoreCursorOverride(this);
         }
     }
+
 }
 
 bool LineEdit::onMouseDown(int x, int y) {
@@ -508,9 +506,13 @@ bool LineEdit::onMouseDown(int x, int y) {
         focusIn();
         m_focused = true;
         m_cursorVisible = true;
+        if(m_selectAllOnFocus) {
+            selectAll();
+            return true;
+        }
         repaint();
     }
-    const bool shift = Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
+    const bool shift = Widget::isShiftPressed();
     m_mouseSelecting = true;
     setCursorPosition(cursorPositionAt(static_cast<float>(x)), shift);
     return true;
@@ -523,6 +525,29 @@ bool LineEdit::onMouseUp(int x, int y) {
     return true;
 }
 
+void LineEdit::onTextInput(const TString &input) {
+    if(Widget::isControlPressed() || Widget::isAltPressed()) {
+        return;
+    }
+
+    std::u32string inserted;
+    const std::u32string text = input.toUtf32();
+    std::copy_if(text.begin(), text.end(), std::back_inserter(inserted),
+                 [](char32_t character) { return character >= 32; });
+    if(inserted.empty()) {
+        return;
+    }
+
+    std::u32string editedText = m_text.toUtf32();
+    const int32_t start = MIN(m_cursorPosition, m_selectionAnchor);
+    const int32_t end = MAX(m_cursorPosition, m_selectionAnchor);
+    editedText.erase(start, end - start);
+    editedText.insert(start, inserted);
+    replaceText(editedText, start + static_cast<int32_t>(inserted.size()));
+    m_cursorVisible = true;
+    m_cursorBlinkCurrent = 0.0f;
+}
+
 bool LineEdit::hasSelection() const {
     return m_cursorPosition != m_selectionAnchor;
 }
@@ -533,7 +558,7 @@ int32_t LineEdit::cursorPositionAt(float x) const {
         return 0;
     }
 
-    const float textX = x - m_textPosition;
+    const float textX = x - textOffset();
     int32_t nearestPosition = 0;
     float nearestDistance = std::abs(textX);
     for(int32_t i = 1; i <= static_cast<int32_t>(text.size()); ++i) {
@@ -598,24 +623,37 @@ void LineEdit::composeComponent() {
 }
 /*!
     \internal
+*/
+void LineEdit::boundChanged(const Vector2 &size) {
+    Frame::boundChanged(size);
+
+    m_textDirty = true;
+    recalcCursor(false);
+}
+/*!
+    \internal
     Recalculates the cursor position based on the current text and adjusts the text position accordingly.
 */
-void LineEdit::recalcCursor() {
+void LineEdit::recalcCursor(bool ensureCursorVisible) {
     float pos = (m_cursorPosition > 0) ? cursorAt(m_cursorPosition) : 0.0f;
 
-    float padding = LineEdit::padding().w;
+    const Vector4 insets = border() + padding();
+    const float leftInset = insets.w;
+    const float contentWidth = MAX(0.0f, size().x - insets.y - insets.w);
     m_cursorTransform[12] = pos;
     m_cursorTransform[13] = size().y * 0.5f;
-    m_textPosition = padding;
+    m_textScroll = 0.0f;
 
-    float size = clipRegion().z;
-    float gap = pos + m_textPosition;
-    if(gap > size) {
-        m_textPosition += size - pos;
-    } else if(gap < 0.0f) {
-        m_textPosition -= gap;
+    if(ensureCursorVisible) {
+        const float rightInset = leftInset + contentWidth;
+        const float cursorX = leftInset + pos;
+        if(cursorX > rightInset) {
+            m_textScroll = rightInset - cursorX;
+        } else if(cursorX < leftInset) {
+            m_textScroll = leftInset - cursorX;
+        }
     }
-    m_cursorTransform[12] += m_textPosition;
+    m_cursorTransform[12] += textOffset();
     repaint();
 }
 /*!
@@ -628,6 +666,12 @@ float LineEdit::cursorAt(int position) const {
     std::u32string u32 = m_text.toUtf32();
     position = std::max(0, std::min(position, static_cast<int>(u32.size())));
     return m_font->textWidth(TString::fromUtf32(u32.substr(0, position)), m_fontSize, 0);
+}
+/*!
+    Returns the horizontal offset of the text from the widget's origin.
+*/
+float LineEdit::textOffset() const {
+    return border().w + padding().w + m_textScroll;
 }
 /*!
     \internal

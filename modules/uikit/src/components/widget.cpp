@@ -19,11 +19,15 @@
 
 #include "components/canvas.h"
 #include "components/layout.h"
+#include "components/topmost.h"
 
 #include "stylesheet.h"
 
-#include <input.h>
 #include <objectsystem.h>
+#include <resources/sprite.h>
+
+#include <set>
+#include <vector>
 
 namespace {
     const char *gCssSize("-uikit-size");
@@ -48,6 +52,17 @@ namespace {
         FLAG_VPOLICY_MASK = 0x3 << FLAG_VPOLICY_SHIFT,
         FLAG_HPOLICY_MASK = 0x3 << FLAG_HPOLICY_SHIFT
     };
+
+    std::set<int> gPressedMouseButtons;
+    std::set<int> gPressedKeys;
+    std::set<int> gKeysDown;
+    std::set<int> gKeysUp;
+    int gKeyModifiers = 0;
+}
+
+void Widget::beginInputFrame() {
+    gKeysDown.clear();
+    gKeysUp.clear();
 }
 
 Widget *Widget::m_focusWidget = nullptr;
@@ -59,10 +74,11 @@ Vector2 Widget::m_dragStartPosition;
 bool Widget::m_dragCandidate = false;
 bool Widget::m_dragActive = false;
 
-KeyEvent::KeyEvent(int keyCode, bool isPressed, bool isRepeat) :
+KeyEvent::KeyEvent(int keyCode, bool isPressed, bool isRepeat, int modifiers) :
     m_keyCode(keyCode),
     m_isPressed(isPressed),
-    m_isRepeat(isRepeat) {
+    m_isRepeat(isRepeat),
+    m_modifiers(modifiers) {
 
 }
 
@@ -76,14 +92,18 @@ bool KeyEvent::isRepeat() const {
     return m_isRepeat;
 }
 
+int KeyEvent::modifiers() const {
+    return m_modifiers;
+}
+
 bool KeyEvent::isShiftPressed() const {
-    return Input::isKey(Input::KEY_LEFT_SHIFT) || Input::isKey(Input::KEY_RIGHT_SHIFT);
+    return (m_modifiers & Shift) != 0;
 }
 bool KeyEvent::isControlPressed() const {
-    return Input::isKey(Input::KEY_LEFT_CONTROL) || Input::isKey(Input::KEY_RIGHT_CONTROL);
+    return (m_modifiers & Control) != 0;
 }
 bool KeyEvent::isAltPressed() const {
-    return Input::isKey(Input::KEY_LEFT_ALT) || Input::isKey(Input::KEY_RIGHT_ALT);
+    return (m_modifiers & Alt) != 0;
 }
 
 /*!
@@ -120,6 +140,14 @@ Widget::Widget() :
 
 Widget::~Widget() {
     repaint();
+
+    if(m_icon) {
+        m_icon->unsubscribe(this);
+    }
+
+    if(Canvas *uiCanvas = canvas()) {
+        uiCanvas->restoreCursorOverride(this);
+    }
 
     if(Widget *parent = parentWidget()) {
         parent->m_childWidgets.remove(this);
@@ -172,7 +200,7 @@ void Widget::draw() {
     drawSub();
 
     for(auto it : m_childWidgets) {
-        if(!it->isSubWidget() && it->isVisible()) {
+        if(!it->isSubWidget() && it->isVisible() && !dynamic_cast<TopMost *>(it)) {
             it->draw();
         }
     }
@@ -189,9 +217,11 @@ bool Widget::isHovered(const Vector2 &pos) {
     \internal
 */
 void Widget::update(const Vector2 &pos) {
-    for(auto it : m_childWidgets) {
-        if(it->isEnabled() && it->isVisible()) {
-            it->update(pos);
+    const std::vector<Widget *> children(m_childWidgets.begin(), m_childWidgets.end());
+    for(Widget *child : children) {
+        if(child && child->parentWidget() == this &&
+           child->isEnabled() && child->isVisible() && !dynamic_cast<TopMost *>(child)) {
+            child->update(pos);
         }
     }
 }
@@ -254,12 +284,19 @@ bool Widget::onKeyRelease(KeyEvent *event) {
     return false;
 }
 
+void Widget::onTextInput(const TString &text) {
+    A_UNUSED(text);
+}
+
 /*!
     Sets current state of widget to \a enabled or disabled.
 */
 void Widget::setEnabled(bool enabled) {
     if(isEnabled() != enabled) {
         m_flags = (m_flags & ~FLAG_ENABLED) | (enabled ? FLAG_ENABLED : 0);
+        if(!enabled) {
+            clearCursorOverrides();
+        }
     }
     repaint();
 }
@@ -275,6 +312,9 @@ bool Widget::isVisible() const {
 void Widget::setVisible(bool visible) {
     if(isVisible() != visible) {
         m_flags = (m_flags & ~FLAG_VISIBLE) | (visible ? FLAG_VISIBLE : 0);
+        if(!visible) {
+            clearCursorOverrides();
+        }
         if(m_attachedLayout) {
             Layout *layout = m_attachedLayout;
             layout->invalidate();
@@ -291,7 +331,40 @@ Sprite *Widget::icon() const {
 }
 
 void Widget::setIcon(Sprite *icon) {
-    m_icon = icon;
+    if(m_icon != icon) {
+        if(m_icon) {
+            m_icon->unsubscribe(this);
+        }
+
+        m_icon = icon;
+        if(m_icon) {
+            m_icon->subscribe(&Widget::iconUpdated, this);
+        }
+
+        iconChanged();
+    }
+}
+
+void Widget::iconChanged() {
+    repaint();
+}
+
+void Widget::iconUpdated(int state, void *ptr) {
+    Widget *widget = static_cast<Widget *>(ptr);
+    if(!widget) {
+        return;
+    }
+
+    if(state == Resource::ToBeDeleted) {
+        if(widget->m_icon) {
+            widget->m_icon->unsubscribe(widget);
+        }
+        widget->m_icon = nullptr;
+    }
+
+    if(state == Resource::Ready || state == Resource::ToBeDeleted) {
+        widget->iconChanged();
+    }
 }
 
 Widget *Widget::createWidget(const TString &type, const TString &name, Object *parent) {
@@ -307,7 +380,7 @@ Widget *Widget::createWidget(const TString &type, const TString &name, Object *p
 */
 void Widget::drawSub() {
     for(auto it : m_childWidgets) {
-        if(it->isSubWidget() && it->isVisible()) {
+        if(it->isSubWidget() && it->isVisible() && !dynamic_cast<TopMost *>(it)) {
             it->draw();
         }
     }
@@ -411,6 +484,34 @@ Vector2 Widget::mousePosition() {
     return m_mousePosition;
 }
 
+bool Widget::isMouseButtonPressed(int button) {
+    return gPressedMouseButtons.find(button) != gPressedMouseButtons.end();
+}
+
+bool Widget::isKeyPressed(int keyCode) {
+    return gPressedKeys.find(keyCode) != gPressedKeys.end();
+}
+
+bool Widget::isKeyDown(int keyCode) {
+    return gKeysDown.find(keyCode) != gKeysDown.end();
+}
+
+bool Widget::isKeyUp(int keyCode) {
+    return gKeysUp.find(keyCode) != gKeysUp.end();
+}
+
+bool Widget::isShiftPressed() {
+    return (gKeyModifiers & KeyEvent::Shift) != 0;
+}
+
+bool Widget::isControlPressed() {
+    return (gKeyModifiers & KeyEvent::Control) != 0;
+}
+
+bool Widget::isAltPressed() {
+    return (gKeyModifiers & KeyEvent::Alt) != 0;
+}
+
 void Widget::finishDrag(bool dropped) {
     Widget *source = m_dragSource;
     const bool wasActive = m_dragActive;
@@ -482,6 +583,22 @@ void Widget::setSubWidget(Widget *widget) {
 */
 void Widget::makeSubWidget(bool enable) {
     m_flags = (m_flags & ~FLAG_SUB_WIDGET) | (enable ? FLAG_SUB_WIDGET : 0);
+}
+
+void Widget::clearCursorOverrides() {
+    std::vector<Widget *> widgets{this};
+    while(!widgets.empty()) {
+        Widget *widget = widgets.back();
+        widgets.pop_back();
+        if(Canvas *uiCanvas = widget->canvas()) {
+            uiCanvas->restoreCursorOverride(widget);
+        }
+        for(Widget *child : widget->childWidgets()) {
+            if(child) {
+                widgets.push_back(child);
+            }
+        }
+    }
 }
 /*!
     \internal
@@ -694,6 +811,15 @@ void Widget::updateStyleProperty(const TString &name, const float *v, int32_t si
     \internal
 */
 void Widget::dispatchKeyEvent(KeyEvent *event) {
+    gKeyModifiers = event->modifiers();
+    if(event->isPressed()) {
+        gPressedKeys.insert(event->keyCode());
+        gKeysDown.insert(event->keyCode());
+    } else {
+        gPressedKeys.erase(event->keyCode());
+        gKeysUp.insert(event->keyCode());
+    }
+
     if(focusWidget() == this) {
         if(event->isPressed()) {
             onKeyPress(event);
@@ -708,6 +834,17 @@ void Widget::dispatchKeyEvent(KeyEvent *event) {
     }
 }
 
+void Widget::dispatchTextInput(const TString &text) {
+    if(focusWidget() == this) {
+        onTextInput(text);
+        return;
+    }
+
+    for(auto child : m_childWidgets) {
+        child->dispatchTextInput(text);
+    }
+}
+
 bool Widget::dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizontal) {
     if(!isEnabled() || !isVisible()) {
         return false;
@@ -717,7 +854,7 @@ bool Widget::dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizon
         const bool subWidget = pass != 0;
         for(auto it = m_childWidgets.rbegin(); it != m_childWidgets.rend(); ++it) {
             Widget *child = *it;
-            if(child && child->isSubWidget() == subWidget && child->isEnabled() &&
+            if(child && !dynamic_cast<TopMost *>(child) && child->isSubWidget() == subWidget && child->isEnabled() &&
                child->isVisible() && child->isHovered(pos)) {
                 if(child->dispatchMouseWheelEvent(pos, delta, horizontal)) {
                     return true;
@@ -734,6 +871,12 @@ bool Widget::dispatchMouseWheelEvent(const Vector2 &pos, int delta, bool horizon
 
 bool Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button) {
     m_mousePosition = pos;
+    if(type == Event::MouseDown && button == Input::MOUSE_LEFT) {
+        gPressedMouseButtons.insert(button);
+    } else if(type == Event::MouseUp && button == Input::MOUSE_LEFT) {
+        gPressedMouseButtons.erase(button);
+    }
+
     if(type == Event::MouseDown && button == Input::MOUSE_RIGHT) {
         return dispatchContextMenuEvent(pos);
     }
@@ -742,7 +885,7 @@ bool Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button
     }
 
     if(type == Event::MouseMove && m_dragCandidate && !m_dragActive &&
-       Input::isMouseButton(Input::MOUSE_LEFT)) {
+       isMouseButtonPressed(Input::MOUSE_LEFT)) {
         float dx = pos.x - m_dragStartPosition.x;
         float dy = pos.y - m_dragStartPosition.y;
         if(dx * dx + dy * dy >= 16.0f) {
@@ -754,7 +897,7 @@ bool Widget::dispatchMouseEvent(const Vector2 &pos, Event::Type type, int button
         const bool subWidget = pass != 0;
         for(auto it = m_childWidgets.rbegin(); it != m_childWidgets.rend(); ++it) {
             Widget *child = *it;
-            if(child && child->isSubWidget() == subWidget && child->isEnabled() &&
+            if(child && !dynamic_cast<TopMost *>(child) && child->isSubWidget() == subWidget && child->isEnabled() &&
                child->isVisible() && child->isHovered(pos)) {
                 if(child->dispatchMouseEvent(pos, type, button)) {
                     return true;
@@ -795,7 +938,7 @@ bool Widget::dispatchContextMenuEvent(const Vector2 &pos) {
 
     for(auto it = m_childWidgets.rbegin(); it != m_childWidgets.rend(); ++it) {
         Widget *child = *it;
-        if(child && child->dispatchContextMenuEvent(pos)) {
+        if(child && !dynamic_cast<TopMost *>(child) && child->dispatchContextMenuEvent(pos)) {
             return true;
         }
     }

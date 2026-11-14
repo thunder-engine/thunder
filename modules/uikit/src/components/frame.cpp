@@ -104,10 +104,19 @@ Frame::~Frame() {
     delete m_frameMaterial;
     m_frameMaterial = nullptr;
 }
+
 /*!
     \internal
 */
 void Frame::draw() {
+    drawBackground();
+
+    Widget::draw();
+}
+/*!
+    \internal
+*/
+void Frame::drawBackground() {
     worldTransform();
     if(size().y != m_materialHeight) {
         boundChanged(size());
@@ -145,8 +154,6 @@ void Frame::draw() {
     } else if(!m_backgroundImage && m_frameMaterial) {
         canvas->drawRect(m_frameMaterial, this);
     }
-
-    Widget::draw();
 }
 /*!
     \internal

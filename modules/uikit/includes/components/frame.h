@@ -56,6 +56,7 @@ public:
 protected:
     void boundChanged(const Vector2 &size) override;
 
+    void drawBackground();
     void draw() override;
 
     void applyStyle() override;

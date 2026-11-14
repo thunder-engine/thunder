@@ -21,6 +21,8 @@
 #include "scrollbar.h"
 #include "canvas.h"
 
+#include <algorithm>
+
 AbstractScrollArea::AbstractScrollArea() :
         m_content(nullptr),
         m_vScroll(nullptr),
@@ -158,10 +160,21 @@ void AbstractScrollArea::onHScrollChanged(int value) {
     }
 }
 
+bool AbstractScrollArea::onMouseWheel(int delta, bool horizontal) {
+    ScrollBar *bar = horizontal ? m_hScroll : m_vScroll;
+    if(!bar || !bar->isEnabled()) {
+        return false;
+    }
+
+    const int newValue = bar->value() - delta * bar->singleStep();
+    bar->setValue(std::max(bar->minimum(), std::min(bar->maximum(), newValue)));
+    return true;
+}
+
 void AbstractScrollArea::updateScrollRange() {
     if(m_content) {
         Widget *crect = m_content;
-        Vector2 contentSize(crect->sizeHint());
+        Vector2 contentSize(crect->size());
 
         Widget *rect = this;
         Vector2 size(rect->size());
@@ -220,7 +233,8 @@ void AbstractScrollArea::updateScrollRange() {
             m_hScroll->setAnchors(Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f));
             m_hScroll->setPivot(Vector2(1.0f, 1.0f));
             m_hScroll->setSize(Vector2(available.x, hScrollHeight));
-            m_hScroll->setPosition(Vector3(-rightInset-vScrollWidth, -available.y, 0.0f));
+            const float horizontalOffset = needVScroll ? vScrollWidth : 0.0f;
+            m_hScroll->setPosition(Vector3(-rightInset - horizontalOffset, -available.y, 0.0f));
             m_hScroll->setEnabled(needHScroll);
             m_hScroll->setVisible(needHScroll);
             m_hScroll->setMaximum(MAX(0, contentSize.x - available.x));

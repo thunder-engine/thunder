@@ -52,7 +52,6 @@ CheckBox::CheckBox() :
         AbstractButton(),
         m_knobColor(1.0f),
         m_knobSize(Vector2(12.0f)),
-        m_knobIcon(nullptr),
         m_iconMesh(Engine::objectCreate<Mesh>()),
         m_iconMaterial(nullptr),
         m_frameMaterial(nullptr),
@@ -83,9 +82,6 @@ CheckBox::CheckBox() :
     }
 }
 CheckBox::~CheckBox() {
-    if(m_knobIcon) {
-        m_knobIcon->unsubscribe(this);
-    }
     if(m_iconMaterial) {
         m_iconMaterial->material()->unsubscribe(this);
     }
@@ -96,30 +92,6 @@ CheckBox::~CheckBox() {
     delete m_iconMesh;
     delete m_iconMaterial;
     delete m_frameMaterial;
-}
-/*!
-    Returns indicator icon.
-*/
-Sprite *CheckBox::indicator() const {
-    return m_knobIcon;
-}
-/*!
-    Sets indicator \a icon.
-*/
-void CheckBox::setIndicator(Sprite *icon) {
-    if(m_knobIcon != icon) {
-        if(m_knobIcon) {
-            m_knobIcon->unsubscribe(this);
-        }
-
-        m_knobIcon = icon;
-        if(m_knobIcon) {
-            m_knobIcon->subscribe(&CheckBox::iconUpdated, this);
-        }
-
-        m_dirtyIcon = true;
-        repaint();
-    }
 }
 /*!
     Returns the color of the graphical knob.
@@ -189,10 +161,10 @@ void CheckBox::draw() {
     AbstractButton::draw();
 
     if((m_checked || m_foldMode || m_switchMode) && (m_iconMaterial || m_frameMaterial)) {
-        if(m_knobIcon && m_dirtyIcon) {
+        if(icon() && m_dirtyIcon) {
             if(m_iconMaterial) {
-                m_iconMaterial->setTexture(gOverride, m_knobIcon->texture());
-                m_knobIcon->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
+                m_iconMaterial->setTexture(gOverride, icon()->texture());
+                icon()->composeMesh(m_iconMesh, Sprite::Sliced, m_knobSize);
             }
 
             m_dirtyIcon = false;
@@ -218,7 +190,7 @@ void CheckBox::draw() {
         }
 
         Canvas *canvas = CheckBox::canvas();
-        if(m_knobIcon && m_iconMaterial) {
+        if(icon() && m_iconMaterial) {
             m_iconMaterial->setTransform(mat, 0, hash);
             canvas->drawMesh(m_iconMesh, m_iconMaterial);
         } else if(m_frameMaterial) {
@@ -276,23 +248,9 @@ void CheckBox::boundChanged(const Vector2 &size) {
     }
 }
 
-void CheckBox::iconUpdated(int state, void *ptr) {
-    CheckBox *checkBox = static_cast<CheckBox *>(ptr);
-    if(!checkBox) {
-        return;
-    }
-
-    if(state == Resource::Ready) {
-        checkBox->m_dirtyIcon = true;
-        checkBox->repaint();
-    } else if(state == Resource::ToBeDeleted) {
-        if(checkBox->m_knobIcon) {
-            checkBox->m_knobIcon->unsubscribe(checkBox);
-        }
-        checkBox->m_knobIcon = nullptr;
-        checkBox->m_dirtyIcon = true;
-        checkBox->repaint();
-    }
+void CheckBox::iconChanged() {
+    m_dirtyIcon = true;
+    Widget::iconChanged();
 }
 
 void CheckBox::materialUpdated(int state, void *ptr) {

@@ -37,6 +37,7 @@
 #include "components/progressbar.h"
 #include "components/scrollbar.h"
 #include "components/slider.h"
+#include "components/spacer.h"
 #include "components/splitter.h"
 #include "components/switch.h"
 #include "components/tabbar.h"
@@ -70,6 +71,7 @@ UiSystem::UiSystem() :
     AbstractSlider::registerClassFactory(this);
     Slider::registerClassFactory(this);
     ScrollBar::registerClassFactory(this);
+    Spacer::registerClassFactory(this);
 
     Splitter::registerClassFactory(this);
 
@@ -115,6 +117,7 @@ UiSystem::~UiSystem() {
     AbstractSlider::unregisterClassFactory(this);
     Slider::unregisterClassFactory(this);
     ScrollBar::unregisterClassFactory(this);
+    Spacer::unregisterClassFactory(this);
 
     Splitter::unregisterClassFactory(this);
 

@@ -58,6 +58,7 @@ static const char *meta = \
 "       \"ProgressBar\","
 "       \"ScrollBar\","
 "       \"Slider\","
+"       \"Spacer\","
 "       \"Splitter\","
 "       \"Switch\","
 "       \"TabBar\","

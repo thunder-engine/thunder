@@ -36,6 +36,7 @@ class UIKIT_EXPORT AbstractItemView : public AbstractScrollArea {
         A_SIGNAL(AbstractItemView::activated),
         A_SIGNAL(AbstractItemView::clicked),
         A_SIGNAL(AbstractItemView::pressed),
+        A_SIGNAL(AbstractItemView::delegateAreaClicked),
         A_SIGNAL(AbstractItemView::selectionChanged),
         A_SIGNAL(AbstractItemView::dropped)
     )
@@ -102,12 +103,16 @@ public: // signals
 
     void pressed(const ModelIndex &index);
 
+    void delegateAreaClicked(const ModelIndex &index, const TString &area);
+
     void selectionChanged();
 
     void dropped(const TString &mimeType, const TString &data, const ModelIndex &index);
 
 protected:
     friend class ItemViewDelegate;
+
+    virtual void onDelegateAreaClicked(const ModelIndex &index, const TString &area);
 
     bool beginEditing(const ModelIndex &index, Widget *geometry);
     void cancelEditing();

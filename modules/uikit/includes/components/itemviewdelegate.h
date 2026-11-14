@@ -21,13 +21,19 @@
 #include <frame.h>
 #include <image.h>
 #include <label.h>
+#include <vector>
 
 class AbstractItemView;
 
 class UIKIT_EXPORT ItemViewDelegate : public Frame {
     A_OBJECT(ItemViewDelegate, Frame, Delegates)
 
-    A_NOPROPERTIES()
+    A_PROPERTIES(
+        A_PROPERTY(Widget *, arrowIndentWidget, ItemViewDelegate::arrowIndentWidget, ItemViewDelegate::setArrowIndentWidget),
+        A_PROPERTY(Image *, arrowWidget, ItemViewDelegate::arrowWidget, ItemViewDelegate::setArrowWidget),
+        A_PROPERTY(Image *, iconWidget, ItemViewDelegate::iconWidget, ItemViewDelegate::setIconWidget),
+        A_PROPERTY(Label *, labelWidget, ItemViewDelegate::labelWidget, ItemViewDelegate::setLabelWidget)
+    )
     A_NOMETHODS()
     A_NOENUMS()
 
@@ -41,10 +47,37 @@ public:
     int index() const;
     const ModelIndex &modelIndex() const;
 
+    bool isArrowVisible() const;
+    void setArrowVisible(bool visible);
+    bool handleClick(const Vector2 &position, const Vector2 &viewOffset);
+
+    void setArrowTabSize(float size);
+    void setArrowExpanded(bool expanded);
+
     void setSelected(bool selected);
     void setHovered(bool hovered);
 
+    Widget *arrowIndentWidget() const;
+    void setArrowIndentWidget(Widget *indent);
+
+    Image *arrowWidget() const;
+    void setArrowWidget(Image *arrow);
+
+    Image *iconWidget() const;
+    void setIconWidget(Image *icon);
+
+    Label *labelWidget() const;
+    void setLabelWidget(Label *label);
+
 protected:
+    struct ClickArea {
+        TString name;
+        Widget *widget;
+    };
+
+    void addClickArea(const TString &name, Widget *widget);
+    void clearClickAreas();
+
     void updateStyle();
 
     virtual void updateData(AbstractItemView *view);
@@ -52,15 +85,22 @@ protected:
     void composeComponent() override;
 
 protected:
+    AbstractItemView *m_view;
     ModelIndex m_modelIndex;
 
+    Widget *m_arrowIndent;
+    Image *m_arrow;
     Image *m_icon;
 
-    Label *m_label;
+    mutable Label *m_label;
 
     bool m_selected;
 
     bool m_hovered;
+
+    float m_arrowTabSize;
+
+    std::vector<ClickArea> m_clickAreas;
 
 };
 
