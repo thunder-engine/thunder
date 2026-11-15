@@ -45,6 +45,9 @@
 #include "components/toolbutton.h"
 #include "components/widget.h"
 
+#include "components/topmost.h"
+#include "components/dialog.h"
+
 #include "pipelinetasks/guilayer.h"
 
 UiSystem::UiSystem() :
@@ -75,6 +78,8 @@ UiSystem::UiSystem() :
 
     Splitter::registerClassFactory(this);
 
+    TopMost::registerClassFactory(this);
+    Dialog::registerClassFactory(this);
     Menu::registerClassFactory(this);
     MenuBar::registerClassFactory(this);
 
@@ -121,6 +126,8 @@ UiSystem::~UiSystem() {
 
     Splitter::unregisterClassFactory(this);
 
+    TopMost::unregisterClassFactory(this);
+    Dialog::unregisterClassFactory(this);
     Menu::unregisterClassFactory(this);
     MenuBar::unregisterClassFactory(this);
 
