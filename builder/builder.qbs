@@ -19,7 +19,8 @@ Project {
         "../thirdparty/next/inc/core",
         "../thirdparty/next/inc/anim",
         "../thirdparty/zlib/src",
-        "../thirdparty/minizip"
+        "../thirdparty/minizip",
+        "../thirdparty/pugixml/src"
     ]
 
     QtApplication {
@@ -29,6 +30,7 @@ Project {
         Depends { name: "cpp" }
         Depends { name: "bundle" }
         Depends { name: "minizip" }
+        Depends { name: "pugixml" }
         Depends { name: "zlib-editor" }
         Depends { name: "next-editor" }
         Depends { name: "engine-editor" }

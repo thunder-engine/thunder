@@ -20,6 +20,7 @@ set(${PROJECT_NAME}_incPaths
     "../thirdparty/next/inc/anim"
     "../thirdparty/zlib/src"
     "../thirdparty/minizip"
+    "../thirdparty/pugixml/src"
 )
 
 # This path is only needed on the BSDs
@@ -54,6 +55,7 @@ if(desktop)
         next-editor
         engine-editor
         minizip
+        pugixml
         editor
         Qt::Core
         Qt::Gui
