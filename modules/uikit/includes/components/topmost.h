@@ -24,7 +24,7 @@
 class UIKIT_EXPORT TopMost : public Frame {
     A_OBJECT(TopMost, Frame, UI)
     A_PROPERTIES(
-        A_PROPERTYEX(Level, level, TopMost::level, TopMost::setLevel, "enum=Level")
+        A_PROPERTYEX(int, level, TopMost::level, TopMost::setLevel, "enum=Level")
     )
     A_ENUMS(
         A_ENUM(Level,
@@ -43,15 +43,15 @@ public:
     TopMost();
     ~TopMost() override;
 
-    Level level() const;
-    void setLevel(Level level);
+    int level() const;
+    void setLevel(int level);
     bool show(Widget *anchor, const Vector2 &offset = Vector2());
     virtual void hide();
 
     void draw() override;
 
 private:
-    Level m_level = DialogLevel;
+    int m_level = DialogLevel;
 };
 
 #endif // TOPMOST_H

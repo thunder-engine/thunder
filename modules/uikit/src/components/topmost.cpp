@@ -31,11 +31,11 @@ TopMost::~TopMost() {
     }
 }
 
-TopMost::Level TopMost::level() const {
+int TopMost::level() const {
     return m_level;
 }
 
-void TopMost::setLevel(Level level) {
+void TopMost::setLevel(int level) {
     if(m_level != level) {
         m_level = level;
         repaint();
