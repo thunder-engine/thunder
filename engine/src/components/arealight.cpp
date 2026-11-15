@@ -17,7 +17,7 @@
 */
 
 AreaLight::AreaLight() {
-    Material *material = Engine::loadResource<Material>(".embedded/AreaLight.shader");
+    Material *material = Engine::loadResource<Material>(".engine/AreaLight.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
         setMaterial(instance);
@@ -107,7 +107,7 @@ bool AreaLight::isCulled(const Frustum &frustum, const Matrix4 &viewProjection) 
 void AreaLight::drawGizmos() {
     Transform *t = transform();
 
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/pointlight.png", color());
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".editor/pointlight.png", color());
 }
 /*!
     \internal

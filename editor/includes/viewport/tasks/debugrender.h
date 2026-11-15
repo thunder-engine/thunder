@@ -28,7 +28,7 @@
 class DebugRender : public PipelineTask {
 public:
     DebugRender() :
-            m_material(Engine::loadResource<Material>(".embedded/debug.shader")),
+            m_material(Engine::loadResource<Material>(".editor/debug.shader")),
             m_mesh(PipelineContext::defaultPlane()),
             m_width(0),
             m_height(0) {

@@ -31,7 +31,7 @@ Reflections::Reflections() :
 
     m_sslrTarget->setColorAttachment(0, m_sslrTexture);
 
-    Material *material = Engine::loadResource<Material>(".embedded/SSLR.shader");
+    Material *material = Engine::loadResource<Material>(".engine/SSLR.shader");
     if(material) {
         m_sslrMaterial = material->createInstance();
     }

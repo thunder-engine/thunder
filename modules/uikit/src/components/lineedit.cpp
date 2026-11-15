@@ -43,8 +43,8 @@ namespace {
     const char *gColor("mainColor");
     const char *gUseSDF("useSdf");
 
-    const char *gDefaultFont(".embedded/DefaultFont.shader");
-    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
+    const char *gDefaultFont(".engine/DefaultFont.shader");
+    const char *gDefaultSprite(".engine/DefaultSprite.shader");
 }
 
 /*!
@@ -613,7 +613,7 @@ void LineEdit::replaceText(const std::u32string &text, int32_t cursorPosition) {
 void LineEdit::composeComponent() {
     Widget::composeComponent();
 
-    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+    setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
     setText("");
 
     setSize(Vector2(100.0f, 30.0f));

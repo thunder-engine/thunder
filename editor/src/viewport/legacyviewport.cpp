@@ -80,7 +80,7 @@ LegacyViewport::LegacyViewport(QWidget *parent) :
 
 void LegacyViewport::init() {
     m_pipelineContext = Engine::objectCreate<PipelineContext>("PipelineContext");
-    m_pipelineContext->setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString()));
+    m_pipelineContext->setPipeline(Engine::loadResource<Pipeline>(Engine::value(".pipeline", ".engine/Deferred.pipeline").toString()));
     m_rhiWindow = Engine::renderSystem()->createRhiWindow(this);
 
     if(m_rhiWindow) {

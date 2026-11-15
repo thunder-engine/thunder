@@ -149,7 +149,7 @@ void GroupWidget::composeComponent() {
                 m_title->setFontSize(32);
                 m_title->setAlign(Alignment::Middle | Alignment::Center);
                 m_title->setColor(Vector4(0.66f, 0.66f, 0.66f, 1.0f));
-                m_title->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+                m_title->setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
             }
             m_header->lower();
         }

@@ -60,7 +60,7 @@ Label::Label() :
 
     m_mesh->makeDynamic();
 
-    Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
+    Material *material = Engine::loadResource<Material>(".engine/DefaultFont.shader");
     if(material) {
         m_material = material->createInstance();
         int sdf = 0;
@@ -373,7 +373,7 @@ void Label::boundChanged(const Vector2 &size) {
 void Label::composeComponent() {
     Widget::composeComponent();
 
-    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+    setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
     setText("Text");
     setSize(Vector2(100.0f, fontSize() + 2));
 }

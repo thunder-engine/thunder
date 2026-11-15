@@ -28,7 +28,7 @@
 namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
-    const char *gDefaultSprite(".embedded/DefaultUI.shader");
+    const char *gDefaultSprite(".engine/DefaultUI.shader");
 };
 
 /*!

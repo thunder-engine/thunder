@@ -104,5 +104,5 @@ void PostProcessVolume::drawGizmos() {
         Gizmos::drawWireBox(Vector3(), 1.0f, Vector4(0.5f, 0.0f, 0.5f, 1.0f), &t->worldTransform());
     }
 
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/postprocess.png", Vector4(1.0f));
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".editor/postprocess.png", Vector4(1.0f));
 }

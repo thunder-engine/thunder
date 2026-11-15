@@ -23,7 +23,7 @@ AntiAliasing::AntiAliasing() :
 
     Engine::setValue(gAntialiasing, 1);
 
-    Material *material = Engine::loadResource<Material>(".embedded/FXAA.shader");
+    Material *material = Engine::loadResource<Material>(".engine/FXAA.shader");
     if(material) {
         m_resultMaterial = material->createInstance();
     }

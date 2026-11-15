@@ -54,12 +54,12 @@ SpriteEdit::SpriteEdit() :
 
     Actor *object = Engine::composeActor<SpriteRender>(gSpriteRender, m_scene);
     m_render = object->getComponent<SpriteRender>();
-    m_render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
+    m_render->setMaterial(Engine::loadResource<Material>(".engine/DefaultSprite.shader"));
     m_render->setLayer(2);
 
     object = Engine::composeActor<SpriteRender>("CheckerBoard", m_scene);
     m_checker = object->getComponent<SpriteRender>();
-    m_checker->setMaterial(Engine::loadResource<Material>(".embedded/checkerboard.shader"));
+    m_checker->setMaterial(Engine::loadResource<Material>(".editor/checkerboard.shader"));
     m_checker->setMesh(PipelineContext::defaultPlane());
 
     setAcceptDrops(true);

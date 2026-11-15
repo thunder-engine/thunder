@@ -232,7 +232,7 @@ Widget *ShaderNode::widget() {
 
                 m_previewBtn = Widget::createWidget<Button>("PreviewBtn", title);
                 m_previewBtn->setIconSize(Vector2(16.0f, 8.0f));
-                m_previewBtn->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+                m_previewBtn->setIcon(Engine::loadResource<Sprite>(".engine/ui.png/Arrow"));
                 m_previewBtn->setSize(Vector2(16.0f));
                 m_previewBtn->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
                 m_previewBtn->setPivot(Vector2(1.0f, 0.5f));

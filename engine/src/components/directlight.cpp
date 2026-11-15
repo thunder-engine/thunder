@@ -30,7 +30,7 @@ namespace {
 DirectLight::DirectLight() :
         m_camera(nullptr) {
 
-    Material *material = Engine::loadResource<Material>(".embedded/DirectLight.shader");
+    Material *material = Engine::loadResource<Material>(".engine/DirectLight.shader");
     if(material) {
         setMaterial(material->createInstance());
     }
@@ -175,7 +175,7 @@ void DirectLight::drawGizmos() {
     }
 
     Gizmos::drawLines(vertices, indices, gizmoColor(), &t->worldTransform());
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/directlight.png", color());
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".editor/directlight.png", color());
 
     if(m_camera) {
 

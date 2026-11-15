@@ -30,8 +30,8 @@ namespace {
 
     const char *gUseSDF("useSdf");
 
-    const char *gDefaultSprite(".embedded/DefaultUI.shader");
-    const char *gDefaultFont(".embedded/DefaultFont.shader");
+    const char *gDefaultSprite(".engine/DefaultUI.shader");
+    const char *gDefaultFont(".engine/DefaultFont.shader");
 
     const char *gCssColor("color");
     const char *gCssIconSize("icon-size");
@@ -51,7 +51,7 @@ Button::Button() :
         m_textColor(Vector4(1.0f)),
         m_iconSize(16.0f),
         m_textOffset(Vector2(0.0f)),
-        m_font(Engine::loadResource<Font>(".embedded/Roboto.ttf")),
+        m_font(Engine::loadResource<Font>(".engine/Roboto.ttf")),
         m_iconMesh(Engine::objectCreate<Mesh>()),
         m_textMesh(Engine::objectCreate<Mesh>()),
         m_fontMaterial(nullptr),

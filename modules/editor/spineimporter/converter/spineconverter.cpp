@@ -329,7 +329,7 @@ void SpineConverter::importSkins(const VariantList &list, SpineConverterSettings
                         } else {
                             slot.render = static_cast<SpriteRender *>(slotActor->addComponent("SpriteRender"));
                         }
-                        slot.render->setMaterial(Engine::loadResource<Material>(".embedded/DefaultSprite.shader"));
+                        slot.render->setMaterial(Engine::loadResource<Material>(".engine/DefaultSprite.shader"));
                     }
 
                     if(slot.render && slot.render->sprite() == nullptr) {

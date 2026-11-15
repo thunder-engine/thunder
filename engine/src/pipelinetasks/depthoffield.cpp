@@ -63,12 +63,12 @@ DepthOfField::DepthOfField() :
     PostProcessSettings::registerSetting(dofBlurSize, m_blurSize);
     PostProcessSettings::registerSetting(dofSkyDistance, m_skyDistance);
 
-    Material *downSample = Engine::loadResource<Material>(".embedded/Downsample.shader");
+    Material *downSample = Engine::loadResource<Material>(".engine/Downsample.shader");
     if(downSample) {
         m_downMaterial = downSample->createInstance();
     }
 
-    Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
+    Material *blur = Engine::loadResource<Material>(".engine/Blur.shader");
     if(blur) {
         float intensity = 1.0f;
         float dirtIntensity = 0.0f;
@@ -77,7 +77,7 @@ DepthOfField::DepthOfField() :
         m_blurMaterial->setFloat(gDirtIntensity, &dirtIntensity);
     }
 
-    Material *dof = Engine::loadResource<Material>(".embedded/DOF.shader");
+    Material *dof = Engine::loadResource<Material>(".engine/DOF.shader");
     if(dof) {
         m_dofMaterial = dof->createInstance();
         m_dofMaterial->setFloat(gFocusDistance, &m_focusDistance);

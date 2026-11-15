@@ -103,7 +103,7 @@ void ToolButton::composeComponent() {
 
     // Add icon
     Image *icon = Widget::createWidget<Image>(gIcon, this);
-    icon->setSprite(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+    icon->setSprite(Engine::loadResource<Sprite>(".engine/ui.png/Arrow"));
     icon->setSize(Vector2(16.0f, 8.0f));
     icon->setAnchors(Vector2(1.0f, 0.5f), Vector2(1.0f, 0.5f));
     icon->setPivot(Vector2(1.0f, 0.5f));

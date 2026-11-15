@@ -41,8 +41,8 @@ namespace {
     const char *gCssBorderColor("border-color");
     const char *gCssBorderRadius("border-radius");
 
-    const char *gDefaultSprite(".embedded/DefaultUI.shader");
-    const char *gDefaultFrame(".embedded/Frame.shader");
+    const char *gDefaultSprite(".engine/DefaultUI.shader");
+    const char *gDefaultFrame(".engine/Frame.shader");
 }
 
 /*!
@@ -151,7 +151,7 @@ void Frame::drawBackground() {
         m_imageMaterial->setTransform(mat, 0, hash);
 
         canvas->drawMesh(m_backgroundMesh, m_imageMaterial);
-    } else if(!m_backgroundImage && m_frameMaterial) {
+    } else if(m_frameMaterial) {
         canvas->drawRect(m_frameMaterial, this);
     }
 }

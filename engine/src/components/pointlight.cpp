@@ -17,7 +17,7 @@
 */
 
 PointLight::PointLight() {
-    Material *material = Engine::loadResource<Material>(".embedded/PointLight.shader");
+    Material *material = Engine::loadResource<Material>(".engine/PointLight.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
 
@@ -104,7 +104,7 @@ bool PointLight::isCulled(const Frustum &frustum, const Matrix4 &viewProjection)
     \internal
 */
 void PointLight::drawGizmos() {
-    Gizmos::drawIcon(transform()->worldPosition(), Vector2(0.5f), ".embedded/pointlight.png", color());
+    Gizmos::drawIcon(transform()->worldPosition(), Vector2(0.5f), ".editor/pointlight.png", color());
 }
 /*!
     \internal

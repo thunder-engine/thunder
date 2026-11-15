@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <shader version="14">
     <properties>
-        <property path=".embedded/invalid.png" name="mainTexture" binding="0" type="samplercube" />
+        <property path=".engine/invalid.png" name="mainTexture" binding="0" type="samplercube" />
     </properties>
     <fragment><![CDATA[	
 #version 450 core

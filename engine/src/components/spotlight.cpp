@@ -27,7 +27,7 @@ SpotLight::SpotLight() :
 
     setOuterAngle(45.0f);
 
-    Material *material = Engine::loadResource<Material>(".embedded/SpotLight.shader");
+    Material *material = Engine::loadResource<Material>(".engine/SpotLight.shader");
     if(material) {
         setMaterial(material->createInstance());
     }
@@ -142,7 +142,7 @@ int SpotLight::tilesCount() const {
 void SpotLight::drawGizmos() {
     Transform *t = transform();
 
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/spotlight.png", color());
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".editor/spotlight.png", color());
 }
 /*!
     \internal

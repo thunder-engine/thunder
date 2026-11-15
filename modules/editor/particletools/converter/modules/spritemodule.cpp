@@ -8,7 +8,7 @@ SpriteParticle::SpriteParticle() :
     m_stage = Stage::Render;
 
     m_mesh = PipelineContext::defaultPlane();
-    m_material = Engine::loadResource<Material>(".embedded/DefaultSprite.shader");
+    m_material = Engine::loadResource<Material>(".engine/DefaultSprite.shader");
 
     setName("SpriteParticle");
 }

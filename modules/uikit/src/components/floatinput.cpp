@@ -222,7 +222,7 @@ void FloatInput::composeComponent() {
         input->setAnchors(Vector2(0.0f), Vector2(1.0f));
     }
 
-    Sprite *arrow = Engine::loadResource<Sprite>(".embedded/ui.png/Arrow");
+    Sprite *arrow = Engine::loadResource<Sprite>(".engine/ui.png/Arrow");
 
     Button *decreaseBtn = Widget::createWidget<Button>(gDecrease, this);
     if(decreaseBtn) {

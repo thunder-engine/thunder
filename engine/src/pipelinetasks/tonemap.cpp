@@ -55,7 +55,7 @@ Tonemap::Tonemap() :
 
     PostProcessSettings::registerSetting(gColorGradingLut, Variant::fromValue(m_lutTexture));
 
-    Material *material = Engine::loadResource<Material>(".embedded/Tonemap.shader");
+    Material *material = Engine::loadResource<Material>(".engine/Tonemap.shader");
     if(material) {
         m_resultMaterial = material->createInstance();
         m_resultMaterial->setTexture(gLutMap, m_defaultLutTexture);

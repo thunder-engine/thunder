@@ -310,7 +310,7 @@ void ItemViewDelegate::composeComponent() {
 
     m_arrow = Widget::createWidget<Image>("arrow", this);
     if(m_arrow) {
-        m_arrow->setSprite(Engine::loadResource<Sprite>(".embedded/generic.png/Down"));
+        m_arrow->setSprite(Engine::loadResource<Sprite>(".editor/generic.png/Down"));
         m_arrow->setMargin(Vector4(0.0f, 0.0f, 0.0f, 2.0f));
         m_arrow->setSize(Vector2(12.0f));
         m_arrow->setHorizontalPolicy(Widget::Fixed);

@@ -646,7 +646,7 @@ Mesh *AssimpConverter::importMesh(const aiScene *scene, const aiNode *element, A
 
             if(indexCount > 0) {
                 mesh->setSubMesh(total_i, index);
-                mesh->setDefaultMaterial(Engine::loadResource<Material>(".embedded/DefaultMesh.shader"), index);
+                mesh->setDefaultMaterial(Engine::loadResource<Material>(".engine/DefaultMesh.shader"), index);
             }
 
             total_v += vertexCount;

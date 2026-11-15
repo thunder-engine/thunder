@@ -231,7 +231,7 @@ bool Foldout::onDrop(const TString &mimeType, const TString &data, int x, int y)
 void Foldout::composeComponent() {
     CheckBox *header = Widget::createWidget<CheckBox>(gHeader, this);
 
-    header->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+    header->setIcon(Engine::loadResource<Sprite>(".engine/ui.png/Arrow"));
     header->setIndicatorSize(Vector2(16.0f, 8.0f));
     header->setFoldMode(true);
     setHeader(header);

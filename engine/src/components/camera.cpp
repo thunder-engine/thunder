@@ -396,7 +396,7 @@ Frustum Camera::frustum(bool ortho, float sigma, float ratio, const Vector3 &pos
 void Camera::drawGizmos() {
     Transform *t = transform();
 
-    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".embedded/camera.png", Vector4(1.0f));
+    Gizmos::drawIcon(t->worldPosition(), Vector2(0.5f), ".editor/camera.png", Vector4(1.0f));
 }
 
 void Camera::drawGizmosSelected() {

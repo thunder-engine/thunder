@@ -139,7 +139,7 @@ Canvas::Canvas() :
     m_target->setClearColor(0.0f);
     m_target->setFlags(RenderTarget::ClearColor);
 
-    Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+    Material *mtl = Engine::loadResource<Material>(".engine/DefaultPostEffect.shader");
     if(mtl) {
         m_finalMaterial = mtl->createInstance();
         m_finalMaterial->setTexture("mainTexture", m_texture);

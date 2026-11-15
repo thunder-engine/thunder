@@ -48,13 +48,13 @@ Bloom::Bloom() :
     PostProcessSettings::registerSetting(gBloomDirt, Variant::fromValue(m_dirtTexture));
     PostProcessSettings::registerSetting(gBloomDirtIntensity, m_dirtIntensity);
 
-    Material *bloomThreshold = Engine::loadResource<Material>(".embedded/BloomThreshold.shader");
+    Material *bloomThreshold = Engine::loadResource<Material>(".engine/BloomThreshold.shader");
     if(bloomThreshold) {
         m_thresholdMaterial = bloomThreshold->createInstance();
         m_thresholdMaterial->setFloat(gThreshold, &m_threshold);
     }
 
-    Material *downSample = Engine::loadResource<Material>(".embedded/Downsample.shader");
+    Material *downSample = Engine::loadResource<Material>(".engine/Downsample.shader");
     if(downSample) {
         m_downMaterial = downSample->createInstance();
     }
@@ -218,7 +218,7 @@ void Bloom::resize(int32_t width, int32_t height) {
             generateKernel(radius, m_bloomPasses[i].steps, m_bloomPasses[i].blurPoints);
 
             if(m_bloomPasses[i].blurMaterialV == nullptr) {
-                Material *blur = Engine::loadResource<Material>(".embedded/Blur.shader");
+                Material *blur = Engine::loadResource<Material>(".engine/Blur.shader");
                 if(blur) {
                     m_bloomPasses[i].blurMaterialV = blur->createInstance();
                     m_bloomPasses[i].blurMaterialV->setFloat(gIntensity, &m_intensity);
