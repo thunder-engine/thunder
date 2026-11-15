@@ -98,7 +98,7 @@ void PipelineContext::draw(Camera *camera, CommandBuffer *buffer) {
     }
 
     if(m_finalMaterial == nullptr) {
-        Material *mtl = Engine::loadResource<Material>(".embedded/DefaultPostEffect.shader");
+        Material *mtl = Engine::loadResource<Material>(".engine/DefaultPostEffect.shader");
         if(mtl) {
             m_finalMaterial = mtl->createInstance();
         }
@@ -346,7 +346,7 @@ Texture *PipelineContext::textureBuffer(int32_t hash) {
 Mesh *PipelineContext::defaultPlane() {
     static Mesh *plane = nullptr;
     if(plane == nullptr) {
-        plane = Engine::loadResource<Mesh>(".embedded/plane.fbx/Plane001");
+        plane = Engine::loadResource<Mesh>(".engine/plane.fbx/Plane001");
         if(plane) {
             plane->incRef();
         }
@@ -359,7 +359,7 @@ Mesh *PipelineContext::defaultPlane() {
 Mesh *PipelineContext::defaultCube() {
     static Mesh *cube = nullptr;
     if(cube == nullptr) {
-        cube = Engine::loadResource<Mesh>(".embedded/cube.fbx/Box001");
+        cube = Engine::loadResource<Mesh>(".engine/cube.fbx/Box001");
         if(cube) {
             cube->incRef();
         }

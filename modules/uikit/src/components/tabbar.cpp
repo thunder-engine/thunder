@@ -103,7 +103,7 @@ int TabBar::insertTab(int index, const TString &title, Sprite *icon) {
 
         button->setText(title);
         button->setCorners(m_tabCornerRadius);
-        button->setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+        button->setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
         button->setIcon(icon);
         button->setBackgroundColor(tabBackgroundColor());
         button->setPressedColor(tabPressedColor());
@@ -539,7 +539,7 @@ void TabBar::composeComponent() {
     m_frontButton = Widget::createWidget<Button>("front", this);
     if(m_frontButton) {
         setSubWidget(m_frontButton);
-        m_frontButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+        m_frontButton->setIcon(Engine::loadResource<Sprite>(".engine/ui.png/Arrow"));
         m_frontButton->setIconSize(Vector2(16.0f, 8.0f));
         m_frontButton->setIconRotation(90.0f);
         m_frontButton->setVisible(false);
@@ -553,7 +553,7 @@ void TabBar::composeComponent() {
     m_backButton = Widget::createWidget<Button>("back", this);
     if(m_backButton) {
         setSubWidget(m_backButton);
-        m_backButton->setIcon(Engine::loadResource<Sprite>(".embedded/ui.png/Arrow"));
+        m_backButton->setIcon(Engine::loadResource<Sprite>(".engine/ui.png/Arrow"));
         m_backButton->setIconSize(Vector2(16.0f, 8.0f));
         m_backButton->setIconRotation(-90.0f);
         m_backButton->setVisible(false);
@@ -634,7 +634,7 @@ void TabBar::createCloseButton(Widget *parent) {
         closeBtn->setPivot(Vector2(1.0f, 0.5f));
         closeBtn->setPosition(Vector3(-4.0f, 0.0f, 0.0f));
         closeBtn->setSize(Vector2(16));
-        closeBtn->setIcon(Engine::loadResource<Sprite>(".embedded/generic.png/Close"));
+        closeBtn->setIcon(Engine::loadResource<Sprite>(".editor/generic.png/Close"));
         closeBtn->blockSignals(false);
         repaint();
 

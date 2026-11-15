@@ -122,7 +122,7 @@ void Armature::setBindPose(Pose *pose) {
 void Armature::drawGizmosSelected() {
     static Mesh *bone = nullptr;
     if(bone == nullptr) {
-        bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Bone");
+        bone = Engine::loadResource<Mesh>(".editor/bone.fbx/Bone");
     }
 
     if(bone) {

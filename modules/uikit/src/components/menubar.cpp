@@ -217,7 +217,7 @@ void MenuBar::rebuild() {
     m_dirty = false;
     clearWidgets();
 
-    Font *font = Engine::loadResource<Font>(".embedded/Roboto.ttf");
+    Font *font = Engine::loadResource<Font>(".engine/Roboto.ttf");
     float offset = 0.0f;
     for(const auto &model : m_menuBar->menus()) {
         Widget *buttonActor = Widget::createWidget<Button>(model->title(), this);

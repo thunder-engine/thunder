@@ -194,11 +194,19 @@ TString AssetManager::pathToLocal(const TString &source) const {
     if(!source.contains(Editor::project()->contentPath())) {
         TString path = info.name();
         TString sub;
+        TString prefix(".embedded/");
         if(info.suffix().isEmpty()) {
             path = Url(info.absoluteDir()).name();
             sub = TString("/") + info.name();
         }
-        return TString(".embedded/") + path + sub;
+
+        TString resourcePath = Editor::project()->resourcePath();
+        if(source.startsWith(resourcePath + "/engine/")) {
+            prefix = ".engine/";
+        } else if(source.startsWith(resourcePath + "/editor/")) {
+            prefix = ".editor/";
+        }
+        return prefix + path + sub;
     }
     return TString(info.relativeFilePath(Editor::project()->contentPath()));
 }

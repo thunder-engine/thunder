@@ -6,7 +6,7 @@ MeshParticle::MeshParticle() {
     m_stage = Stage::Render;
 
     m_mesh = PipelineContext::defaultCube();
-    m_material = Engine::loadResource<Material>(".embedded/DefaultMesh.shader");
+    m_material = Engine::loadResource<Material>(".engine/DefaultMesh.shader");
 
     setName("MeshParticle");
 }

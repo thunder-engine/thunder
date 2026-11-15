@@ -9,7 +9,7 @@ namespace {
     const char *gMaterial("Material");
     const char *gColor("mainColor");
     const char *gTexture("mainTexture");
-    const char *gDefaultSprite(".embedded/DefaultSprite.shader");
+    const char *gDefaultSprite(".engine/DefaultSprite.shader");
 }
 
 /*!

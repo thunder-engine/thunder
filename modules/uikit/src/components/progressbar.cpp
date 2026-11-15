@@ -30,8 +30,8 @@ namespace {
     const char *gOverride("mainTexture");
     const char *gColor("mainColor");
 
-    const char *gDefaultSprite(".embedded/DefaultUI.shader");
-    const char *gDefaultFrame(".embedded/Frame.shader");
+    const char *gDefaultSprite(".engine/DefaultUI.shader");
+    const char *gDefaultFrame(".engine/Frame.shader");
 }
 
 /*!

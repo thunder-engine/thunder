@@ -377,7 +377,7 @@ Actor *ShaderBuilder::createActor(const AssetConverterSettings *settings, const 
     Actor *object = Engine::composeActor<MeshRender>("");
     MeshRender *mesh = object->getComponent<MeshRender>();
     if(mesh) {
-        Mesh *m = Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001");
+        Mesh *m = Engine::loadResource<Mesh>(".editor/sphere.fbx/Sphere001");
         if(m) {
             mesh->setMesh(m);
             Material *mat = Engine::loadResource<Material>(guid);
@@ -491,7 +491,7 @@ bool ShaderBuilder::compileData(ShaderBuilderSettings::Rhi rhi, VariantMap &data
     bool es = false;
 
     NativeCodeBuilder *builder = Editor::project()->currentBuilder();
-    if(builder->isEmbedded()) {
+    if(builder && builder->isEmbedded()) {
         version = 300;
         es = true;
     }

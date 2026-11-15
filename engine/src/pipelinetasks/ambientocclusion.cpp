@@ -69,7 +69,7 @@ AmbientOcclusion::AmbientOcclusion() :
     m_blurTarget->setClearColor(Vector4(1.0f));
 
     {
-        Material *material = Engine::loadResource<Material>(".embedded/SSAO.shader");
+        Material *material = Engine::loadResource<Material>(".engine/SSAO.shader");
         if(material) {
             m_occlusion = material->createInstance();
 
@@ -95,7 +95,7 @@ AmbientOcclusion::AmbientOcclusion() :
         }
     }
     {
-        Material *material = Engine::loadResource<Material>(".embedded/BlurOcclusion.shader");
+        Material *material = Engine::loadResource<Material>(".engine/BlurOcclusion.shader");
         if(material) {
             m_blur = material->createInstance();
             m_blur->setTexture("aoMap", m_aoTexture);

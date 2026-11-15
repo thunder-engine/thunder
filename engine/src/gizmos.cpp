@@ -34,13 +34,13 @@ std::unordered_map<TString, Gizmos::SpriteBatches> Gizmos::s_sprites;
 */
 void Gizmos::init() {
     if(s_gizmoMaterial == nullptr) {
-        Material *m = Engine::loadResource<Material>(".embedded/gizmo.shader");
+        Material *m = Engine::loadResource<Material>(".editor/gizmo.shader");
         if(m) {
             s_gizmoMaterial = m->createInstance();
         }
     }
     if(s_spriteMaterial == nullptr) {
-        s_spriteMaterial = Engine::loadResource<Material>(".embedded/DefaultSprite.shader");
+        s_spriteMaterial = Engine::loadResource<Material>(".engine/DefaultSprite.shader");
     }
 
     if(s_wire == nullptr) {

@@ -553,8 +553,8 @@ Actor *TextureConverter::createActor(const AssetConverterSettings *settings, con
             } else {
                 Actor *actor = Engine::composeActor<MeshRender>("");
                 MeshRender *render = actor->getComponent<MeshRender>();
-                render->setMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
-                render->setMaterial(Engine::loadResource<Material>(".embedded/cubemap.shader"));
+                render->setMesh(Engine::loadResource<Mesh>(".editor/sphere.fbx/Sphere001"));
+                render->setMaterial(Engine::loadResource<Material>(".editor/cubemap.shader"));
                 render->materialInstance(0)->setTexture("mainTexture", texture);
 
                 return actor;

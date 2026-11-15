@@ -262,7 +262,7 @@ void MaterialEdit::on_actionCube_triggered() {
 }
 
 void MaterialEdit::on_actionSphere_triggered() {
-    changeMesh(Engine::loadResource<Mesh>(".embedded/sphere.fbx/Sphere001"));
+    changeMesh(Engine::loadResource<Mesh>(".editor/sphere.fbx/Sphere001"));
 }
 
 void MaterialEdit::on_actionCode_triggered() {

@@ -35,8 +35,8 @@ namespace {
     const char *gCssColor("color");
     const char *gCssIndicatorSize("indicator-size");
 
-    const char *gDefaultSprite(".embedded/DefaultUI.shader");
-    const char *gDefaultFrame(".embedded/Frame.shader");
+    const char *gDefaultSprite(".engine/DefaultUI.shader");
+    const char *gDefaultFrame(".engine/Frame.shader");
 }
 
 /*!

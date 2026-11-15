@@ -49,7 +49,7 @@ DeferredIndirect::DeferredIndirect() :
     }
 
     // Building material instance
-    Material *mtl = Engine::loadResource<Material>(".embedded/IblReflections.shader");
+    Material *mtl = Engine::loadResource<Material>(".engine/IblReflections.shader");
     if(mtl) {
         m_iblMaterial = mtl->createInstance();
         m_iblMaterial->setTexture(gIblMap, m_cameraTexture);

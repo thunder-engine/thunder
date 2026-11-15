@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <shader version="14">
     <properties>
-        <property path=".embedded/navicube.png" name="mainTexture" binding="0" type="samplercube" />
+        <property path=".editor/navicube.png" name="mainTexture" binding="0" type="samplercube" />
     </properties>
     <fragment><![CDATA[	
 #version 450 core

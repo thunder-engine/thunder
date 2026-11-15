@@ -57,17 +57,17 @@ public:
 
         m_outputs.push_back(std::make_pair("Result", nullptr));
 
-        Material *cubeMaterial = Engine::loadResource<Material>(".embedded/navicube.shader");
+        Material *cubeMaterial = Engine::loadResource<Material>(".editor/navicube.shader");
         if(cubeMaterial) {
             m_cubeMaterial = cubeMaterial->createInstance();
         }
 
-        Material *solidMaterial = Engine::loadResource<Material>(".embedded/solid.shader");
+        Material *solidMaterial = Engine::loadResource<Material>(".editor/gizmo.shader");
         if(solidMaterial) {
             m_solidMaterial = solidMaterial->createInstance();
         }
 
-        m_solidCube = Engine::loadResource<Mesh>(".embedded/navicube.fbx/Cube");
+        m_solidCube = Engine::loadResource<Mesh>(".editor/navicube.fbx/Cube");
         if(m_solidCube) {
             m_solidCube->setColors(Vector4Vector(m_solidCube->vertices().size(), Vector4(0.0f, 0.46f, 0.74f, 0.25f)));
         }

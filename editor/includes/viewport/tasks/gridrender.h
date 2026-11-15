@@ -44,7 +44,7 @@ public:
             m_grid(nullptr),
             m_scale(1.0f) {
 
-        Material *m = Engine::loadResource<Material>(".embedded/grid.shader");
+        Material *m = Engine::loadResource<Material>(".editor/grid.shader");
         if(m) {
             m_grid = m->createInstance();
         }
@@ -180,21 +180,23 @@ private:
             rot = Quaternion(Vector3(1, 0, 0), 90.0f);
         }
 
-        m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, hash);
-        m_grid->setBool("ortho", &ortho);
-        m_grid->setInteger("scale", &m_scale);
-        m_grid->setFloat("width", &zoom);
-        m_grid->setInteger("orientation", &orientation);
-        m_grid->setVector4("gridColor", &gridColor);
+        if(m_grid) {
+            m_grid->setTransform(Matrix4(pos, rot, planeScale), 0, hash);
+            m_grid->setBool("ortho", &ortho);
+            m_grid->setInteger("scale", &m_scale);
+            m_grid->setFloat("width", &zoom);
+            m_grid->setInteger("orientation", &orientation);
+            m_grid->setVector4("gridColor", &gridColor);
 
-        CommandBuffer *buffer = m_context->buffer();
+            CommandBuffer *buffer = m_context->buffer();
 
-        buffer->beginDebugMarker("GridRender");
+            buffer->beginDebugMarker("GridRender");
 
-        buffer->setRenderTarget(m_resultTarget);
-        buffer->drawMesh(m_plane, 0, Material::Translucent, *m_grid);
+            buffer->setRenderTarget(m_resultTarget);
+            buffer->drawMesh(m_plane, 0, Material::Translucent, *m_grid);
 
-        buffer->endDebugMarker();
+            buffer->endDebugMarker();
+        }
     }
 
 private:

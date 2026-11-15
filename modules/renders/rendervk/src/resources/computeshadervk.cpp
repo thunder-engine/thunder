@@ -369,7 +369,7 @@ void ComputeInstanceVk::createDescriptors(CommandBufferVk &buffer, VkDescriptorS
                     if(imageInfo.imageView == nullptr || imageInfo.sampler == nullptr) {
                         static TextureVk *invalid = nullptr;
                         if(invalid == nullptr) {
-                            invalid = static_cast<TextureVk *>(Engine::loadResource<Texture>(".embedded/invalid.png"));
+                            invalid = static_cast<TextureVk *>(Engine::loadResource<Texture>(".engine/invalid.png"));
                         }
                         invalid->attributes(imageInfo);
                     }

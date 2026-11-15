@@ -25,7 +25,7 @@ namespace {
     const char *gBackArrow("backArrow");
     const char *gFrontArrow("frontArrow");
 
-    const char *gSpriteArrow(".embedded/ui.png/Arrow");
+    const char *gSpriteArrow(".engine/ui.png/Arrow");
 }
 
 /*!

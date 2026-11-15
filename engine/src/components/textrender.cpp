@@ -36,7 +36,7 @@ TextRender::TextRender() :
 
     m_mesh->makeDynamic();
 
-    Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
+    Material *material = Engine::loadResource<Material>(".engine/DefaultFont.shader");
     if(material) {
         MaterialInstance *instance = material->createInstance();
         instance->setFloat(gWeight, &m_fontWeight);
@@ -263,7 +263,7 @@ bool TextRender::event(Event *ev) {
     \internal
 */
 void TextRender::composeComponent() {
-    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
+    setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
     setText("Text");
     setColor(Vector4(1.0f));
 }

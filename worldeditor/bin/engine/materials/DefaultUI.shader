@@ -2,7 +2,7 @@
 <shader version="14">
     <properties>
         <property name="mainColor" type="vec4" />
-        <property path=".embedded/invalid.png" name="mainTexture" binding="0" type="texture2d" />
+        <property path=".engine/invalid.png" name="mainTexture" binding="0" type="texture2d" />
     </properties>
     <fragment><![CDATA[
 #version 450 core

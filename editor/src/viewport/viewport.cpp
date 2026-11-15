@@ -106,7 +106,7 @@ void Viewport::init() {
     }
 
     Pipeline *pipeline = Engine::loadResource<Pipeline>(
-        Engine::value(".pipeline", ".embedded/Deferred.pipeline").toString());
+        Engine::value(".pipeline", ".engine/Deferred.pipeline").toString());
     if(!pipeline) {
         aError() << "Unable to load the Viewport render pipeline.";
         return;

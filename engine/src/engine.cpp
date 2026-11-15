@@ -240,7 +240,7 @@ bool Engine::start() {
 
     if(m_renderSystem) {
         PipelineContext *context = Engine::objectCreate<PipelineContext>("PipelineContext");
-        context->setPipeline(loadResource<Pipeline>(value(".pipeline", ".embedded/Deferred.pipeline").toString()));
+        context->setPipeline(loadResource<Pipeline>(value(".pipeline", ".engine/Deferred.pipeline").toString()));
         m_renderSystem->setPipelineContext(context);
     }
 

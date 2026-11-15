@@ -80,10 +80,10 @@ enum {
 
 void Handles::init() {
     if(s_Cone == nullptr) {
-        s_Cone = Engine::loadResource<Mesh>(".embedded/cone.fbx/Cone001");
+        s_Cone = Engine::loadResource<Mesh>(".editor/cone.fbx/Cone001");
     }
     if(s_Bone == nullptr) {
-        s_Bone = Engine::loadResource<Mesh>(".embedded/bone.fbx/Bone");
+        s_Bone = Engine::loadResource<Mesh>(".editor/bone.fbx/Bone");
     }
 
     if(s_Axis == nullptr) {

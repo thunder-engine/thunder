@@ -39,7 +39,7 @@ namespace  {
     const char *gBorderRadius("borderRadius");
     const char *gBorderColor("borderColor");
 
-    const char *gDefaultFrame(".embedded/Frame.shader");
+    const char *gDefaultFrame(".engine/Frame.shader");
 
 }
 
@@ -94,7 +94,7 @@ Menu::Menu() :
         m_visible(false) {
     setLevel(TopMost::MenuLevel);
 
-    Material *material = Engine::loadResource<Material>(".embedded/DefaultFont.shader");
+    Material *material = Engine::loadResource<Material>(".engine/DefaultFont.shader");
     if(material) {
         m_textMaterial = material->createInstance();
         int sdf = 0;
@@ -102,7 +102,7 @@ Menu::Menu() :
         material->subscribe(&Menu::materialUpdated, this);
     }
 
-    Material *spriteMaterial = Engine::loadResource<Material>(".embedded/DefaultUI.shader");
+    Material *spriteMaterial = Engine::loadResource<Material>(".engine/DefaultUI.shader");
     if(spriteMaterial) {
         m_checkMaterial = spriteMaterial->createInstance();
         m_arrowMaterial = spriteMaterial->createInstance();
@@ -863,15 +863,15 @@ void Menu::boundChanged(const Vector2 &size) {
 void Menu::composeComponent() {
     Frame::composeComponent();
 
-    setFont(Engine::loadResource<Font>(".embedded/Roboto.ttf"));
-    m_checkSprite = Engine::loadResource<Sprite>(".embedded/generic.png/Check");
+    setFont(Engine::loadResource<Font>(".engine/Roboto.ttf"));
+    m_checkSprite = Engine::loadResource<Sprite>(".editor/generic.png/Check");
     if(m_checkSprite) {
         m_checkSprite->subscribe(&Menu::checkSpriteUpdated, this);
         if(m_checkMaterial) {
             m_checkMaterial->setTexture(gTexture, m_checkSprite->texture());
         }
     }
-    m_arrowSprite = Engine::loadResource<Sprite>(".embedded/generic.png/Menu");
+    m_arrowSprite = Engine::loadResource<Sprite>(".editor/generic.png/Menu");
     if(m_arrowSprite) {
         m_arrowSprite->subscribe(&Menu::arrowSpriteUpdated, this);
         if(m_arrowMaterial) {

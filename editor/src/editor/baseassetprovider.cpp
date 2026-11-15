@@ -78,15 +78,18 @@ void BaseAssetProvider::init(bool force) {
 
     ProjectSettings *mgr = Editor::project();
     TString resourcePath(mgr->resourcePath());
+    bool editorPlatform = mgr->currentPlatformName() == "editor";
 
     bool watch = false;
     onDirectoryChangedForce(resourcePath + "/engine", force);
-    if(mgr->targetPath().isEmpty()) { // Skip for Builder
+    if(mgr->targetPath().isEmpty() || editorPlatform) {
         onDirectoryChangedForce(resourcePath + "/editor", force);
-        watch = true;
+        watch = mgr->targetPath().isEmpty();
     }
 
-    onDirectoryChangedForce(mgr->contentPath(), force, watch); // We need to watch only a project files in editor.
+    if(!editorPlatform) {
+        onDirectoryChangedForce(mgr->contentPath(), force, watch); // We need to watch only a project files in editor.
+    }
 }
 /*!
     Handles file \a path modification events by processing the file and notifying the
