@@ -92,9 +92,9 @@ bool writeString(std::ostream &output, const std::string &value) {
 }
 
 void showUsage(const char *program) {
-    std::cout << "Usage: " << program << " --output <file.cpp> <manifest.xml>\n"
-              << "       " << program << " --output <file.cpp> --manifest <manifest.xml>\n"
-              << "       " << program << " --output <file.cpp> [--root <directory>] <files...>\n"
+    std::cout << "Usage: " << program << " --rcc --output <file.cpp> <manifest.xml>\n"
+              << "       " << program << " --rcc --output <file.cpp> --manifest <manifest.xml>\n"
+              << "       " << program << " --rcc --output <file.cpp> [--root <directory>] <files...>\n"
               << "Embed arbitrary files in a C++ source file.\n"
               << "The XML manifest contains resource groups with optional prefixes and file aliases.\n"
               << "Paths in the manifest are relative to the manifest file.\n";
@@ -226,7 +226,7 @@ bool loadManifest(const std::filesystem::path &manifestPath,
 
 }
 
-int main(int argc, char *argv[]) {
+int runResourceCompiler(int argc, char *argv[]) {
     std::filesystem::path outputPath;
     std::filesystem::path root;
     std::filesystem::path manifestPath;

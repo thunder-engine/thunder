@@ -30,13 +30,15 @@
 
 #include <chrono>
 #include <iostream>
+#include <string>
 #include <thread>
+#include <vector>
+
+#include "rcc.h"
 
 Builder::Builder() :
         m_exitCode(0),
-        m_finished(false),
-        m_assetsOnly(false),
-        m_packageAssets(true) {
+        m_finished(false) {
 
     connect(Editor::assets(), _SIGNAL(buildSuccessful(bool)), this, _SLOT(onBuildSuccessful(bool)));
 }
@@ -50,8 +52,10 @@ void Builder::pollImport() {
         if(m_exitCode != 0) {
             return;
         }
-        if(m_assetsOnly) {
+        if(Editor::project()->currentPlatformName() == "bundle") {
             packageAssets();
+        } else if(Editor::project()->currentPlatformName() == "editor") {
+            compileEditorResources();
         } else {
             startNativeBuild();
         }
@@ -102,7 +106,7 @@ void Builder::setPlatform(const TString &platform) {
         project->setCurrentPlatform(m_platformsToBuild.top());
         m_platformsToBuild.pop();
 
-        if(!m_assetsOnly) {
+        if(project->currentPlatformName() != "bundle" && project->currentPlatformName() != "editor") {
             NativeCodeBuilder *builder = project->currentBuilder();
             if(builder) {
                 builder->convertFile(nullptr);
@@ -114,12 +118,48 @@ void Builder::setPlatform(const TString &platform) {
     }
 }
 
-void Builder::setAssetsOnly(bool assetsOnly) {
-    m_assetsOnly = assetsOnly;
-}
+void Builder::compileEditorResources() {
+    ProjectSettings *project = Editor::project();
+    TString targetPath = project->targetPath() + "/generated";
+    if(!File::exists(targetPath) && !File::mkPath(targetPath)) {
+        aError() << "Unable to create editor resource output directory at:" << targetPath;
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
 
-void Builder::setPackageAssets(bool packageAssets) {
-    m_packageAssets = packageAssets;
+    TString outputPath = targetPath + "/editor_resources.cpp";
+    TString importPath = project->importPath();
+
+    std::vector<std::string> arguments;
+    arguments.emplace_back(BUILDER_NAME);
+    arguments.emplace_back("--output");
+    arguments.emplace_back(outputPath.data());
+    arguments.emplace_back("--root");
+    arguments.emplace_back(importPath.data());
+
+    for(const TString &file : File::list(importPath)) {
+        if(File::isFile(file)) {
+            arguments.emplace_back(file.data());
+        }
+    }
+
+    if(arguments.size() == 5) {
+        aError() << "No converted editor resources found in:" << importPath;
+        m_finished = true;
+        m_exitCode = 1;
+        return;
+    }
+
+    std::vector<char *> argv;
+    argv.reserve(arguments.size());
+    for(std::string &argument : arguments) {
+        argv.push_back(argument.data());
+    }
+
+    aInfo() << "Embedding converted editor resources to:" << outputPath;
+    m_exitCode = runResourceCompiler(static_cast<int>(argv.size()), argv.data());
+    m_finished = true;
 }
 
 void Builder::packageAssets() {
@@ -133,7 +173,7 @@ void Builder::packageAssets() {
         return;
     }
 
-    if(m_packageAssets && !package(targetPath)) {
+    if(!package(targetPath)) {
         m_finished = true;
         m_exitCode = 1;
         return;
@@ -221,7 +261,7 @@ void Builder::onBuildSuccessful(bool buildResult) {
 
         // Package after
         NativeCodeBuilder *builder = project->currentBuilder();
-        if(m_packageAssets && builder && builder->packagingMode() == NativeCodeBuilder::After) {
+        if(builder && builder->packagingMode() == NativeCodeBuilder::After) {
             // Package right to install dir
             package(targetPath);
         }
@@ -248,7 +288,7 @@ void Builder::startNativeBuild() {
     ProjectSettings *project = Editor::project();
     NativeCodeBuilder *builder = project->currentBuilder();
     if(builder) {
-        if(m_packageAssets && builder->packagingMode() == NativeCodeBuilder::Before) {
+        if(builder->packagingMode() == NativeCodeBuilder::Before) {
             package(project->cachePath() + "/" + project->currentPlatformName());
         }
         if(builder->buildProject()) {
