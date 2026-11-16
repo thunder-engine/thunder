@@ -50,6 +50,7 @@ public:
 
     virtual PackagingMode packagingMode() const { return After; }
     virtual bool isEmbedded() const { return false; }
+    virtual bool supportsSSBO() const { return true; }
     virtual RHI defaultRhi() const { return OpenGL; }
 
     bool buildProject() override;

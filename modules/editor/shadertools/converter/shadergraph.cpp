@@ -460,7 +460,8 @@ VariantMap ShaderGraph::dataForRhi(int32_t rhi, bool editor, ShaderRootNode *roo
     }
 
     NativeCodeBuilder *builder = Editor::project()->currentBuilder();
-    if(root->materialType() == ShaderRootNode::Surface && builder && !builder->isEmbedded()) {
+    if(root->materialType() == ShaderRootNode::Surface &&
+       (!builder || builder->supportsSSBO())) {
         define += "\n#define USE_SSBO";
     }
     if((root == m_rootNode) && root->lightModel() == ShaderRootNode::Lit) {

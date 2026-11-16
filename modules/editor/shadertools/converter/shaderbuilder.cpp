@@ -675,7 +675,7 @@ bool ShaderBuilder::parseShaderFormat(ShaderBuilderSettings::Rhi rhi, const TStr
                 define += "\n#define USE_GBUFFER";
 
                 NativeCodeBuilder *builder = Editor::project()->currentBuilder();
-                if(builder && !builder->isEmbedded()) {
+                if(!builder || builder->supportsSSBO()) {
                     define += "\n#define USE_SSBO";
                 }
 

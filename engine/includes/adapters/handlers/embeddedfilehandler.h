@@ -42,6 +42,8 @@ public:
 
     explicit EmbeddedFileHandler(FileHandler *fallback);
 
+    FileHandler *fallback();
+
     void mount(const char *path, bool writable = false) override;
     void unmount(const char *path) override;
     StringList list(const char *path, bool recursive = false) override;

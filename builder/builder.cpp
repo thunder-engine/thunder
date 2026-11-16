@@ -25,6 +25,7 @@
 #include <editor/editorsettings.h>
 #include <editor/assetmanager.h>
 #include <editor/nativecodebuilder.h>
+#include <editor/editorplatform.h>
 
 #include <compat/zip.h>
 
@@ -104,6 +105,7 @@ void Builder::setPlatform(const TString &platform) {
 
     if(!m_platformsToBuild.empty()) {
         project->setCurrentPlatform(m_platformsToBuild.top());
+        EditorPlatform::instance().setImportPath(Editor::project()->importPath());
         m_platformsToBuild.pop();
 
         if(project->currentPlatformName() != "bundle" && project->currentPlatformName() != "editor") {
@@ -181,6 +183,7 @@ void Builder::packageAssets() {
 
     if(!m_platformsToBuild.empty()) {
         project->setCurrentPlatform(m_platformsToBuild.top());
+        EditorPlatform::instance().setImportPath(Editor::project()->importPath());
         m_platformsToBuild.pop();
         Editor::assets()->rescan();
         pollImport();
@@ -272,6 +275,7 @@ void Builder::onBuildSuccessful(bool buildResult) {
 
         if(!m_platformsToBuild.empty()) {
             project->setCurrentPlatform(m_platformsToBuild.top());
+            EditorPlatform::instance().setImportPath(Editor::project()->importPath());
             m_platformsToBuild.pop();
             Editor::assets()->rescan();
             pollImport();
