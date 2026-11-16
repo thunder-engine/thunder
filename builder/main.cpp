@@ -196,6 +196,7 @@ int main(int argc, char *argv[]) {
     Editor::project()->init(projectPath, options.target);
     if(options.platform == "editor") {
         Editor::project()->setCurrentPlatform("editor");
+        EditorPlatform::instance().setImportPath(Editor::project()->importPath());
     }
 
     // Strict after project initialization

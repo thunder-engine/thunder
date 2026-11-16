@@ -52,7 +52,7 @@ public:
 public slots:
     void onOpenEditor(const TString &path);
 
-    void onOpenProject(const TString &path, Engine &engine);
+    void onOpenProject(const TString &path);
 
 signals:
     void readBuildLogs(QString log);

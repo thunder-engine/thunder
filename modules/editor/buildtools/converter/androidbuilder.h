@@ -30,6 +30,7 @@ protected:
 
     PackagingMode packagingMode() const override { return None; }
     bool isEmbedded() const override { return true; }
+    bool supportsSSBO() const override { return false; }
 
 private:
     TString m_projectPath;

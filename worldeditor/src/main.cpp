@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 
     splash.finish(&window);
 
-    window.onOpenProject(project, engine);
+    window.onOpenProject(project);
     window.show();
 
     int result = app.exec();

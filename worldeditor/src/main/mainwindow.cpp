@@ -45,6 +45,7 @@
 #include <editor/editorsettings.h>
 #include <editor/legacyeditorgadget.h>
 #include <editor/nativecodebuilder.h>
+#include <editor/editorplatform.h>
 
 // System
 #include <global.h>
@@ -288,9 +289,10 @@ void MainWindow::setGameMode(bool mode) {
     Engine::setGameMode(mode);
 }
 
-void MainWindow::onOpenProject(const TString &path, Engine &engine) {
+void MainWindow::onOpenProject(const TString &path) {
     ProjectModel::addProject(path);
     Editor::project()->init(path);
+    EditorPlatform::instance().setImportPath(Editor::project()->importPath());
     // Strict after project initialization
     Editor::assets()->init();
 

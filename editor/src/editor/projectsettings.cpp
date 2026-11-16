@@ -83,11 +83,8 @@ void ProjectSettings::init(const TString &project, const TString &target) {
     m_cachePath = path.absoluteDir() + "/" + gCache;
     m_platformsPath = path.absoluteDir() + "/" + gPlatforms;
 
-    m_importPath = m_cachePath + "/" + gImport;
     m_iconPath = m_cachePath + "/" + gThumbnails;
     m_generatedPath = m_cachePath + "/" + gGenerated;
-
-    EditorPlatform::instance().setImportPath(m_importPath);
 
     File::mkPath(m_contentPath);
     File::mkPath(m_iconPath);
@@ -491,8 +488,6 @@ void ProjectSettings::setCurrentPlatform(const TString &platform) {
     }
 
     m_importPath = m_cachePath + (platform.isEmpty() ? "" : TString("/") + m_currentPlatform) + "/" + gImport;
-    EditorPlatform::instance().setImportPath(m_importPath);
-
     File::mkPath(m_importPath);
 }
 

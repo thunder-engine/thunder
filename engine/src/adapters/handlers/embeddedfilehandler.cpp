@@ -52,6 +52,10 @@ EmbeddedFileHandler::EmbeddedFileHandler(FileHandler *fallback) :
         m_fallback(fallback) {
 }
 
+FileHandler *EmbeddedFileHandler::fallback() {
+    return m_fallback;
+}
+
 void EmbeddedFileHandler::mount(const char *path, bool writable) {
     if(m_fallback && path && path[0] != '\0') {
         m_fallback->mount(path, writable);
