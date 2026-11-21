@@ -15,7 +15,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "toolbutton.h"
+#include "combobox.h"
 
 #include "image.h"
 #include "menu.h"
@@ -34,16 +34,16 @@ namespace {
 };
 
 /*!
-    \class ToolButton
-    \brief The ToolButton class is a UI component that represents a button with an associated popup menu.
+    \class ComboBox
+    \brief The ComboBox class is a UI component that represents a button with an associated popup menu.
     \inmodule Gui
 
-    The ToolButton class provides a UI component with a button-like appearance and an associated popup menu.
+    The ComboBox class provides a UI component with a button-like appearance and an associated popup menu.
     It extends the functionality of AbstractButton to handle menu-related features.
-    Users can show and hide the menu associated with the ToolButton, and the class also provides functionality to update the button text based on menu selections.
+    Users can show and hide the menu associated with the ComboBox, and the class also provides functionality to update the button text based on menu selections.
 */
 
-ToolButton::ToolButton() :
+ComboBox::ComboBox() :
         Button() {
 
     connect(this, _SIGNAL(pressed()), this, _SLOT(showMenu()));
@@ -51,14 +51,14 @@ ToolButton::ToolButton() :
 /*!
     Returns the associated menu, or nullptr if no menu has been defined.
 */
-Menu *ToolButton::menu() const {
+Menu *ComboBox::menu() const {
     return static_cast<Menu *>(subWidget(gMenuFrame));
 }
 /*!
     Associates the given \a menu with this tool button.
     Ownership of the menu is not transferred to the tool button.
 */
-void ToolButton::setMenu(Menu *menu) {
+void ComboBox::setMenu(Menu *menu) {
     setSubWidget(menu);
 
     if(menu) {
@@ -71,8 +71,8 @@ void ToolButton::setMenu(Menu *menu) {
     Shows the associated popup menu.
     Does nothing if no menu is associated.
 */
-void ToolButton::showMenu() {
-    Menu *menu = ToolButton::menu();
+void ComboBox::showMenu() {
+    Menu *menu = ComboBox::menu();
     if(menu) {
         setCorners(Vector4(0, 0, gCorner, gCorner));
 
@@ -86,10 +86,10 @@ void ToolButton::showMenu() {
 /*!
     Hides the associated popup menu.
 */
-void ToolButton::hideMenu() {
+void ComboBox::hideMenu() {
     setCorners(Vector4(gCorner));
 
-    Menu *menu = ToolButton::menu();
+    Menu *menu = ComboBox::menu();
     if(menu) {
         menu->hide();
     }
@@ -98,7 +98,7 @@ void ToolButton::hideMenu() {
     \internal
     Overrides the composeComponent method to create the tool button component.
 */
-void ToolButton::composeComponent() {
+void ComboBox::composeComponent() {
     Button::composeComponent();
 
     // Add icon
@@ -119,8 +119,8 @@ void ToolButton::composeComponent() {
     \internal
     Slot function to handle the triggered signal from the associated menu. Updates the current item text.
 */
-void ToolButton::onTriggered(int index) {
-    Menu *menu = ToolButton::menu();
+void ComboBox::onTriggered(int index) {
+    Menu *menu = ComboBox::menu();
     if(menu) {
         m_currentItem = menu->itemText(index);
         setText(m_currentItem);

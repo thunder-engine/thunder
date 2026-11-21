@@ -42,7 +42,7 @@
 #include "components/switch.h"
 #include "components/tabbar.h"
 #include "components/tabwidget.h"
-#include "components/toolbutton.h"
+#include "components/combobox.h"
 #include "components/widget.h"
 
 #include "components/topmost.h"
@@ -86,7 +86,7 @@ UiSystem::UiSystem() :
     LineEdit::registerClassFactory(this);
     FloatInput::registerClassFactory(this);
 
-    ToolButton::registerClassFactory(this);
+    ComboBox::registerClassFactory(this);
 
     Foldout::registerClassFactory(this);
     TabBar::registerClassFactory(this);
@@ -134,7 +134,7 @@ UiSystem::~UiSystem() {
     LineEdit::unregisterClassFactory(this);
     FloatInput::unregisterClassFactory(this);
 
-    ToolButton::unregisterClassFactory(this);
+    ComboBox::unregisterClassFactory(this);
 
     Foldout::unregisterClassFactory(this);
     TabBar::unregisterClassFactory(this);

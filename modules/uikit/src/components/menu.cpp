@@ -251,6 +251,48 @@ void Menu::addSubmenu(const TString &text, Menu *submenu) {
     updateSize();
 }
 
+/*!
+    Removes all items from the menu.
+*/
+void Menu::clear() {
+    if(m_openSubmenu) {
+        m_openSubmenu->hide();
+        m_openSubmenu = nullptr;
+    }
+
+    if(Canvas *canvas = Menu::canvas()) {
+        canvas->unregisterShortcuts(this);
+    }
+
+    std::vector<Action *> actions;
+    std::vector<Menu *> submenus;
+    for(MenuItem &item : m_items) {
+        delete item.iconMaterial;
+        item.iconMaterial = nullptr;
+
+        if(item.action) {
+            if(std::find(actions.begin(), actions.end(), item.action) == actions.end()) {
+                actions.push_back(item.action);
+                delete item.action;
+            }
+            item.action = nullptr;
+        } else if(item.submenu) {
+            if(std::find(submenus.begin(), submenus.end(), item.submenu) == submenus.end()) {
+                submenus.push_back(item.submenu);
+                delete item.submenu;
+            }
+            item.submenu = nullptr;
+        }
+    }
+    m_items.clear();
+    m_hoveredIndex = -1;
+    m_selectedIndex = -1;
+    m_dirtyText = true;
+    m_dirtyCheckIcons = true;
+    m_dirtyArrowIcons = true;
+    updateSize();
+}
+
 void Menu::onActionChanged() {
     Action *action = dynamic_cast<Action *>(sender());
     if(!action) {
@@ -480,7 +522,7 @@ void Menu::triggered(int index) {
 }
 
 void Menu::actionTriggered(Action *action) {
-    emitSignal(_SIGNAL(actionTriggered(Action*)), Variant::fromValue(action));
+    emitSignal(_SIGNAL(actionTriggered(Action *)), Variant::fromValue(action));
 }
 
 /*!
@@ -705,6 +747,7 @@ bool Menu::onMouseDown(int x, int y) {
         MenuItem &item = m_items[itemIndex];
         if(item.action) {
             item.action->trigger();
+            actionTriggered(item.action);
         }
         triggered(itemIndex);
     }
