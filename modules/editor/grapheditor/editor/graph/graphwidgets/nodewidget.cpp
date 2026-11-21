@@ -9,7 +9,6 @@
 #include <layout.h>
 #include <label.h>
 #include <image.h>
-#include <toolbutton.h>
 
 #include <resources/material.h>
 #include <resources/font.h>
