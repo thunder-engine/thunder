@@ -133,7 +133,7 @@ struct Invoker<Return(*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -243,7 +243,7 @@ struct Invoker<void(*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -357,7 +357,7 @@ struct Invoker<Return(Class::*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -468,7 +468,7 @@ struct Invoker<void(Class::*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -584,7 +584,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -696,7 +696,7 @@ struct Invoker<void(Class::*)(Args...)const> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(TString(sig).remove(' '));
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
