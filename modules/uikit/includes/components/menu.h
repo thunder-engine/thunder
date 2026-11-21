@@ -33,6 +33,7 @@ class UIKIT_EXPORT Menu : public TopMost {
     )
     A_METHODS(
         A_SLOT(Menu::onActionChanged),
+        A_SLOT(Menu::clear),
         A_SIGNAL(Menu::aboutToHide),
         A_SIGNAL(Menu::aboutToShow),
         A_SIGNAL(Menu::triggered),
@@ -67,6 +68,7 @@ public:
     Action *addAction(Action *action);
     void addSeparator();
     void addSubmenu(const TString &text, Menu *submenu);
+    void clear();
     void setItemState(int index, bool enabled, bool checkable, bool checked);
 
     void show(const Vector2 &position);

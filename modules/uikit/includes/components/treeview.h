@@ -86,7 +86,7 @@ private:
     void rebuildItems();
     void appendVisible(const ModelIndex &parent);
     void updateDelegatesStates();
-    void handleItemClick(int row);
+    void handleItemClick(const ModelIndex &index);
     void handleItemDoubleClick(int row);
     void scrollToItem(int row);
     int indexAtPosition(const Vector2 &pos) const;

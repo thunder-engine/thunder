@@ -357,16 +357,15 @@ Vector2 TreeView::viewportSize() {
     return size();
 }
 
-void TreeView::handleItemClick(int row) {
-    ItemData *data = getItemData(row);
-    if(!data) {
+void TreeView::handleItemClick(const ModelIndex &index) {
+    if(!index.isValid()) {
         return;
     }
-    selectItem(data->index);
-    m_currentIndex = data->index;
+    selectItem(index);
+    m_currentIndex = index;
     updateDelegatesStates();
     repaint();
-    pressed(m_currentIndex);
+    pressed(index);
 }
 
 void TreeView::handleItemDoubleClick(int row) {
@@ -374,7 +373,8 @@ void TreeView::handleItemDoubleClick(int row) {
     if(!data) {
         return;
     }
-    handleItemClick(row);
+    const ModelIndex index = data->index;
+    handleItemClick(index);
     activateCurrentItem();
 }
 
@@ -393,13 +393,17 @@ bool TreeView::onMouseDown(int x, int y) {
     }
 
     ItemData *data = getItemData(row);
-    if(data && data->delegate && data->delegate->handleClick(mousePos, m_content ? m_content->position() : Vector2())) {
+    if(!data) {
+        return false;
+    }
+    const ModelIndex index = data->index;
+    if(data->delegate && data->delegate->handleClick(mousePos, m_content ? m_content->position() : Vector2())) {
         return true;
     }
 
     m_isPressed = true;
-    handleItemClick(row);
-    prepareDrag(m_itemsData[row].index);
+    handleItemClick(index);
+    prepareDrag(index);
     return true;
 }
 

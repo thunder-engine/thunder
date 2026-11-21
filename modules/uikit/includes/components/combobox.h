@@ -15,25 +15,25 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef TOOLBUTTON_H
-#define TOOLBUTTON_H
+#ifndef COMBOBOX_H
+#define COMBOBOX_H
 
 #include <button.h>
 
 class Menu;
 
-class UIKIT_EXPORT ToolButton : public Button {
-    A_OBJECT(ToolButton, Button, UI)
+class UIKIT_EXPORT ComboBox : public Button {
+    A_OBJECT(ComboBox, Button, UI)
 
     A_NOPROPERTIES()
     A_METHODS(
-        A_SLOT(ToolButton::showMenu),
-        A_SLOT(ToolButton::hideMenu),
-        A_SLOT(ToolButton::onTriggered)
+        A_SLOT(ComboBox::showMenu),
+        A_SLOT(ComboBox::hideMenu),
+        A_SLOT(ComboBox::onTriggered)
     )
     A_NOENUMS()
 
-    ToolButton();
+    ComboBox();
 
     Menu *menu() const;
     void setMenu(Menu *menu);
@@ -51,4 +51,4 @@ private:
 
 };
 
-#endif // TOOLBUTTON_H
+#endif // COMBOBOX_H

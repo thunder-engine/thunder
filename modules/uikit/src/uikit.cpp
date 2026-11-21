@@ -63,7 +63,7 @@ static const char *meta = \
 "       \"Switch\","
 "       \"TabBar\","
 "       \"TabWidget\","
-"       \"ToolButton\","
+"       \"ComboBox\","
 "       \"Widget\""
 "   ]"
 "}";
