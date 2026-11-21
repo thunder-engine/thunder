@@ -95,10 +95,7 @@ int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    TString sig(signature);
-    sig.remove(' ');
-
-    int hash = Mathf::hashString(sig);
+    int hash = Mathf::hashString(TString(signature).remove(' '));
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
@@ -118,10 +115,7 @@ int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    TString sig(signature);
-    sig.remove(' ');
-
-    int hash = Mathf::hashString(sig);
+    int hash = Mathf::hashString(TString(signature).remove(' '));
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
@@ -142,10 +136,7 @@ int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    TString sig(signature);
-    sig.remove(' ');
-
-    int hash = Mathf::hashString(sig);
+    int hash = Mathf::hashString(TString(signature).remove(' '));
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
