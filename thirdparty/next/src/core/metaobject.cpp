@@ -95,7 +95,7 @@ int MetaObject::indexOfMethod(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    int hash = Mathf::hashString(signature);
+    int hash = Mathf::trimmedHashString(signature);
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
@@ -115,7 +115,7 @@ int MetaObject::indexOfSignal(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    int hash = Mathf::hashString(signature);
+    int hash = Mathf::trimmedHashString(signature);
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {
@@ -136,7 +136,7 @@ int MetaObject::indexOfSlot(const char *signature) const {
     PROFILE_FUNCTION();
     const MetaObject *s = this;
 
-    int hash = Mathf::hashString(signature);
+    int hash = Mathf::trimmedHashString(signature);
 
     while(s) {
         for(int i = 0; i < s->m_methodCount; ++i) {

@@ -94,6 +94,16 @@ public:
         return hash;
     }
 
+    inline static int trimmedHashString(const char *str) {
+        int hash = 5381;
+        for (; *str != 0; ++str) {
+            if (*str == ' ' || *str == '\t') continue;
+            hash = ((hash << 5) + hash) + *str;
+        }
+
+        return hash;
+    }
+
     template<typename T>
     static float distanceToSegment(const T &a, const T &b, const T &p) {
         T v = b - a;

@@ -133,7 +133,7 @@ struct Invoker<Return(*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -167,7 +167,7 @@ struct Invoker<Return(*)(Args...)> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Free function with no parameters
@@ -243,7 +243,7 @@ struct Invoker<void(*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -279,7 +279,7 @@ struct Invoker<void(*)(Args...)> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Void free function with no arguments
@@ -330,7 +330,7 @@ struct Invoker<void(*)()> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Base method template
@@ -357,7 +357,7 @@ struct Invoker<Return(Class::*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -392,7 +392,7 @@ struct Invoker<Return(Class::*)(Args...)> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Method with no parameters
@@ -441,7 +441,7 @@ struct Invoker<Return(Class::*)()> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Void method
@@ -468,7 +468,7 @@ struct Invoker<void(Class::*)(Args...)> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -504,7 +504,7 @@ struct Invoker<void(Class::*)(Args...)> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Void method with no parameters
@@ -557,7 +557,7 @@ struct Invoker<void(Class::*)()> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Base const method template
@@ -584,7 +584,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -619,7 +619,7 @@ struct Invoker<Return(Class::*)(Args...)const> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Const method with no parameters
@@ -669,7 +669,7 @@ struct Invoker<Return(Class::*)()const> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Void const method
@@ -696,7 +696,7 @@ struct Invoker<void(Class::*)(Args...)const> {
         sig.pop_back();
         sig += ')';
 
-        return Mathf::hashString(sig);
+        return Mathf::trimmedHashString(sig.data());
     }
 
     inline static int argCount() {
@@ -732,7 +732,7 @@ struct Invoker<void(Class::*)(Args...)const> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 //Void const method with no parameters
@@ -784,7 +784,7 @@ struct Invoker<void(Class::*)()const> {
         for(size_t n = 0; n < size; n++) {
             ptr[n] = reinterpret_cast<const char *>(&f)[n];
         }
-    };
+    }
 };
 
 #endif // METAMETHOD_H
