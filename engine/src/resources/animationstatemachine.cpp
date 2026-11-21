@@ -80,9 +80,6 @@ void AnimationStateMachine::loadUserData(const VariantMap &data) {
             // Unpack variables
             for(auto &it : (*block).value<VariantMap>()) {
                 int hash = Mathf::hashString(it.first);
-                if(TString::number(it.first.toInt()) == it.first) {
-                    hash = it.first.toInt();
-                }
                 m_variables[hash] = it.second;
             }
             block++;
