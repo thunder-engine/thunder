@@ -67,6 +67,7 @@ public:
     virtual Widget *propertiesWidget() { return nullptr; }
     virtual Menu *hierarchyMenu() { return nullptr; }
     virtual Menu *hierarchyContextMenu(Object *) { return nullptr; }
+    virtual Menu *propertyContextMenu(Object *, const TString &) { return nullptr; }
     virtual ItemViewDelegate *hierarchyDelegate() { return nullptr; }
     virtual bool maskPropertyType() const;
     virtual void changeParent(const Object::ObjectList &objects, Object *parent, int position = -1);
@@ -85,6 +86,11 @@ public: // slots
     virtual void onOpenAsset();
     virtual void onSave();
     virtual void onSaveAs();
+    virtual void onCutAction();
+    virtual void onCopyAction();
+    virtual void onPasteAction();
+    virtual void onUndoAction();
+    virtual void onRedoAction();
     virtual void onObjectCreate(const TString &type);
     virtual void onObjectsSelected(bool force);
     virtual void onDropAsset(const TString &path, bool additive);

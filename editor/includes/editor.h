@@ -71,6 +71,8 @@ public:
     static std::list<LegacyAssetEditor *> legacyDocuments();
 
     static void addGadget(EditorGadget *gadget);
+    static std::list<EditorGadget *> gadgets();
+
     static void addGadget(LegacyEditorGadget *gadget);
     static std::list<LegacyEditorGadget *> legacyGadgets();
 
