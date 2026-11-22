@@ -1,9 +1,9 @@
 #include "renamesprite.h"
 
-#include "../spritecontroller.h"
+#include "../legacyspritecontroller.h"
 
-RenameSprite::RenameSprite(const TString &oldKey, const TString &newKey, SpriteController *ctrl, UndoCommand *group) :
-        UndoCommand(QObject::tr("Rename Sprite Element").toStdString(), group),
+RenameSprite::RenameSprite(const TString &oldKey, const TString &newKey, LegacySpriteController *ctrl, UndoCommand *group) :
+        UndoCommand("Rename Sprite Element", group),
         m_oldKey(oldKey),
         m_newKey(newKey),
         m_controller(ctrl) {

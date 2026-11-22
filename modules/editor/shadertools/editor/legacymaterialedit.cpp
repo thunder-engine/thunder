@@ -1,5 +1,5 @@
-#include "materialedit.h"
-#include "ui_materialedit.h"
+#include "legacymaterialedit.h"
+#include "ui_legacymaterialedit.h"
 
 #include <QSettings>
 
@@ -57,7 +57,7 @@ class MaterialProxy : public Object {
         A_SLOT(MaterialProxy::onGraphUpdated)
     )
 public:
-    void setEditor(MaterialEdit *editor) {
+    void setEditor(LegacyMaterialEdit *editor) {
         m_editor = editor;
     }
 
@@ -66,12 +66,12 @@ public:
     }
 
 private:
-    MaterialEdit *m_editor = nullptr;
+    LegacyMaterialEdit *m_editor = nullptr;
 
 };
 
-MaterialEdit::MaterialEdit() :
-        ui(new Ui::MaterialEdit),
+LegacyMaterialEdit::LegacyMaterialEdit() :
+        ui(new Ui::LegacyMaterialEdit),
         m_mesh(nullptr),
         m_light(nullptr),
         m_material(nullptr),
@@ -108,9 +108,9 @@ MaterialEdit::MaterialEdit() :
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
 
-    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &MaterialEdit::selectionChanged);
-    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &MaterialEdit::copyPasteChanged);
-    connect(ui->schemeWidget, &LegacyGraphView::copied, this, &MaterialEdit::copyPasteChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &LegacyMaterialEdit::selectionChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &LegacyMaterialEdit::copyPasteChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::copied, this, &LegacyMaterialEdit::copyPasteChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -121,7 +121,7 @@ MaterialEdit::MaterialEdit() :
     readSettings();
 }
 
-MaterialEdit::~MaterialEdit() {
+LegacyMaterialEdit::~LegacyMaterialEdit() {
     writeSettings();
 
     delete m_graph;
@@ -145,7 +145,7 @@ MaterialEdit::~MaterialEdit() {
     delete ui;
 }
 
-void MaterialEdit::readSettings() {
+void LegacyMaterialEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant value = settings.value("material.geometry");
     if(value.isValid()) {
@@ -153,51 +153,51 @@ void MaterialEdit::readSettings() {
     }
 }
 
-void MaterialEdit::writeSettings() {
+void LegacyMaterialEdit::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("material.geometry", ui->splitter->saveState());
 }
 
-StringList MaterialEdit::suffixes() const {
+StringList LegacyMaterialEdit::suffixes() const {
     return {"mtl"}; // Only mtl format represented as node graph to edit
 }
 
-TString MaterialEdit::assetType() const {
+TString LegacyMaterialEdit::assetType() const {
     return "Material";
 }
 
-void MaterialEdit::onActivated() {
+void LegacyMaterialEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
-void MaterialEdit::onCutAction() {
+void LegacyMaterialEdit::onCutAction() {
     ui->schemeWidget->onCutAction();
 }
 
-void MaterialEdit::onCopyAction() {
+void LegacyMaterialEdit::onCopyAction() {
     ui->schemeWidget->onCopyAction();
 }
 
-void MaterialEdit::onPasteAction() {
+void LegacyMaterialEdit::onPasteAction() {
     ui->schemeWidget->onPasteAction();
 }
 
-bool MaterialEdit::isCopyActionAvailable() const {
+bool LegacyMaterialEdit::isCopyActionAvailable() const {
     return ui->schemeWidget->isCopyActionAvailable();
 }
 
-bool MaterialEdit::isPasteActionAvailable() const {
+bool LegacyMaterialEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void MaterialEdit::onObjectsChanged(const TString &property, const Variant &value) {
+void LegacyMaterialEdit::onObjectsChanged(const TString &property, const Variant &value) {
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
         ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
     }
 }
 
-void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacyMaterialEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
@@ -212,7 +212,7 @@ void MaterialEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void MaterialEdit::saveAsset(const TString &path) {
+void LegacyMaterialEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
@@ -220,7 +220,7 @@ void MaterialEdit::saveAsset(const TString &path) {
     }
 }
 
-void MaterialEdit::onGraphUpdated() {
+void LegacyMaterialEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         VariantMap data = m_graph->data(true);
         m_codeDlg.setData(data);
@@ -241,7 +241,7 @@ void MaterialEdit::onGraphUpdated() {
     emit updated();
 }
 
-void MaterialEdit::changeMesh(Mesh *mesh) {
+void LegacyMaterialEdit::changeMesh(Mesh *mesh) {
     MeshRender *render = m_mesh->getComponent<MeshRender>();
     if(render) {
         render->setMesh(mesh);
@@ -253,29 +253,29 @@ void MaterialEdit::changeMesh(Mesh *mesh) {
     }
 }
 
-void MaterialEdit::on_actionPlane_triggered() {
+void LegacyMaterialEdit::on_actionPlane_triggered() {
     changeMesh(PipelineContext::defaultPlane());
 }
 
-void MaterialEdit::on_actionCube_triggered() {
+void LegacyMaterialEdit::on_actionCube_triggered() {
     changeMesh(PipelineContext::defaultCube());
 }
 
-void MaterialEdit::on_actionSphere_triggered() {
+void LegacyMaterialEdit::on_actionSphere_triggered() {
     changeMesh(Engine::loadResource<Mesh>(".editor/sphere.fbx/Sphere001"));
 }
 
-void MaterialEdit::on_actionCode_triggered() {
+void LegacyMaterialEdit::on_actionCode_triggered() {
     m_codeDlg.setData(m_graph->data(true));
     m_codeDlg.setVisible(true);
 }
 
-void MaterialEdit::changeEvent(QEvent *event) {
+void LegacyMaterialEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-Object::ObjectList MaterialEdit::selected() const {
+Object::ObjectList LegacyMaterialEdit::selected() const {
     return ui->schemeWidget->selected();
 }

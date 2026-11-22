@@ -7,7 +7,7 @@
 #include <cstring>
 
 #include "converter/effectbuilder.h"
-#include "editor/particleedit.h"
+#include "editor/legacyparticleedit.h"
 
 static const char *meta = \
 "{"
@@ -17,7 +17,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"EffectBuilder\": \"converter\","
-"       \"ParticleEdit\": \"legacyeditor\""
+"       \"LegacyParticleEdit\": \"legacyeditor\""
 "   }"
 "}";
 
@@ -37,8 +37,8 @@ const char *ParticleTools::metaInfo() const {
 void *ParticleTools::getObject(const char *name) {
     if(strcmp(name, "EffectBuilder") == 0) {
         return new EffectBuilder;
-    } else if(strcmp(name, "ParticleEdit") == 0) {
-        return new ParticleEdit;
+    } else if(strcmp(name, "LegacyParticleEdit") == 0) {
+        return new LegacyParticleEdit;
     }
     return nullptr;
 }

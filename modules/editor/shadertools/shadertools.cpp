@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "converter/shaderbuilder.h"
-#include "editor/materialedit.h"
+#include "editor/legacymaterialedit.h"
 
 static const char *meta = \
 "{"
@@ -16,7 +16,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"ShaderBuilder\": \"converter\","
-"       \"MaterialEdit\": \"legacyeditor\""
+"       \"LegacyMaterialEdit\": \"legacyeditor\""
 "   }"
 "}";
 
@@ -35,8 +35,8 @@ const char *ShaderTools::metaInfo() const {
 void *ShaderTools::getObject(const char *name) {
     if(strcmp(name, "ShaderBuilder") == 0) {
         return new ShaderBuilder;
-    } else if(strcmp(name, "MaterialEdit") == 0) {
-        return new MaterialEdit;
+    } else if(strcmp(name, "LegacyMaterialEdit") == 0) {
+        return new LegacyMaterialEdit;
     }
     return nullptr;
 }

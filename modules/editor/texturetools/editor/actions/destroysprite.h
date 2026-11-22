@@ -2,11 +2,11 @@
 #define DESTROYSPRITE_H
 
 #include <editor/undostack.h>
-#include "../spritecontroller.h"
+#include "../legacyspritecontroller.h"
 
 class DestroySprite : public UndoCommand {
 public:
-    DestroySprite(SpriteController *ctrl, UndoCommand *group = nullptr);
+    DestroySprite(LegacySpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -15,7 +15,7 @@ protected:
 
     VariantMap m_back;
 
-    SpriteController *m_controller;
+    LegacySpriteController *m_controller;
 
 };
 

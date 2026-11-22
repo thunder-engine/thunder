@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MaterialEdit</class>
+ <class>LegacyMaterialEdit</class>
  <widget class="QWidget" name="MaterialEdit">
   <property name="geometry">
    <rect>

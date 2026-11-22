@@ -1,7 +1,7 @@
 #include "destroysprite.h"
 
-DestroySprite::DestroySprite(SpriteController *ctrl, UndoCommand *group) :
-        UndoCommand(QObject::tr("Destroy Sprite Element").toStdString(), group),
+DestroySprite::DestroySprite(LegacySpriteController *ctrl, UndoCommand *group) :
+        UndoCommand("Destroy Sprite Element", group),
         m_key(ctrl->selectedElement()),
         m_controller(ctrl) {
 }

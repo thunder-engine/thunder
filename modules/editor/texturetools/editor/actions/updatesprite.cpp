@@ -1,7 +1,7 @@
 #include "updatesprite.h"
 
-UpdateSprite::UpdateSprite(const VariantMap &data, SpriteController *ctrl, UndoCommand *group) :
-        UndoCommand(QObject::tr("Update Sprite Element").toStdString(), group),
+UpdateSprite::UpdateSprite(const VariantMap &data, LegacySpriteController *ctrl, UndoCommand *group) :
+        UndoCommand("Update Sprite Element", group),
         m_key(ctrl->selectedElement()),
         m_data(data),
         m_controller(ctrl) {

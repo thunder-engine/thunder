@@ -1,5 +1,5 @@
-#include "spriteedit.h"
-#include "ui_spriteedit.h"
+#include "legacyspriteedit.h"
+#include "ui_legacyspriteedit.h"
 
 #include <components/world.h>
 #include <components/actor.h>
@@ -15,20 +15,20 @@
 
 #include "../converter/textureconverter.h"
 
-#include "spritecontroller.h"
+#include "legacyspritecontroller.h"
 
 namespace {
     const char *gSpriteRender("SpriteRender");
 };
 
-SpriteEdit::SpriteEdit() :
-        ui(new Ui::SpriteEdit),
+LegacySpriteEdit::LegacySpriteEdit() :
+        ui(new Ui::LegacySpriteEdit),
         m_resource(nullptr),
         m_render(nullptr),
         m_converter(new TextureConverter),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
-        m_controller(new SpriteController(this)),
+        m_controller(new LegacySpriteController(this)),
         m_proxy(new SpriteProxy) {
 
     ui->setupUi(this);
@@ -44,8 +44,8 @@ SpriteEdit::SpriteEdit() :
     ui->viewport->init(); // must be called after all options set
     ui->viewport->setGridEnabled(false);
 
-    connect(m_controller, &SpriteController::selectionChanged, this, &SpriteEdit::selectionChanged);
-    connect(m_controller, &SpriteController::updated, this, &SpriteEdit::updated);
+    connect(m_controller, &LegacySpriteController::selectionChanged, this, &LegacySpriteEdit::selectionChanged);
+    connect(m_controller, &LegacySpriteController::updated, this, &LegacySpriteEdit::updated);
 
     Camera *camera = m_controller->camera();
     if(camera) {
@@ -66,7 +66,7 @@ SpriteEdit::SpriteEdit() :
     setMouseTracking(true);
 }
 
-SpriteEdit::~SpriteEdit() {
+LegacySpriteEdit::~LegacySpriteEdit() {
     if(m_resource) {
         m_resource->unsubscribe(this);
     }
@@ -76,18 +76,18 @@ SpriteEdit::~SpriteEdit() {
     delete ui;
 }
 
-bool SpriteEdit::isModified() const {
+bool LegacySpriteEdit::isModified() const {
     if(!m_settings.empty()) {
         return m_settings.front()->isModified();
     }
     return false;
 }
 
-Object::ObjectList SpriteEdit::selected() const {
+Object::ObjectList LegacySpriteEdit::selected() const {
     return m_controller->selected();
 }
 
-void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacySpriteEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) != m_settings.end()) {
         return;
     }
@@ -106,7 +106,7 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
         return;
     }
 
-    m_resource->subscribe(&SpriteEdit::resourceUpdated, this);
+    m_resource->subscribe(&LegacySpriteEdit::resourceUpdated, this);
 
     Sprite *sprite = dynamic_cast<Sprite *>(m_resource);
     if(sprite) {
@@ -147,26 +147,26 @@ void SpriteEdit::loadAsset(AssetConverterSettings *settings) {
     Object::connect(m_settings.front(), _SIGNAL(updated()), m_proxy, _SLOT(onUpdated()));
 }
 
-void SpriteEdit::saveAsset(const TString &) {
+void LegacySpriteEdit::saveAsset(const TString &) {
     m_settings.front()->saveSettings();
 }
 
-StringList SpriteEdit::suffixes() const {
+StringList LegacySpriteEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_converter)->suffixes();
 }
 
-TString SpriteEdit::assetType() const {
+TString LegacySpriteEdit::assetType() const {
     return "Sprite";
 }
 
-void SpriteEdit::onUpdateTemplate() {
+void LegacySpriteEdit::onUpdateTemplate() {
     if(!m_settings.empty()) {
         m_converter->convertTexture(static_cast<TextureImportSettings *>(m_settings.front()));
     }
 }
 
-void SpriteEdit::resourceUpdated(int state, void *ptr) {
-    SpriteEdit *p = static_cast<SpriteEdit *>(ptr);
+void LegacySpriteEdit::resourceUpdated(int state, void *ptr) {
+    LegacySpriteEdit *p = static_cast<LegacySpriteEdit *>(ptr);
 
     switch(state) {
         case Resource::ToBeUpdated:
@@ -200,7 +200,7 @@ void SpriteEdit::resourceUpdated(int state, void *ptr) {
     }
 }
 
-void SpriteEdit::changeEvent(QEvent *event) {
+void LegacySpriteEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }

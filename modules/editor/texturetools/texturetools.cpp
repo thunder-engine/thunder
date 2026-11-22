@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "converter/textureconverter.h"
-#include "editor/spriteedit.h"
+#include "editor/legacyspriteedit.h"
 
 static const char *meta = \
 "{"
@@ -16,7 +16,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"TextureConverter\": \"converter\","
-"       \"SpriteEdit\": \"legacyeditor\""
+"       \"LegacySpriteEdit\": \"legacyeditor\""
 "   }"
 "}";
 
@@ -35,8 +35,8 @@ const char *TextureTools::metaInfo() const {
 void *TextureTools::getObject(const char *name) {
     if(strcmp(name, "TextureConverter") == 0) {
         return new TextureConverter;
-    } else if(strcmp(name, "SpriteEdit") == 0) {
-        return new SpriteEdit;
+    } else if(strcmp(name, "LegacySpriteEdit") == 0) {
+        return new LegacySpriteEdit;
     }
     return nullptr;
 }

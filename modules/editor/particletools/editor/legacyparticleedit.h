@@ -1,5 +1,5 @@
-#ifndef PARTICLEEDIT_H
-#define PARTICLEEDIT_H
+#ifndef LEGACYPARTICLEEDIT_H
+#define LEGACYPARTICLEEDIT_H
 
 
 #include <editor/legacyasseteditor.h>
@@ -18,15 +18,15 @@ class QToolButton;
 class ParticleProxy;
 
 namespace Ui {
-    class ParticleEdit;
+    class LegacyParticleEdit;
 }
 
-class ParticleEdit : public LegacyAssetEditor {
+class LegacyParticleEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
-    ParticleEdit();
-    ~ParticleEdit();
+    LegacyParticleEdit();
+    ~LegacyParticleEdit();
 
     void onUpdateTemplate();
     void onModuleChanged();
@@ -67,7 +67,7 @@ private:
     Object::ObjectList selected() const override;
     bool maskPropertyType() const override { return true; }
 
-    Ui::ParticleEdit *ui;
+    Ui::LegacyParticleEdit *ui;
 
     EffectBuilder *m_builder;
 
@@ -83,4 +83,4 @@ private:
 
 };
 
-#endif // PARTICLEEDIT_H
+#endif // LEGACYPARTICLEEDIT_H

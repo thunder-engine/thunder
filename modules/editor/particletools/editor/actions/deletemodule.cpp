@@ -3,7 +3,7 @@
 #include "modules/custommodule.h"
 #include "effectrootnode.h"
 
-#include "../particleedit.h"
+#include "../legacyparticleedit.h"
 
 DeleteModule::DeleteModule(EffectModule *module, EffectGraph *graph, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),

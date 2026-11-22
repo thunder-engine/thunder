@@ -3,7 +3,7 @@
 #include "effectrootnode.h"
 #include "modules/effectmodule.h"
 
-#include "../particleedit.h"
+#include "../legacyparticleedit.h"
 
 CreateModule::CreateModule(const TString &module, EffectGraph *graph, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),

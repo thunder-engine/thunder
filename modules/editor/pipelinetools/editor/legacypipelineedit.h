@@ -1,28 +1,25 @@
-#ifndef MATERIALEDIT_H
-#define MATERIALEDIT_H
+#ifndef LEGACYPIPELINEEDIT_H
+#define LEGACYPIPELINEEDIT_H
 
 #include <editor/legacyasseteditor.h>
 
-#include <components/meshrender.h>
-
-#include "shadercodedialog.h"
-
-class ShaderBuilder;
-class ShaderGraph;
+class PipelineConverter;
+class PipelineTaskGraph;
 class LegacyCameraController;
 
-class MaterialProxy;
+class UndoCommand;
+class PipelineProxy;
 
 namespace Ui {
-    class MaterialEdit;
+    class LegacyPipelineEdit;
 }
 
-class MaterialEdit : public LegacyAssetEditor {
+class LegacyPipelineEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:
-    MaterialEdit();
-    ~MaterialEdit();
+    LegacyPipelineEdit();
+    ~LegacyPipelineEdit();
 
     void onGraphUpdated();
 
@@ -35,12 +32,6 @@ private slots:
 
     void onObjectsChanged(const TString &property, const Variant &value) override;
 
-    void on_actionPlane_triggered();
-    void on_actionCube_triggered();
-    void on_actionSphere_triggered();
-
-    void on_actionCode_triggered();
-
 private:
     bool isCopyActionAvailable() const override;
     bool isPasteActionAvailable() const override;
@@ -51,7 +42,6 @@ private:
     void loadAsset(AssetConverterSettings *settings) override;
     void saveAsset(const TString &path) override;
 
-    void changeMesh(Mesh *mesh);
     void changeEvent(QEvent *event) override;
 
     StringList suffixes() const override;
@@ -60,22 +50,15 @@ private:
     Object::ObjectList selected() const override;
 
 private:
-    ShaderCodeDialog m_codeDlg;
+    Ui::LegacyPipelineEdit *ui;
 
-    Ui::MaterialEdit *ui;
-
-    Actor *m_mesh;
-    Actor *m_light;
-
-    Material *m_material;
-
-    ShaderGraph *m_graph;
-    ShaderBuilder *m_builder;
+    PipelineTaskGraph *m_graph;
+    PipelineConverter *m_builder;
 
     LegacyCameraController *m_controller;
 
-    MaterialProxy *m_proxy;
+    PipelineProxy *m_proxy;
 
 };
 
-#endif // MATERIALEDIT_H
+#endif // LEGACYPIPELINEEDIT_H
