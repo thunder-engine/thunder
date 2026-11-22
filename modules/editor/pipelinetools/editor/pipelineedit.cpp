@@ -74,7 +74,7 @@ PipelineEdit::PipelineEdit() :
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
 
-    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &PipelineEdit::selectionChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &PipelineEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));

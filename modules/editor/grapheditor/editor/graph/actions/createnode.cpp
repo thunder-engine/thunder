@@ -1,6 +1,6 @@
 #include "createnode.h"
 
-CreateNode::CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node, int port, bool out, const TString &name, UndoCommand *parent) :
+CreateNode::CreateNode(const std::string &type, int x, int y, LegacyGraphController *ctrl, int node, int port, bool out, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_type(type),
         m_controller(ctrl),

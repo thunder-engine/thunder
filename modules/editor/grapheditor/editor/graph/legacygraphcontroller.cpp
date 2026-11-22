@@ -1,6 +1,6 @@
-#include "graphcontroller.h"
+#include "legacygraphcontroller.h"
 
-#include "graphview.h"
+#include "legacygraphview.h"
 #include "graphwidgets/nodewidget.h"
 #include "graphwidgets/groupwidget.h"
 #include "graphwidgets/portwidget.h"
@@ -19,7 +19,7 @@
 #include <pugixml.hpp>
 #include <sstream>
 
-GraphController::GraphController(GraphView *view) :
+LegacyGraphController::LegacyGraphController(LegacyGraphView *view) :
         m_dragWidget(nullptr),
         m_graph(nullptr),
         m_view(view),
@@ -28,11 +28,11 @@ GraphController::GraphController(GraphView *view) :
     m_activeCamera->setOrthographic(true);
 }
 
-AbstractNodeGraph *GraphController::graph() {
+AbstractNodeGraph *LegacyGraphController::graph() {
     return m_graph;
 }
 
-void GraphController::setGraph(AbstractNodeGraph *graph) {
+void LegacyGraphController::setGraph(AbstractNodeGraph *graph) {
     m_graph = graph;
 
     m_dragWidget = nullptr;
@@ -46,7 +46,7 @@ void GraphController::setGraph(AbstractNodeGraph *graph) {
     }
 }
 
-Object::ObjectList GraphController::selected() {
+Object::ObjectList LegacyGraphController::selected() {
     Object::ObjectList result;
     for(auto it : m_selectedNodes) {
         result.push_back(m_graph->node(it));
@@ -62,11 +62,11 @@ Object::ObjectList GraphController::selected() {
     return result;
 }
 
-std::list<int32_t> GraphController::selectedLinks() const {
+std::list<int32_t> LegacyGraphController::selectedLinks() const {
     return m_selectedLinks;
 }
 
-void GraphController::selectNodes(const std::list<int32_t> &nodes) {
+void LegacyGraphController::selectNodes(const std::list<int32_t> &nodes) {
     for(auto it : m_selectedNodes) {
         GraphNode *node = m_graph->node(it);
         if(node) {
@@ -94,7 +94,7 @@ void GraphController::selectNodes(const std::list<int32_t> &nodes) {
     emit m_view->selectionChanged();
 }
 
-void GraphController::selectLinks(const std::list<int32_t> &links) {
+void LegacyGraphController::selectLinks(const std::list<int32_t> &links) {
     for(auto it : m_selectedNodes) {
         GraphNode *node = m_graph->node(it);
         if(node) {
@@ -112,11 +112,11 @@ void GraphController::selectLinks(const std::list<int32_t> &links) {
     emit m_view->selectionChanged();
 }
 
-void GraphController::composeLinks() {
+void LegacyGraphController::composeLinks() {
     m_view->composeLinks();
 }
 
-void GraphController::copySelected() {
+void LegacyGraphController::copySelected() {
     pugi::xml_document doc;
 
     pugi::xml_node nodesElement = doc.append_child("nodes");
@@ -135,11 +135,11 @@ void GraphController::copySelected() {
     emit copied();
 }
 
-const std::string &GraphController::copyData() const {
+const std::string &LegacyGraphController::copyData() const {
     return m_copyData;
 }
 
-void GraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additive) {
+void LegacyGraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additive) {
     if(nodes != m_selectedNodes || !m_selectedLinks.empty()) {
         std::list<int32_t> local = nodes;
         if(additive) {
@@ -150,7 +150,7 @@ void GraphController::onSelectNodes(const std::list<int32_t> &nodes, bool additi
     }
 }
 
-void GraphController::onSelectLinks(const std::list<int32_t> &links, bool additive) {
+void LegacyGraphController::onSelectLinks(const std::list<int32_t> &links, bool additive) {
     if(links != m_selectedLinks || !m_selectedNodes.empty()) {
         std::list<int32_t> local = links;
         if(additive) {
@@ -161,7 +161,7 @@ void GraphController::onSelectLinks(const std::list<int32_t> &links, bool additi
     }
 }
 
-void GraphController::rubberBandBehavior(const Vector2 &pos) {
+void LegacyGraphController::rubberBandBehavior(const Vector2 &pos) {
     QRect r(QPoint(MIN(m_originMousePos.x, pos.x), MIN(m_originMousePos.y, pos.y)),
             QPoint(MAX(m_originMousePos.x, pos.x), MAX(m_originMousePos.y, pos.y)));
 
@@ -199,7 +199,7 @@ void GraphController::rubberBandBehavior(const Vector2 &pos) {
     }
 }
 
-void GraphController::deleteNodes() {
+void LegacyGraphController::deleteNodes() {
     std::list<int32_t> selection;
     for(auto it : m_selectedNodes) {
         if(m_graph->node(it)->isRemovable()) {
@@ -211,11 +211,11 @@ void GraphController::deleteNodes() {
     }
 }
 
-void GraphController::deleteLinks() {
+void LegacyGraphController::deleteLinks() {
     m_view->undoRedo()->push(new DeleteLinks(m_selectedLinks, this));
 }
 
-void GraphController::dragSelection(const Vector2 &position) {
+void LegacyGraphController::dragSelection(const Vector2 &position) {
     Vector2 deltaPos(position - m_originMousePos);
 
     int snap = m_view->gridCell();
@@ -250,7 +250,7 @@ void GraphController::dragSelection(const Vector2 &position) {
     m_view->composeLinks();
 }
 
-void GraphController::cancelDrag() {
+void LegacyGraphController::cancelDrag() {
     auto selectedOrigin = m_selectedOrigins.begin();
     for(auto it : m_selectedNodes) {
         GraphNode *node = m_graph->node(it);
@@ -270,7 +270,7 @@ void GraphController::cancelDrag() {
     m_dragWidget = nullptr;
 }
 
-void GraphController::beginDrag(NodeWidget *hovered) {
+void LegacyGraphController::beginDrag(NodeWidget *hovered) {
     m_softSelected.clear();
 
     GroupWidget *group = dynamic_cast<GroupWidget *>(hovered);
@@ -315,7 +315,7 @@ void GraphController::beginDrag(NodeWidget *hovered) {
     m_dragWidget = hovered;
 }
 
-void GraphController::endDrag() {
+void LegacyGraphController::endDrag() {
     std::list<NodeWidget *> list;
     for(auto it : m_selectedNodes) {
         list.push_back(static_cast<NodeWidget *>(m_graph->node(it)->widget()));
@@ -328,7 +328,7 @@ void GraphController::endDrag() {
     m_dragWidget = nullptr;
 }
 
-void GraphController::update() {
+void LegacyGraphController::update() {
     if(Input::isMouseButtonUp(Input::MOUSE_RIGHT) && !m_cameraInMove) {
         m_view->showMenu();
     }
@@ -420,7 +420,7 @@ void GraphController::update() {
     }
 }
 
-NodeWidget *GraphController::hoveredNode(const Vector2 &pos) {
+NodeWidget *LegacyGraphController::hoveredNode(const Vector2 &pos) {
     NodeWidget *hovered = nullptr;
 
     for(auto node : m_graph->nodes()) {
@@ -435,7 +435,7 @@ NodeWidget *GraphController::hoveredNode(const Vector2 &pos) {
     return hovered;
 }
 
-PortWidget *GraphController::hoveredPort(const Vector2 &pos) {
+PortWidget *LegacyGraphController::hoveredPort(const Vector2 &pos) {
     for(auto node : m_graph->nodes()) {
         for(auto &port : node->ports()) {
             PortWidget *widget = static_cast<PortWidget *>(port.m_widget);
@@ -450,7 +450,7 @@ PortWidget *GraphController::hoveredPort(const Vector2 &pos) {
     return nullptr;
 }
 
-int GraphController::hoveredLink(const Vector2 &pos) {
+int LegacyGraphController::hoveredLink(const Vector2 &pos) {
     Widget *parentTransform = &m_view->view();
     Matrix4 worlToView(parentTransform->worldTransform().inverse());
 
@@ -488,14 +488,14 @@ int GraphController::hoveredLink(const Vector2 &pos) {
     return -1;
 }
 
-void GraphController::cameraMove(const Vector3 &delta) {
+void LegacyGraphController::cameraMove(const Vector3 &delta) {
     LegacyCameraController::cameraMove(delta);
 
     Widget *t = &m_view->view();
     t->setPosition(t->position() + Vector3(m_mouseDelta, 0.0f));
 }
 
-void GraphController::cameraZoom(float delta) {
+void LegacyGraphController::cameraZoom(float delta) {
     m_zoom += (delta > 0) ? -1 : 1;
 
     if(m_zoom >= 1 && m_zoom <= 10) {
@@ -515,7 +515,7 @@ void GraphController::cameraZoom(float delta) {
     }
 }
 
-void GraphController::resize(int32_t width, int32_t height) {
+void LegacyGraphController::resize(int32_t width, int32_t height) {
     LegacyCameraController::resize(width, height);
 
     float scale = 1.1f - ((float)m_zoom / 10.0f);

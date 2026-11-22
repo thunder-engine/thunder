@@ -14,7 +14,7 @@
    <string>Animation Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../motiontools.qrc">
+   <iconset resource="../../motiontools.qrc">
     <normaloff>:/icons/states.png</normaloff>:/icons/states.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -36,10 +36,10 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="LegacyViewport" name="preview" native="true"/>
-     <widget class="GraphView" name="schemeWidget" native="true"/>
+     <widget class="LegacyGraphView" name="schemeWidget" native="true"/>
     </widget>
    </item>
   </layout>
@@ -54,20 +54,20 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GraphView</class>
-   <extends>QWidget</extends>
-   <header>graph/graphview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>LegacyViewport</class>
    <extends>QWidget</extends>
    <header>viewport/legacyviewport.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>LegacyGraphView</class>
+   <extends>QWidget</extends>
+   <header>graph/legacygraphview.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../motiontools.qrc"/>
+  <include location="../../motiontools.qrc"/>
  </resources>
  <connections/>
 </ui>

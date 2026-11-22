@@ -88,7 +88,7 @@ LegacyAnimationEdit::LegacyAnimationEdit() :
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(m_graph, _SIGNAL(variableChanged()), m_proxy, _SLOT(onVariableChanged()));
 
-    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &LegacyAnimationEdit::selectionChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &LegacyAnimationEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));

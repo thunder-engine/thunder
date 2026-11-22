@@ -1,17 +1,17 @@
 #ifndef CREATELINK_H
 #define CREATELINK_H
 
-#include "../graphcontroller.h"
+#include "../legacygraphcontroller.h"
 
 class CreateLink : public UndoCommand {
 public:
-    CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const TString &name = QObject::tr("Create Link").toStdString(), UndoCommand *parent = nullptr);
+    CreateLink(int sender, int oport, int receiver, int iport, LegacyGraphController *ctrl, const TString &name = QObject::tr("Create Link").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
 
 private:
-    GraphController *m_controller;
+    LegacyGraphController *m_controller;
 
     int m_sender;
     int m_oPort;

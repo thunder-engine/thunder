@@ -1,6 +1,6 @@
 #include "selectnodes.h"
 
-SelectNodes::SelectNodes(const std::list<int32_t> &nodes, const std::list<int32_t> &links, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+SelectNodes::SelectNodes(const std::list<int32_t> &nodes, const std::list<int32_t> &links, LegacyGraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl),
         m_nodes(nodes),

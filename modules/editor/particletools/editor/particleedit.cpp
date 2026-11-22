@@ -97,7 +97,7 @@ ParticleEdit::ParticleEdit() :
 
     Object::connect(graph, _SIGNAL(effectUpdated()), m_proxy, _SLOT(onUpdateTemplate()));
 
-    connect(ui->graph, &GraphView::selectionChanged, this, &ParticleEdit::selectionChanged);
+    connect(ui->graph, &LegacyGraphView::selectionChanged, this, &ParticleEdit::selectionChanged);
 
     ui->graph->setEditor(this);
     ui->graph->setWorld(Engine::objectCreate<World>("World"));

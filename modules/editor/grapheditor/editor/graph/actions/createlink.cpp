@@ -1,6 +1,6 @@
 #include "createlink.h"
 
-CreateLink::CreateLink(int sender, int oport, int receiver, int iport, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+CreateLink::CreateLink(int sender, int oport, int receiver, int iport, LegacyGraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl),
         m_sender(sender),

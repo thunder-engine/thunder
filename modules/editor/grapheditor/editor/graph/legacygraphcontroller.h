@@ -1,5 +1,5 @@
-#ifndef GRAPHCONTROLLER_H
-#define GRAPHCONTROLLER_H
+#ifndef LEGACYGRAPHCONTROLLER_H
+#define LEGACYGRAPHCONTROLLER_H
 
 #include <viewport/legacycameracontroller.h>
 #include <editor/undostack.h>
@@ -9,13 +9,13 @@
 class NodeWidget;
 class PortWidget;
 
-class GraphView;
+class LegacyGraphView;
 
-class GraphController : public LegacyCameraController {
+class LegacyGraphController : public LegacyCameraController {
     Q_OBJECT
 
 public:
-    explicit GraphController(GraphView *view);
+    explicit LegacyGraphController(LegacyGraphView *view);
 
     AbstractNodeGraph *graph();
     void setGraph(AbstractNodeGraph *graph);
@@ -75,10 +75,10 @@ private:
 
     AbstractNodeGraph *m_graph;
 
-    GraphView *m_view;
+    LegacyGraphView *m_view;
 
     int32_t m_zoom;
 
 };
 
-#endif // GRAPHCONTROLLER_H
+#endif // LEGACYGRAPHCONTROLLER_H
