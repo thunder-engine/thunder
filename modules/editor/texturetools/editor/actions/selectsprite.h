@@ -3,18 +3,18 @@
 
 #include <editor/undostack.h>
 
-class SpriteController;
+class LegacySpriteController;
 
 class SelectSprite : public UndoCommand {
 public:
-    SelectSprite(const TString &key, SpriteController *ctrl, UndoCommand *group = nullptr);
+    SelectSprite(const TString &key, LegacySpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
     TString m_key;
 
-    SpriteController *m_controller;
+    LegacySpriteController *m_controller;
 
 };
 

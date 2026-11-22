@@ -1,5 +1,5 @@
-#include "particleedit.h"
-#include "ui_particleedit.h"
+#include "legacyparticleedit.h"
+#include "ui_legacyparticleedit.h"
 
 #include <QSettings>
 #include <QToolButton>
@@ -42,7 +42,7 @@ class ParticleProxy : public Object {
     )
 
 public:
-    void setEditor(ParticleEdit *editor) {
+    void setEditor(LegacyParticleEdit *editor) {
         m_editor = editor;
     }
 
@@ -59,12 +59,12 @@ public:
     }
 
 protected:
-    ParticleEdit *m_editor = nullptr;
+    LegacyParticleEdit *m_editor = nullptr;
 
 };
 
-ParticleEdit::ParticleEdit() :
-        ui(new Ui::ParticleEdit),
+LegacyParticleEdit::LegacyParticleEdit() :
+        ui(new Ui::LegacyParticleEdit),
         m_builder(new EffectBuilder),
         m_controller(new LegacyCameraController),
         m_light(nullptr),
@@ -97,7 +97,7 @@ ParticleEdit::ParticleEdit() :
 
     Object::connect(graph, _SIGNAL(effectUpdated()), m_proxy, _SLOT(onUpdateTemplate()));
 
-    connect(ui->graph, &LegacyGraphView::selectionChanged, this, &ParticleEdit::selectionChanged);
+    connect(ui->graph, &LegacyGraphView::selectionChanged, this, &LegacyParticleEdit::selectionChanged);
 
     ui->graph->setEditor(this);
     ui->graph->setWorld(Engine::objectCreate<World>("World"));
@@ -112,7 +112,7 @@ ParticleEdit::ParticleEdit() :
     readSettings();
 }
 
-ParticleEdit::~ParticleEdit() {
+LegacyParticleEdit::~LegacyParticleEdit() {
     writeSettings();
 
     delete m_render->world();
@@ -123,7 +123,7 @@ ParticleEdit::~ParticleEdit() {
     delete ui;
 }
 
-void ParticleEdit::timerEvent(QTimerEvent *) {
+void LegacyParticleEdit::timerEvent(QTimerEvent *) {
     if(m_render && ui->preview->isVisible()) {
         Camera::setCurrent(m_controller->camera());
         m_render->deltaUpdate(1.0f / 60.0f);
@@ -131,7 +131,7 @@ void ParticleEdit::timerEvent(QTimerEvent *) {
     }
 }
 
-void ParticleEdit::readSettings() {
+void LegacyParticleEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant value = settings.value("effects.geometry");
     if(value.isValid()) {
@@ -139,12 +139,12 @@ void ParticleEdit::readSettings() {
     }
 }
 
-void ParticleEdit::writeSettings() {
+void LegacyParticleEdit::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("effects.geometry", ui->splitter->saveState());
 }
 
-StringList ParticleEdit::suffixes() const {
+StringList LegacyParticleEdit::suffixes() const {
     StringList result;
     for(auto &it : static_cast<AssetConverter *>(m_builder)->suffixes()) {
         result.push_back(it.data());
@@ -152,40 +152,40 @@ StringList ParticleEdit::suffixes() const {
     return result;
 }
 
-TString ParticleEdit::assetType() const {
+TString LegacyParticleEdit::assetType() const {
     return "Visual Effect";
 }
 
-void ParticleEdit::onActivated() {
+void LegacyParticleEdit::onActivated() {
     ui->graph->reselect();
 }
 
-void ParticleEdit::onCutAction() {
+void LegacyParticleEdit::onCutAction() {
     ui->graph->onCutAction();
 }
 
-void ParticleEdit::onCopyAction() {
+void LegacyParticleEdit::onCopyAction() {
     ui->graph->onCopyAction();
 }
 
-void ParticleEdit::onPasteAction() {
+void LegacyParticleEdit::onPasteAction() {
     ui->graph->onPasteAction();
 }
 
-bool ParticleEdit::isCopyActionAvailable() const {
+bool LegacyParticleEdit::isCopyActionAvailable() const {
     return ui->graph->isCopyActionAvailable();
 }
 
-bool ParticleEdit::isPasteActionAvailable() const {
+bool LegacyParticleEdit::isPasteActionAvailable() const {
     return ui->graph->isPasteActionAvailable();
 }
 
-void ParticleEdit::onAddModule(QAction *action) {
+void LegacyParticleEdit::onAddModule(QAction *action) {
     EffectGraph *graph = &m_builder->graph();
     m_undoRedo->push(new CreateModule(action->text().toStdString(), graph, tr("Create %1").arg(action->text()).toStdString()));
 }
 
-void ParticleEdit::onObjectsChanged(const TString &property, const Variant &value) {
+void LegacyParticleEdit::onObjectsChanged(const TString &property, const Variant &value) {
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
         TString propertyName;
@@ -194,7 +194,7 @@ void ParticleEdit::onObjectsChanged(const TString &property, const Variant &valu
     }
 }
 
-std::list<QWidget *> ParticleEdit::propertiesActionWidgets(Object *object, QWidget *parent) const {
+std::list<QWidget *> LegacyParticleEdit::propertiesActionWidgets(Object *object, QWidget *parent) const {
     std::list<QWidget *> result;
 
     if(dynamic_cast<EffectModule *>(object)) {
@@ -211,7 +211,7 @@ std::list<QWidget *> ParticleEdit::propertiesActionWidgets(Object *object, QWidg
     return result;
 }
 
-QWidget *ParticleEdit::propertiesWidget() {
+QWidget *LegacyParticleEdit::propertiesWidget() {
     if(m_moduleButton == nullptr) {
         m_moduleButton = new QToolButton;
 
@@ -249,14 +249,14 @@ QWidget *ParticleEdit::propertiesWidget() {
             }
         }
 
-        connect(rootMenu, &QMenu::triggered, this, &ParticleEdit::onAddModule);
+        connect(rootMenu, &QMenu::triggered, this, &LegacyParticleEdit::onAddModule);
 
         m_moduleButton->setMenu(rootMenu);
     }
     return m_moduleButton;
 }
 
-void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacyParticleEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
@@ -270,7 +270,7 @@ void ParticleEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void ParticleEdit::saveAsset(const TString &path) {
+void LegacyParticleEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_builder->graph().save(path.isEmpty() ? m_settings.front()->source() : path);
 
@@ -278,7 +278,7 @@ void ParticleEdit::saveAsset(const TString &path) {
     }
 }
 
-void ParticleEdit::onUpdateTemplate() {
+void LegacyParticleEdit::onUpdateTemplate() {
     VisualEffect *effect = m_render->effect();
     if(effect) {
         ResourceSystem::loadResourceData(effect, m_builder->graph().data());
@@ -288,23 +288,23 @@ void ParticleEdit::onUpdateTemplate() {
     }
 }
 
-void ParticleEdit::onModuleChanged() {
+void LegacyParticleEdit::onModuleChanged() {
     ui->graph->reselect();
 }
 
-void ParticleEdit::onDeleteModule() {
+void LegacyParticleEdit::onDeleteModule() {
     EffectModule *module = static_cast<EffectModule *>(sender()->property(gFunction).value<Object *>());
 
     EffectGraph *graph = &m_builder->graph();
     m_undoRedo->push(new DeleteModule(module, graph, tr("Delete %1").arg(module->name().data()).toStdString()));
 }
 
-void ParticleEdit::changeEvent(QEvent *event) {
+void LegacyParticleEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-Object::ObjectList ParticleEdit::selected() const {
+Object::ObjectList LegacyParticleEdit::selected() const {
     return ui->graph->selected();
 }

@@ -1,5 +1,5 @@
-#ifndef SPRITEEDIT_H
-#define SPRITEEDIT_H
+#ifndef LEGACYSPRITEEDIT_H
+#define LEGACYSPRITEEDIT_H
 
 #include <editor/legacyasseteditor.h>
 
@@ -8,22 +8,22 @@
 class SpriteRender;
 class TextureConverter;
 
-class SpriteController;
+class LegacySpriteController;
 
 class SpriteProxy;
 
 class Scene;
 
 namespace Ui {
-    class SpriteEdit;
+    class LegacySpriteEdit;
 }
 
-class SpriteEdit : public LegacyAssetEditor {
+class LegacySpriteEdit : public LegacyAssetEditor {
     Q_OBJECT
 
 public:
-    SpriteEdit();
-    ~SpriteEdit();
+    LegacySpriteEdit();
+    ~LegacySpriteEdit();
 
     void onUpdateTemplate();
 
@@ -44,7 +44,7 @@ private:
 
     static void resourceUpdated(int state, void *ptr);
 
-    Ui::SpriteEdit *ui;
+    Ui::LegacySpriteEdit *ui;
 
     Resource *m_resource;
 
@@ -57,7 +57,7 @@ private:
 
     Scene *m_scene;
 
-    SpriteController *m_controller;
+    LegacySpriteController *m_controller;
 
     SpriteProxy *m_proxy;
 
@@ -70,7 +70,7 @@ class SpriteProxy : public Object {
         A_SLOT(SpriteProxy::onUpdated)
     )
 public:
-    void setEditor(SpriteEdit *editor) {
+    void setEditor(LegacySpriteEdit *editor) {
         m_editor = editor;
     }
 
@@ -79,8 +79,8 @@ public:
     }
 
 private:
-    SpriteEdit *m_editor = nullptr;
+    LegacySpriteEdit *m_editor = nullptr;
 
 };
 
-#endif // SPRITEEDIT_H
+#endif // LEGACYSPRITEEDIT_H

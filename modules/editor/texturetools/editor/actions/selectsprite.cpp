@@ -1,9 +1,9 @@
 #include "selectsprite.h"
 
-#include "../spritecontroller.h"
+#include "../legacyspritecontroller.h"
 
-SelectSprite::SelectSprite(const TString &key, SpriteController *ctrl, UndoCommand *group) :
-        UndoCommand(QObject::tr("Select Sprite Elements").toStdString(), group),
+SelectSprite::SelectSprite(const TString &key, LegacySpriteController *ctrl, UndoCommand *group) :
+        UndoCommand("Select Sprite Elements", group),
         m_key(key),
         m_controller(ctrl) {
 }

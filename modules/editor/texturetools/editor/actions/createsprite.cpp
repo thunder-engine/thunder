@@ -2,8 +2,8 @@
 
 #include <object.h>
 
-CreateSprite::CreateSprite(const Vector2 &min, const Vector2 &max, SpriteController *ctrl, UndoCommand *group) :
-        UndoCommand(QObject::tr("Create Sprite Element").toStdString(), group),
+CreateSprite::CreateSprite(const Vector2 &min, const Vector2 &max, LegacySpriteController *ctrl, UndoCommand *group) :
+        UndoCommand("Create Sprite Element", group),
         m_bounds(min, max),
         m_controller(ctrl) {
 }

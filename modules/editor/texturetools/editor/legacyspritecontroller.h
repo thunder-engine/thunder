@@ -1,5 +1,5 @@
-#ifndef SPRITECONTROLLER_H
-#define SPRITECONTROLLER_H
+#ifndef LEGACYSPRITECONTROLLER_H
+#define LEGACYSPRITECONTROLLER_H
 
 #include <viewport/legacycameracontroller.h>
 
@@ -7,13 +7,13 @@
 
 #include "tools/spritetool.h"
 
-#include "spriteedit.h"
+#include "legacyspriteedit.h"
 
-class SpriteController : public LegacyCameraController {
+class LegacySpriteController : public LegacyCameraController {
     Q_OBJECT
 
 public:
-    SpriteController(SpriteEdit *editor);
+    LegacySpriteController(LegacySpriteEdit *editor);
 
     TextureImportSettings *settings() const { return m_settings; }
     void setSettings(TextureImportSettings *settings);
@@ -50,7 +50,7 @@ private:
 
     EditorTool *m_spriteTool;
 
-    SpriteEdit *m_editor;
+    LegacySpriteEdit *m_editor;
 
     uint32_t m_width;
     uint32_t m_height;
@@ -61,4 +61,4 @@ private:
 };
 
 
-#endif // SPRITECONTROLLER_H
+#endif // LEGACYSPRITECONTROLLER_H

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ParticleEdit</class>
+ <class>LegacyParticleEdit</class>
  <widget class="QWidget" name="ParticleEdit">
   <property name="geometry">
    <rect>

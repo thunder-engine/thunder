@@ -1,5 +1,5 @@
-#include "pipelineedit.h"
-#include "ui_pipelineedit.h"
+#include "legacypipelineedit.h"
+#include "ui_legacypipelineedit.h"
 
 #include <QSettings>
 
@@ -41,7 +41,7 @@ class PipelineProxy : public Object {
         A_SLOT(PipelineProxy::onGraphUpdated)
     )
 public:
-    void setEditor(PipelineEdit *editor) {
+    void setEditor(LegacyPipelineEdit *editor) {
         m_editor = editor;
     }
 
@@ -50,11 +50,11 @@ public:
     }
 
 private:
-    PipelineEdit *m_editor = nullptr;
+    LegacyPipelineEdit *m_editor = nullptr;
 };
 
-PipelineEdit::PipelineEdit() :
-        ui(new Ui::PipelineEdit),
+LegacyPipelineEdit::LegacyPipelineEdit() :
+        ui(new Ui::LegacyPipelineEdit),
         m_graph(new PipelineTaskGraph),
         m_builder(new PipelineConverter()),
         m_controller(new LegacyCameraController),
@@ -74,7 +74,7 @@ PipelineEdit::PipelineEdit() :
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
 
-    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &PipelineEdit::selectionChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &LegacyPipelineEdit::selectionChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));
@@ -84,13 +84,13 @@ PipelineEdit::PipelineEdit() :
     readSettings();
 }
 
-PipelineEdit::~PipelineEdit() {
+LegacyPipelineEdit::~LegacyPipelineEdit() {
     writeSettings();
 
     delete ui;
 }
 
-void PipelineEdit::readSettings() {
+void LegacyPipelineEdit::readSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     QVariant value = settings.value("pipeline.geometry");
     if(value.isValid()) {
@@ -98,44 +98,44 @@ void PipelineEdit::readSettings() {
     }
 }
 
-void PipelineEdit::writeSettings() {
+void LegacyPipelineEdit::writeSettings() {
     QSettings settings(COMPANY_NAME, EDITOR_NAME);
     settings.setValue("pipeline.geometry", ui->splitter->saveState());
 }
 
-StringList PipelineEdit::suffixes() const {
+StringList LegacyPipelineEdit::suffixes() const {
     return static_cast<AssetConverter *>(m_builder)->suffixes();
 }
 
-TString PipelineEdit::assetType() const {
+TString LegacyPipelineEdit::assetType() const {
     return "Pipeline";
 }
 
-void PipelineEdit::onActivated() {
+void LegacyPipelineEdit::onActivated() {
     ui->schemeWidget->reselect();
 }
 
-void PipelineEdit::onCutAction() {
+void LegacyPipelineEdit::onCutAction() {
     ui->schemeWidget->onCutAction();
 }
 
-void PipelineEdit::onCopyAction() {
+void LegacyPipelineEdit::onCopyAction() {
     ui->schemeWidget->onCopyAction();
 }
 
-void PipelineEdit::onPasteAction() {
+void LegacyPipelineEdit::onPasteAction() {
     ui->schemeWidget->onPasteAction();
 }
 
-bool PipelineEdit::isCopyActionAvailable() const {
+bool LegacyPipelineEdit::isCopyActionAvailable() const {
     return ui->schemeWidget->isCopyActionAvailable();
 }
 
-bool PipelineEdit::isPasteActionAvailable() const {
+bool LegacyPipelineEdit::isPasteActionAvailable() const {
     return ui->schemeWidget->isPasteActionAvailable();
 }
 
-void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacyPipelineEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
@@ -143,7 +143,7 @@ void PipelineEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void PipelineEdit::saveAsset(const TString &path) {
+void LegacyPipelineEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
         m_graph->save(path.isEmpty() ? m_settings.front()->source() : path);
 
@@ -151,7 +151,7 @@ void PipelineEdit::saveAsset(const TString &path) {
     }
 }
 
-void PipelineEdit::onGraphUpdated() {
+void LegacyPipelineEdit::onGraphUpdated() {
     if(m_builder && m_graph->buildGraph()) {
         // Need to attach it
         m_graph->data();
@@ -160,19 +160,19 @@ void PipelineEdit::onGraphUpdated() {
     emit updated();
 }
 
-void PipelineEdit::onObjectsChanged(const TString &property, const Variant &value) {
+void LegacyPipelineEdit::onObjectsChanged(const TString &property, const Variant &value) {
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
         ui->schemeWidget->onObjectsChanged(gadget->selected(), property, value);
     }
 }
 
-void PipelineEdit::changeEvent(QEvent *event) {
+void LegacyPipelineEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-Object::ObjectList PipelineEdit::selected() const {
+Object::ObjectList LegacyPipelineEdit::selected() const {
     return ui->schemeWidget->selected();
 }

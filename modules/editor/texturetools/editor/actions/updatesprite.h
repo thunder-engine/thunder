@@ -2,11 +2,11 @@
 #define UPDATESPRITE_H
 
 #include <editor/undostack.h>
-#include "../spritecontroller.h"
+#include "../legacyspritecontroller.h"
 
 class UpdateSprite : public UndoCommand {
 public:
-    UpdateSprite(const VariantMap &data, SpriteController *ctrl, UndoCommand *group = nullptr);
+    UpdateSprite(const VariantMap &data, LegacySpriteController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -15,7 +15,7 @@ protected:
 
     VariantMap m_data;
 
-    SpriteController *m_controller;
+    LegacySpriteController *m_controller;
 
 };
 

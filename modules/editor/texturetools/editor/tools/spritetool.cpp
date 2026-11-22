@@ -12,13 +12,13 @@
 
 #include <viewport/handles.h>
 
-#include "../spritecontroller.h"
+#include "../legacyspritecontroller.h"
 #include "../actions/selectsprite.h"
 #include "../actions/updatesprite.h"
 #include "../actions/createsprite.h"
 #include "../actions/destroysprite.h"
 
-SpriteTool::SpriteTool(SpriteController *controller) :
+SpriteTool::SpriteTool(LegacySpriteController *controller) :
         m_controller(controller),
         m_settings(nullptr),
         m_borderAxes(0),

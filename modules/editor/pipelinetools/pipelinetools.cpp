@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "converter/pipelineconverter.h"
-#include "editor/pipelineedit.h"
+#include "editor/legacypipelineedit.h"
 
 static const char *meta = \
 "{"
@@ -16,7 +16,7 @@ static const char *meta = \
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
 "       \"PipelineConverter\": \"converter\","
-"       \"PipelineEdit\": \"legacyeditor\""
+"       \"LegacyPipelineEdit\": \"legacyeditor\""
 "   }"
 "}";
 
@@ -35,8 +35,8 @@ const char *PipelineTools::metaInfo() const {
 void *PipelineTools::getObject(const char *name) {
     if(strcmp(name, "PipelineConverter") == 0) {
         return new PipelineConverter;
-    } else if(strcmp(name, "PipelineEdit") == 0) {
-        return new PipelineEdit;
+    } else if(strcmp(name, "LegacyPipelineEdit") == 0) {
+        return new LegacyPipelineEdit;
     }
     return nullptr;
 }

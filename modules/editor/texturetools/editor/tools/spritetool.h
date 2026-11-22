@@ -5,11 +5,11 @@
 
 #include "textureconverter.h"
 
-class SpriteController;
+class LegacySpriteController;
 
 class SpriteTool : public EditorTool {
 public:
-    explicit SpriteTool(SpriteController *controller);
+    explicit SpriteTool(LegacySpriteController *controller);
 
     void setSettings(TextureImportSettings *settings);
 
@@ -28,7 +28,7 @@ protected:
 protected:
     VariantMap m_savedElements;
 
-    SpriteController *m_controller;
+    LegacySpriteController *m_controller;
 
     TextureImportSettings *m_settings;
 

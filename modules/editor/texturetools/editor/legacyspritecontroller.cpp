@@ -1,4 +1,4 @@
-#include "spritecontroller.h"
+#include "legacyspritecontroller.h"
 
 #include <components/camera.h>
 #include <components/actor.h>
@@ -9,7 +9,7 @@
 
 #include <input.h>
 
-SpriteController::SpriteController(SpriteEdit *editor) :
+LegacySpriteController::LegacySpriteController(LegacySpriteEdit *editor) :
         LegacyCameraController(),
         m_settings(nullptr),
         m_spriteTool(new SpriteTool(this)),
@@ -20,7 +20,7 @@ SpriteController::SpriteController(SpriteEdit *editor) :
 
 }
 
-Object::ObjectList SpriteController::selected() {
+Object::ObjectList LegacySpriteController::selected() {
     if(m_settings && !m_key.isEmpty()) {
         TextureImportSettings::ElementMap &lements = m_settings->elements();
         auto it = lements.find(m_key);
@@ -31,7 +31,7 @@ Object::ObjectList SpriteController::selected() {
     return Object::ObjectList();
 }
 
-void SpriteController::setSettings(TextureImportSettings *settings) {
+void LegacySpriteController::setSettings(TextureImportSettings *settings) {
     if(m_settings != settings) {
         m_settings = settings;
 
@@ -41,36 +41,36 @@ void SpriteController::setSettings(TextureImportSettings *settings) {
     }
 }
 
-void SpriteController::setSize(uint32_t width, uint32_t height) {
+void LegacySpriteController::setSize(uint32_t width, uint32_t height) {
     m_width = width;
     m_height = height;
 }
 
-bool SpriteController::isSelected(const TString &key) const {
+bool LegacySpriteController::isSelected(const TString &key) const {
     return (m_key == key);
 }
 
-void SpriteController::selectElement(const TString &key) {
+void LegacySpriteController::selectElement(const TString &key) {
     m_key = key;
     selectionChanged();
 }
 
-TString SpriteController::selectedElement() {
+TString LegacySpriteController::selectedElement() {
     return m_key;
 }
 
-void SpriteController::setDrag(bool drag) {
+void LegacySpriteController::setDrag(bool drag) {
     if(drag) {
         m_spriteTool->beginControl();
     }
     m_drag = drag;
 }
 
-Vector3 SpriteController::world() const {
+Vector3 LegacySpriteController::world() const {
     return m_world;
 }
 
-void SpriteController::drawHandles() {
+void LegacySpriteController::drawHandles() {
     LegacyCameraController::drawHandles();
 
     Vector4 pos(Input::mousePosition());
