@@ -107,6 +107,23 @@ void AssetEditor::onSaveAs() {
     saveAsset();
 }
 
+void AssetEditor::onCutAction() {
+}
+
+void AssetEditor::onCopyAction() {
+}
+
+void AssetEditor::onPasteAction() {
+}
+
+void AssetEditor::onUndoAction() {
+    m_undoRedo->undo();
+}
+
+void AssetEditor::onRedoAction() {
+    m_undoRedo->redo();
+}
+
 void AssetEditor::onObjectCreate(const TString &type) {
     A_UNUSED(type);
 }

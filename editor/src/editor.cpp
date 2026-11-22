@@ -92,6 +92,9 @@ void Editor::initDocumentSystem(bool useLegacy) {
         }
     } else {
         s_documentModel = new DocumentModel;
+        for(auto &it : Editor::plugins()->extensions("editor")) {
+            addEditor(reinterpret_cast<AssetEditor *>(Editor::plugins()->getPluginObject(it)));
+        }
         for(auto &it : Editor::plugins()->extensions("gadget")) {
             addGadget(reinterpret_cast<EditorGadget *>(Editor::plugins()->getPluginObject(it)));
         }
@@ -214,6 +217,10 @@ void Editor::addGadget(EditorGadget *gadget) {
             connect(s_documentModel, _SIGNAL(selectionChanged()), gadget, _SLOT(onSelectionChanged()));
         }
     }
+}
+
+std::list<EditorGadget *> Editor::gadgets() {
+    return s_gadgets;
 }
 
 void Editor::addGadget(LegacyEditorGadget *gadget) {
