@@ -2,7 +2,7 @@
 
 #include "../graphwidgets/nodewidget.h"
 
-MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+MoveNodes::MoveNodes(const std::list<NodeWidget *> &selection, LegacyGraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl) {
 
@@ -36,6 +36,6 @@ void MoveNodes::redo() {
         widget->setPosition(Vector3(node->position(), 0.0f));
     }
     // Recalc links positions
-    static_cast<GraphController *>(m_controller)->composeLinks();
+    m_controller->composeLinks();
     m_points = positions;
 }

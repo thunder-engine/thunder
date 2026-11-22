@@ -2,7 +2,7 @@
 
 #include <float.h>
 
-PasteNodes::PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+PasteNodes::PasteNodes(const std::string &data, int x, int y, LegacyGraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl),
         m_pos(x, y) {

@@ -3,8 +3,8 @@
 #include "portwidget.h"
 
 #include "../graphnode.h"
-#include "../graphview.h"
-#include "../graphcontroller.h"
+#include "../legacygraphview.h"
+#include "../legacygraphcontroller.h"
 
 #include <layout.h>
 #include <label.h>

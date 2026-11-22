@@ -54,10 +54,10 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="LegacyViewport" name="preview" native="true"/>
-     <widget class="GraphView" name="schemeWidget" native="true"/>
+     <widget class="LegacyGraphView" name="schemeWidget" native="true"/>
     </widget>
    </item>
   </layout>
@@ -102,9 +102,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>GraphView</class>
+   <class>LegacyGraphView</class>
    <extends>QWidget</extends>
-   <header>graph/graphview.h</header>
+   <header>graph/legacygraphview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

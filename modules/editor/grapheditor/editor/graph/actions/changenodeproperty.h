@@ -1,11 +1,11 @@
 #ifndef CHANGENODEPROPERTY_H
 #define CHANGENODEPROPERTY_H
 
-#include "../graphcontroller.h"
+#include "../legacygraphcontroller.h"
 
 class ChangeNodeProperty : public UndoCommand {
 public:
-    ChangeNodeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, GraphController *ctrl, const TString &name, UndoCommand *group = nullptr);
+    ChangeNodeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, LegacyGraphController *ctrl, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -16,7 +16,7 @@ protected:
 
     std::list<uint32_t> m_objects;
 
-    GraphController *m_controller;
+    LegacyGraphController *m_controller;
 
 };
 

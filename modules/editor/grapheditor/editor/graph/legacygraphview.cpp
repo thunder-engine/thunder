@@ -1,9 +1,9 @@
-#include "graphview.h"
+#include "legacygraphview.h"
 
 #include <QMenu>
 
 #include "graphnode.h"
-#include "graphcontroller.h"
+#include "legacygraphcontroller.h"
 #include "graphwidgets/nodewidget.h"
 #include "graphwidgets/groupwidget.h"
 #include "graphwidgets/portwidget.h"
@@ -33,23 +33,23 @@ namespace {
     const char *gFrame("Frame");
 };
 
-class GraphViewProxy : public Object {
-    A_OBJECT(GraphViewProxy, Object, Proxy)
+class LegacyGraphViewProxy : public Object {
+    A_OBJECT(LegacyGraphViewProxy, Object, Proxy)
 
     A_METHODS(
-        A_SLOT(GraphViewProxy::onPortPressed),
-        A_SLOT(GraphViewProxy::onPortReleased),
-        A_SLOT(GraphViewProxy::onGraphUpdated),
-        A_SLOT(GraphViewProxy::onGraphLoaded)
+        A_SLOT(LegacyGraphViewProxy::onPortPressed),
+        A_SLOT(LegacyGraphViewProxy::onPortReleased),
+        A_SLOT(LegacyGraphViewProxy::onGraphUpdated),
+        A_SLOT(LegacyGraphViewProxy::onGraphLoaded)
     )
 
 public:
-    GraphViewProxy() :
+    LegacyGraphViewProxy() :
         m_view(nullptr) {
 
     }
 
-    void setView(GraphView *view) {
+    void setView(LegacyGraphView *view) {
         m_view = view;
     }
 
@@ -86,22 +86,22 @@ public:
     }
 
 private:
-    GraphView *m_view;
+    LegacyGraphView *m_view;
 
 };
 
-GraphView::GraphView(QWidget *editor) :
+LegacyGraphView::LegacyGraphView(QWidget *editor) :
         LegacyViewport(editor),
         m_scene(nullptr),
         m_view(nullptr),
         m_createMenu(new QMenu(this)),
-        m_proxy(new GraphViewProxy),
+        m_proxy(new LegacyGraphViewProxy),
         m_linksRender(nullptr),
         m_rubberBand(nullptr),
         m_editor(nullptr),
         m_updateLinks(false) {
 
-    m_controller = new GraphController(this);
+    m_controller = new LegacyGraphController(this);
     m_controller->activateCamera(1, true);
     m_controller->setGridAxis(LegacyCameraController::Axis::Z);
     m_controller->blockRotations(true);
@@ -117,16 +117,16 @@ GraphView::GraphView(QWidget *editor) :
 
     m_proxy->setView(this);
 
-    connect(static_cast<GraphController *>(m_controller), &GraphController::copied, this, &GraphView::copied);
+    connect(static_cast<LegacyGraphController *>(m_controller), &LegacyGraphController::copied, this, &LegacyGraphView::copied);
 
     setLiveUpdate(true);
 }
 
-void GraphView::setEditor(LegacyAssetEditor *editor) {
+void LegacyGraphView::setEditor(LegacyAssetEditor *editor) {
     m_editor = editor;
 }
 
-void GraphView::setWorld(World *scene) {
+void LegacyGraphView::setWorld(World *scene) {
     LegacyViewport::setWorld(scene);
 
     m_scene = Engine::objectCreate<Scene>("Scene", m_world);
@@ -151,12 +151,12 @@ void GraphView::setWorld(World *scene) {
     m_rubberBand->setEnabled(false);
 }
 
-AbstractNodeGraph *GraphView::graph() const {
-    return static_cast<GraphController *>(m_controller)->graph();
+AbstractNodeGraph *LegacyGraphView::graph() const {
+    return static_cast<LegacyGraphController *>(m_controller)->graph();
 }
 
-void GraphView::setGraph(AbstractNodeGraph *graph) {
-    static_cast<GraphController *>(m_controller)->setGraph(graph);
+void LegacyGraphView::setGraph(AbstractNodeGraph *graph) {
+    static_cast<LegacyGraphController *>(m_controller)->setGraph(graph);
 
     Object::connect(graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
     Object::connect(graph, _SIGNAL(graphLoaded()), m_proxy, _SLOT(onGraphLoaded()));
@@ -187,22 +187,22 @@ void GraphView::setGraph(AbstractNodeGraph *graph) {
                     menu = new QMenu;
                     action->setMenu(menu);
                 } else {
-                    connect(action, &QAction::triggered, this, &GraphView::onComponentSelected);
+                    connect(action, &QAction::triggered, this, &LegacyGraphView::onComponentSelected);
                 }
             }
         }
     }
 }
 
-Widget &GraphView::view() const {
+Widget &LegacyGraphView::view() const {
     return *m_view;
 }
 
-Frame *GraphView::rubberBand() {
+Frame *LegacyGraphView::rubberBand() {
     return m_rubberBand;
 }
 
-void GraphView::createLink(NodeWidget *node, int port) {
+void LegacyGraphView::createLink(NodeWidget *node, int port) {
     Widget *widget = nullptr;
     if(node) {
         GraphNode *n = node->node();
@@ -216,10 +216,10 @@ void GraphView::createLink(NodeWidget *node, int port) {
     m_linksRender->setCreationLink(widget);
 }
 
-void GraphView::buildLink(NodeWidget *node, int port) {
+void LegacyGraphView::buildLink(NodeWidget *node, int port) {
     AbstractNodeGraph *g = graph();
 
-    GraphController *ctrl = static_cast<GraphController *>(m_controller);
+    LegacyGraphController *ctrl = static_cast<LegacyGraphController *>(m_controller);
 
     PortWidget *widget = dynamic_cast<PortWidget *>(m_linksRender->creationLink());
     if(widget) {
@@ -258,7 +258,7 @@ void GraphView::buildLink(NodeWidget *node, int port) {
     }
 }
 
-void GraphView::deleteLink(NodeWidget *node, int port) {
+void LegacyGraphView::deleteLink(NodeWidget *node, int port) {
     GraphNode *n1 = node->node();
     NodePort *p1 = n1->port(port);
 
@@ -291,24 +291,24 @@ void GraphView::deleteLink(NodeWidget *node, int port) {
         }
     }
 
-    m_editor->undoRedo()->push(new DeleteLinks(links, static_cast<GraphController *>(m_controller)));
+    m_editor->undoRedo()->push(new DeleteLinks(links, static_cast<LegacyGraphController *>(m_controller)));
 
     for(auto it : widgets) {
         it->portUpdate();
     }
 }
 
-bool GraphView::isCreationLink() const {
+bool LegacyGraphView::isCreationLink() const {
     return m_linksRender->creationLink() != nullptr;
 }
 
-void GraphView::cancelLinkCreation() {
+void LegacyGraphView::cancelLinkCreation() {
     m_linksRender->setCreationLink(nullptr);
 }
 
-void GraphView::composeLinks() {
+void LegacyGraphView::composeLinks() {
     Object::ObjectList list;
-    for(auto it : static_cast<GraphController *>(m_controller)->selectedLinks()) {
+    for(auto it : static_cast<LegacyGraphController *>(m_controller)->selectedLinks()) {
         GraphLink *link = graph()->link(it);
         if(link) {
             list.push_back(link);
@@ -320,7 +320,7 @@ void GraphView::composeLinks() {
     m_linksRender->composeLinks();
 }
 
-void GraphView::onGraphUpdated() {
+void LegacyGraphView::onGraphUpdated() {
     AbstractNodeGraph *g = graph();
 
     m_linksRender->setGraph(g);
@@ -374,12 +374,12 @@ void GraphView::onGraphUpdated() {
     composeLinks();
 }
 
-void GraphView::onGraphLoaded() {
-    GraphController *ctrl = static_cast<GraphController *>(m_controller);
+void LegacyGraphView::onGraphLoaded() {
+    LegacyGraphController *ctrl = static_cast<LegacyGraphController *>(m_controller);
     ctrl->setGraph(ctrl->graph());
 }
 
-void GraphView::onDraw() {
+void LegacyGraphView::onDraw() {
     LegacyViewport::onDraw();
 
     if(m_updateLinks) {
@@ -388,44 +388,44 @@ void GraphView::onDraw() {
     }
 }
 
-void GraphView::resizeEvent(QResizeEvent *event) {
+void LegacyGraphView::resizeEvent(QResizeEvent *event) {
     LegacyViewport::resizeEvent(event);
 
     m_updateLinks = true;
 }
 
-void GraphView::reselect() {
+void LegacyGraphView::reselect() {
     emit selectionChanged();
 }
 
-void GraphView::showMenu() {
+void LegacyGraphView::showMenu() {
     onInProgressFlag(true);
     if(m_createMenu->exec(QCursor::pos()) == nullptr) {
         cancelLinkCreation();
     }
 }
 
-bool GraphView::isCopyActionAvailable() const {
+bool LegacyGraphView::isCopyActionAvailable() const {
     return !m_controller->selected().empty();
 }
 
-bool GraphView::isPasteActionAvailable() const {
-    return !static_cast<GraphController *>(m_controller)->copyData().empty();
+bool LegacyGraphView::isPasteActionAvailable() const {
+    return !static_cast<LegacyGraphController *>(m_controller)->copyData().empty();
 }
 
-UndoStack *GraphView::undoRedo() const {
+UndoStack *LegacyGraphView::undoRedo() const {
     return m_editor->undoRedo();
 }
 
-Object::ObjectList GraphView::selected() const {
+Object::ObjectList LegacyGraphView::selected() const {
     return m_controller->selected();
 }
 
-void GraphView::onCutAction() {
+void LegacyGraphView::onCutAction() {
     onCopyAction();
 
     AbstractNodeGraph *g = graph();
-    GraphController *controller = static_cast<GraphController *>(m_controller);
+    LegacyGraphController *controller = static_cast<LegacyGraphController *>(m_controller);
 
     std::list<int32_t> selection;
     for(auto it : controller->selected()) {
@@ -437,11 +437,11 @@ void GraphView::onCutAction() {
     m_editor->undoRedo()->push(new DeleteNodes(selection, controller, Engine::translate("Cut Nodes")));
 }
 
-void GraphView::onCopyAction() {
-    static_cast<GraphController *>(m_controller)->copySelected();
+void LegacyGraphView::onCopyAction() {
+    static_cast<LegacyGraphController *>(m_controller)->copySelected();
 }
 
-void GraphView::onPasteAction() {
+void LegacyGraphView::onPasteAction() {
     Vector4 pos(Input::mousePosition());
 
     Widget *t = m_view;
@@ -450,21 +450,21 @@ void GraphView::onPasteAction() {
     localPos.x -= t->size().x * 0.5f;
     localPos.y -= t->size().y * 0.5f;
 
-    GraphController *controller = static_cast<GraphController *>(m_controller);
+    LegacyGraphController *controller = static_cast<LegacyGraphController *>(m_controller);
 
     const std::string &data = controller->copyData();
 
     m_editor->undoRedo()->push(new PasteNodes(data, localPos.x, localPos.y, controller));
 }
 
-void GraphView::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
+void LegacyGraphView::onObjectsChanged(const Object::ObjectList &objects, const TString &property, const Variant &value) {
     TString name(Engine::translate("Change %1").arg(objects.front()->name()));
 
     m_editor->undoRedo()->push(new ChangeNodeProperty(objects, property, value,
-                                                      static_cast<GraphController *>(m_controller), name));
+                                                      static_cast<LegacyGraphController *>(m_controller), name));
 }
 
-void GraphView::onComponentSelected() {
+void LegacyGraphView::onComponentSelected() {
     AbstractNodeGraph *g = graph();
 
     Widget *t = m_view;
@@ -477,7 +477,7 @@ void GraphView::onComponentSelected() {
     localPos.x -= t->size().x * 0.5f;
     localPos.y -= t->size().y * 0.5f;
 
-    GraphController *controller = static_cast<GraphController *>(m_controller);
+    LegacyGraphController *controller = static_cast<LegacyGraphController *>(m_controller);
 
     Widget *widget = m_linksRender->creationLink();
     if(widget) {

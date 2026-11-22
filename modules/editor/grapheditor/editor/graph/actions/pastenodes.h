@@ -1,19 +1,19 @@
 #ifndef PASTENODES_H
 #define PASTENODES_H
 
-#include "../graphcontroller.h"
+#include "../legacygraphcontroller.h"
 
 #include <pugixml.hpp>
 
 class PasteNodes : public UndoCommand {
 public:
-    PasteNodes(const std::string &data, int x, int y, GraphController *ctrl, const TString &name = QObject::tr("Paste Node").toStdString(), UndoCommand *parent = nullptr);
+    PasteNodes(const std::string &data, int x, int y, LegacyGraphController *ctrl, const TString &name = QObject::tr("Paste Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
 
 private:
-    GraphController *m_controller;
+    LegacyGraphController *m_controller;
 
     pugi::xml_document m_document;
     std::list<int32_t> m_list;

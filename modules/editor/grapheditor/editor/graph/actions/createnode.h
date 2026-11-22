@@ -1,11 +1,11 @@
 #ifndef CREATENODE_H
 #define CREATENODE_H
 
-#include "../graphcontroller.h"
+#include "../legacygraphcontroller.h"
 
 class CreateNode : public UndoCommand {
 public:
-    CreateNode(const std::string &type, int x, int y, GraphController *ctrl, int node = -1, int port = -1, bool out = false, const TString &name = QObject::tr("Create Node").toStdString(), UndoCommand *parent = nullptr);
+    CreateNode(const std::string &type, int x, int y, LegacyGraphController *ctrl, int node = -1, int port = -1, bool out = false, const TString &name = QObject::tr("Create Node").toStdString(), UndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -15,7 +15,7 @@ private:
     std::string m_type;
     Vector2 m_point;
 
-    GraphController *m_controller;
+    LegacyGraphController *m_controller;
 
     int32_t m_node;
 

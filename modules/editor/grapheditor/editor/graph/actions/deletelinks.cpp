@@ -1,6 +1,6 @@
 #include "deletelinks.h"
 
-DeleteLinks::DeleteLinks(const std::list<int32_t> &links, GraphController *ctrl, const TString &name, UndoCommand *parent) :
+DeleteLinks::DeleteLinks(const std::list<int32_t> &links, LegacyGraphController *ctrl, const TString &name, UndoCommand *parent) :
         UndoCommand(name, parent),
         m_controller(ctrl),
         m_indices(links) {

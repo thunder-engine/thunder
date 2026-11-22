@@ -3,7 +3,7 @@
 #include "portwidget.h"
 #include "nodewidget.h"
 #include "../abstractnodegraph.h"
-#include "../graphcontroller.h"
+#include "../legacygraphcontroller.h"
 
 #include <canvas.h>
 

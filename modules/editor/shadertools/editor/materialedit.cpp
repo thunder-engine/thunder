@@ -108,9 +108,9 @@ MaterialEdit::MaterialEdit() :
 
     Object::connect(m_graph, _SIGNAL(graphUpdated()), m_proxy, _SLOT(onGraphUpdated()));
 
-    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &MaterialEdit::selectionChanged);
-    connect(ui->schemeWidget, &GraphView::selectionChanged, this, &MaterialEdit::copyPasteChanged);
-    connect(ui->schemeWidget, &GraphView::copied, this, &MaterialEdit::copyPasteChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &MaterialEdit::selectionChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::selectionChanged, this, &MaterialEdit::copyPasteChanged);
+    connect(ui->schemeWidget, &LegacyGraphView::copied, this, &MaterialEdit::copyPasteChanged);
 
     ui->schemeWidget->setEditor(this);
     ui->schemeWidget->setWorld(Engine::objectCreate<World>("World"));

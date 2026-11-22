@@ -1,5 +1,5 @@
-#ifndef GRAPHVIEW_H
-#define GRAPHVIEW_H
+#ifndef LEGACYGRAPHVIEW_H
+#define LEGACYGRAPHVIEW_H
 
 #include <viewport/legacyviewport.h>
 #include <editor/legacyasseteditor.h>
@@ -10,18 +10,18 @@ class QMenu;
 
 class AbstractNodeGraph;
 class Canvas;
-class GraphViewProxy;
+class LegacyGraphViewProxy;
 class NodeWidget;
 class LinksRender;
 class Frame;
 class Scene;
 class Widget;
 
-class NODEGRAPH_EXPORT GraphView : public LegacyViewport {
+class NODEGRAPH_EXPORT LegacyGraphView : public LegacyViewport {
     Q_OBJECT
 
 public:
-    explicit GraphView(QWidget *editor = nullptr);
+    explicit LegacyGraphView(QWidget *editor = nullptr);
 
     void setEditor(LegacyAssetEditor *editor);
     void setWorld(World *scene) override;
@@ -86,7 +86,7 @@ protected:
 
     QMenu *m_createMenu;
 
-    GraphViewProxy *m_proxy;
+    LegacyGraphViewProxy *m_proxy;
 
     LinksRender *m_linksRender;
 
@@ -98,4 +98,4 @@ protected:
 
 };
 
-#endif // GRAPHVIEW_H
+#endif // LEGACYGRAPHVIEW_H
