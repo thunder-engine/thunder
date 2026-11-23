@@ -18,11 +18,11 @@
 #ifndef CREATEWIDGET_H
 #define CREATEWIDGET_H
 
-#include "../widgetcontroller.h"
+#include "../legacywidgetcontroller.h"
 
 class CreateWidget : public UndoCommand {
 public:
-    CreateWidget(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group = nullptr);
+    CreateWidget(const TString &type, Scene *scene, LegacyWidgetController *ctrl, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -32,7 +32,7 @@ protected:
 
     TString m_type;
 
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
 };
 

@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef UIEDIT_H
-#define UIEDIT_H
+#ifndef LEGACYUIEDIT_H
+#define LEGACYUIEDIT_H
 
 #include <QMenu>
 
@@ -24,22 +24,22 @@
 
 #include <pugixml.hpp>
 
-class WidgetController;
+class LegacyWidgetController;
 
 class Widget;
 class Canvas;
 class Scene;
 
 namespace Ui {
-    class UiEdit;
+    class LegacyUiEdit;
 }
 
-class UiEdit : public LegacyAssetEditor {
+class LegacyUiEdit : public LegacyAssetEditor {
     Q_OBJECT
     
 public:
-    UiEdit();
-    ~UiEdit();
+    LegacyUiEdit();
+    ~LegacyUiEdit();
 
     static TString propertyTag(const MetaProperty &property, const TString &tag);
 
@@ -49,9 +49,9 @@ private slots:
     void onUpdated() override;
 
     void onObjectCreate(const TString &type) override;
-    void onObjectsSelected(Object::ObjectList objects, bool force) override;
+    void onObjectsSelected(bool force) override;
     void onSelectionDeleted() override;
-    void onObjectsChanged(const Object::ObjectList &objects, const TString &propertyName, const Variant &value) override;
+    void onObjectsChanged(const TString &property, const Variant &value) override;
 
     void onCutAction() override;
     void onCopyAction() override;
@@ -86,7 +86,7 @@ private:
 private:
     std::map<TString, Widget *> m_widgets;
 
-    Ui::UiEdit *ui;
+    Ui::LegacyUiEdit *ui;
 
     QMenu m_widgetMenu;
 
@@ -96,8 +96,8 @@ private:
 
     Canvas *m_canvas;
 
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
 };
 
-#endif // UIEDIT_H
+#endif // LEGACYUIEDIT_H

@@ -683,7 +683,6 @@ void SceneComposer::onSelectionDeleted() {
 }
 
 void SceneComposer::onObjectsChanged(const TString &property, const Variant &value) {
-    QObject *s = sender();
     LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
     if(gadget) {
         TString propertyName;

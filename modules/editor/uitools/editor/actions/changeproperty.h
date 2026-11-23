@@ -18,11 +18,11 @@
 #ifndef CHANGEPROPERTY_H
 #define CHANGEPROPERTY_H
 
-#include "../widgetcontroller.h"
+#include "../legacywidgetcontroller.h"
 
 class ChangeProperty : public UndoCommand {
 public:
-    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group = nullptr);
+    ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, LegacyWidgetController *ctrl, const TString &name, UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
@@ -33,7 +33,7 @@ protected:
 
     std::list<uint32_t> m_objects;
 
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
 };
 

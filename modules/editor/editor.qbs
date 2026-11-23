@@ -12,6 +12,7 @@ Project {
         "texturetools",
         "texteditor",
         "tiledimporter",
+        "uitools",
         "webtools"
     ]
 }

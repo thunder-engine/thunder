@@ -15,27 +15,27 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "selectwidgets.h"
+#ifndef PARENTWIDGET_H
+#define PARENTWIDGET_H
 
-SelectWidgets::SelectWidgets(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name, UndoCommand *group) :
-        UndoCommand(name, group),
-        m_objects(objects),
-        m_controller(ctrl) {
+#include "../legacywidgetcontroller.h"
 
-}
+class ParentWidget : public UndoCommand {
+public:
+    ParentWidget(const Object::ObjectList &objects, Object *parent, int32_t position, LegacyWidgetController *ctrl, const TString &name = "Parent Change", UndoCommand *group = nullptr);
+    void undo() override;
+    void redo() override;
 
-void SelectWidgets::undo() {
-    SelectWidgets::redo();
-}
+protected:
+    std::unordered_map<uint32_t, uint32_t> m_parentCache;
+    std::list<uint32_t> m_objects;
 
-void SelectWidgets::redo() {
-    Object::ObjectList objects = m_controller->selected();
+    uint32_t m_parent;
 
-    m_controller->clear(false);
-    m_controller->selectActors(m_objects);
+    int32_t m_position;
 
-    m_objects.clear();
-    for(auto &it : objects) {
-        m_objects.push_back(it->uuid());
-    }
-}
+    LegacyWidgetController *m_controller;
+
+};
+
+#endif // PARENTWIDGET_H

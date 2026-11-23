@@ -42,14 +42,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../.. FILES ${${PROJECT_NAME}_srcF
 if(desktop)
     set(CMAKE_AUTOUIC ON)
 
-    file(GLOB ${PROJECT_NAME}_ui
-        "src/editor/*.ui"
-    )
-
-    set(RESOURCES
-        src/editor/uieditor.qrc
-    )
-
     file(GLOB MOC_HEADERS
         "includes/converters/*.h"
         "includes/editor/*.h"
@@ -66,23 +58,11 @@ if(desktop)
         )
     endif()
 
-    QT_ADD_RESOURCES(RES_SOURCES ${RESOURCES})
-    QT_WRAP_UI(UI_HEADERS ${${PROJECT_NAME}_ui})
     QT_WRAP_CPP(MOC_SRCS ${MOC_HEADERS})
-
-    file(GLOB EDITOR_SOURCES
-        "src/converters/*.cpp"
-        "src/editor/*.cpp"
-        "src/editor/tools/*.cpp"
-        "src/editor/actions/*.cpp"
-    )
 
     add_library(${PROJECT_NAME}-editor SHARED
         ${MOC_SRCS}
-        ${UI_HEADERS}
-        ${RES_SOURCES}
         ${${PROJECT_NAME}_srcFiles}
-        ${EDITOR_SOURCES}
     )
 
     target_link_libraries(${PROJECT_NAME}-editor PRIVATE
@@ -127,27 +107,35 @@ if(desktop)
 
     install(FILES
         "includes/components/abstractbutton.h"
+		"includes/components/abstractitemview.h"
+		"includes/components/abstractscrollarea.h"
         "includes/components/abstractslider.h"
+		"includes/components/action.h"
         "includes/components/button.h"
+        "includes/components/canvas.h"
         "includes/components/checkbox.h"
+        "includes/components/combobox.h"
         "includes/components/dialog.h"
         "includes/components/floatinput.h"
         "includes/components/foldout.h"
         "includes/components/frame.h"
         "includes/components/image.h"
+		"includes/components/itemviewdelegate.h"
         "includes/components/label.h"
         "includes/components/layout.h"
         "includes/components/lineedit.h"
+		"includes/components/listview.h"
         "includes/components/menu.h"
         "includes/components/progressbar.h"
-        "includes/components/recttransform.h"
+		"includes/components/scrollbar.h"
         "includes/components/slider.h"
         "includes/components/spacer.h"
+		"includes/components/splitter.h"
         "includes/components/switch.h"
-        "includes/components/toolbutton.h"
-        "includes/components/treeview.h"
+		"includes/components/tabbar.h"
+		"includes/components/tabwidget.h"
         "includes/components/topmost.h"
-        "includes/components/canvas.h"
+        "includes/components/treeview.h"
         "includes/components/widget.h"
         DESTINATION "${INC_PATH}/engine"
     )

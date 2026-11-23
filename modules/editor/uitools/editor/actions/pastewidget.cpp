@@ -19,7 +19,7 @@
 
 #include <components/component.h>
 
-PasteWidget::PasteWidget(WidgetController *ctrl, const TString &name, UndoCommand *group) :
+PasteWidget::PasteWidget(LegacyWidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_data(ctrl->copyData()),
         m_controller(ctrl) {
@@ -78,7 +78,7 @@ void PasteWidget::redo() {
         for(int i = 0; i < meta->propertyCount(); i++) {
             MetaProperty property = meta->property(i);
 
-            TString editor = UiEdit::propertyTag(property, "editor=");
+            TString editor = LegacyUiEdit::propertyTag(property, "editor=");
             if(editor == "Component") {
                 Variant value = property.read(it);
                 Component *component = (value.data() == nullptr) ? nullptr : *(reinterpret_cast<Component **>(value.data()));

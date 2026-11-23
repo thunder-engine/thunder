@@ -15,24 +15,27 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef DELETEWIGET_H
-#define DELETEWIGET_H
+#ifndef PASTEWIDGET_H
+#define PASTEWIDGET_H
 
-#include "../widgetcontroller.h"
+#include "../legacywidgetcontroller.h"
 
-class DeleteObject : public UndoCommand {
+class PasteWidget : public UndoCommand {
 public:
-    DeleteObject(const Object::ObjectList &objects, WidgetController *ctrl, const TString &name = "Delete Widget", UndoCommand *group = nullptr);
+    PasteWidget(LegacyWidgetController *ctrl, const TString &name = "Paste Widget", UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    VariantList m_dump;
+    Variant m_data;
+
+    std::unordered_map<uint32_t, uint32_t> m_uuidBinds;
 
     std::list<uint32_t> m_objects;
+    std::list<uint32_t> m_selected;
 
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
 };
 
-#endif // DELETEWIGET_H
+#endif // PASTEWIDGET_H

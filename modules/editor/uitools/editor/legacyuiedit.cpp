@@ -15,8 +15,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "uiedit.h"
-#include "ui_uiedit.h"
+#include "legacyuiedit.h"
+#include "ui_legacyuiedit.h"
 
 #include <sstream>
 
@@ -31,6 +31,7 @@
 
 #include <editor/undostack.h>
 #include <editor/assetconverter.h>
+#include <editor/legacyeditorgadget.h>
 #include <viewport/legacycameracontroller.h>
 
 #include "components/canvas.h"
@@ -43,7 +44,7 @@
 #include "actions/parentwidget.h"
 #include "actions/changeproperty.h"
 
-#include "widgetcontroller.h"
+#include "legacywidgetcontroller.h"
 
 #include <abstractitemmodel.h>
 
@@ -108,12 +109,12 @@ namespace {
     const char *gEditorTag("editor=");
 }
 
-UiEdit::UiEdit() :
-        ui(new Ui::UiEdit),
+LegacyUiEdit::LegacyUiEdit() :
+        ui(new Ui::LegacyUiEdit),
         m_world(Engine::objectCreate<World>("World")),
         m_scene(Engine::objectCreate<Scene>("Scene", m_world)),
         m_canvas(nullptr),
-        m_controller(new WidgetController(this)) {
+        m_controller(new LegacyWidgetController(this)) {
 
     ui->setupUi(this);
 
@@ -140,10 +141,10 @@ UiEdit::UiEdit() :
         camera->transform()->setPosition(Vector3(size.x * 0.5f, size.y * 0.5f, 1.0f));
     }
 
-    connect(m_controller, &WidgetController::copied, this, &UiEdit::copyPasteChanged);
-    connect(m_controller, &WidgetController::selectionChanged, this, &UiEdit::selectionChanged);
-    connect(m_controller, &WidgetController::selectionChanged, this, &UiEdit::copyPasteChanged);
-    connect(m_controller, &WidgetController::sceneUpdated, this, &UiEdit::updated);
+    connect(m_controller, &LegacyWidgetController::copied, this, &LegacyUiEdit::copyPasteChanged);
+    connect(m_controller, &LegacyWidgetController::selectionChanged, this, &LegacyUiEdit::selectionChanged);
+    connect(m_controller, &LegacyWidgetController::selectionChanged, this, &LegacyUiEdit::copyPasteChanged);
+    connect(m_controller, &LegacyWidgetController::sceneUpdated, this, &LegacyUiEdit::updated);
 
     m_widgetMenu.addAction(createAction(tr("Rename"), nullptr, true, QKeySequence(Qt::Key_F2)));
     m_widgetMenu.addAction(createAction(tr("Duplicate"), SLOT(onWidgetDuplicate()), false));
@@ -161,49 +162,58 @@ UiEdit::UiEdit() :
     }
 }
 
-UiEdit::~UiEdit() {
+LegacyUiEdit::~LegacyUiEdit() {
     delete ui;
 }
 
-StringList UiEdit::suffixes() const {
+StringList LegacyUiEdit::suffixes() const {
     return { "ui" };
 }
 
-StringList UiEdit::componentGroups() const {
+StringList LegacyUiEdit::componentGroups() const {
     return {"Actor", "Components/UI"};
 }
 
-TString UiEdit::assetType() const {
+TString LegacyUiEdit::assetType() const {
     return "UI Document";
 }
 
-Object::ObjectList UiEdit::selected() const {
+Object::ObjectList LegacyUiEdit::selected() const {
     return m_controller->selected();
 }
 
-void UiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
+void LegacyUiEdit::changeParent(const Object::ObjectList &objects, Object *parent, int position) {
     m_undoRedo->push(new ParentWidget(objects, parent, position, m_controller));
 }
 
-void UiEdit::onActivated() {
+void LegacyUiEdit::onActivated() {
     emit objectsHierarchyChanged(m_scene);
 
     emit selectionChanged();
 }
 
-void UiEdit::onUpdated() {
+void LegacyUiEdit::onUpdated() {
     emit updated();
 }
 
-void UiEdit::onObjectCreate(const TString &type) {
+void LegacyUiEdit::onObjectCreate(const TString &type) {
     m_undoRedo->push(new CreateWidget(type, m_scene, m_controller));
 }
 
-void UiEdit::onObjectsSelected(Object::ObjectList objects, bool force) {
-    m_controller->onSelectActor(objects);
+void LegacyUiEdit::onObjectsSelected(bool force) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        Object::ObjectList list = gadget->selected();
+        if(force && !list.empty()) {
+            float bottom;
+            m_controller->setFocusOn(dynamic_cast<Actor *>(list.front()), bottom);
+        }
+
+        m_controller->onSelectActor(list);
+    }
 }
 
-void UiEdit::onSelectionDeleted() {
+void LegacyUiEdit::onSelectionDeleted() {
     Object::ObjectList objects = m_controller->selected();
     for(auto it : objects) {
         if(it == m_controller->root()) {
@@ -213,15 +223,15 @@ void UiEdit::onSelectionDeleted() {
     m_undoRedo->push(new DeleteObject(objects, m_controller));
 }
 
-bool UiEdit::isCopyActionAvailable() const {
+bool LegacyUiEdit::isCopyActionAvailable() const {
     return m_controller->selectedUuid() != 0;
 }
 
-bool UiEdit::isPasteActionAvailable() const {
+bool LegacyUiEdit::isPasteActionAvailable() const {
     return m_controller->copyData().isValid();
 }
 
-void UiEdit::onCutAction() {
+void LegacyUiEdit::onCutAction() {
     for(auto it : m_controller->selected()) {
         if(it == m_controller->root()) {
             return;
@@ -233,32 +243,41 @@ void UiEdit::onCutAction() {
     m_undoRedo->push(new DeleteObject(m_controller->selected(), m_controller, ""));
 }
 
-void UiEdit::onCopyAction() {
+void LegacyUiEdit::onCopyAction() {
     m_controller->copySelected();
 }
 
-void UiEdit::onPasteAction() {
+void LegacyUiEdit::onPasteAction() {
     m_undoRedo->push(new PasteWidget(m_controller));
 }
 
-void UiEdit::onWidgetDelete() {
+void LegacyUiEdit::onWidgetDelete() {
     onSelectionDeleted();
 }
 
-void UiEdit::onWidgetDuplicate() {
+void LegacyUiEdit::onWidgetDuplicate() {
     onCopyAction();
     m_undoRedo->push(new PasteWidget(m_controller, "Duplicate Widget"));
 }
 
-void UiEdit::onObjectsChanged(const Object::ObjectList &objects, const TString &propertyName, const Variant &value) {
-    TString capital = propertyName;
-    capital[0] = std::toupper(capital.at(0));
-    TString name(Engine::translate("Change %1").arg(capital));
+void LegacyUiEdit::onObjectsChanged(const TString &property, const Variant &value) {
+    LegacyEditorGadget *gadget = dynamic_cast<LegacyEditorGadget *>(sender());
+    if(gadget) {
+        TString propertyName;
+        Object::ObjectList objects = LegacyEditorGadget::objectsForProperty(gadget->selected(), property, propertyName);
+        if(objects.empty()) {
+            return;
+        }
 
-    m_undoRedo->push(new ChangeProperty(objects, propertyName, value, m_controller, name));
+        TString capital = propertyName;
+        capital[0] = std::toupper(capital.at(0));
+        TString name(Engine::translate("Change %1").arg(capital));
+
+        m_undoRedo->push(new ChangeProperty(objects, propertyName, value, m_controller, name));
+    }
 }
 
-void UiEdit::loadAsset(AssetConverterSettings *settings) {
+void LegacyUiEdit::loadAsset(AssetConverterSettings *settings) {
     if(std::find(m_settings.begin(), m_settings.end(), settings) == m_settings.end()) {
         LegacyAssetEditor::loadAsset(settings);
 
@@ -289,7 +308,7 @@ void UiEdit::loadAsset(AssetConverterSettings *settings) {
     }
 }
 
-void UiEdit::saveAsset(const TString &path) {
+void LegacyUiEdit::saveAsset(const TString &path) {
     if(!path.isEmpty() || !m_settings.front()->source().isEmpty()) {
 
         pugi::xml_document doc;
@@ -319,7 +338,7 @@ void UiEdit::saveAsset(const TString &path) {
     }
 }
 
-void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
+void LegacyUiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
     for(auto it : widget->childWidgets()) {
         auto originIt = m_widgets.find(it->typeName());
         if(originIt != m_widgets.end()) {
@@ -388,17 +407,17 @@ void UiEdit::saveElementHelper(pugi::xml_node &parent, Widget *widget) {
     }
 }
 
-void UiEdit::changeEvent(QEvent *event) {
+void LegacyUiEdit::changeEvent(QEvent *event) {
     if(event->type() == QEvent::LanguageChange) {
         ui->retranslateUi(this);
     }
 }
 
-QMenu *UiEdit::hierarchyContextMenu(Object *object) {
+QMenu *LegacyUiEdit::hierarchyContextMenu(Object *object) {
     return &m_widgetMenu;
 }
 
-TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) {
+TString LegacyUiEdit::propertyTag(const MetaProperty &property, const TString &tag) {
     if(property.table() && property.table()->annotation) {
         TString annotation(property.table()->annotation);
 
@@ -413,7 +432,7 @@ TString UiEdit::propertyTag(const MetaProperty &property, const TString &tag) {
     return TString();
 }
 
-QAction *UiEdit::createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
+QAction *LegacyUiEdit::createAction(const QString &name, const char *member, bool single, const QKeySequence &shortcut) {
     QAction *a = new QAction(name, this);
     a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     a->setShortcut(shortcut);
