@@ -29,10 +29,10 @@
 #include "components/widget.h"
 #include "components/canvas.h"
 
-#include "../widgetcontroller.h"
+#include "../legacywidgetcontroller.h"
 #include "../actions/changeproperty.h"
 
-WidgetTool::WidgetTool(WidgetController *controller) :
+WidgetTool::WidgetTool(LegacyWidgetController *controller) :
         m_controller(controller),
         m_sensor(5.0f) {
 

@@ -19,7 +19,7 @@
 
 #include "components/widget.h"
 
-CreateWidget::CreateWidget(const TString &type, Scene *scene, WidgetController *ctrl, UndoCommand *group) :
+CreateWidget::CreateWidget(const TString &type, Scene *scene, LegacyWidgetController *ctrl, UndoCommand *group) :
         UndoCommand(TString("Create ") + type, group),
         m_type(type),
         m_controller(ctrl) {

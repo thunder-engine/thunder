@@ -17,7 +17,7 @@
 */
 #include "changeproperty.h"
 
-ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, WidgetController *ctrl, const TString &name, UndoCommand *group) :
+ChangeProperty::ChangeProperty(const Object::ObjectList &objects, const TString &property, const Variant &value, LegacyWidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
         m_value(value),
         m_property(property),

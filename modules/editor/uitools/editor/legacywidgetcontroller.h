@@ -15,24 +15,24 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef WIDGETCONTROLLER_H
-#define WIDGETCONTROLLER_H
+#ifndef LEGACYWIDGETCONTROLLER_H
+#define LEGACYWIDGETCONTROLLER_H
 
 #include <editor/undostack.h>
 #include <viewport/legacycameracontroller.h>
 
 #include "tools/widgettool.h"
 
-#include "uiedit.h"
+#include "legacyuiedit.h"
 
 class Widget;
 class UiSystem;
 
-class WidgetController : public LegacyCameraController {
+class LegacyWidgetController : public LegacyCameraController {
     Q_OBJECT
 
 public:
-    explicit WidgetController(UiEdit *editor);
+    explicit LegacyWidgetController(LegacyUiEdit *editor);
 
     void setRoot(Widget *rootObject);
     void clear(bool signal);
@@ -88,7 +88,7 @@ private:
 
     WidgetTool *m_widgetTool;
 
-    UiEdit *m_editor;
+    LegacyUiEdit *m_editor;
 
     uint32_t m_selected;
 
@@ -99,4 +99,4 @@ private:
 
 };
 
-#endif // WIDGETCONTROLLER_H
+#endif // LEGACYWIDGETCONTROLLER_H

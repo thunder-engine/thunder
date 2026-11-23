@@ -15,13 +15,13 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "widgetcontroller.h"
+#include "legacywidgetcontroller.h"
 
-#include "components/widget.h"
-#include "components/canvas.h"
+#include <widget.h>
+#include <canvas.h>
 
-#include <components/camera.h>
-#include <components/transform.h>
+#include <camera.h>
+#include <transform.h>
 
 #include <viewport/handles.h>
 #include <editor/editorplatform.h>
@@ -31,7 +31,7 @@
 #include "actions/selectwidgets.h"
 #include "actions/deletewiget.h"
 
-WidgetController::WidgetController(UiEdit *editor) :
+LegacyWidgetController::LegacyWidgetController(LegacyUiEdit *editor) :
         LegacyCameraController(),
         m_rootObject(nullptr),
         m_widgetTool(new WidgetTool(this)),
@@ -44,18 +44,18 @@ WidgetController::WidgetController(UiEdit *editor) :
     m_activeCamera->setOrthographic(true);
 }
 
-void WidgetController::setRoot(Widget *rootObject) {
+void LegacyWidgetController::setRoot(Widget *rootObject) {
     m_rootObject = rootObject;
 }
 
-void WidgetController::clear(bool signal) {
+void LegacyWidgetController::clear(bool signal) {
     m_selected = 0;
     if(signal) {
         emit selectionChanged();
     }
 }
 
-Object::ObjectList WidgetController::selected() {
+Object::ObjectList LegacyWidgetController::selected() {
     Object::ObjectList result;
 
     Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_selected));
@@ -66,11 +66,11 @@ Object::ObjectList WidgetController::selected() {
     return result;
 }
 
-void WidgetController::select(Object &object) {
+void LegacyWidgetController::select(Object &object) {
     m_objectsList = {object.uuid()};
 }
 
-void WidgetController::resize(int32_t width, int32_t height) {
+void LegacyWidgetController::resize(int32_t width, int32_t height) {
     if(m_screenSize != Vector2(width, height)) {
         LegacyCameraController::resize(width, height);
 
@@ -78,7 +78,7 @@ void WidgetController::resize(int32_t width, int32_t height) {
     }
 }
 
-void WidgetController::selectActors(const std::list<uint32_t> &list) {
+void LegacyWidgetController::selectActors(const std::list<uint32_t> &list) {
     for(auto it : list) {
         Widget *widget = dynamic_cast<Widget *>(Engine::findObject(it));
         if(widget) {
@@ -89,7 +89,7 @@ void WidgetController::selectActors(const std::list<uint32_t> &list) {
     emit selectionChanged();
 }
 
-void WidgetController::onSelectActor(uint32_t object) {
+void LegacyWidgetController::onSelectActor(uint32_t object) {
     if(object == m_selected) {
         return;
     }
@@ -101,11 +101,11 @@ void WidgetController::onSelectActor(uint32_t object) {
     undoRedo()->push(new SelectWidgets(list, this));
 }
 
-void WidgetController::onSelectActor(const std::list<Object *> &list) {
+void LegacyWidgetController::onSelectActor(const std::list<Object *> &list) {
     onSelectActor(list.size() > 0 ? list.front()->uuid() : 0);
 }
 
-void WidgetController::drawHandles() {
+void LegacyWidgetController::drawHandles() {
     Vector4 pos(Input::mousePosition());
     Handles::s_Mouse = Vector2(pos.z, pos.w);
     Handles::s_Screen = m_screenSize;
@@ -137,7 +137,7 @@ Widget *widgetHoverHelper(Widget *widget, const Vector2 &pos) {
     return nullptr;
 }
 
-void WidgetController::update() {
+void LegacyWidgetController::update() {
     Vector4 mouse = Input::mousePosition();
 
     LegacyCameraController::update();
@@ -196,7 +196,7 @@ void WidgetController::update() {
     }
 }
 
-void WidgetController::cameraMove(const Vector3 &delta) {
+void LegacyWidgetController::cameraMove(const Vector3 &delta) {
     m_rootObject->setPosition(m_rootObject->position() + Vector3(m_mouseDelta, 0.0f));
 
     m_widgetTool->setTranslation(m_rootObject->position());
@@ -205,7 +205,7 @@ void WidgetController::cameraMove(const Vector3 &delta) {
     cameraTransform->setPosition(cameraTransform->position() - delta * m_activeCamera->orthoSize());
 }
 
-void WidgetController::cameraZoom(float delta) {
+void LegacyWidgetController::cameraZoom(float delta) {
     int zoom = m_zoom;
     if(delta != 0.0f) {
         zoom += (delta > 0) ? -1 : 1;
@@ -237,14 +237,14 @@ void WidgetController::cameraZoom(float delta) {
     m_widgetTool->setTranslation(m_rootObject->position());
 }
 
-void WidgetController::setDrag(bool drag) {
+void LegacyWidgetController::setDrag(bool drag) {
     if(drag) {
         m_widgetTool->beginControl();
     }
     m_drag = drag;
 }
 
-void WidgetController::copySelected() {
+void LegacyWidgetController::copySelected() {
     Widget *widget = dynamic_cast<Widget *>(Engine::findObject(m_selected));
     if(widget) {
         m_copyData = Engine::toVariant(widget);

@@ -15,22 +15,27 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef SEKECTWIDGETS_H
-#define SEKECTWIDGETS_H
+#include "selectwidgets.h"
 
-#include "../widgetcontroller.h"
+SelectWidgets::SelectWidgets(const std::list<uint32_t> &objects, LegacyWidgetController *ctrl, const TString &name, UndoCommand *group) :
+        UndoCommand(name, group),
+        m_objects(objects),
+        m_controller(ctrl) {
 
-class SelectWidgets : public UndoCommand {
-public:
-    SelectWidgets(const std::list<uint32_t> &objects, WidgetController *ctrl, const TString &name = "Selection Change", UndoCommand *group = nullptr);
-    void undo() override;
-    void redo() override;
+}
 
-protected:
-    std::list<uint32_t> m_objects;
+void SelectWidgets::undo() {
+    SelectWidgets::redo();
+}
 
-    WidgetController *m_controller;
+void SelectWidgets::redo() {
+    Object::ObjectList objects = m_controller->selected();
 
-};
+    m_controller->clear(false);
+    m_controller->selectActors(m_objects);
 
-#endif // SEKECTOBJECTS_H
+    m_objects.clear();
+    for(auto &it : objects) {
+        m_objects.push_back(it->uuid());
+    }
+}

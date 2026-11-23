@@ -20,12 +20,12 @@
 
 #include <editor/editortool.h>
 
-class WidgetController;
+class LegacyWidgetController;
 class Widget;
 
 class WidgetTool : public EditorTool {
 public:
-    explicit WidgetTool(WidgetController *controller);
+    explicit WidgetTool(LegacyWidgetController *controller);
 
     void update(bool pivot, bool local, bool snap) override;
 
@@ -60,7 +60,7 @@ protected:
     Vector2 m_min;
     Vector2 m_max;
 
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
     float m_sensor;
 

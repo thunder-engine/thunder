@@ -15,12 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#include "parentwidget.h"
+#include "deletewiget.h"
 
-ParentWidget::ParentWidget(const Object::ObjectList &objects, Object *parent, int32_t position, WidgetController *ctrl, const TString &name, UndoCommand *group) :
+DeleteObject::DeleteObject(const Object::ObjectList &objects, LegacyWidgetController *ctrl, const TString &name, UndoCommand *group) :
         UndoCommand(name, group),
-        m_parent(parent->uuid()),
-        m_position(position),
         m_controller(ctrl) {
 
     for(auto it : objects) {
@@ -28,37 +26,34 @@ ParentWidget::ParentWidget(const Object::ObjectList &objects, Object *parent, in
     }
 }
 
-void ParentWidget::undo() {
-    for(auto it : m_objects) {
-        Object *object = Engine::findObject(it);
+void DeleteObject::undo() {
+    m_objects.clear();
+
+    for(auto &ref : m_dump) {
+        Object *object = Engine::toObject(ref);
         if(object) {
-            auto parentIt = m_parentCache.find(object->uuid());
-            if(parentIt != m_parentCache.end()) {
-                Object *parent = Engine::findObject(parentIt->second);
-                if(parent) {
-                    object->setParent(parent);
-                }
-            }
+            m_objects.push_back(object->uuid());
         }
     }
+
+    m_controller->clear(false);
+    m_controller->selectActors(m_objects);
 
     emit m_controller->sceneUpdated();
 }
 
-void ParentWidget::redo() {
-    m_parentCache.clear();
+void DeleteObject::redo() {
+    m_dump.clear();
 
-    for(auto it : m_objects) {
+    for(auto it : m_objects)  {
         Object *object = Engine::findObject(it);
         if(object) {
-            m_parentCache[object->uuid()] = object->parent()->uuid();
-
-            Object *parent = Engine::findObject(m_parent);
-            if(parent) {
-                object->setParent(parent, m_position);
-            }
+            m_dump.push_back(Engine::toVariant(object));
+            delete object;
         }
     }
+
+    m_controller->clear(true);
 
     emit m_controller->sceneUpdated();
 }

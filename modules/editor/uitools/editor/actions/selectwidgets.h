@@ -15,27 +15,22 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-#ifndef PARENTWIDGET_H
-#define PARENTWIDGET_H
+#ifndef SEKECTWIDGETS_H
+#define SEKECTWIDGETS_H
 
-#include "../widgetcontroller.h"
+#include "../legacywidgetcontroller.h"
 
-class ParentWidget : public UndoCommand {
+class SelectWidgets : public UndoCommand {
 public:
-    ParentWidget(const Object::ObjectList &objects, Object *parent, int32_t position, WidgetController *ctrl, const TString &name = "Parent Change", UndoCommand *group = nullptr);
+    SelectWidgets(const std::list<uint32_t> &objects, LegacyWidgetController *ctrl, const TString &name = "Selection Change", UndoCommand *group = nullptr);
     void undo() override;
     void redo() override;
 
 protected:
-    std::unordered_map<uint32_t, uint32_t> m_parentCache;
     std::list<uint32_t> m_objects;
 
-    uint32_t m_parent;
-
-    int32_t m_position;
-
-    WidgetController *m_controller;
+    LegacyWidgetController *m_controller;
 
 };
 
-#endif // PARENTWIDGET_H
+#endif // SEKECTOBJECTS_H
