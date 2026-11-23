@@ -16,8 +16,8 @@ static const char *meta = \
 "   \"description\": \"UI Tools plugin\","
 "   \"author\": \"Evgeniy Prikazchikov\","
 "   \"objects\": {"
-"       \"StyleSheetConverter: \"converter\","
-"       \"UiConverter: \"converter\","
+"       \"StyleSheetConverter\": \"converter\","
+"       \"UiConverter\": \"converter\","
 "       \"LegacyUiEdit\": \"legacyeditor\""
 "   }"
 "}";
