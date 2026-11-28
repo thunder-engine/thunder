@@ -1,3 +1,21 @@
+/*
+    This file is part of Thunder Engine.
+
+    Copyright 2008-2026 Evgeniy Prikazchikov
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 #ifndef FONT_H
 #define FONT_H
 
@@ -42,6 +60,24 @@ class ENGINE_EXPORT Font : public Resource {
 
     };
 
+    struct GlyphAtlas {
+        std::unordered_map<uint32_t, GlyphData> shapes;
+
+        AtlasNode *root = nullptr;
+
+        Texture *page = nullptr;
+
+        uint32_t width = 512;
+
+        uint32_t height = 512;
+
+        int padding = 2;
+
+        bool sdf = false;
+
+        bool dirty = false;
+    };
+
     struct Settings {
         int size = 0;
 
@@ -69,6 +105,8 @@ public:
 
     Texture *page();
 
+    Texture *sdfPage();
+
     float textWidth(const TString &text, int size, int flags);
 
     void composeMesh(Mesh *mesh, const TString &text, const Settings &settings);
@@ -76,31 +114,35 @@ public:
 private:
     void clear();
 
-    void clearAtlas();
+    void clearAtlas(GlyphAtlas &atlas);
 
-    void requestCharacters(const std::u32string &characters, uint32_t size);
+    void requestCharacters(const std::u32string &characters, uint32_t size, int flags);
 
-    int requestKerning(int glyph, int previous) const;
+    int requestKerning(int glyph, int previous, bool sdf) const;
 
-    GlyphData *glyph(int key);
+    GlyphData *glyph(int key, int flags);
 
-    void packSheets(int padding);
+    GlyphAtlas &atlasFor(int flags);
+
+    const GlyphAtlas &atlasFor(int flags) const;
+
+    void packSheets(GlyphAtlas &atlas);
+
+    void ensurePacked(int flags);
 
     void loadUserData(const VariantMap &data) override;
     VariantMap saveUserData() const override;
 
 private:
-    std::unordered_map<uint32_t, GlyphData> m_shapes;
+    GlyphAtlas m_bitmapAtlas;
+
+    GlyphAtlas m_sdfAtlas;
 
     ByteArray m_data;
 
     int32_t *m_face;
 
-    Texture *m_page;
-
-    AtlasNode *m_root;
-
-    bool m_useKerning;
+    bool m_hasKerning;
 
 };
 
